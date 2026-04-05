@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pytest tests/python/test_contract_models.py -q
+          python -m pytest tests/python/test_contract_models.py tests/test_env_contract.py -q
 
       - name: Build Python distributions
         shell: bash
