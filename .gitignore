@@ -1,1 +1,11 @@
+.env
 .env.*
+!.env.template
+.tmp/
+.pytest_cache/
+.vscode/
+artifacts/
+**/__pycache__/
+*.egg-info/
+ts/node_modules/
+ts/artifacts/
