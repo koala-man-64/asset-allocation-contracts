@@ -1,0 +1,192 @@
+{
+  "$defs": {
+    "RegimeModelConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "bearVolMaxExclusive": {
+          "default": 25.0,
+          "title": "Bearvolmaxexclusive",
+          "type": "number"
+        },
+        "bearVolMin": {
+          "default": 15.0,
+          "title": "Bearvolmin",
+          "type": "number"
+        },
+        "bullVolMaxExclusive": {
+          "default": 15.0,
+          "title": "Bullvolmaxexclusive",
+          "type": "number"
+        },
+        "choppyVolMaxExclusive": {
+          "default": 18.0,
+          "title": "Choppyvolmaxexclusive",
+          "type": "number"
+        },
+        "choppyVolMin": {
+          "default": 10.0,
+          "title": "Choppyvolmin",
+          "type": "number"
+        },
+        "curveContangoThreshold": {
+          "default": 0.5,
+          "title": "Curvecontangothreshold",
+          "type": "number"
+        },
+        "curveInvertedThreshold": {
+          "default": -0.5,
+          "title": "Curveinvertedthreshold",
+          "type": "number"
+        },
+        "haltVixStreakDays": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Haltvixstreakdays",
+          "type": "integer"
+        },
+        "haltVixThreshold": {
+          "default": 32.0,
+          "title": "Haltvixthreshold",
+          "type": "number"
+        },
+        "highVolEnterThreshold": {
+          "default": 28.0,
+          "title": "Highvolenterthreshold",
+          "type": "number"
+        },
+        "highVolExitThreshold": {
+          "default": 25.0,
+          "title": "Highvolexitthreshold",
+          "type": "number"
+        },
+        "precedence": {
+          "items": {
+            "enum": [
+              "trending_bull",
+              "trending_bear",
+              "choppy_mean_reversion",
+              "high_vol",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Precedence",
+          "type": "array"
+        },
+        "trendNegativeThreshold": {
+          "default": -0.02,
+          "title": "Trendnegativethreshold",
+          "type": "number"
+        },
+        "trendPositiveThreshold": {
+          "default": 0.02,
+          "title": "Trendpositivethreshold",
+          "type": "number"
+        }
+      },
+      "title": "RegimeModelConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Activated At"
+    },
+    "activated_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Activated By"
+    },
+    "config": {
+      "$ref": "#/$defs/RegimeModelConfig"
+    },
+    "config_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Config Hash"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "published_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Published At"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Status"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "config"
+  ],
+  "title": "RegimeModelRevision",
+  "type": "object"
+}

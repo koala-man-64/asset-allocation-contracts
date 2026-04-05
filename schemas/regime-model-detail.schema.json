@@ -1,0 +1,509 @@
+{
+  "$defs": {
+    "RegimeModelConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "bearVolMaxExclusive": {
+          "default": 25.0,
+          "title": "Bearvolmaxexclusive",
+          "type": "number"
+        },
+        "bearVolMin": {
+          "default": 15.0,
+          "title": "Bearvolmin",
+          "type": "number"
+        },
+        "bullVolMaxExclusive": {
+          "default": 15.0,
+          "title": "Bullvolmaxexclusive",
+          "type": "number"
+        },
+        "choppyVolMaxExclusive": {
+          "default": 18.0,
+          "title": "Choppyvolmaxexclusive",
+          "type": "number"
+        },
+        "choppyVolMin": {
+          "default": 10.0,
+          "title": "Choppyvolmin",
+          "type": "number"
+        },
+        "curveContangoThreshold": {
+          "default": 0.5,
+          "title": "Curvecontangothreshold",
+          "type": "number"
+        },
+        "curveInvertedThreshold": {
+          "default": -0.5,
+          "title": "Curveinvertedthreshold",
+          "type": "number"
+        },
+        "haltVixStreakDays": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Haltvixstreakdays",
+          "type": "integer"
+        },
+        "haltVixThreshold": {
+          "default": 32.0,
+          "title": "Haltvixthreshold",
+          "type": "number"
+        },
+        "highVolEnterThreshold": {
+          "default": 28.0,
+          "title": "Highvolenterthreshold",
+          "type": "number"
+        },
+        "highVolExitThreshold": {
+          "default": 25.0,
+          "title": "Highvolexitthreshold",
+          "type": "number"
+        },
+        "precedence": {
+          "items": {
+            "enum": [
+              "trending_bull",
+              "trending_bear",
+              "choppy_mean_reversion",
+              "high_vol",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Precedence",
+          "type": "array"
+        },
+        "trendNegativeThreshold": {
+          "default": -0.02,
+          "title": "Trendnegativethreshold",
+          "type": "number"
+        },
+        "trendPositiveThreshold": {
+          "default": 0.02,
+          "title": "Trendpositivethreshold",
+          "type": "number"
+        }
+      },
+      "title": "RegimeModelConfig",
+      "type": "object"
+    },
+    "RegimeModelRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "activated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated At"
+        },
+        "activated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated By"
+        },
+        "config": {
+          "$ref": "#/$defs/RegimeModelConfig"
+        },
+        "config_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Hash"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "config"
+      ],
+      "title": "RegimeModelRevision",
+      "type": "object"
+    },
+    "RegimeModelSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "activated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated At"
+        },
+        "activated_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activated By"
+        },
+        "active_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Version"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "RegimeModelSummary",
+      "type": "object"
+    },
+    "RegimeSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "computed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Computed At"
+        },
+        "curve_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "contango",
+                "flat",
+                "inverted"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Curve State"
+        },
+        "effective_from_date": {
+          "format": "date",
+          "title": "Effective From Date",
+          "type": "string"
+        },
+        "halt_flag": {
+          "title": "Halt Flag",
+          "type": "boolean"
+        },
+        "halt_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Halt Reason"
+        },
+        "matched_rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Matched Rule Id"
+        },
+        "model_name": {
+          "title": "Model Name",
+          "type": "string"
+        },
+        "model_version": {
+          "title": "Model Version",
+          "type": "integer"
+        },
+        "regime_code": {
+          "enum": [
+            "trending_bull",
+            "trending_bear",
+            "choppy_mean_reversion",
+            "high_vol",
+            "unclassified"
+          ],
+          "title": "Regime Code",
+          "type": "string"
+        },
+        "regime_status": {
+          "enum": [
+            "confirmed",
+            "transition",
+            "unclassified"
+          ],
+          "title": "Regime Status",
+          "type": "string"
+        },
+        "rvol_10d_ann": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rvol 10D Ann"
+        },
+        "spy_return_20d": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spy Return 20D"
+        },
+        "trend_state": {
+          "anyOf": [
+            {
+              "enum": [
+                "positive",
+                "negative",
+                "near_zero"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trend State"
+        },
+        "vix3m_close": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vix3M Close"
+        },
+        "vix_gt_32_streak": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vix Gt 32 Streak"
+        },
+        "vix_slope": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vix Slope"
+        },
+        "vix_spot_close": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vix Spot Close"
+        }
+      },
+      "required": [
+        "as_of_date",
+        "effective_from_date",
+        "model_name",
+        "model_version",
+        "regime_code",
+        "regime_status",
+        "halt_flag"
+      ],
+      "title": "RegimeSnapshot",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RegimeModelRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "latest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RegimeSnapshot"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model": {
+      "$ref": "#/$defs/RegimeModelSummary"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/RegimeModelRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "model"
+  ],
+  "title": "RegimeModelDetailResponse",
+  "type": "object"
+}

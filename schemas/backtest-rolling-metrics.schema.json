@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "RollingMetricPointResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "commission_sum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commission Sum"
+        },
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "gross_exposure_avg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gross Exposure Avg"
+        },
+        "n_trades_sum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Trades Sum"
+        },
+        "net_exposure_avg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Net Exposure Avg"
+        },
+        "rolling_max_drawdown": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rolling Max Drawdown"
+        },
+        "rolling_return": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rolling Return"
+        },
+        "rolling_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rolling Sharpe"
+        },
+        "rolling_volatility": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rolling Volatility"
+        },
+        "slippage_cost_sum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slippage Cost Sum"
+        },
+        "turnover_sum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turnover Sum"
+        },
+        "window_days": {
+          "title": "Window Days",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "date",
+        "window_days"
+      ],
+      "title": "RollingMetricPointResponse",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "points": {
+      "items": {
+        "$ref": "#/$defs/RollingMetricPointResponse"
+      },
+      "title": "Points",
+      "type": "array"
+    },
+    "total_points": {
+      "title": "Total Points",
+      "type": "integer"
+    },
+    "truncated": {
+      "title": "Truncated",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "points",
+    "total_points",
+    "truncated"
+  ],
+  "title": "RollingMetricsResponse",
+  "type": "object"
+}

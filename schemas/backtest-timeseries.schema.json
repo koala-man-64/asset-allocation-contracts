@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "TimeseriesPointResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "cash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cash"
+        },
+        "commission": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commission"
+        },
+        "cumulative_return": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cumulative Return"
+        },
+        "daily_return": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Daily Return"
+        },
+        "date": {
+          "title": "Date",
+          "type": "string"
+        },
+        "drawdown": {
+          "title": "Drawdown",
+          "type": "number"
+        },
+        "gross_exposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gross Exposure"
+        },
+        "net_exposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Net Exposure"
+        },
+        "portfolio_value": {
+          "title": "Portfolio Value",
+          "type": "number"
+        },
+        "slippage_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slippage Cost"
+        },
+        "turnover": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turnover"
+        }
+      },
+      "required": [
+        "date",
+        "portfolio_value",
+        "drawdown"
+      ],
+      "title": "TimeseriesPointResponse",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "points": {
+      "items": {
+        "$ref": "#/$defs/TimeseriesPointResponse"
+      },
+      "title": "Points",
+      "type": "array"
+    },
+    "total_points": {
+      "title": "Total Points",
+      "type": "integer"
+    },
+    "truncated": {
+      "title": "Truncated",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "points",
+    "total_points",
+    "truncated"
+  ],
+  "title": "TimeseriesResponse",
+  "type": "object"
+}

@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "executionName": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Executionname"
+    }
+  },
+  "title": "BacktestStartRequest",
+  "type": "object"
+}

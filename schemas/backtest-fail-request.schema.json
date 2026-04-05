@@ -1,0 +1,16 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "error": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Error",
+      "type": "string"
+    }
+  },
+  "required": [
+    "error"
+  ],
+  "title": "BacktestFailRequest",
+  "type": "object"
+}

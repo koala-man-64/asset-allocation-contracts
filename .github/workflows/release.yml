@@ -1,0 +1,197 @@
+name: Contracts Release
+run-name: Contracts Release / ${{ github.event_name }} / ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: contracts-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.14"
+
+      - name: Resolve contracts version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' > version.txt
+          import json
+          import tomllib
+          from pathlib import Path
+
+          pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+          package_json = json.loads(Path("ts/package.json").read_text(encoding="utf-8"))
+          py_version = pyproject["project"]["version"]
+          ts_version = package_json["version"]
+          if py_version != ts_version:
+              raise SystemExit(f"Version mismatch: python={py_version} ts={ts_version}")
+          print(py_version)
+          PY
+          version="$(cat version.txt)"
+          echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Python distributions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/python
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+          python -m build python --sdist --wheel --outdir artifacts/python
+
+      - name: Build TypeScript package tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ts
+          docker run --rm \
+            -v "${{ github.workspace }}/ts:/app" \
+            -v "${{ github.workspace }}/artifacts/ts:/artifacts" \
+            -w /app \
+            node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
+            bash -lc 'set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
+
+      - name: Publish Python package
+        env:
+          PYTHON_PUBLISH_REPOSITORY_URL: ${{ vars.PYTHON_PUBLISH_REPOSITORY_URL }}
+          PYTHON_PUBLISH_USERNAME: ${{ secrets.PYTHON_PUBLISH_USERNAME }}
+          PYTHON_PUBLISH_PASSWORD: ${{ secrets.PYTHON_PUBLISH_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${PYTHON_PUBLISH_REPOSITORY_URL:?Set repo variable PYTHON_PUBLISH_REPOSITORY_URL.}"
+          : "${PYTHON_PUBLISH_USERNAME:?Set secret PYTHON_PUBLISH_USERNAME.}"
+          : "${PYTHON_PUBLISH_PASSWORD:?Set secret PYTHON_PUBLISH_PASSWORD.}"
+          python -m twine upload \
+            --repository-url "${PYTHON_PUBLISH_REPOSITORY_URL}" \
+            -u "${PYTHON_PUBLISH_USERNAME}" \
+            -p "${PYTHON_PUBLISH_PASSWORD}" \
+            artifacts/python/*
+
+      - name: Publish TypeScript package
+        env:
+          NPM_REGISTRY_URL: ${{ vars.NPM_REGISTRY_URL }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${NPM_REGISTRY_URL:?Set repo variable NPM_REGISTRY_URL.}"
+          : "${NPM_TOKEN:?Set secret NPM_TOKEN.}"
+          registry="${NPM_REGISTRY_URL%/}/"
+          host_path="${registry#https://}"
+          host_path="${host_path#http://}"
+          cat > "${HOME}/.npmrc" <<EOF
+          registry=${registry}
+          //${host_path}:_authToken=${NPM_TOKEN}
+          EOF
+          docker run --rm \
+            -v "${{ github.workspace }}/ts:/app" \
+            -v "${HOME}/.npmrc:/root/.npmrc:ro" \
+            -w /app \
+            node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
+            bash -lc "set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm publish --no-git-checks --registry '${registry}'"
+
+      - name: Write release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = {
+              "repo": os.environ["GITHUB_REPOSITORY"],
+              "git_sha": os.environ["GITHUB_SHA"],
+              "artifact_kind": "contracts",
+              "artifact_ref": {
+                  "python": sorted(p.name for p in Path("artifacts/python").iterdir()),
+                  "typescript": sorted(p.name for p in Path("artifacts/ts").iterdir()),
+              },
+              "contracts_version": os.environ["CONTRACTS_VERSION"],
+          }
+          Path("artifacts/release-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+          PY
+        env:
+          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: contracts-release
+          path: |
+            artifacts/python/*
+            artifacts/ts/*
+            artifacts/release-manifest.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.DISPATCH_APP_ID }}
+          private-key: ${{ secrets.DISPATCH_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Dispatch contracts release to consumers
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+          CONTROL_PLANE_REPOSITORY: ${{ vars.CONTROL_PLANE_REPOSITORY }}
+          UI_REPOSITORY: ${{ vars.UI_REPOSITORY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY_OWNER}"
+          control_plane_repo="${CONTROL_PLANE_REPOSITORY:-${owner}/asset-allocation-control-plane}"
+          ui_repo="${UI_REPOSITORY:-${owner}/asset-allocation-ui}"
+          for repo in "${control_plane_repo}" "${ui_repo}"; do
+            gh api "repos/${repo}/dispatches" \
+              --method POST \
+              --input - <<EOF
+          {
+            "event_type": "contracts_released",
+            "client_payload": {
+              "contracts_version": "${CONTRACTS_VERSION}",
+              "contracts_ref": "${GITHUB_REF_NAME}",
+              "contracts_sha": "${GITHUB_SHA}",
+              "manifest_path": "release-manifest.json"
+            }
+          }
+          EOF
+          done
+
+      - name: Write release summary
+        env:
+          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+        shell: bash
+        run: |
+          {
+            echo "## Contracts release"
+            echo ""
+            echo "- Version: \`${CONTRACTS_VERSION}\`"
+            echo "- Ref: \`${GITHUB_REF_NAME}\`"
+            echo "- Manifest: \`artifacts/release-manifest.json\`"
+            echo "- Downstream dispatch: \`contracts_released\` to control-plane and ui"
+          } >> "${GITHUB_STEP_SUMMARY}"

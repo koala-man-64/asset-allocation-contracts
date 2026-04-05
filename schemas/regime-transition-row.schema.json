@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "computed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Computed At"
+    },
+    "effective_from_date": {
+      "format": "date",
+      "title": "Effective From Date",
+      "type": "string"
+    },
+    "model_name": {
+      "title": "Model Name",
+      "type": "string"
+    },
+    "model_version": {
+      "title": "Model Version",
+      "type": "integer"
+    },
+    "new_regime_code": {
+      "enum": [
+        "trending_bull",
+        "trending_bear",
+        "choppy_mean_reversion",
+        "high_vol",
+        "unclassified"
+      ],
+      "title": "New Regime Code",
+      "type": "string"
+    },
+    "prior_regime_code": {
+      "anyOf": [
+        {
+          "enum": [
+            "trending_bull",
+            "trending_bear",
+            "choppy_mean_reversion",
+            "high_vol",
+            "unclassified"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prior Regime Code"
+    },
+    "trigger_rule_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trigger Rule Id"
+    }
+  },
+  "required": [
+    "model_name",
+    "model_version",
+    "effective_from_date",
+    "new_regime_code"
+  ],
+  "title": "RegimeTransitionRow",
+  "type": "object"
+}

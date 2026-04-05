@@ -1,0 +1,158 @@
+{
+  "$defs": {
+    "UniverseCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "column": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Column",
+          "type": "string"
+        },
+        "kind": {
+          "const": "condition",
+          "default": "condition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "table": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Table",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values"
+        }
+      },
+      "required": [
+        "table",
+        "column",
+        "operator"
+      ],
+      "title": "UniverseCondition",
+      "type": "object"
+    },
+    "UniverseGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "clauses": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UniverseGroup"
+              },
+              {
+                "$ref": "#/$defs/UniverseCondition"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Clauses",
+          "type": "array"
+        },
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Operator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clauses"
+      ],
+      "title": "UniverseGroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "root": {
+      "$ref": "#/$defs/UniverseGroup"
+    },
+    "source": {
+      "const": "postgres_gold",
+      "default": "postgres_gold",
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "root"
+  ],
+  "title": "UniverseDefinition",
+  "type": "object"
+}

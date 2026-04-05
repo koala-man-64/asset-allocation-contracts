@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "TradeResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "cash_after": {
+          "title": "Cash After",
+          "type": "number"
+        },
+        "commission": {
+          "title": "Commission",
+          "type": "number"
+        },
+        "execution_date": {
+          "title": "Execution Date",
+          "type": "string"
+        },
+        "notional": {
+          "title": "Notional",
+          "type": "number"
+        },
+        "price": {
+          "title": "Price",
+          "type": "number"
+        },
+        "quantity": {
+          "title": "Quantity",
+          "type": "number"
+        },
+        "slippage_cost": {
+          "title": "Slippage Cost",
+          "type": "number"
+        },
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "execution_date",
+        "symbol",
+        "quantity",
+        "price",
+        "notional",
+        "commission",
+        "slippage_cost",
+        "cash_after"
+      ],
+      "title": "TradeResponse",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer"
+    },
+    "total": {
+      "title": "Total",
+      "type": "integer"
+    },
+    "trades": {
+      "items": {
+        "$ref": "#/$defs/TradeResponse"
+      },
+      "title": "Trades",
+      "type": "array"
+    }
+  },
+  "required": [
+    "trades",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "TradeListResponse",
+  "type": "object"
+}

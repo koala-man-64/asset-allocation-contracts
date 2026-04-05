@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asset-allocation-contracts"
+version = "0.1.0"
+description = "Shared contracts for Asset Allocation runtime repos."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "pydantic==2.12.5",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["asset_allocation_contracts*"]

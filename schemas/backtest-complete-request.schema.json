@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "artifactManifestPath": {
+      "anyOf": [
+        {
+          "maxLength": 1000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Artifactmanifestpath"
+    },
+    "summary": {
+      "additionalProperties": true,
+      "title": "Summary",
+      "type": "object"
+    }
+  },
+  "title": "BacktestCompleteRequest",
+  "type": "object"
+}
