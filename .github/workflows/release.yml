@@ -64,11 +64,12 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/ts
           docker run --rm \
+            -e CI=true \
             -v "${{ github.workspace }}/ts:/app" \
             -v "${{ github.workspace }}/artifacts/ts:/artifacts" \
             -w /app \
             node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
-            bash -lc 'set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
+            bash -lc 'set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
 
       - name: Publish Python package
         env:
@@ -104,11 +105,12 @@ jobs:
           //${host_path}:_authToken=${NPM_TOKEN}
           EOF
           docker run --rm \
+            -e CI=true \
             -v "${{ github.workspace }}/ts:/app" \
             -v "${HOME}/.npmrc:/root/.npmrc:ro" \
             -w /app \
             node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
-            bash -lc "set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm publish --no-git-checks --registry '${registry}'"
+            bash -lc "set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm publish --no-git-checks --registry '${registry}'"
 
       - name: Write release manifest
         shell: bash
