@@ -108,11 +108,12 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/ts
           docker run --rm \
+            -e CI=true \
             -v "${{ github.workspace }}/ts:/app" \
             -v "${{ github.workspace }}/artifacts/ts:/artifacts" \
             -w /app \
             node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
-            bash -lc 'set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
+            bash -lc 'set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
 
       - name: Upload TypeScript build artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0

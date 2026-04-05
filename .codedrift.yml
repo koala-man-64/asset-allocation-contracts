@@ -1,0 +1,84 @@
+baseline:
+  branch: main
+  tag: null
+  commit: null
+
+standards:
+  format: []
+  lint: []
+  typecheck:
+    - corepack pnpm --dir ts exec tsc --noEmit
+  test_fast:
+    - python -m pytest tests/python/test_contract_models.py -q
+  test_full:
+    - python -m pytest tests/python/test_contract_models.py -q
+  security: []
+  benchmark: []
+  format_fix: []
+  lint_fix: []
+
+architecture:
+  layers:
+    - name: python-contracts
+      path_glob: python/asset_allocation_contracts/**/*.py
+    - name: ts-contracts
+      path_glob: ts/src/**/*.ts
+    - name: schemas
+      path_glob: schemas/**/*.json
+    - name: workflows
+      path_glob: .github/workflows/*.yml
+  module_boundaries: []
+  blessed_patterns: []
+
+dependencies:
+  allowlist:
+    - pydantic
+    - typescript
+  denylist: []
+  lockfile_required: true
+  license_policy: {}
+
+api:
+  public_globs:
+    - python/asset_allocation_contracts/**/*.py
+    - ts/src/**/*.ts
+    - schemas/**/*.json
+  breaking_change_policy: strict
+
+thresholds:
+  drift_score_fail: 50
+  category_weights: {}
+  category_severity_fail: {}
+
+auto_remediate:
+  enabled: false
+  max_files_changed: 5
+  safe_directories:
+    - .github/workflows
+    - python
+    - schemas
+    - ts
+  commands: []
+
+risk_controls:
+  protected_globs:
+    - python/pyproject.toml
+    - schemas/**/*.json
+    - ts/package.json
+    - ts/pnpm-lock.yaml
+  require_tests_passing_before_automerge: true
+
+reporting:
+  markdown_path: artifacts/drift_report.md
+  json_path: artifacts/drift_report.json
+  patch_path: artifacts/drift_remediation.patch
+
+detection:
+  lookback_days: 30
+  speculative_safeguards:
+    enabled: true
+    patterns:
+      - '\?\? null'
+      - '\|\| null'
+      - ': null'
+      - ': "N/A"'

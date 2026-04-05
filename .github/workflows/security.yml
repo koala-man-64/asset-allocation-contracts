@@ -35,11 +35,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+          requirements = pyproject["project"].get("dependencies", [])
+          Path("artifacts/python-audit-requirements.txt").write_text("\n".join(requirements) + "\n", encoding="utf-8")
+          PY
           python -m pip install --upgrade pip
           python -m pip install pip-audit
-          python -m pip install -e python
-          pip-audit --format json -o artifacts/pip-audit.json || true
-          pip-audit --strict
+          audit_status=0
+          pip-audit --format json -r artifacts/python-audit-requirements.txt -o artifacts/pip-audit.json || audit_status=$?
+          pip-audit --strict -r artifacts/python-audit-requirements.txt || audit_status=$?
+          exit "$audit_status"
 
       - name: Upload Python audit artifacts
         if: always()
@@ -63,11 +72,12 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts/ts
           docker run --rm \
+            -e CI=true \
             -v "${{ github.workspace }}/ts:/app" \
             -v "${{ github.workspace }}/artifacts/ts:/artifacts" \
             -w /app \
             node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
-            bash -lc 'set -euo pipefail; corepack enable; pnpm install --no-frozen-lockfile; pnpm audit --json > /artifacts/pnpm-audit.json || true; pnpm audit --audit-level=high'
+            bash -lc 'set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm audit --json > /artifacts/pnpm-audit.json || true; pnpm audit --audit-level=high'
 
       - name: Upload TypeScript audit artifacts
         if: always()
