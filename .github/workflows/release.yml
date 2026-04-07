@@ -161,14 +161,16 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
           CONTROL_PLANE_REPOSITORY: ${{ vars.CONTROL_PLANE_REPOSITORY }}
+          JOBS_REPOSITORY: ${{ vars.JOBS_REPOSITORY }}
           UI_REPOSITORY: ${{ vars.UI_REPOSITORY }}
         shell: bash
         run: |
           set -euo pipefail
           owner="${GITHUB_REPOSITORY_OWNER}"
           control_plane_repo="${CONTROL_PLANE_REPOSITORY:-${owner}/asset-allocation-control-plane}"
+          jobs_repo="${JOBS_REPOSITORY:-${owner}/asset-allocation-jobs}"
           ui_repo="${UI_REPOSITORY:-${owner}/asset-allocation-ui}"
-          for repo in "${control_plane_repo}" "${ui_repo}"; do
+          for repo in "${control_plane_repo}" "${jobs_repo}" "${ui_repo}"; do
             gh api "repos/${repo}/dispatches" \
               --method POST \
               --input - <<EOF
@@ -195,5 +197,5 @@ jobs:
             echo "- Version: \`${CONTRACTS_VERSION}\`"
             echo "- Ref: \`${GITHUB_REF_NAME}\`"
             echo "- Manifest: \`artifacts/release-manifest.json\`"
-            echo "- Downstream dispatch: \`contracts_released\` to control-plane and ui"
+            echo "- Downstream dispatch: \`contracts_released\` to control-plane, jobs, and ui"
           } >> "${GITHUB_STEP_SUMMARY}"

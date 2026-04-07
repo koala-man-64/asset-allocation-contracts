@@ -85,6 +85,10 @@ function Resolve-DiscoveredValue {
             $slug = Get-RepoSlug -RepoName "asset-allocation-control-plane"
             if ($slug) { return (New-Resolution -Value $slug -Source "git") }
         }
+        "JOBS_REPOSITORY" {
+            $slug = Get-RepoSlug -RepoName "asset-allocation-jobs"
+            if ($slug) { return (New-Resolution -Value $slug -Source "git") }
+        }
         "UI_REPOSITORY" {
             $slug = Get-RepoSlug -RepoName "asset-allocation-ui"
             if ($slug) { return (New-Resolution -Value $slug -Source "git") }

@@ -8,6 +8,8 @@ This repository owns:
 - JSON schema artifacts under `schemas`
 - Cross-repo smoke gate under `scripts/compatibility_gate.ps1`
 
+Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout.
+
 It does not own runtime IO, storage, Postgres, Delta, monitoring, or orchestration helpers.
 
 ## Operations

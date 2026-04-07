@@ -12,7 +12,7 @@ Flow:
 Rules:
 
 - `scripts/setup-env.ps1` only walks keys documented in `env-contract.csv`.
-- Repo slugs are derived from git where possible.
+- Repo slugs for control-plane, jobs, and ui are derived from git where possible.
 - Registry URLs fall back to the checked-in template defaults.
 - `DISPATCH_APP_PRIVATE_KEY` is read from a PEM file path and written into `.env.web` with literal `\n` escapes.
 - This repo never provisions Azure runtime infrastructure.
