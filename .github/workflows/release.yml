@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: read
-  packages: write
+  id-token: write
 
 concurrency:
   group: contracts-release-${{ github.ref }}
@@ -71,6 +71,32 @@ jobs:
             node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
             bash -lc 'set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm typecheck; pnpm pack --pack-destination /artifacts'
 
+      - name: Set up Node for npm publish
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm for trusted publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global npm@^11.5.1
+          node --version
+          npm --version
+
+      - name: Publish TypeScript package
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tarballs=(artifacts/ts/*.tgz)
+          if [ "${#tarballs[@]}" -ne 1 ]; then
+            printf 'Expected exactly one TypeScript tarball, found %s.\n' "${#tarballs[@]}" >&2
+            exit 1
+          fi
+          npm publish "${tarballs[0]}" --access public --provenance
+
       - name: Publish Python package
         env:
           PYTHON_PUBLISH_REPOSITORY_URL: ${{ vars.PYTHON_PUBLISH_REPOSITORY_URL }}
@@ -87,30 +113,6 @@ jobs:
             -u "${PYTHON_PUBLISH_USERNAME}" \
             -p "${PYTHON_PUBLISH_PASSWORD}" \
             artifacts/python/*
-
-      - name: Publish TypeScript package
-        env:
-          NPM_REGISTRY_URL: ${{ vars.NPM_REGISTRY_URL }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          : "${NPM_REGISTRY_URL:?Set repo variable NPM_REGISTRY_URL.}"
-          : "${NPM_TOKEN:?Set secret NPM_TOKEN.}"
-          registry="${NPM_REGISTRY_URL%/}/"
-          host_path="${registry#https://}"
-          host_path="${host_path#http://}"
-          cat > "${HOME}/.npmrc" <<EOF
-          registry=${registry}
-          //${host_path}:_authToken=${NPM_TOKEN}
-          EOF
-          docker run --rm \
-            -e CI=true \
-            -v "${{ github.workspace }}/ts:/app" \
-            -v "${HOME}/.npmrc:/root/.npmrc:ro" \
-            -w /app \
-            node:20-bookworm-slim@sha256:6c51af7dc83f4708aaac35991306bca8f478351cfd2bda35750a62d7efcf05bb \
-            bash -lc "set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm publish --no-git-checks --registry '${registry}'"
 
       - name: Write release manifest
         shell: bash

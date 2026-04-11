@@ -6,7 +6,7 @@ It is intentionally normative, not just descriptive. It defines what this repo i
 
 Use [original-monolith-and-five-repo-map.md](./original-monolith-and-five-repo-map.md) for lineage and system-split context. Use this document for current intended design, operational contract boundaries, and repo update rules.
 
-Verified against the current worktree on 2026-04-06.
+Verified against the current worktree on 2026-04-11.
 
 ## 1. Purpose and Non-Goals
 
@@ -312,12 +312,14 @@ It performs:
 1. Version resolution and Python/TypeScript parity check
 2. Python package build
 3. TypeScript package tarball build
-4. Python package publish
-5. TypeScript package publish
+4. TypeScript package publish to public npm from a GitHub-hosted runner using npm trusted publishing
+5. Python package publish
 6. Release manifest generation
 7. GitHub App token creation
 8. Downstream `contracts_released` dispatch
 9. Release summary write-out
+
+Normal steady-state releases do not use a long-lived npm publish token. The first publish of a brand-new npm package remains a one-time bootstrap exception handled outside the normal env-contract surface.
 
 ### 5.5 Release Manifest Interface
 
@@ -402,6 +404,7 @@ The following rules are mandatory design invariants.
 ### 6.4 Release and Dispatch Invariants
 
 - Release artifacts must include both Python and TypeScript outputs.
+- TypeScript releases publish to public npm from GitHub Actions using npm trusted publishing.
 - `release-manifest.json` shape is part of the public operating contract.
 - `contracts_released` payload shape and target-repo set are part of the public operating contract.
 
@@ -409,6 +412,7 @@ The following rules are mandatory design invariants.
 
 - Workflow variable and secret references must be documented in `docs/ops/env-contract.csv`.
 - `.env.template`, `docs/ops/env-contract.csv`, `scripts/setup-env.ps1`, `scripts/sync-all-to-github.ps1`, and workflow references must stay synchronized.
+- `.env.web` carries Python registry and dispatch credentials only; TypeScript publish auth is not stored there.
 - `DISPATCH_APP_PRIVATE_KEY` is expected to be loaded from a PEM file path and stored in `.env.web` with literal `\n` escapes.
 
 ### 6.6 Scope Invariants
@@ -549,18 +553,17 @@ When changing payload shape, removing fields, changing validation rules, or alte
 
 This section records current mismatches observed during verification. It exists so future agents do not mistake repo drift for intended design.
 
-### 9.1 Workflow and Env-Contract Drift
+### 9.1 Release Bootstrap Constraint
 
 Observed:
 
-- `.github/workflows/release.yml` references `JOBS_REPOSITORY`
-- `docs/ops/env-contract.csv` does not document `JOBS_REPOSITORY`
-- `.env.template` does not include `JOBS_REPOSITORY`
-- `tests/test_env_contract.py` currently fails because of that mismatch
+- `asset-allocation-contracts==0.1.0` already exists on PyPI
+- `@asset-allocation/contracts` still requires its first successful npm publish
+- npm trusted publishing cannot perform the very first publish of a brand-new npm package without that package already existing on npm
 
 Interpretation:
 
-The workflow has already been extended to dispatch to the jobs repo, but the documented env-contract surface has not been brought along yet. This is real drift, not an intended hidden rule.
+The steady-state release workflow is tokenless for npm, but the repo still has a one-time bootstrap dependency for the first public npm publish. After that bootstrap publish is completed, the next coordinated release should be cut from the trusted-publishing workflow without reintroducing long-lived npm secrets.
 
 ### 9.2 Off-Repo Compatibility Gate
 

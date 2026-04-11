@@ -12,6 +12,15 @@
   "devDependencies": {
     "typescript": "5.9.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koala-man-64/asset-allocation-contracts.git",
+    "directory": "ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "exports": {
     ".": {
       "types": "./src/index.ts",

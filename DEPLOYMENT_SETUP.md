@@ -23,9 +23,10 @@ The runtime repos should pin a contracts version and deploy against that version
 Provision package distribution, not Azure runtime infrastructure:
 
 1. Pick a Python package registry.
-2. Pick a TypeScript package registry.
-3. Add publishing credentials as GitHub repository secrets.
+2. Publish the TypeScript package to public npm from GitHub Actions using npm trusted publishing.
+3. Add Python publishing credentials as GitHub repository secrets.
 4. Add GitHub App dispatch credentials so releases can notify downstream repos.
+5. Use a one-time short-lived granular npm token only to bootstrap the first npm package publish before trusted publishing takes over.
 
 ## Deploy
 
@@ -37,7 +38,7 @@ The operational path is:
 2. run `.github/workflows/security.yml`
 3. publish with `.github/workflows/release.yml`
 
-`release.yml` emits `artifacts/release-manifest.json` and dispatches `contracts_released` to the control-plane and UI repos.
+`release.yml` emits `artifacts/release-manifest.json` and dispatches `contracts_released` to the control-plane, jobs, and UI repos.
 
 ## Operate
 
@@ -55,9 +56,12 @@ The operational path is:
    - `python -m pytest tests/python/test_contract_models.py tests/test_env_contract.py -q`
    - `cd ts && corepack pnpm typecheck`
    - `powershell -ExecutionPolicy Bypass -File scripts/compatibility_gate.ps1`
-6. Build and publish the Python package.
-7. Build and publish the TypeScript package.
-8. Update version pins in the control-plane, jobs, and UI repos.
+6. If `@asset-allocation/contracts` does not yet exist on npm, do a one-time manual bootstrap publish with a short-lived granular npm token and `--access public`.
+7. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
+8. Revoke the bootstrap npm token.
+9. Publish with `.github/workflows/release.yml`, which publishes TypeScript to public npm with OIDC before publishing Python.
+10. For the already split `0.1.0` release, bootstrap `@asset-allocation/contracts@0.1.0`, then cut `0.1.1` as the first fully coordinated tokenless release.
+11. Update version pins in the control-plane, jobs, and UI repos.
 
 ## Rollback
 
@@ -69,20 +73,23 @@ The operational path is:
 
 - If `ci.yml` fails on schema drift, regenerate `schemas/` from `python/scripts/export_schemas.py` and commit the result.
 - If `release.yml` fails before publish, check the package version mismatch between `python/pyproject.toml` and `ts/package.json`.
-- If publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, `PYTHON_PUBLISH_PASSWORD`, `NPM_REGISTRY_URL`, and `NPM_TOKEN`.
-- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY` and `UI_REPOSITORY`.
+- If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
+- If Python publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.
+- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`.
 
 ## Dependencies
 
 - GitHub App credentials for `contracts_released` dispatches
 - Python package registry credentials
-- TypeScript package registry credentials
-- Downstream repos: `asset-allocation-control-plane` and `asset-allocation-ui`
+- npm trusted publisher configuration for `@asset-allocation/contracts`
+- One-time granular npm bootstrap token for the first npm publish only
+- Downstream repos: `asset-allocation-control-plane`, `asset-allocation-jobs`, and `asset-allocation-ui`
 
 ## Notes
 
 - This repo owns publish and dispatch configuration only. It does not own Azure runtime provisioning.
-- Registry URLs default to public npm and PyPI-compatible endpoints in `.env.template`, but you can override them in `.env.web` before syncing.
+- TypeScript publishing targets public npm only; the registry is no longer configured through `.env.web`.
+- Long-lived npm publish secrets are no longer part of the repo env contract.
 - `scripts/setup-env.ps1` reads `DISPATCH_APP_PRIVATE_KEY` from a PEM file path and stores newline-escaped contents in `.env.web`.
 
 ## Evidence

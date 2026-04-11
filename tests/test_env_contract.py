@@ -103,12 +103,11 @@ def test_setup_env_reads_dispatch_private_key_from_file(tmp_path: Path) -> None:
         "\n".join(
             [
                 "CONTROL_PLANE_REPOSITORY=owner/asset-allocation-control-plane",
+                "JOBS_REPOSITORY=owner/asset-allocation-jobs",
                 "UI_REPOSITORY=owner/asset-allocation-ui",
                 "DISPATCH_APP_ID=123456",
-                "NPM_REGISTRY_URL=https://registry.npmjs.org",
                 "PYTHON_PUBLISH_REPOSITORY_URL=https://upload.pypi.org/legacy/",
                 "DISPATCH_APP_PRIVATE_KEY=",
-                "NPM_TOKEN=test-npm-token",
                 "PYTHON_PUBLISH_USERNAME=__token__",
                 "PYTHON_PUBLISH_PASSWORD=test-password",
             ]
