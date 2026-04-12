@@ -19,6 +19,7 @@ Canonical workflows live under `.github/workflows/`.
 - `ci.yml` is the required validation path for PRs and `main`.
 - `security.yml` runs dependency and supply-chain checks.
 - `release.yml` publishes the Python and TypeScript packages, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
+- `scripts/prepare-release.ps1` updates the Python and TypeScript package versions together before you tag a release.
 - `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
 - `scripts/sync-all-to-github.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.

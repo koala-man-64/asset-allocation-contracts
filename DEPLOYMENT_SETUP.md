@@ -50,18 +50,17 @@ The operational path is:
 
 1. Run `powershell -ExecutionPolicy Bypass -File scripts\setup-env.ps1 -DispatchAppPrivateKeyPath C:\path\to\dispatch-app.pem`.
 2. Run `powershell -ExecutionPolicy Bypass -File scripts\sync-all-to-github.ps1`.
-3. Update the version in `python/pyproject.toml`.
-4. Update the version in `ts/package.json`.
-5. Run the contract validation steps:
+3. Run `powershell -ExecutionPolicy Bypass -File scripts\prepare-release.ps1 -Version X.Y.Z`.
+4. Run the contract validation steps:
    - `python -m pytest tests/python/test_contract_models.py tests/test_env_contract.py -q`
    - `cd ts && corepack pnpm typecheck`
    - `powershell -ExecutionPolicy Bypass -File scripts/compatibility_gate.ps1`
-6. If `@asset-allocation/contracts` does not yet exist on npm, do a one-time manual bootstrap publish with a short-lived granular npm token and `--access public`.
-7. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
-8. Revoke the bootstrap npm token.
-9. Publish with `.github/workflows/release.yml`, which publishes TypeScript to public npm with OIDC before publishing Python.
-10. For the already split `0.1.0` release, bootstrap `@asset-allocation/contracts@0.1.0`, then cut `0.1.1` as the first fully coordinated tokenless release.
-11. Update version pins in the control-plane, jobs, and UI repos.
+5. If `@asset-allocation/contracts` does not yet exist on npm, do a one-time manual bootstrap publish with a short-lived granular npm token and `--access public`.
+6. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
+7. Revoke the bootstrap npm token.
+8. Publish with `.github/workflows/release.yml`, which publishes TypeScript to public npm with OIDC before publishing Python.
+9. For the already split `0.1.0` release, bootstrap `@asset-allocation/contracts@0.1.0`, then cut `0.1.1` as the first fully coordinated tokenless release.
+10. Update version pins in the control-plane, jobs, and UI repos.
 
 ## Rollback
 
@@ -73,6 +72,7 @@ The operational path is:
 
 - If `ci.yml` fails on schema drift, regenerate `schemas/` from `python/scripts/export_schemas.py` and commit the result.
 - If `release.yml` fails before publish, check the package version mismatch between `python/pyproject.toml` and `ts/package.json`.
+- If you need to stage the next release version, use `scripts/prepare-release.ps1 -Version X.Y.Z` instead of editing both files by hand.
 - If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
 - If Python publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.
 - If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`.

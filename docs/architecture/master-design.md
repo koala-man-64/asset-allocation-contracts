@@ -119,6 +119,7 @@ This repo also has operational interfaces that are part of its architecture:
 - GitHub workflow inputs and behavior under `.github/workflows/`
 - Repo env/config contract under `docs/ops/env-contract.csv`
 - Bootstrap and sync scripts under `scripts/setup-env.ps1` and `scripts/sync-all-to-github.ps1`
+- Local release-prep script under `scripts/prepare-release.ps1`
 - Release artifact and downstream dispatch payload shapes
 
 These are not secondary implementation details. They are part of the repo's public operating contract.
@@ -307,6 +308,8 @@ Artifacts from those audits are uploaded for review.
 
 `.github/workflows/release.yml` runs on version tags matching `v*` and by manual dispatch.
 
+The intended local version-prep entrypoint is `scripts/prepare-release.ps1`, which updates `python/pyproject.toml` and `ts/package.json` together before a release tag is created.
+
 It performs:
 
 1. Version resolution and Python/TypeScript parity check
@@ -378,6 +381,7 @@ It validates this repo locally, then shells into sibling repos and runs selected
 - `.github/workflows/security.yml`
 - `.github/workflows/release.yml`
 - `scripts/compatibility_gate.ps1`
+- `scripts/prepare-release.ps1`
 - `python/scripts/export_schemas.py`
 
 ## 6. Public Interfaces and Invariants
