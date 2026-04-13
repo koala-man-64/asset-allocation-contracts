@@ -8,7 +8,7 @@ This repository owns:
 - JSON schema artifacts under `schemas`
 - Cross-repo smoke gate under `scripts/compatibility_gate.ps1`
 
-Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout.
+Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout, and `contracts_released` dispatches carry the exact published version for downstream auto-adoption.
 
 It does not own runtime IO, storage, Postgres, Delta, monitoring, or orchestration helpers.
 
@@ -18,8 +18,7 @@ Canonical workflows live under `.github/workflows/`.
 
 - `ci.yml` is the required validation path for PRs and `main`.
 - `security.yml` runs dependency and supply-chain checks.
-- `release.yml` publishes the Python and TypeScript packages, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
-- `scripts/prepare-release.ps1` updates the Python and TypeScript package versions together before you tag a release.
+- `release.yml` is a manual workflow that computes a fresh immutable Python and TypeScript package version for every run, publishes both packages, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
 - `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
 - `scripts/sync-all-to-github.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.

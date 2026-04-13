@@ -10,7 +10,7 @@ This repo should publish versioned contract artifacts only:
 - a TypeScript package from `ts/`
 - JSON schemas from `schemas/`
 
-The runtime repos should pin a contracts version and deploy against that version.
+The runtime repos should pin a contracts version and deploy against that version. `contracts_released` dispatches now carry the exact published version so downstream repos can auto-adopt it without manual version edits.
 
 ## Current State
 
@@ -42,7 +42,7 @@ The operational path is:
 
 ## Operate
 
-- Keep the Python and TypeScript package versions identical.
+- Keep the committed Python and TypeScript package versions aligned for CI, but treat the publish version as workflow-generated release state.
 - Keep `schemas/` regenerated from source by running `python python/scripts/export_schemas.py`.
 - Use `scripts/compatibility_gate.ps1` as the cross-repo smoke check before publishing a breaking contract change.
 
@@ -50,18 +50,16 @@ The operational path is:
 
 1. Run `powershell -ExecutionPolicy Bypass -File scripts\setup-env.ps1 -DispatchAppPrivateKeyPath C:\path\to\dispatch-app.pem`.
 2. Run `powershell -ExecutionPolicy Bypass -File scripts\sync-all-to-github.ps1`.
-3. Run `powershell -ExecutionPolicy Bypass -File scripts\prepare-release.ps1 -Version X.Y.Z`.
-4. Run the contract validation steps:
+3. Run the contract validation steps:
    - `python -m pytest tests/python/test_contract_models.py tests/test_env_contract.py -q`
    - `cd ts && corepack pnpm typecheck`
    - `powershell -ExecutionPolicy Bypass -File scripts/compatibility_gate.ps1`
-5. If `@asset-allocation/contracts` does not yet exist on npm, do a one-time manual bootstrap publish with a short-lived granular npm token and `--access public`.
-6. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
-7. Revoke the bootstrap npm token.
-8. Publish with `.github/workflows/release.yml`, which first verifies npm trusted publishing from the live GitHub Actions OIDC context and then publishes TypeScript to public npm before publishing Python.
-   Manual `workflow_dispatch` runs are allowed, but the workflow now checks npm first and fails before publishing if `@asset-allocation/contracts@X.Y.Z` already exists.
-9. For the already split `0.1.0` release, bootstrap `@asset-allocation/contracts@0.1.0`, then cut `0.1.1` as the first fully coordinated tokenless release.
-10. Update version pins in the control-plane, jobs, and UI repos.
+4. If `@asset-allocation/contracts` does not yet exist on npm, do a one-time manual bootstrap publish with a short-lived granular npm token and `--access public`.
+5. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
+6. Revoke the bootstrap npm token.
+7. Publish with `.github/workflows/release.yml` using `workflow_dispatch`.
+   The workflow computes a fresh UTC version in the form `YYYY.M.D-dev.<run_number><attempt_padded_to_3_digits>`, verifies npm trusted publishing from the live GitHub Actions OIDC context, stages that version into both manifests inside the runner workspace, and publishes TypeScript to public npm before publishing Python.
+8. Downstream repos receive the exact `contracts_version` in `contracts_released` and auto-pin that version in their own manifests. Humans no longer stage dependency bumps by hand.
 
 ## Rollback
 
@@ -72,13 +70,12 @@ The operational path is:
 ## Troubleshoot
 
 - If `ci.yml` fails on schema drift, regenerate `schemas/` from `python/scripts/export_schemas.py` and commit the result.
-- If `release.yml` fails before publish, check the package version mismatch between `python/pyproject.toml` and `ts/package.json`.
+- If `release.yml` fails before build, inspect the computed release version and the staging step that rewrites `python/pyproject.toml` and `ts/package.json` in the runner workspace.
 - If `release.yml` fails in the npm trusted publisher preflight, verify the npm trusted publisher tuple exactly matches owner/user `koala-man-64`, repository `asset-allocation-contracts`, workflow filename `release.yml`, and a blank environment unless one is intentionally used.
-- If a manual `release.yml` run fails in the npm availability check, bump both package versions first and re-run the workflow.
-- If you need to stage the next release version, use `scripts/prepare-release.ps1 -Version X.Y.Z` instead of editing both files by hand.
+- If a manual `release.yml` run fails in the npm availability check, rerun the workflow. The incremented `GITHUB_RUN_ATTEMPT` should generate a fresh publish version automatically.
 - If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
 - If Python publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.
-- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`.
+- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`. Consumer repos now expect `client_payload.contracts_version` so they can auto-pin the published version.
 
 ## Dependencies
 
