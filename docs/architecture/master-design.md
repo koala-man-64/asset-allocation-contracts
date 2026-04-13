@@ -308,7 +308,7 @@ Artifacts from those audits are uploaded for review.
 
 `.github/workflows/release.yml` runs by manual dispatch.
 
-The intended local version-prep entrypoint is `scripts/prepare-release.ps1`, which updates `python/pyproject.toml` and `ts/package.json` together before release. The release workflow reads that committed semver directly from the manifests and refuses to publish if Python and TypeScript versions do not match.
+The release workflow computes a fresh UTC prerelease version for each run, stages it into `python/pyproject.toml` and `ts/package.json` inside the runner workspace, and uses that staged version for both package publishes. TypeScript prereleases publish to npm under the `dev` dist-tag so workflow-generated publishes do not overwrite npm `latest`.
 
 It performs:
 
@@ -557,17 +557,17 @@ When changing payload shape, removing fields, changing validation rules, or alte
 
 This section records current mismatches observed during verification. It exists so future agents do not mistake repo drift for intended design.
 
-### 9.1 Manifest-Driven Release Version
+### 9.1 Workflow-Generated Release Version
 
 Observed:
 
-- Release intent is expressed in the committed package manifests
-- `scripts/prepare-release.ps1` is the local entrypoint for changing that shared version
-- `release.yml` validates parity and publishes the already-staged semver instead of generating a per-run version
+- `release.yml` computes a fresh UTC prerelease version for each manual run
+- `release.yml` stages that generated version into both package manifests inside the runner workspace before build and publish
+- npm prerelease publishes use the `dev` dist-tag so they do not change `latest`
 
 Interpretation:
 
-The contracts repo is expected to cut explicit, immutable semver releases. Future agents should treat Python and TypeScript version bumps as an intentional source change, not a runtime-generated workflow artifact.
+The steady-state contracts release path is workflow-generated prerelease publishing. Future agents should treat committed Python and TypeScript versions as CI-alignment state and the runner-staged prerelease version as the publish artifact state for manual releases.
 
 ### 9.2 Off-Repo Compatibility Gate
 

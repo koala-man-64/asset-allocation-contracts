@@ -25,12 +25,12 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Resolve release version
+      - name: Compute release version
         id: version
         shell: bash
         run: |
           set -euo pipefail
-          version="$(python scripts/compute_release_version.py --repo-root .)"
+          version="$(python scripts/compute_release_version.py)"
           echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Verify npm trusted publisher
@@ -78,6 +78,14 @@ jobs:
               ) from exc
           PY
 
+      - name: Stage generated release version
+        env:
+          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/stage_release_version.py --repo-root . --version "${CONTRACTS_VERSION}"
+
       - name: Build Python distributions
         shell: bash
         run: |
@@ -124,7 +132,7 @@ jobs:
             printf 'Expected exactly one TypeScript tarball, found %s.\n' "${#tarballs[@]}" >&2
             exit 1
           fi
-          npm publish "${tarballs[0]}" --access public --provenance
+          npm publish "${tarballs[0]}" --tag dev --access public --provenance
 
       - name: Publish Python package
         env:

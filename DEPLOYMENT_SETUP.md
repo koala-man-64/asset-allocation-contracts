@@ -58,7 +58,7 @@ The operational path is:
 5. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
 6. Revoke the bootstrap npm token.
 7. Publish with `.github/workflows/release.yml` using `workflow_dispatch`.
-   The workflow computes a fresh UTC version in the form `YYYY.M.D-dev.<run_number><attempt_padded_to_3_digits>`, verifies npm trusted publishing from the live GitHub Actions OIDC context, stages that version into both manifests inside the runner workspace, and publishes TypeScript to public npm before publishing Python.
+   The workflow computes a fresh UTC version in the form `YYYY.M.D-dev.<run_number><attempt_padded_to_3_digits>`, verifies npm trusted publishing from the live GitHub Actions OIDC context, stages that version into both manifests inside the runner workspace, and publishes TypeScript to public npm under the `dev` dist-tag before publishing Python. npm `latest` stays unchanged for these prerelease publishes.
 8. Downstream repos receive the exact `contracts_version` in `contracts_released` and auto-pin that version in their own manifests. Humans no longer stage dependency bumps by hand.
 
 ## Rollback
@@ -73,7 +73,7 @@ The operational path is:
 - If `release.yml` fails before build, inspect the computed release version and the staging step that rewrites `python/pyproject.toml` and `ts/package.json` in the runner workspace.
 - If `release.yml` fails in the npm trusted publisher preflight, verify the npm trusted publisher tuple exactly matches owner/user `koala-man-64`, repository `asset-allocation-contracts`, workflow filename `release.yml`, and a blank environment unless one is intentionally used.
 - If a manual `release.yml` run fails in the npm availability check, rerun the workflow. The incremented `GITHUB_RUN_ATTEMPT` should generate a fresh publish version automatically.
-- If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
+- If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, that the GitHub job has `id-token: write`, and that prerelease publishes still use the `dev` dist-tag.
 - If Python publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.
 - If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`. Consumer repos now expect `client_payload.contracts_version` so they can auto-pin the published version.
 
@@ -88,7 +88,7 @@ The operational path is:
 ## Notes
 
 - This repo owns publish and dispatch configuration only. It does not own Azure runtime provisioning.
-- TypeScript publishing targets public npm only; the registry is no longer configured through `.env.web`.
+- TypeScript publishing targets public npm only; prerelease workflow publishes land on the `dev` dist-tag and the registry is no longer configured through `.env.web`.
 - Long-lived npm publish secrets are no longer part of the repo env contract.
 - `scripts/setup-env.ps1` reads `DISPATCH_APP_PRIVATE_KEY` from a PEM file path and stores newline-escaped contents in `.env.web`.
 
