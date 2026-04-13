@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -44,7 +45,8 @@ def write_release_files(root: Path) -> None:
             [
                 "{",
                 '  "name": "@asset-allocation/contracts",',
-                '  "version": "0.1.0"',
+                '  "version": "0.1.0",',
+                '  "type": "module"',
                 "}",
                 "",
             ]
@@ -75,7 +77,9 @@ def test_prepare_release_updates_both_version_files(tmp_path: Path) -> None:
 
     assert "Updated release version to 1.2.3" in completed.stdout
     assert 'version = "1.2.3"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
-    assert '"version": "1.2.3"' in (tmp_path / "ts" / "package.json").read_text(encoding="utf-8")
+    ts_package = json.loads((tmp_path / "ts" / "package.json").read_text(encoding="utf-8"))
+    assert ts_package["version"] == "1.2.3"
+    assert ts_package["type"] == "module"
 
 
 def test_prepare_release_dry_run_does_not_modify_files(tmp_path: Path) -> None:
@@ -101,4 +105,6 @@ def test_prepare_release_dry_run_does_not_modify_files(tmp_path: Path) -> None:
 
     assert "Dry run: no files were changed." in completed.stdout
     assert 'version = "0.1.0"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
-    assert '"version": "0.1.0"' in (tmp_path / "ts" / "package.json").read_text(encoding="utf-8")
+    ts_package_content = (tmp_path / "ts" / "package.json").read_text(encoding="utf-8")
+    assert '"version": "0.1.0",' in ts_package_content
+    assert json.loads(ts_package_content)["version"] == "0.1.0"

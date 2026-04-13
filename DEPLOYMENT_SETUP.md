@@ -59,6 +59,7 @@ The operational path is:
 6. Configure the npm package's trusted publisher for `koala-man-64/asset-allocation-contracts` and workflow file `release.yml`.
 7. Revoke the bootstrap npm token.
 8. Publish with `.github/workflows/release.yml`, which publishes TypeScript to public npm with OIDC before publishing Python.
+   Manual `workflow_dispatch` runs are allowed, but the workflow now checks npm first and fails before publishing if `@asset-allocation/contracts@X.Y.Z` already exists.
 9. For the already split `0.1.0` release, bootstrap `@asset-allocation/contracts@0.1.0`, then cut `0.1.1` as the first fully coordinated tokenless release.
 10. Update version pins in the control-plane, jobs, and UI repos.
 
@@ -72,6 +73,7 @@ The operational path is:
 
 - If `ci.yml` fails on schema drift, regenerate `schemas/` from `python/scripts/export_schemas.py` and commit the result.
 - If `release.yml` fails before publish, check the package version mismatch between `python/pyproject.toml` and `ts/package.json`.
+- If a manual `release.yml` run fails in the npm availability check, bump both package versions first and re-run the workflow.
 - If you need to stage the next release version, use `scripts/prepare-release.ps1 -Version X.Y.Z` instead of editing both files by hand.
 - If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
 - If Python publish fails, verify `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.

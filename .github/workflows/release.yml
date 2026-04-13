@@ -49,6 +49,45 @@ jobs:
           version="$(cat version.txt)"
           echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
 
+      - name: Check npm version availability
+        env:
+          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import urlopen
+
+          package_name = "@asset-allocation/contracts"
+          version = os.environ["CONTRACTS_VERSION"]
+          version_url = f"https://registry.npmjs.org/{quote(package_name, safe='@')}/{quote(version, safe='')}"
+
+          try:
+              with urlopen(version_url, timeout=15) as response:
+                  if response.status == 200:
+                      raise SystemExit(
+                          f"npm package {package_name}@{version} is already published. "
+                          "Choose a new version before running release.yml."
+                      )
+                  raise SystemExit(
+                      f"Unexpected status from npm registry for {package_name}@{version}: {response.status}"
+                  )
+          except HTTPError as exc:
+              if exc.code == 404:
+                  print(f"npm version is available: {package_name}@{version}")
+              else:
+                  raise SystemExit(
+                      f"npm registry check failed for {package_name}@{version}: HTTP {exc.code}"
+                  ) from exc
+          except URLError as exc:
+              raise SystemExit(
+                  f"npm registry check failed for {package_name}@{version}: {exc.reason}"
+              ) from exc
+          PY
+
       - name: Build Python distributions
         shell: bash
         run: |

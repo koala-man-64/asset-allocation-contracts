@@ -80,7 +80,7 @@ jobs:
             bash -lc 'set -euo pipefail; corepack enable; pnpm install --frozen-lockfile; pnpm audit --json > /artifacts/pnpm-audit.json || true; pnpm audit --audit-level=high'
 
       - name: Upload TypeScript audit artifacts
-        if: always()
+        if: ${{ always() && hashFiles('artifacts/ts/pnpm-audit.json') != '' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: contracts-ts-audit

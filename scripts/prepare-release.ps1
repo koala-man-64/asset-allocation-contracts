@@ -58,10 +58,18 @@ $pythonContent = Get-Content -LiteralPath $pythonPath -Raw
 $tsContent = Get-Content -LiteralPath $tsPath -Raw
 
 $pythonMatch = Get-VersionMatch -Content $pythonContent -Pattern '(?m)^(version\s*=\s*")([^"]+)(")\s*$' -Label $pythonPath
-$tsMatch = Get-VersionMatch -Content $tsContent -Pattern '(?m)^(\s*"version"\s*:\s*")([^"]+)(")\s*,?\s*$' -Label $tsPath
+try {
+    $tsPackageJson = $tsContent | ConvertFrom-Json
+} catch {
+    throw "Could not parse JSON in $tsPath. $($_.Exception.Message)"
+}
+
+if ($null -eq $tsPackageJson.PSObject.Properties["version"]) {
+    throw "Could not locate version field in $tsPath."
+}
 
 $currentPythonVersion = $pythonMatch.Groups[2].Value
-$currentTsVersion = $tsMatch.Groups[2].Value
+$currentTsVersion = [string]$tsPackageJson.version
 
 Write-Host "Python version: $currentPythonVersion"
 Write-Host "TypeScript version: $currentTsVersion"
@@ -73,7 +81,11 @@ if ($currentPythonVersion -eq $Version -and $currentTsVersion -eq $Version) {
 }
 
 $updatedPython = Set-VersionValue -Content $pythonContent -Match $pythonMatch -NewVersion $Version
-$updatedTs = Set-VersionValue -Content $tsContent -Match $tsMatch -NewVersion $Version
+$tsPackageJson.version = $Version
+$updatedTs = $tsPackageJson | ConvertTo-Json -Depth 100
+if (-not $updatedTs.EndsWith("`n")) {
+    $updatedTs += "`n"
+}
 
 if ($DryRun) {
     Write-Host "Dry run: no files were changed."
