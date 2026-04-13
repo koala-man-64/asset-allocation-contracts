@@ -49,6 +49,12 @@ jobs:
           version="$(cat version.txt)"
           echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify npm trusted publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/check_npm_trusted_publish.py
+
       - name: Check npm version availability
         env:
           CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
