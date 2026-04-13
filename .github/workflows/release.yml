@@ -25,12 +25,12 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Compute release version
+      - name: Resolve release version
         id: version
         shell: bash
         run: |
           set -euo pipefail
-          version="$(python scripts/compute_release_version.py)"
+          version="$(python scripts/compute_release_version.py --repo-root .)"
           echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Verify npm trusted publisher
@@ -77,14 +77,6 @@ jobs:
                   f"npm registry check failed for {package_name}@{version}: {exc.reason}"
               ) from exc
           PY
-
-      - name: Stage generated release version
-        env:
-          CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/stage_release_version.py --repo-root . --version "${CONTRACTS_VERSION}"
 
       - name: Build Python distributions
         shell: bash

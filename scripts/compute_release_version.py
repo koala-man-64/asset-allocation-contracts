@@ -1,90 +1,80 @@
 from __future__ import annotations
 
 import argparse
-import os
+import json
 import re
 import sys
-from datetime import UTC, date, datetime
-
-try:
-    from packaging.version import InvalidVersion, Version
-except ImportError:  # pragma: no cover - packaging is usually installed, but pip always vendors it.
-    from pip._vendor.packaging.version import InvalidVersion, Version  # type: ignore[import-not-found]
+import tomllib
+from pathlib import Path
 
 
-NPM_SEMVER_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)-dev\.(0|[1-9]\d*)$")
+STABLE_SEMVER_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Compute the contracts release version for the active workflow run."
+        description="Resolve the committed contracts release version from the repo manifests."
     )
     parser.add_argument(
-        "--date",
-        dest="release_date",
-        help="UTC release date in YYYY-MM-DD format. Defaults to today's UTC date.",
-    )
-    parser.add_argument(
-        "--run-number",
-        default=os.environ.get("GITHUB_RUN_NUMBER"),
-        help="GitHub Actions run number. Defaults to GITHUB_RUN_NUMBER.",
-    )
-    parser.add_argument(
-        "--run-attempt",
-        default=os.environ.get("GITHUB_RUN_ATTEMPT"),
-        help="GitHub Actions run attempt. Defaults to GITHUB_RUN_ATTEMPT.",
+        "--repo-root",
+        default=Path(__file__).resolve().parents[1],
+        type=Path,
+        help="Repository root containing python/pyproject.toml and ts/package.json.",
     )
     return parser
 
 
-def parse_release_date(raw_value: str | None) -> date:
-    if raw_value is None:
-        return datetime.now(UTC).date()
-
-    try:
-        return date.fromisoformat(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"Invalid --date value {raw_value!r}; expected YYYY-MM-DD.") from exc
-
-
-def parse_positive_int(raw_value: str | None, *, name: str) -> int:
-    if raw_value is None or raw_value == "":
-        raise ValueError(f"{name} is required.")
-    try:
-        parsed = int(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be an integer, got {raw_value!r}.") from exc
-    if parsed <= 0:
-        raise ValueError(f"{name} must be greater than zero, got {parsed}.")
-    return parsed
-
-
 def validate_release_version(version: str) -> None:
-    try:
-        Version(version)
-    except InvalidVersion as exc:
-        raise ValueError(f"Release version {version!r} is not valid for Python packaging.") from exc
-
-    if not NPM_SEMVER_PATTERN.fullmatch(version):
-        raise ValueError(f"Release version {version!r} is not valid npm semver.")
+    if not STABLE_SEMVER_PATTERN.fullmatch(version):
+        raise ValueError(
+            f"Release version {version!r} is not a stable semver value. Use x.y.z."
+        )
 
 
-def compute_release_version(release_date: date, run_number: int, run_attempt: int) -> str:
-    version = (
-        f"{release_date.year}.{release_date.month}.{release_date.day}"
-        f"-dev.{run_number}{run_attempt:03d}"
-    )
-    validate_release_version(version)
+def read_python_version(repo_root: Path) -> str:
+    pyproject_path = repo_root / "python" / "pyproject.toml"
+    if not pyproject_path.exists():
+        raise ValueError(f"Python manifest not found: {pyproject_path}")
+
+    with pyproject_path.open("rb") as handle:
+        payload = tomllib.load(handle)
+
+    version = payload.get("project", {}).get("version")
+    if not isinstance(version, str) or not version:
+        raise ValueError(f"Could not read [project].version from {pyproject_path}")
     return version
+
+
+def read_typescript_version(repo_root: Path) -> str:
+    package_json_path = repo_root / "ts" / "package.json"
+    if not package_json_path.exists():
+        raise ValueError(f"TypeScript manifest not found: {package_json_path}")
+
+    payload = json.loads(package_json_path.read_text(encoding="utf-8"))
+    version = payload.get("version")
+    if not isinstance(version, str) or not version:
+        raise ValueError(f"Could not read version from {package_json_path}")
+    return version
+
+
+def resolve_release_version(repo_root: Path) -> str:
+    python_version = read_python_version(repo_root)
+    typescript_version = read_typescript_version(repo_root)
+
+    if python_version != typescript_version:
+        raise ValueError(
+            "Python and TypeScript package versions must match before release. "
+            f"python={python_version!r}, ts={typescript_version!r}"
+        )
+
+    validate_release_version(python_version)
+    return python_version
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_argument_parser().parse_args(argv)
     try:
-        release_date = parse_release_date(args.release_date)
-        run_number = parse_positive_int(args.run_number, name="run-number")
-        run_attempt = parse_positive_int(args.run_attempt, name="run-attempt")
-        version = compute_release_version(release_date, run_number, run_attempt)
+        version = resolve_release_version(args.repo_root.resolve())
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 1

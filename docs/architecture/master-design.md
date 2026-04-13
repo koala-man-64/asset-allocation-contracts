@@ -6,7 +6,7 @@ It is intentionally normative, not just descriptive. It defines what this repo i
 
 Use [original-monolith-and-five-repo-map.md](./original-monolith-and-five-repo-map.md) for lineage and system-split context. Use this document for current intended design, operational contract boundaries, and repo update rules.
 
-Verified against the current worktree on 2026-04-11.
+Verified against the current worktree on 2026-04-13.
 
 ## 1. Purpose and Non-Goals
 
@@ -304,11 +304,11 @@ It audits:
 
 Artifacts from those audits are uploaded for review.
 
-### 5.4 Release on Tags and Manual Dispatch
+### 5.4 Release by Manual Dispatch
 
-`.github/workflows/release.yml` runs on version tags matching `v*` and by manual dispatch.
+`.github/workflows/release.yml` runs by manual dispatch.
 
-The intended local version-prep entrypoint is `scripts/prepare-release.ps1`, which updates `python/pyproject.toml` and `ts/package.json` together before a release tag is created.
+The intended local version-prep entrypoint is `scripts/prepare-release.ps1`, which updates `python/pyproject.toml` and `ts/package.json` together before release. The release workflow reads that committed semver directly from the manifests and refuses to publish if Python and TypeScript versions do not match.
 
 It performs:
 
@@ -557,17 +557,17 @@ When changing payload shape, removing fields, changing validation rules, or alte
 
 This section records current mismatches observed during verification. It exists so future agents do not mistake repo drift for intended design.
 
-### 9.1 Release Bootstrap Constraint
+### 9.1 Manifest-Driven Release Version
 
 Observed:
 
-- `asset-allocation-contracts==0.1.0` already exists on PyPI
-- `@asset-allocation/contracts` still requires its first successful npm publish
-- npm trusted publishing cannot perform the very first publish of a brand-new npm package without that package already existing on npm
+- Release intent is expressed in the committed package manifests
+- `scripts/prepare-release.ps1` is the local entrypoint for changing that shared version
+- `release.yml` validates parity and publishes the already-staged semver instead of generating a per-run version
 
 Interpretation:
 
-The steady-state release workflow is tokenless for npm, but the repo still has a one-time bootstrap dependency for the first public npm publish. After that bootstrap publish is completed, the next coordinated release should be cut from the trusted-publishing workflow without reintroducing long-lived npm secrets.
+The contracts repo is expected to cut explicit, immutable semver releases. Future agents should treat Python and TypeScript version bumps as an intentional source change, not a runtime-generated workflow artifact.
 
 ### 9.2 Off-Repo Compatibility Gate
 
