@@ -6,7 +6,7 @@ It is intentionally normative, not just descriptive. It defines what this repo i
 
 Use [original-monolith-and-five-repo-map.md](./original-monolith-and-five-repo-map.md) for lineage and system-split context. Use this document for current intended design, operational contract boundaries, and repo update rules.
 
-Verified against the current worktree on 2026-04-13.
+Verified against the current worktree on 2026-04-17.
 
 ## 1. Purpose and Non-Goals
 
@@ -215,8 +215,22 @@ Owned by:
 
 Purpose:
 
-- Define the browser bootstrap/runtime config surface for API base URL and OIDC/auth settings
+- Define the browser bootstrap/runtime config surface for API base URL and OIDC/auth settings, including the derived post-logout completion URI
 - Normalize scope/audience list handling
+
+### 4.6 Auth Session Contract
+
+Owned by:
+
+- `python/asset_allocation_contracts/ui_config.py`
+- `schemas/auth-session-status.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define the shared response payload for the control-plane `GET /api/auth/session` surface
+- Give the UI a typed auth/authz probe that is distinct from general system-health data
+- Keep the control-plane, UI, and any future non-browser consumer aligned on the same minimal session summary fields
 
 ### 4.6 Shared Finance and Path Constants
 
