@@ -1,30 +1,6 @@
 {
   "additionalProperties": false,
   "properties": {
-    "adls_container": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Adls Container"
-    },
-    "adls_prefix": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Adls Prefix"
-    },
     "completed_at": {
       "anyOf": [
         {
@@ -61,18 +37,6 @@
       ],
       "default": null,
       "title": "Error"
-    },
-    "output_dir": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Output Dir"
     },
     "run_id": {
       "title": "Run Id",

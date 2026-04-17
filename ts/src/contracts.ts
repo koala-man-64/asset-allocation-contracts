@@ -264,7 +264,17 @@ export interface UiRuntimeConfig {
   oidcClientId?: string;
   oidcScopes: string[];
   oidcRedirectUri?: string;
+  oidcPostLogoutRedirectUri?: string;
   oidcAudience: string[];
+}
+
+export interface AuthSessionStatus {
+  authMode: string;
+  subject: string;
+  displayName?: string | null;
+  username?: string | null;
+  requiredRoles: string[];
+  grantedRoles: string[];
 }
 
 export interface RunRecordResponse {
@@ -276,9 +286,6 @@ export interface RunRecordResponse {
   run_name?: string | null;
   start_date?: string | null;
   end_date?: string | null;
-  output_dir?: string | null;
-  adls_container?: string | null;
-  adls_prefix?: string | null;
   error?: string | null;
 }
 
@@ -361,4 +368,15 @@ export interface TradeListResponse {
   total: number;
   limit: number;
   offset: number;
+}
+
+export interface BacktestReconcileResponse {
+  dispatchedCount: number;
+  dispatchFailedCount: number;
+  failedStaleRunningCount: number;
+  skippedActiveCount: number;
+  noActionCount: number;
+  dispatchedRunIds: string[];
+  dispatchFailedRunIds: string[];
+  failedRunIds: string[];
 }

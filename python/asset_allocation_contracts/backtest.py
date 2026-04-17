@@ -19,9 +19,6 @@ class RunRecordResponse(BaseModel):
     run_name: str | None = None
     start_date: str | None = None
     end_date: str | None = None
-    output_dir: str | None = None
-    adls_container: str | None = None
-    adls_prefix: str | None = None
     error: str | None = None
 
 
@@ -137,10 +134,22 @@ class BacktestCompleteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     summary: dict[str, Any] = Field(default_factory=dict)
-    artifactManifestPath: str | None = Field(default=None, max_length=1000)
 
 
 class BacktestFailRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     error: str = Field(..., min_length=1, max_length=4000)
+
+
+class BacktestReconcileResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    dispatchedCount: int = Field(default=0, ge=0)
+    dispatchFailedCount: int = Field(default=0, ge=0)
+    failedStaleRunningCount: int = Field(default=0, ge=0)
+    skippedActiveCount: int = Field(default=0, ge=0)
+    noActionCount: int = Field(default=0, ge=0)
+    dispatchedRunIds: list[str] = Field(default_factory=list)
+    dispatchFailedRunIds: list[str] = Field(default_factory=list)
+    failedRunIds: list[str] = Field(default_factory=list)

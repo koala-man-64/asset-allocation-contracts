@@ -7,6 +7,7 @@ from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
     BacktestFailRequest,
+    BacktestReconcileResponse,
     BacktestStartRequest,
     BacktestSummary,
     RollingMetricsResponse,
@@ -27,7 +28,7 @@ from asset_allocation_contracts.regime import (
     RegimeTransitionRow,
 )
 from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefinition
-from asset_allocation_contracts.ui_config import UiRuntimeConfig
+from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -53,6 +54,7 @@ def main() -> None:
     _write("regime-model-revision.schema.json", RegimeModelRevision)
     _write("regime-model-detail.schema.json", RegimeModelDetailResponse)
     _write("ui-runtime-config.schema.json", UiRuntimeConfig)
+    _write("auth-session-status.schema.json", AuthSessionStatus)
     _write("backtest-run-record.schema.json", RunRecordResponse)
     _write("backtest-run-list.schema.json", RunListResponse)
     _write("backtest-summary.schema.json", BacktestSummary)
@@ -63,6 +65,7 @@ def main() -> None:
     _write("backtest-start-request.schema.json", BacktestStartRequest)
     _write("backtest-complete-request.schema.json", BacktestCompleteRequest)
     _write("backtest-fail-request.schema.json", BacktestFailRequest)
+    _write("backtest-reconcile-response.schema.json", BacktestReconcileResponse)
 
 
 if __name__ == "__main__":

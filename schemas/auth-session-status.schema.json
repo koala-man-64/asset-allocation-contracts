@@ -1,0 +1,59 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "authMode": {
+      "minLength": 1,
+      "title": "Authmode",
+      "type": "string"
+    },
+    "displayName": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Displayname"
+    },
+    "grantedRoles": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Grantedroles",
+      "type": "array"
+    },
+    "requiredRoles": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Requiredroles",
+      "type": "array"
+    },
+    "subject": {
+      "minLength": 1,
+      "title": "Subject",
+      "type": "string"
+    },
+    "username": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Username"
+    }
+  },
+  "required": [
+    "authMode",
+    "subject"
+  ],
+  "title": "AuthSessionStatus",
+  "type": "object"
+}

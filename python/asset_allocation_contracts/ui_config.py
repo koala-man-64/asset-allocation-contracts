@@ -32,9 +32,21 @@ class UiRuntimeConfig(BaseModel):
     oidcClientId: str | None = None
     oidcScopes: list[str] = Field(default_factory=list)
     oidcRedirectUri: str | None = None
+    oidcPostLogoutRedirectUri: str | None = None
     oidcAudience: list[str] = Field(default_factory=list)
 
     @field_validator("oidcScopes", "oidcAudience", mode="before")
     @classmethod
     def normalize_scopes(cls, value: Any) -> list[str]:
         return _normalize_scopes(value)
+
+
+class AuthSessionStatus(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    authMode: str = Field(min_length=1)
+    subject: str = Field(min_length=1)
+    displayName: str | None = None
+    username: str | None = None
+    requiredRoles: list[str] = Field(default_factory=list)
+    grantedRoles: list[str] = Field(default_factory=list)

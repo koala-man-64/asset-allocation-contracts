@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "dispatchFailedCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Dispatchfailedcount",
+      "type": "integer"
+    },
+    "dispatchFailedRunIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Dispatchfailedrunids",
+      "type": "array"
+    },
+    "dispatchedCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Dispatchedcount",
+      "type": "integer"
+    },
+    "dispatchedRunIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Dispatchedrunids",
+      "type": "array"
+    },
+    "failedRunIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Failedrunids",
+      "type": "array"
+    },
+    "failedStaleRunningCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Failedstalerunningcount",
+      "type": "integer"
+    },
+    "noActionCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Noactioncount",
+      "type": "integer"
+    },
+    "skippedActiveCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Skippedactivecount",
+      "type": "integer"
+    }
+  },
+  "title": "BacktestReconcileResponse",
+  "type": "object"
+}
