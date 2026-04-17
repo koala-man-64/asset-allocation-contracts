@@ -13,7 +13,7 @@ Rules:
 
 - `scripts/setup-env.ps1` only walks keys documented in `env-contract.csv`.
 - Repo slugs for control-plane, jobs, and ui are derived from git where possible.
-- The Python publish URL falls back to the checked-in template default.
+- The Python package index URL and publish URL fall back to the checked-in template defaults.
 - TypeScript publish auth is handled by npm trusted publishing from GitHub Actions and is not stored in `.env.web`.
 - Existing `.env.web` files must not retain retired `NPM_TOKEN` or `NPM_REGISTRY_URL` keys.
 - `DISPATCH_APP_PRIVATE_KEY` is read from a PEM file path and written into `.env.web` with literal `\n` escapes.

@@ -34,7 +34,7 @@ def write_release_files(root: Path) -> None:
             [
                 "[project]",
                 'name = "asset-allocation-contracts"',
-                'version = "0.1.0"',
+                'version = "1.0.0"',
                 "",
             ]
         ),
@@ -45,7 +45,7 @@ def write_release_files(root: Path) -> None:
             [
                 "{",
                 '  "name": "@asset-allocation/contracts",',
-                '  "version": "0.1.0",',
+                '  "version": "1.0.0",',
                 '  "type": "module"',
                 "}",
                 "",
@@ -104,7 +104,31 @@ def test_prepare_release_dry_run_does_not_modify_files(tmp_path: Path) -> None:
     )
 
     assert "Dry run: no files were changed." in completed.stdout
-    assert 'version = "0.1.0"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'version = "1.0.0"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
     ts_package_content = (tmp_path / "ts" / "package.json").read_text(encoding="utf-8")
-    assert '"version": "0.1.0",' in ts_package_content
-    assert json.loads(ts_package_content)["version"] == "0.1.0"
+    assert '"version": "1.0.0",' in ts_package_content
+    assert json.loads(ts_package_content)["version"] == "1.0.0"
+
+
+def test_prepare_release_rejects_prerelease_versions(tmp_path: Path) -> None:
+    write_release_files(tmp_path)
+    script = repo_root() / "scripts" / "prepare-release.ps1"
+    completed = subprocess.run(
+        [
+            powershell_exe(),
+            "-NoProfile",
+            "-File",
+            str(script),
+            "-RepoRoot",
+            str(tmp_path),
+            "-Version",
+            "1.2.3-rc.1",
+        ],
+        cwd=repo_root(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode != 0
+    assert "stable semver" in completed.stderr

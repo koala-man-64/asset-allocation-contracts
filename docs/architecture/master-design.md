@@ -322,19 +322,21 @@ Artifacts from those audits are uploaded for review.
 
 `.github/workflows/release.yml` runs by manual dispatch.
 
-The release workflow computes a fresh UTC prerelease version for each run, stages it into `python/pyproject.toml` and `ts/package.json` inside the runner workspace, and uses that staged version for both package publishes. TypeScript prereleases publish to npm under the `dev` dist-tag so workflow-generated publishes do not overwrite npm `latest`.
+The release workflow reads the committed stable semver from `python/pyproject.toml` and `ts/package.json`, verifies that both manifests match exactly, and publishes that same version for both package ecosystems.
 
 It performs:
 
-1. Version resolution and Python/TypeScript parity check
-2. Python package build
-3. TypeScript package tarball build
-4. TypeScript package publish to public npm from a GitHub-hosted runner using npm trusted publishing
-5. Python package publish
-6. Release manifest generation
-7. GitHub App token creation
-8. Downstream `contracts_released` dispatch
-9. Release summary write-out
+1. Version parity and stable semver validation
+2. npm version availability check
+3. Python registry version availability check
+4. Python package build
+5. TypeScript package tarball build
+6. TypeScript package publish to public npm from a GitHub-hosted runner using npm trusted publishing
+7. Python package publish
+8. Release manifest generation
+9. GitHub App token creation
+10. Downstream `contracts_released` dispatch
+11. Release summary write-out
 
 Normal steady-state releases do not use a long-lived npm publish token. The first publish of a brand-new npm package remains a one-time bootstrap exception handled outside the normal env-contract surface.
 
@@ -571,17 +573,17 @@ When changing payload shape, removing fields, changing validation rules, or alte
 
 This section records current mismatches observed during verification. It exists so future agents do not mistake repo drift for intended design.
 
-### 9.1 Workflow-Generated Release Version
+### 9.1 Committed Release Version Source
 
 Observed:
 
-- `release.yml` computes a fresh UTC prerelease version for each manual run
-- `release.yml` stages that generated version into both package manifests inside the runner workspace before build and publish
-- npm prerelease publishes use the `dev` dist-tag so they do not change `latest`
+- `release.yml` reads the committed version from `python/pyproject.toml` and `ts/package.json`
+- the committed version must be stable semver and identical across Python and TypeScript
+- npm and Python registry preflight checks block republishing an existing contracts version
 
 Interpretation:
 
-The steady-state contracts release path is workflow-generated prerelease publishing. Future agents should treat committed Python and TypeScript versions as CI-alignment state and the runner-staged prerelease version as the publish artifact state for manual releases.
+The steady-state contracts release path is committed-manifest semver publishing. Future agents should treat the checked-in Python and TypeScript versions as both CI alignment state and the publish artifact state for manual releases.
 
 ### 9.2 Off-Repo Compatibility Gate
 

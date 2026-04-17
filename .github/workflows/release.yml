@@ -25,12 +25,35 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Compute release version
+      - name: Resolve committed release version
         id: version
         shell: bash
         run: |
           set -euo pipefail
-          version="$(python scripts/compute_release_version.py)"
+          python - <<'PY' > version.txt
+          import json
+          import re
+          import tomllib
+          from pathlib import Path
+
+          stable_semver = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+
+          pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+          package_json = json.loads(Path("ts/package.json").read_text(encoding="utf-8"))
+
+          py_version = pyproject["project"]["version"]
+          ts_version = package_json["version"]
+
+          if py_version != ts_version:
+              raise SystemExit(f"Version mismatch: python={py_version} ts={ts_version}")
+          if not stable_semver.fullmatch(py_version):
+              raise SystemExit(
+                  f"Contracts release version must be stable semver (MAJOR.MINOR.PATCH), got {py_version}."
+              )
+
+          print(py_version)
+          PY
+          version="$(cat version.txt)"
           echo "contracts_version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Verify npm trusted publisher
@@ -60,7 +83,7 @@ jobs:
                   if response.status == 200:
                       raise SystemExit(
                           f"npm package {package_name}@{version} is already published. "
-                          "Generated release version collided with an existing publish."
+                          "Bump python/pyproject.toml and ts/package.json before rerunning release.yml."
                       )
                   raise SystemExit(
                       f"Unexpected status from npm registry for {package_name}@{version}: {response.status}"
@@ -78,13 +101,60 @@ jobs:
               ) from exc
           PY
 
-      - name: Stage generated release version
+      - name: Check Python version availability
         env:
           CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
+          PYTHON_PACKAGE_INDEX_URL: ${{ vars.PYTHON_PACKAGE_INDEX_URL }}
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/stage_release_version.py --repo-root . --version "${CONTRACTS_VERSION}"
+          : "${PYTHON_PACKAGE_INDEX_URL:?Set repo variable PYTHON_PACKAGE_INDEX_URL.}"
+          python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          import tempfile
+
+          spec = f"asset-allocation-contracts=={os.environ['CONTRACTS_VERSION']}"
+          env = os.environ.copy()
+          env["PIP_INDEX_URL"] = os.environ["PYTHON_PACKAGE_INDEX_URL"]
+
+          with tempfile.TemporaryDirectory(prefix="contracts-release-check-") as download_dir:
+              result = subprocess.run(
+                  [
+                      sys.executable,
+                      "-m",
+                      "pip",
+                      "download",
+                      "--disable-pip-version-check",
+                      "--no-cache-dir",
+                      "--no-deps",
+                      "--dest",
+                      download_dir,
+                      spec,
+                  ],
+                  capture_output=True,
+                  text=True,
+                  check=False,
+                  env=env,
+              )
+
+          output = result.stderr.strip() or result.stdout.strip() or "pip download failed without output."
+          if result.returncode == 0:
+              raise SystemExit(
+                  f"Python package {spec} is already published. "
+                  "Bump python/pyproject.toml and ts/package.json before rerunning release.yml."
+              )
+
+          missing_markers = (
+              "No matching distribution found",
+              "Could not find a version that satisfies the requirement",
+          )
+          if any(marker in output for marker in missing_markers):
+              print(f"Python version is available: {spec}")
+          else:
+              raise SystemExit(f"Python registry check failed for {spec}:\n{output}")
+          PY
 
       - name: Build Python distributions
         shell: bash
@@ -132,7 +202,7 @@ jobs:
             printf 'Expected exactly one TypeScript tarball, found %s.\n' "${#tarballs[@]}" >&2
             exit 1
           fi
-          npm publish "${tarballs[0]}" --tag dev --access public --provenance
+          npm publish "${tarballs[0]}" --access public --provenance
 
       - name: Publish Python package
         env:

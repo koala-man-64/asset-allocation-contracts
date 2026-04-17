@@ -14,9 +14,9 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 }
 
-$versionPattern = '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$'
+$versionPattern = '^\d+\.\d+\.\d+$'
 if ($Version -notmatch $versionPattern) {
-    throw "Version '$Version' is not valid semver. Use values like 1.2.3 or 1.2.3-rc.1."
+    throw "Version '$Version' is not valid stable semver. Use values like 1.2.3."
 }
 
 $pythonPath = Join-Path $RepoRoot "python\pyproject.toml"
@@ -99,4 +99,4 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 Write-Host "Updated release version to $Version in:"
 Write-Host " - $pythonPath"
 Write-Host " - $tsPath"
-Write-Host "Next step: review the diff, commit, and tag v$Version."
+Write-Host "Next step: review the diff, commit, and publish version $Version."

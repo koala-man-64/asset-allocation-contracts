@@ -23,7 +23,13 @@ Canonical workflows live under `.github/workflows/`.
 
 - `ci.yml` is the required validation path for PRs and `main`.
 - `security.yml` runs dependency and supply-chain checks.
-- `release.yml` is a manual workflow that computes a fresh UTC prerelease version, stages it into the runner workspace manifests, publishes TypeScript to npm under the `dev` dist-tag, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
+- `release.yml` is a manual workflow that publishes the committed stable semver from `python/pyproject.toml` and `ts/package.json`, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
 - `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
 - `scripts/sync-all-to-github.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.
+
+## Versioning
+
+- Public contracts releases use stable semver only: `MAJOR.MINOR.PATCH`.
+- `python/pyproject.toml` and `ts/package.json` are the release version source of truth and must stay identical.
+- Legacy `0.1.x` and `YYYY.M.D-dev.*` artifacts remain in registries for history only and are unsupported for new consumer pins.
