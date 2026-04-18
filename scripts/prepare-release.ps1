@@ -8,6 +8,15 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+function Write-Status {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    [Console]::Out.WriteLine($Message)
+}
+
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $RepoRoot = Split-Path -Parent $PSScriptRoot
 } else {
@@ -71,12 +80,17 @@ if ($null -eq $tsPackageJson.PSObject.Properties["version"]) {
 $currentPythonVersion = $pythonMatch.Groups[2].Value
 $currentTsVersion = [string]$tsPackageJson.version
 
-Write-Host "Python version: $currentPythonVersion"
-Write-Host "TypeScript version: $currentTsVersion"
-Write-Host "Target version: $Version"
+if ($currentPythonVersion -eq $currentTsVersion) {
+    Write-Status "Current release version: $currentPythonVersion"
+} else {
+    Write-Status "Current release versions differ:"
+    Write-Status " - Python: $currentPythonVersion"
+    Write-Status " - TypeScript: $currentTsVersion"
+}
+Write-Status "Target version: $Version"
 
 if ($currentPythonVersion -eq $Version -and $currentTsVersion -eq $Version) {
-    Write-Host "Both package versions are already set to $Version."
+    Write-Status "Both package versions are already set to $Version."
     return
 }
 
@@ -88,7 +102,7 @@ if (-not $updatedTs.EndsWith("`n")) {
 }
 
 if ($DryRun) {
-    Write-Host "Dry run: no files were changed."
+    Write-Status "Dry run: no files were changed."
     return
 }
 
@@ -96,7 +110,7 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($pythonPath, $updatedPython, $utf8NoBom)
 [System.IO.File]::WriteAllText($tsPath, $updatedTs, $utf8NoBom)
 
-Write-Host "Updated release version to $Version in:"
-Write-Host " - $pythonPath"
-Write-Host " - $tsPath"
-Write-Host "Next step: review the diff, commit, and publish version $Version."
+Write-Status "Updated release version to $Version in:"
+Write-Status " - $pythonPath"
+Write-Status " - $tsPath"
+Write-Status "Next step: review the diff, commit, and publish version $Version."

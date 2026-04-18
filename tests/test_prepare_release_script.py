@@ -75,6 +75,8 @@ def test_prepare_release_updates_both_version_files(tmp_path: Path) -> None:
         text=True,
     )
 
+    assert "Current release version: 1.0.0" in completed.stdout
+    assert "Target version: 1.2.3" in completed.stdout
     assert "Updated release version to 1.2.3" in completed.stdout
     assert 'version = "1.2.3"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
     ts_package = json.loads((tmp_path / "ts" / "package.json").read_text(encoding="utf-8"))
@@ -103,6 +105,8 @@ def test_prepare_release_dry_run_does_not_modify_files(tmp_path: Path) -> None:
         text=True,
     )
 
+    assert "Current release version: 1.0.0" in completed.stdout
+    assert "Target version: 2.0.0" in completed.stdout
     assert "Dry run: no files were changed." in completed.stdout
     assert 'version = "1.0.0"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
     ts_package_content = (tmp_path / "ts" / "package.json").read_text(encoding="utf-8")
