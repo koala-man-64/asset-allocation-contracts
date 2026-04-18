@@ -16,8 +16,7 @@ def test_documented_universe_definition_example_is_valid() -> None:
                 "clauses": [
                     {
                         "kind": "condition",
-                        "table": "market_data",
-                        "column": "is_active",
+                        "field": "security.is_active",
                         "operator": "eq",
                         "value": True,
                     },
@@ -27,15 +26,13 @@ def test_documented_universe_definition_example_is_valid() -> None:
                         "clauses": [
                             {
                                 "kind": "condition",
-                                "table": "market_data",
-                                "column": "sector",
+                                "field": "security.sector",
                                 "operator": "in",
                                 "values": ["technology", "health_care"],
                             },
                             {
                                 "kind": "condition",
-                                "table": "market_data",
-                                "column": "delisted_at",
+                                "field": "security.delisted_at",
                                 "operator": "is_null",
                             },
                         ],

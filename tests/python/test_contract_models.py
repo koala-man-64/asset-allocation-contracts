@@ -10,6 +10,7 @@ from asset_allocation_contracts.backtest import (
     RollingMetricPointResponse,
     RollingMetricsResponse,
     RunRecordResponse,
+    RunStatusResponse,
     TradeResponse,
     TimeseriesPointResponse,
     TimeseriesResponse,
@@ -17,7 +18,13 @@ from asset_allocation_contracts.backtest import (
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
-from asset_allocation_contracts.strategy import StrategyConfig, UniverseCondition, UniverseDefinition, UniverseGroup
+from asset_allocation_contracts.strategy import (
+    StrategyConfig,
+    UNIVERSE_FIELD_DEFINITIONS,
+    UniverseCondition,
+    UniverseDefinition,
+    UniverseGroup,
+)
 from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
 
 
@@ -26,7 +33,7 @@ def test_strategy_contract_accepts_regime_policy() -> None:
         universe=UniverseDefinition(
             root=UniverseGroup(
                 clauses=[
-                    UniverseCondition(table="market_data", column="close", operator="gt", value=0),
+                    UniverseCondition(field="market.close", operator="gt", value=0),
                 ]
             )
         ),
@@ -64,6 +71,22 @@ def test_ranking_schema_accepts_group_payload() -> None:
         ],
     )
     assert payload.groups[0].name == "quality"
+
+
+def test_universe_condition_uses_governed_field_catalog() -> None:
+    condition = UniverseCondition(field="security.sector", operator="in", values=["technology"])
+
+    assert condition.field == "security.sector"
+    assert any(field.id == "security.sector" for field in UNIVERSE_FIELD_DEFINITIONS)
+
+
+def test_universe_condition_rejects_unknown_field() -> None:
+    try:
+        UniverseCondition(field="market_data.close", operator="gt", value=0)
+    except Exception as exc:
+        assert "field" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for unknown universe field.")
 
 
 def test_ui_runtime_config_defaults_to_api_root() -> None:
@@ -136,6 +159,37 @@ def test_backtest_run_record_response_rejects_legacy_artifact_fields() -> None:
         raise AssertionError("Expected RunRecordResponse to reject legacy artifact fields.")
 
 
+def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
+    payload = RunStatusResponse(
+        run_id="run-123",
+        status="completed",
+        submitted_at="2026-03-08T00:00:00Z",
+        completed_at="2026-03-08T01:00:00Z",
+        strategy_name="quality-trend",
+        strategy_version=4,
+        bar_size="5m",
+        execution_name="backtest-exec-01",
+        results_ready_at="2026-03-08T01:05:00Z",
+        results_schema_version=4,
+        pins={
+            "strategyName": "quality-trend",
+            "strategyVersion": 4,
+            "rankingSchemaName": "quality-momentum",
+            "rankingSchemaVersion": 7,
+            "universeName": "large-cap-quality",
+            "universeVersion": 5,
+            "regimeModelName": "default-regime",
+            "regimeModelVersion": 1,
+        },
+    )
+
+    assert payload.strategy_version == 4
+    assert payload.bar_size == "5m"
+    assert payload.results_schema_version == 4
+    assert payload.pins is not None
+    assert payload.pins.rankingSchemaVersion == 7
+
+
 def test_backtest_complete_request_rejects_legacy_artifact_manifest_path() -> None:
     try:
         BacktestCompleteRequest(summary={"run_id": "run-123"}, artifactManifestPath="backtests/run-123")
@@ -199,6 +253,7 @@ def test_timeseries_point_response_supports_period_return_and_daily_return_compa
     assert from_period.period_return == 0.02
     assert from_daily.model_dump()["daily_return"] == 0.015
     assert from_period.model_dump()["daily_return"] == 0.02
+    assert from_period.model_dump()["trade_count"] is None
     assert schema["properties"]["daily_return"]["deprecated"] is True
     assert "period_return" in schema["properties"]
 

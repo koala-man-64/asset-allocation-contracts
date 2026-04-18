@@ -1,6 +1,20 @@
 {
   "additionalProperties": false,
   "properties": {
+    "bar_size": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bar Size"
+    },
     "completed_at": {
       "anyOf": [
         {
@@ -37,6 +51,20 @@
       ],
       "default": null,
       "title": "Error"
+    },
+    "execution_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Execution Name"
     },
     "run_id": {
       "title": "Run Id",
@@ -88,6 +116,31 @@
       ],
       "title": "Status",
       "type": "string"
+    },
+    "strategy_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategy Name"
+    },
+    "strategy_version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategy Version"
     },
     "submitted_at": {
       "format": "date-time",

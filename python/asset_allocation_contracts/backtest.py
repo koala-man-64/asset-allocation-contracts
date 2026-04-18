@@ -21,6 +21,10 @@ class RunRecordResponse(BaseModel):
     start_date: str | None = None
     end_date: str | None = None
     error: str | None = None
+    strategy_name: str | None = None
+    strategy_version: int | None = Field(default=None, ge=1)
+    bar_size: str | None = Field(default=None, min_length=1, max_length=32)
+    execution_name: str | None = Field(default=None, min_length=1, max_length=255)
 
 
 class RunListResponse(BaseModel):
@@ -29,6 +33,27 @@ class RunListResponse(BaseModel):
     runs: list[RunRecordResponse]
     limit: int
     offset: int
+
+
+class RunPinsResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str | None = Field(default=None, min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
+    rankingSchemaVersion: int | None = Field(default=None, ge=1)
+    universeName: str | None = Field(default=None, min_length=1, max_length=128)
+    universeVersion: int | None = Field(default=None, ge=1)
+    regimeModelName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimeModelVersion: int | None = Field(default=None, ge=1)
+
+
+class RunStatusResponse(RunRecordResponse):
+    model_config = ConfigDict(extra="forbid")
+
+    results_ready_at: datetime | None = None
+    results_schema_version: int | None = Field(default=None, ge=1)
+    pins: RunPinsResponse | None = None
 
 
 class BacktestSummary(BaseModel):
@@ -94,6 +119,7 @@ class TimeseriesPointResponse(BaseModel):
     turnover: float | None = None
     commission: float | None = None
     slippage_cost: float | None = None
+    trade_count: int | None = None
 
     @model_validator(mode="before")
     @classmethod
