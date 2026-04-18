@@ -3,11 +3,20 @@
     "UniverseCondition": {
       "additionalProperties": false,
       "properties": {
-        "column": {
-          "maxLength": 128,
-          "minLength": 1,
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "title": "Column",
+        "field": {
+          "enum": [
+            "market.close",
+            "security.is_active",
+            "security.sector",
+            "security.delisted_at",
+            "market.trade_date",
+            "market.timestamp",
+            "returns.return_20d",
+            "returns.return_126d",
+            "quality.piotroski_f_score",
+            "earnings.surprise_pct"
+          ],
+          "title": "Field",
           "type": "string"
         },
         "kind": {
@@ -30,13 +39,6 @@
             "is_not_null"
           ],
           "title": "Operator",
-          "type": "string"
-        },
-        "table": {
-          "maxLength": 128,
-          "minLength": 1,
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
-          "title": "Table",
           "type": "string"
         },
         "value": {
@@ -90,8 +92,7 @@
         }
       },
       "required": [
-        "table",
-        "column",
+        "field",
         "operator"
       ],
       "title": "UniverseCondition",

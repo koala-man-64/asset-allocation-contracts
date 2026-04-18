@@ -35,8 +35,7 @@ Source of truth:
       "clauses": [
         {
           "kind": "condition",
-          "table": "market_data",
-          "column": "close",
+          "field": "market.close",
           "operator": "gt",
           "value": 0
         }
@@ -62,35 +61,45 @@ This example shows the three supported `UniverseCondition` patterns:
 - `in` and `not_in` use `values`
 - `is_null` and `is_not_null` use neither `value` nor `values`
 
+`UniverseCondition.field` must be one of the governed public field ids exported by the contracts package. The initial catalog is:
+
+- `market.close`
+- `security.is_active`
+- `security.sector`
+- `security.delisted_at`
+- `market.trade_date`
+- `market.timestamp`
+- `returns.return_20d`
+- `returns.return_126d`
+- `quality.piotroski_f_score`
+- `earnings.surprise_pct`
+
 ```json
 {
   "source": "postgres_gold",
   "root": {
     "kind": "group",
     "operator": "and",
-    "clauses": [
-      {
-        "kind": "condition",
-        "table": "market_data",
-        "column": "is_active",
-        "operator": "eq",
-        "value": true
-      },
+      "clauses": [
+        {
+          "kind": "condition",
+          "field": "security.is_active",
+          "operator": "eq",
+          "value": true
+        },
       {
         "kind": "group",
         "operator": "or",
         "clauses": [
           {
             "kind": "condition",
-            "table": "market_data",
-            "column": "sector",
+            "field": "security.sector",
             "operator": "in",
             "values": ["technology", "health_care"]
           },
           {
             "kind": "condition",
-            "table": "market_data",
-            "column": "delisted_at",
+            "field": "security.delisted_at",
             "operator": "is_null"
           }
         ]

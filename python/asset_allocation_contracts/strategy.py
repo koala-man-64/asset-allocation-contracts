@@ -32,25 +32,121 @@ UniverseConditionOperator = Literal[
     "is_null",
     "is_not_null",
 ]
+UniverseFieldId = Literal[
+    "market.close",
+    "security.is_active",
+    "security.sector",
+    "security.delisted_at",
+    "market.trade_date",
+    "market.timestamp",
+    "returns.return_20d",
+    "returns.return_126d",
+    "quality.piotroski_f_score",
+    "earnings.surprise_pct",
+]
+UniverseValueKind = Literal["string", "number", "boolean", "date", "datetime"]
 UniverseValue: TypeAlias = str | int | float | bool
 
-_IDENTIFIER_PATTERN = r"^[A-Za-z_][A-Za-z0-9_]*$"
+
+class UniverseFieldDefinition(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    id: UniverseFieldId
+    label: str = Field(..., min_length=1, max_length=128)
+    valueKind: UniverseValueKind
+    operators: list[UniverseConditionOperator] = Field(..., min_length=1)
+
+
+UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
+    UniverseFieldDefinition(
+        id="market.close",
+        label="Close Price",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.is_active",
+        label="Security Active Flag",
+        valueKind="boolean",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.sector",
+        label="Security Sector",
+        valueKind="string",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.delisted_at",
+        label="Delisted Timestamp",
+        valueKind="datetime",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="market.trade_date",
+        label="Trade Date",
+        valueKind="date",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="market.timestamp",
+        label="Market Timestamp",
+        valueKind="datetime",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="returns.return_20d",
+        label="20 Day Return",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="returns.return_126d",
+        label="126 Day Return",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="quality.piotroski_f_score",
+        label="Piotroski F-Score",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="earnings.surprise_pct",
+        label="Earnings Surprise Percent",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+)
+UNIVERSE_FIELD_DEFINITION_BY_ID: dict[UniverseFieldId, UniverseFieldDefinition] = {
+    field.id: field for field in UNIVERSE_FIELD_DEFINITIONS
+}
 
 
 class UniverseCondition(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     kind: Literal["condition"] = "condition"
-    table: str = Field(..., min_length=1, max_length=128, pattern=_IDENTIFIER_PATTERN)
-    column: str = Field(..., min_length=1, max_length=128, pattern=_IDENTIFIER_PATTERN)
+    field: UniverseFieldId
     operator: UniverseConditionOperator
     value: UniverseValue | None = None
     values: list[UniverseValue] | None = None
 
+    @field_validator("field", mode="before")
+    @classmethod
+    def normalize_field(cls, value: object) -> object:
+        if value is None:
+            return value
+        normalized = str(value).strip().lower()
+        return normalized or value
+
     @model_validator(mode="after")
     def validate_condition(self) -> "UniverseCondition":
-        self.table = str(self.table or "").strip().lower()
-        self.column = str(self.column or "").strip().lower()
+        field_definition = UNIVERSE_FIELD_DEFINITION_BY_ID[self.field]
+
+        if self.operator not in field_definition.operators:
+            raise ValueError(f"{self.operator} is not supported for field '{self.field}'.")
 
         if self.operator in {"is_null", "is_not_null"}:
             if self.value is not None or self.values is not None:

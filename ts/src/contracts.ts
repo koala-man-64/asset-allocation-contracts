@@ -30,6 +30,17 @@ export type UniverseConditionOperator =
   | 'not_in'
   | 'is_null'
   | 'is_not_null';
+export type UniverseFieldId =
+  | 'market.close'
+  | 'security.is_active'
+  | 'security.sector'
+  | 'security.delisted_at'
+  | 'market.trade_date'
+  | 'market.timestamp'
+  | 'returns.return_20d'
+  | 'returns.return_126d'
+  | 'quality.piotroski_f_score'
+  | 'earnings.surprise_pct';
 export type UniverseValue = string | number | boolean;
 export type UniverseValueKind = 'string' | 'number' | 'boolean' | 'date' | 'datetime';
 export type RankingTransformType =
@@ -65,11 +76,17 @@ export interface ExitRule {
 
 export interface UniverseCondition {
   kind: 'condition';
-  table: string;
-  column: string;
+  field: UniverseFieldId;
   operator: UniverseConditionOperator;
   value?: UniverseValue;
   values?: UniverseValue[];
+}
+
+export interface UniverseFieldDefinition {
+  id: UniverseFieldId;
+  label: string;
+  valueKind: UniverseValueKind;
+  operators: UniverseConditionOperator[];
 }
 
 export interface UniverseGroup {
