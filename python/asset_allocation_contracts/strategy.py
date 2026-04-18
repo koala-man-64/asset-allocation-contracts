@@ -182,6 +182,23 @@ class UniverseDefinition(BaseModel):
     root: UniverseGroup
 
 
+class UniverseCatalogResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: UniverseSource = "postgres_gold"
+    fields: list[UniverseFieldDefinition] = Field(default_factory=list)
+
+
+class UniversePreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: UniverseSource = "postgres_gold"
+    symbolCount: int = Field(..., ge=0)
+    sampleSymbols: list[str] = Field(default_factory=list)
+    fieldsUsed: list[UniverseFieldId] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 UniverseGroup.model_rebuild()
 UniverseDefinition.model_rebuild()
 

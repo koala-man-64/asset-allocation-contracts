@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "UniverseFieldDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": [
+            "market.close",
+            "security.is_active",
+            "security.sector",
+            "security.delisted_at",
+            "market.trade_date",
+            "market.timestamp",
+            "returns.return_20d",
+            "returns.return_126d",
+            "quality.piotroski_f_score",
+            "earnings.surprise_pct"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "operators": {
+          "items": {
+            "enum": [
+              "eq",
+              "ne",
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "in",
+              "not_in",
+              "is_null",
+              "is_not_null"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Operators",
+          "type": "array"
+        },
+        "valueKind": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "date",
+            "datetime"
+          ],
+          "title": "Valuekind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "valueKind",
+        "operators"
+      ],
+      "title": "UniverseFieldDefinition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/UniverseFieldDefinition"
+      },
+      "title": "Fields",
+      "type": "array"
+    },
+    "source": {
+      "const": "postgres_gold",
+      "default": "postgres_gold",
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "title": "UniverseCatalogResponse",
+  "type": "object"
+}

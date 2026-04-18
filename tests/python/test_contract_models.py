@@ -20,10 +20,12 @@ from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
 from asset_allocation_contracts.strategy import (
     StrategyConfig,
+    UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
     UniverseCondition,
     UniverseDefinition,
     UniverseGroup,
+    UniversePreviewResponse,
 )
 from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
 
@@ -87,6 +89,34 @@ def test_universe_condition_rejects_unknown_field() -> None:
         assert "field" in str(exc)
     else:
         raise AssertionError("Expected validation failure for unknown universe field.")
+
+
+def test_universe_catalog_response_uses_governed_field_definitions() -> None:
+    payload = UniverseCatalogResponse(fields=list(UNIVERSE_FIELD_DEFINITIONS[:2]))
+
+    assert payload.source == "postgres_gold"
+    assert payload.fields[0].id == "market.close"
+    assert payload.fields[1].label == "Security Active Flag"
+
+
+def test_universe_preview_response_uses_governed_field_ids() -> None:
+    payload = UniversePreviewResponse(
+        symbolCount=2,
+        sampleSymbols=["AAPL", "MSFT"],
+        fieldsUsed=["market.close", "quality.piotroski_f_score"],
+    )
+
+    assert payload.fieldsUsed == ["market.close", "quality.piotroski_f_score"]
+    assert payload.warnings == []
+
+
+def test_universe_preview_response_rejects_unknown_field_ids() -> None:
+    try:
+        UniversePreviewResponse(symbolCount=1, sampleSymbols=["AAPL"], fieldsUsed=["market_data.close"])
+    except Exception as exc:
+        assert "fieldsUsed" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for unknown preview field id.")
 
 
 def test_ui_runtime_config_defaults_to_api_root() -> None:
