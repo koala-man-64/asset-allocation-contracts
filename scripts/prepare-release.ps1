@@ -1,5 +1,4 @@
 param(
-    [Parameter(Mandatory = $true)]
     [string]$Version,
     [string]$RepoRoot = "",
     [switch]$DryRun
@@ -21,11 +20,6 @@ if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $RepoRoot = Split-Path -Parent $PSScriptRoot
 } else {
     $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
-}
-
-$versionPattern = '^\d+\.\d+\.\d+$'
-if ($Version -notmatch $versionPattern) {
-    throw "Version '$Version' is not valid stable semver. Use values like 1.2.3."
 }
 
 $pythonPath = Join-Path $RepoRoot "python\pyproject.toml"
@@ -87,6 +81,20 @@ if ($currentPythonVersion -eq $currentTsVersion) {
     Write-Status " - Python: $currentPythonVersion"
     Write-Status " - TypeScript: $currentTsVersion"
 }
+
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    $Version = Read-Host -Prompt "Version"
+}
+
+if ([string]::IsNullOrWhiteSpace($Version)) {
+    throw "Version is required. Pass -Version <MAJOR.MINOR.PATCH> or enter a value at the prompt."
+}
+
+$versionPattern = '^\d+\.\d+\.\d+$'
+if ($Version -notmatch $versionPattern) {
+    throw "Version '$Version' is not valid stable semver. Use values like 1.2.3."
+}
+
 Write-Status "Target version: $Version"
 
 if ($currentPythonVersion -eq $Version -and $currentTsVersion -eq $Version) {

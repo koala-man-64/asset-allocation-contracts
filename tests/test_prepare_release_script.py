@@ -84,6 +84,32 @@ def test_prepare_release_updates_both_version_files(tmp_path: Path) -> None:
     assert ts_package["type"] == "module"
 
 
+def test_prepare_release_without_version_uses_prompt_value(tmp_path: Path) -> None:
+    write_release_files(tmp_path)
+    script = repo_root() / "scripts" / "prepare-release.ps1"
+    completed = subprocess.run(
+        [
+            powershell_exe(),
+            "-NoProfile",
+            "-File",
+            str(script),
+            "-RepoRoot",
+            str(tmp_path),
+        ],
+        cwd=repo_root(),
+        check=True,
+        capture_output=True,
+        text=True,
+        input="1.2.4\n",
+    )
+
+    assert "Current release version: 1.0.0" in completed.stdout
+    assert "Target version: 1.2.4" in completed.stdout
+    assert "Updated release version to 1.2.4" in completed.stdout
+    assert 'version = "1.2.4"' in (tmp_path / "python" / "pyproject.toml").read_text(encoding="utf-8")
+    assert json.loads((tmp_path / "ts" / "package.json").read_text(encoding="utf-8"))["version"] == "1.2.4"
+
+
 def test_prepare_release_dry_run_does_not_modify_files(tmp_path: Path) -> None:
     write_release_files(tmp_path)
     script = repo_root() / "scripts" / "prepare-release.ps1"
