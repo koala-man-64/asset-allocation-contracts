@@ -19,6 +19,18 @@
           "title": "Notional",
           "type": "number"
         },
+        "position_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position Id"
+        },
         "price": {
           "title": "Price",
           "type": "number"
@@ -34,6 +46,24 @@
         "symbol": {
           "title": "Symbol",
           "type": "string"
+        },
+        "trade_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "entry",
+                "rebalance_increase",
+                "rebalance_decrease",
+                "exit"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trade Role"
         }
       },
       "required": [

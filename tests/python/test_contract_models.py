@@ -3,11 +3,14 @@ from __future__ import annotations
 from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
+    BacktestSummary,
+    ClosedPositionResponse,
     BacktestReconcileResponse,
     BacktestResultMetadata,
     RollingMetricPointResponse,
     RollingMetricsResponse,
     RunRecordResponse,
+    TradeResponse,
     TimeseriesPointResponse,
     TimeseriesResponse,
 )
@@ -160,17 +163,17 @@ def test_backtest_reconcile_response_defaults_and_payload() -> None:
 
 def test_backtest_result_metadata_and_response_schema() -> None:
     metadata = BacktestResultMetadata(
-        results_schema_version=2,
+        results_schema_version=4,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="portfolio",
     )
     schema = TimeseriesResponse.model_json_schema()
 
-    assert metadata.results_schema_version == 2
+    assert metadata.results_schema_version == 4
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
-    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 2
+    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 4
 
 
 def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> None:
@@ -227,7 +230,7 @@ def test_rolling_metric_point_response_supports_window_periods_and_legacy_window
 
 def test_backtest_response_metadata_attaches_to_timeseries_and_rolling_metrics() -> None:
     metadata = BacktestResultMetadata(
-        results_schema_version=2,
+        results_schema_version=4,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="strategy",
@@ -237,6 +240,82 @@ def test_backtest_response_metadata_attaches_to_timeseries_and_rolling_metrics()
 
     assert timeseries.metadata is metadata
     assert rolling_metrics.metadata is metadata
+
+
+def test_backtest_summary_supports_additive_v3_and_v4_fields() -> None:
+    payload = BacktestSummary.model_validate(
+        {
+            "gross_total_return": 0.15,
+            "gross_annualized_return": 0.35,
+            "total_commission": 25.0,
+            "total_slippage_cost": 10.0,
+            "total_transaction_cost": 35.0,
+            "cost_drag_bps": 35.0,
+            "avg_gross_exposure": 0.92,
+            "avg_net_exposure": 0.88,
+            "sortino_ratio": 1.8,
+            "calmar_ratio": 1.4,
+            "closed_positions": 12,
+            "winning_positions": 7,
+            "losing_positions": 5,
+            "hit_rate": 7 / 12,
+            "avg_win_pnl": 220.0,
+            "avg_loss_pnl": -140.0,
+            "avg_win_return": 0.08,
+            "avg_loss_return": -0.04,
+            "payoff_ratio": 1.57,
+            "profit_factor": 1.92,
+            "expectancy_pnl": 68.0,
+            "expectancy_return": 0.021,
+        }
+    )
+
+    assert payload.gross_total_return == 0.15
+    assert payload.total_transaction_cost == 35.0
+    assert payload.closed_positions == 12
+    assert payload.expectancy_return == 0.021
+
+
+def test_trade_and_closed_position_contracts_support_position_lifecycle_fields() -> None:
+    trade = TradeResponse.model_validate(
+        {
+            "execution_date": "2026-03-10T14:35:00Z",
+            "symbol": "MSFT",
+            "quantity": 10.0,
+            "price": 100.0,
+            "notional": 1000.0,
+            "commission": 1.0,
+            "slippage_cost": 0.5,
+            "cash_after": 98998.5,
+            "position_id": "pos-123",
+            "trade_role": "entry",
+        }
+    )
+    closed = ClosedPositionResponse.model_validate(
+        {
+            "position_id": "pos-123",
+            "symbol": "MSFT",
+            "opened_at": "2026-03-10T14:35:00Z",
+            "closed_at": "2026-03-12T14:35:00Z",
+            "holding_period_bars": 8,
+            "average_cost": 101.0,
+            "exit_price": 108.0,
+            "max_quantity": 25.0,
+            "resize_count": 2,
+            "realized_pnl": 160.0,
+            "realized_return": 0.063,
+            "total_commission": 3.0,
+            "total_slippage_cost": 1.5,
+            "total_transaction_cost": 4.5,
+            "exit_reason": "take_profit_fixed",
+            "exit_rule_id": "tp-1",
+        }
+    )
+
+    assert trade.trade_role == "entry"
+    assert trade.position_id == "pos-123"
+    assert closed.realized_return == 0.063
+    assert closed.exit_rule_id == "tp-1"
 
 
 def test_shared_path_rules_are_stable() -> None:

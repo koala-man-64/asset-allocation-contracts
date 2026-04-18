@@ -6,6 +6,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 RunStatus = Literal["queued", "running", "completed", "failed"]
+TradeRole = Literal["entry", "rebalance_increase", "rebalance_decrease", "exit"]
 
 
 class RunRecordResponse(BaseModel):
@@ -45,12 +46,34 @@ class BacktestSummary(BaseModel):
     trades: int | None = None
     initial_cash: float | None = None
     final_equity: float | None = None
+    gross_total_return: float | None = None
+    gross_annualized_return: float | None = None
+    total_commission: float | None = None
+    total_slippage_cost: float | None = None
+    total_transaction_cost: float | None = None
+    cost_drag_bps: float | None = None
+    avg_gross_exposure: float | None = None
+    avg_net_exposure: float | None = None
+    sortino_ratio: float | None = None
+    calmar_ratio: float | None = None
+    closed_positions: int | None = None
+    winning_positions: int | None = None
+    losing_positions: int | None = None
+    hit_rate: float | None = None
+    avg_win_pnl: float | None = None
+    avg_loss_pnl: float | None = None
+    avg_win_return: float | None = None
+    avg_loss_return: float | None = None
+    payoff_ratio: float | None = None
+    profit_factor: float | None = None
+    expectancy_pnl: float | None = None
+    expectancy_return: float | None = None
 
 
 class BacktestResultMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    results_schema_version: int = Field(default=2, ge=1)
+    results_schema_version: int = Field(default=4, ge=1)
     bar_size: str = Field(..., min_length=1, max_length=32)
     periods_per_year: int = Field(..., ge=1)
     strategy_scope: str = Field(..., min_length=1, max_length=128)
@@ -152,12 +175,44 @@ class TradeResponse(BaseModel):
     commission: float
     slippage_cost: float
     cash_after: float
+    position_id: str | None = None
+    trade_role: TradeRole | None = None
 
 
 class TradeListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     trades: list[TradeResponse]
+    total: int
+    limit: int
+    offset: int
+
+
+class ClosedPositionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    position_id: str
+    symbol: str
+    opened_at: str
+    closed_at: str
+    holding_period_bars: int
+    average_cost: float
+    exit_price: float
+    max_quantity: float
+    resize_count: int
+    realized_pnl: float
+    realized_return: float | None = None
+    total_commission: float
+    total_slippage_cost: float
+    total_transaction_cost: float
+    exit_reason: str | None = None
+    exit_rule_id: str | None = None
+
+
+class ClosedPositionListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    positions: list[ClosedPositionResponse]
     total: int
     limit: int
     offset: int

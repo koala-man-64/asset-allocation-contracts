@@ -1,0 +1,144 @@
+{
+  "$defs": {
+    "ClosedPositionResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "average_cost": {
+          "title": "Average Cost",
+          "type": "number"
+        },
+        "closed_at": {
+          "title": "Closed At",
+          "type": "string"
+        },
+        "exit_price": {
+          "title": "Exit Price",
+          "type": "number"
+        },
+        "exit_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exit Reason"
+        },
+        "exit_rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exit Rule Id"
+        },
+        "holding_period_bars": {
+          "title": "Holding Period Bars",
+          "type": "integer"
+        },
+        "max_quantity": {
+          "title": "Max Quantity",
+          "type": "number"
+        },
+        "opened_at": {
+          "title": "Opened At",
+          "type": "string"
+        },
+        "position_id": {
+          "title": "Position Id",
+          "type": "string"
+        },
+        "realized_pnl": {
+          "title": "Realized Pnl",
+          "type": "number"
+        },
+        "realized_return": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realized Return"
+        },
+        "resize_count": {
+          "title": "Resize Count",
+          "type": "integer"
+        },
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "total_commission": {
+          "title": "Total Commission",
+          "type": "number"
+        },
+        "total_slippage_cost": {
+          "title": "Total Slippage Cost",
+          "type": "number"
+        },
+        "total_transaction_cost": {
+          "title": "Total Transaction Cost",
+          "type": "number"
+        }
+      },
+      "required": [
+        "position_id",
+        "symbol",
+        "opened_at",
+        "closed_at",
+        "holding_period_bars",
+        "average_cost",
+        "exit_price",
+        "max_quantity",
+        "resize_count",
+        "realized_pnl",
+        "total_commission",
+        "total_slippage_cost",
+        "total_transaction_cost"
+      ],
+      "title": "ClosedPositionResponse",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer"
+    },
+    "positions": {
+      "items": {
+        "$ref": "#/$defs/ClosedPositionResponse"
+      },
+      "title": "Positions",
+      "type": "array"
+    },
+    "total": {
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "positions",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "ClosedPositionListResponse",
+  "type": "object"
+}

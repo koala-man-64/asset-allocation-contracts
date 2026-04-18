@@ -10,6 +10,7 @@ from asset_allocation_contracts.backtest import (
     BacktestReconcileResponse,
     BacktestStartRequest,
     BacktestSummary,
+    ClosedPositionListResponse,
     RollingMetricsResponse,
     RunListResponse,
     RunRecordResponse,
@@ -61,6 +62,7 @@ def main() -> None:
     _write("backtest-timeseries.schema.json", TimeseriesResponse)
     _write("backtest-rolling-metrics.schema.json", RollingMetricsResponse)
     _write("backtest-trade-list.schema.json", TradeListResponse)
+    _write("backtest-closed-position-list.schema.json", ClosedPositionListResponse)
     _write("backtest-claim-request.schema.json", BacktestClaimRequest)
     _write("backtest-start-request.schema.json", BacktestStartRequest)
     _write("backtest-complete-request.schema.json", BacktestCompleteRequest)

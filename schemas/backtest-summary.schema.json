@@ -25,6 +25,114 @@
       "default": null,
       "title": "Annualized Volatility"
     },
+    "avg_gross_exposure": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Gross Exposure"
+    },
+    "avg_loss_pnl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Loss Pnl"
+    },
+    "avg_loss_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Loss Return"
+    },
+    "avg_net_exposure": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Net Exposure"
+    },
+    "avg_win_pnl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Win Pnl"
+    },
+    "avg_win_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Avg Win Return"
+    },
+    "calmar_ratio": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Calmar Ratio"
+    },
+    "closed_positions": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Closed Positions"
+    },
+    "cost_drag_bps": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cost Drag Bps"
+    },
     "end_date": {
       "anyOf": [
         {
@@ -36,6 +144,30 @@
       ],
       "default": null,
       "title": "End Date"
+    },
+    "expectancy_pnl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expectancy Pnl"
+    },
+    "expectancy_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expectancy Return"
     },
     "final_equity": {
       "anyOf": [
@@ -49,6 +181,42 @@
       "default": null,
       "title": "Final Equity"
     },
+    "gross_annualized_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gross Annualized Return"
+    },
+    "gross_total_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gross Total Return"
+    },
+    "hit_rate": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hit Rate"
+    },
     "initial_cash": {
       "anyOf": [
         {
@@ -61,6 +229,18 @@
       "default": null,
       "title": "Initial Cash"
     },
+    "losing_positions": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Losing Positions"
+    },
     "max_drawdown": {
       "anyOf": [
         {
@@ -72,6 +252,30 @@
       ],
       "default": null,
       "title": "Max Drawdown"
+    },
+    "payoff_ratio": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Payoff Ratio"
+    },
+    "profit_factor": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Profit Factor"
     },
     "run_id": {
       "anyOf": [
@@ -109,6 +313,18 @@
       "default": null,
       "title": "Sharpe Ratio"
     },
+    "sortino_ratio": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sortino Ratio"
+    },
     "start_date": {
       "anyOf": [
         {
@@ -120,6 +336,18 @@
       ],
       "default": null,
       "title": "Start Date"
+    },
+    "total_commission": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Commission"
     },
     "total_return": {
       "anyOf": [
@@ -133,6 +361,30 @@
       "default": null,
       "title": "Total Return"
     },
+    "total_slippage_cost": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Slippage Cost"
+    },
+    "total_transaction_cost": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Transaction Cost"
+    },
     "trades": {
       "anyOf": [
         {
@@ -144,6 +396,18 @@
       ],
       "default": null,
       "title": "Trades"
+    },
+    "winning_positions": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Winning Positions"
     }
   },
   "title": "BacktestSummary",

@@ -48,6 +48,7 @@ export type RegimeStatus = 'confirmed' | 'transition' | 'unclassified';
 export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
+export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
 
 export interface ExitRule {
   id: string;
@@ -308,6 +309,28 @@ export interface BacktestSummary {
   trades?: number;
   initial_cash?: number;
   final_equity?: number;
+  gross_total_return?: number;
+  gross_annualized_return?: number;
+  total_commission?: number;
+  total_slippage_cost?: number;
+  total_transaction_cost?: number;
+  cost_drag_bps?: number;
+  avg_gross_exposure?: number;
+  avg_net_exposure?: number;
+  sortino_ratio?: number;
+  calmar_ratio?: number;
+  closed_positions?: number;
+  winning_positions?: number;
+  losing_positions?: number;
+  hit_rate?: number;
+  avg_win_pnl?: number;
+  avg_loss_pnl?: number;
+  avg_win_return?: number;
+  avg_loss_return?: number;
+  payoff_ratio?: number;
+  profit_factor?: number;
+  expectancy_pnl?: number;
+  expectancy_return?: number;
   [key: string]: unknown;
 }
 
@@ -374,10 +397,38 @@ export interface TradeResponse {
   commission: number;
   slippage_cost: number;
   cash_after: number;
+  position_id?: string | null;
+  trade_role?: TradeRole | null;
 }
 
 export interface TradeListResponse {
   trades: TradeResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ClosedPositionResponse {
+  position_id: string;
+  symbol: string;
+  opened_at: string;
+  closed_at: string;
+  holding_period_bars: number;
+  average_cost: number;
+  exit_price: number;
+  max_quantity: number;
+  resize_count: number;
+  realized_pnl: number;
+  realized_return?: number | null;
+  total_commission: number;
+  total_slippage_cost: number;
+  total_transaction_cost: number;
+  exit_reason?: string | null;
+  exit_rule_id?: string | null;
+}
+
+export interface ClosedPositionListResponse {
+  positions: ClosedPositionResponse[];
   total: number;
   limit: number;
   offset: number;
