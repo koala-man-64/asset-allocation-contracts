@@ -29,6 +29,7 @@ from asset_allocation_contracts.regime import (
     RegimeTransitionRow,
 )
 from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefinition
+from asset_allocation_contracts.strategy import UniverseCatalogResponse, UniversePreviewResponse
 from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
 
 
@@ -45,6 +46,8 @@ def _write(name: str, model) -> None:
 def main() -> None:
     _write("strategy-config.schema.json", StrategyConfig)
     _write("universe-definition.schema.json", UniverseDefinition)
+    _write("universe-catalog.schema.json", UniverseCatalogResponse)
+    _write("universe-preview.schema.json", UniversePreviewResponse)
     _write("ranking-schema.schema.json", RankingSchemaConfig)
     _write("regime-policy.schema.json", RegimePolicy)
     _write("regime-model-config.schema.json", RegimeModelConfig)
