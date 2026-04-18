@@ -204,6 +204,8 @@ Owned by:
 Purpose:
 
 - Define request/response payloads for backtest claim, start, complete, fail, listing, summary, timeseries, rolling metrics, and trade outputs
+- Carry additive backtest result metadata for v2 semantics on timeseries and rolling metrics responses without removing legacy field names
+- Preserve compatibility shims where the runtime still emits or accepts old payload keys such as `daily_return` and `window_days`
 
 ### 4.5 UI Runtime Config Contract
 

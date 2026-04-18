@@ -4,7 +4,12 @@ from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
     BacktestReconcileResponse,
+    BacktestResultMetadata,
+    RollingMetricPointResponse,
+    RollingMetricsResponse,
     RunRecordResponse,
+    TimeseriesPointResponse,
+    TimeseriesResponse,
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
@@ -151,6 +156,87 @@ def test_backtest_reconcile_response_defaults_and_payload() -> None:
     assert payload.dispatchedCount == 2
     assert payload.dispatchFailedRunIds == ["run-c"]
     assert payload.failedRunIds == ["run-d"]
+
+
+def test_backtest_result_metadata_and_response_schema() -> None:
+    metadata = BacktestResultMetadata(
+        results_schema_version=2,
+        bar_size="1d",
+        periods_per_year=252,
+        strategy_scope="portfolio",
+    )
+    schema = TimeseriesResponse.model_json_schema()
+
+    assert metadata.results_schema_version == 2
+    assert metadata.bar_size == "1d"
+    assert schema["properties"]["metadata"]["default"] is None
+    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 2
+
+
+def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> None:
+    from_daily = TimeseriesPointResponse.model_validate(
+        {
+            "date": "2026-03-08",
+            "portfolio_value": 101.5,
+            "drawdown": 0.02,
+            "daily_return": 0.015,
+        }
+    )
+    from_period = TimeseriesPointResponse.model_validate(
+        {
+            "date": "2026-03-09",
+            "portfolio_value": 102.0,
+            "drawdown": 0.01,
+            "period_return": 0.02,
+        }
+    )
+    schema = TimeseriesPointResponse.model_json_schema()
+
+    assert from_daily.period_return == 0.015
+    assert from_period.period_return == 0.02
+    assert from_daily.model_dump()["daily_return"] == 0.015
+    assert from_period.model_dump()["daily_return"] == 0.02
+    assert schema["properties"]["daily_return"]["deprecated"] is True
+    assert "period_return" in schema["properties"]
+
+
+def test_rolling_metric_point_response_supports_window_periods_and_legacy_window_days() -> None:
+    from_days = RollingMetricPointResponse.model_validate(
+        {
+            "date": "2026-03-08",
+            "window_days": 63,
+            "rolling_return": 0.12,
+        }
+    )
+    from_periods = RollingMetricPointResponse.model_validate(
+        {
+            "date": "2026-03-09",
+            "window_periods": 21,
+            "rolling_return": 0.08,
+        }
+    )
+    schema = RollingMetricPointResponse.model_json_schema()
+
+    assert from_days.window_periods == 63
+    assert from_periods.window_periods == 21
+    assert from_days.model_dump()["window_days"] == 63
+    assert from_periods.model_dump()["window_days"] == 21
+    assert schema["properties"]["window_days"]["deprecated"] is True
+    assert "window_periods" in schema["properties"]
+
+
+def test_backtest_response_metadata_attaches_to_timeseries_and_rolling_metrics() -> None:
+    metadata = BacktestResultMetadata(
+        results_schema_version=2,
+        bar_size="1d",
+        periods_per_year=252,
+        strategy_scope="strategy",
+    )
+    timeseries = TimeseriesResponse(metadata=metadata, points=[], total_points=0, truncated=False)
+    rolling_metrics = RollingMetricsResponse(metadata=metadata, points=[], total_points=0, truncated=True)
+
+    assert timeseries.metadata is metadata
+    assert rolling_metrics.metadata is metadata
 
 
 def test_shared_path_rules_are_stable() -> None:

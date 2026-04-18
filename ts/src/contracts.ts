@@ -311,10 +311,19 @@ export interface BacktestSummary {
   [key: string]: unknown;
 }
 
+export interface BacktestResultMetadata {
+  results_schema_version: number;
+  bar_size: string;
+  periods_per_year: number;
+  strategy_scope: string;
+}
+
 export interface TimeseriesPointResponse {
   date: string;
   portfolio_value: number;
   drawdown: number;
+  period_return?: number | null;
+  /** @deprecated Use period_return. */
   daily_return?: number | null;
   cumulative_return?: number | null;
   cash?: number | null;
@@ -326,6 +335,7 @@ export interface TimeseriesPointResponse {
 }
 
 export interface TimeseriesResponse {
+  metadata?: BacktestResultMetadata | null;
   points: TimeseriesPointResponse[];
   total_points: number;
   truncated: boolean;
@@ -333,7 +343,9 @@ export interface TimeseriesResponse {
 
 export interface RollingMetricPointResponse {
   date: string;
-  window_days: number;
+  window_periods?: number | null;
+  /** @deprecated Use window_periods. */
+  window_days?: number | null;
   rolling_return?: number | null;
   rolling_volatility?: number | null;
   rolling_sharpe?: number | null;
@@ -347,6 +359,7 @@ export interface RollingMetricPointResponse {
 }
 
 export interface RollingMetricsResponse {
+  metadata?: BacktestResultMetadata | null;
   points: RollingMetricPointResponse[];
   total_points: number;
   truncated: boolean;

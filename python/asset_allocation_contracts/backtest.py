@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 RunStatus = Literal["queued", "running", "completed", "failed"]
 
@@ -47,13 +47,23 @@ class BacktestSummary(BaseModel):
     final_equity: float | None = None
 
 
+class BacktestResultMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    results_schema_version: int = Field(default=2, ge=1)
+    bar_size: str = Field(..., min_length=1, max_length=32)
+    periods_per_year: int = Field(..., ge=1)
+    strategy_scope: str = Field(..., min_length=1, max_length=128)
+
+
 class TimeseriesPointResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     date: str
     portfolio_value: float
     drawdown: float
-    daily_return: float | None = None
+    period_return: float | None = None
+    daily_return: float | None = Field(default=None, deprecated=True)
     cumulative_return: float | None = None
     cash: float | None = None
     gross_exposure: float | None = None
@@ -62,10 +72,27 @@ class TimeseriesPointResponse(BaseModel):
     commission: float | None = None
     slippage_cost: float | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_period_return_compatibility(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+
+        payload = dict(value)
+        period_return = payload.get("period_return")
+        daily_return = payload.get("daily_return")
+
+        if period_return is None and daily_return is not None:
+            payload["period_return"] = daily_return
+        if daily_return is None and period_return is not None:
+            payload["daily_return"] = period_return
+        return payload
+
 
 class TimeseriesResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    metadata: BacktestResultMetadata | None = None
     points: list[TimeseriesPointResponse]
     total_points: int
     truncated: bool
@@ -75,7 +102,8 @@ class RollingMetricPointResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     date: str
-    window_days: int
+    window_periods: int | None = None
+    window_days: int | None = Field(default=None, deprecated=True)
     rolling_return: float | None = None
     rolling_volatility: float | None = None
     rolling_sharpe: float | None = None
@@ -87,10 +115,27 @@ class RollingMetricPointResponse(BaseModel):
     gross_exposure_avg: float | None = None
     net_exposure_avg: float | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_window_periods_compatibility(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+
+        payload = dict(value)
+        window_periods = payload.get("window_periods")
+        window_days = payload.get("window_days")
+
+        if window_periods is None and window_days is not None:
+            payload["window_periods"] = window_days
+        if window_days is None and window_periods is not None:
+            payload["window_days"] = window_periods
+        return payload
+
 
 class RollingMetricsResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    metadata: BacktestResultMetadata | None = None
     points: list[RollingMetricPointResponse]
     total_points: int
     truncated: bool

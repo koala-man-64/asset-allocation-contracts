@@ -1,5 +1,40 @@
 {
   "$defs": {
+    "BacktestResultMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "bar_size": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Bar Size",
+          "type": "string"
+        },
+        "periods_per_year": {
+          "minimum": 1,
+          "title": "Periods Per Year",
+          "type": "integer"
+        },
+        "results_schema_version": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Results Schema Version",
+          "type": "integer"
+        },
+        "strategy_scope": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategy Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bar_size",
+        "periods_per_year",
+        "strategy_scope"
+      ],
+      "title": "BacktestResultMetadata",
+      "type": "object"
+    },
     "RollingMetricPointResponse": {
       "additionalProperties": false,
       "properties": {
@@ -128,13 +163,33 @@
           "title": "Turnover Sum"
         },
         "window_days": {
-          "title": "Window Days",
-          "type": "integer"
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "deprecated": true,
+          "title": "Window Days"
+        },
+        "window_periods": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window Periods"
         }
       },
       "required": [
-        "date",
-        "window_days"
+        "date"
       ],
       "title": "RollingMetricPointResponse",
       "type": "object"
@@ -142,6 +197,17 @@
   },
   "additionalProperties": false,
   "properties": {
+    "metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BacktestResultMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "points": {
       "items": {
         "$ref": "#/$defs/RollingMetricPointResponse"
