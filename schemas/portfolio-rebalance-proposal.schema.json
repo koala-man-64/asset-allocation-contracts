@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "RebalanceTradeProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "estimatedCommission": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Estimatedcommission",
+          "type": "number"
+        },
+        "estimatedNotional": {
+          "title": "Estimatednotional",
+          "type": "number"
+        },
+        "estimatedPrice": {
+          "exclusiveMinimum": 0.0,
+          "title": "Estimatedprice",
+          "type": "number"
+        },
+        "estimatedSlippageCost": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Estimatedslippagecost",
+          "type": "number"
+        },
+        "quantity": {
+          "exclusiveMinimum": 0.0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "side": {
+          "enum": [
+            "buy",
+            "sell"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "sleeveId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sleeveid",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sleeveId",
+        "symbol",
+        "side",
+        "quantity",
+        "estimatedPrice",
+        "estimatedNotional"
+      ],
+      "title": "RebalanceTradeProposal",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "asOf": {
+      "format": "date",
+      "title": "Asof",
+      "type": "string"
+    },
+    "blocked": {
+      "default": false,
+      "title": "Blocked",
+      "type": "boolean"
+    },
+    "blockedReasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Blockedreasons",
+      "type": "array"
+    },
+    "estimatedCashImpact": {
+      "default": 0.0,
+      "title": "Estimatedcashimpact",
+      "type": "number"
+    },
+    "estimatedTurnover": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Estimatedturnover",
+      "type": "number"
+    },
+    "portfolioName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Portfolioname",
+      "type": "string"
+    },
+    "portfolioVersion": {
+      "minimum": 1,
+      "title": "Portfolioversion",
+      "type": "integer"
+    },
+    "proposalId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Proposalid",
+      "type": "string"
+    },
+    "trades": {
+      "items": {
+        "$ref": "#/$defs/RebalanceTradeProposal"
+      },
+      "title": "Trades",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "proposalId",
+    "accountId",
+    "asOf",
+    "portfolioName",
+    "portfolioVersion"
+  ],
+  "title": "RebalanceProposal",
+  "type": "object"
+}

@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "baseCurrency": {
+      "default": "USD",
+      "maxLength": 3,
+      "minLength": 3,
+      "title": "Basecurrency",
+      "type": "string"
+    },
+    "benchmarkSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Benchmarksymbol"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "inceptionDate": {
+      "format": "date",
+      "title": "Inceptiondate",
+      "type": "string"
+    },
+    "mandate": {
+      "default": "",
+      "title": "Mandate",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "openingCash": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Openingcash"
+    }
+  },
+  "required": [
+    "name",
+    "inceptionDate"
+  ],
+  "title": "PortfolioAccountUpsertRequest",
+  "type": "object"
+}

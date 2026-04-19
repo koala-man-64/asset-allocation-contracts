@@ -1,0 +1,147 @@
+{
+  "$defs": {
+    "PortfolioHistoryPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "format": "date",
+          "title": "Asof",
+          "type": "string"
+        },
+        "cash": {
+          "title": "Cash",
+          "type": "number"
+        },
+        "costDragBps": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Costdragbps"
+        },
+        "cumulativePnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cumulativepnl"
+        },
+        "cumulativeReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cumulativereturn"
+        },
+        "drawdown": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drawdown"
+        },
+        "grossExposure": {
+          "title": "Grossexposure",
+          "type": "number"
+        },
+        "nav": {
+          "title": "Nav",
+          "type": "number"
+        },
+        "netExposure": {
+          "title": "Netexposure",
+          "type": "number"
+        },
+        "periodPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Periodpnl"
+        },
+        "periodReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Periodreturn"
+        },
+        "turnover": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turnover"
+        }
+      },
+      "required": [
+        "asOf",
+        "nav",
+        "cash",
+        "grossExposure",
+        "netExposure"
+      ],
+      "title": "PortfolioHistoryPoint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "points": {
+      "items": {
+        "$ref": "#/$defs/PortfolioHistoryPoint"
+      },
+      "title": "Points",
+      "type": "array"
+    },
+    "totalPoints": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Totalpoints",
+      "type": "integer"
+    },
+    "truncated": {
+      "default": false,
+      "title": "Truncated",
+      "type": "boolean"
+    }
+  },
+  "title": "PortfolioHistoryResponse",
+  "type": "object"
+}

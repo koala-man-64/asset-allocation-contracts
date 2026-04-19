@@ -1,0 +1,126 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "accountingDepth": {
+      "const": "position_level",
+      "default": "position_level",
+      "title": "Accountingdepth",
+      "type": "string"
+    },
+    "baseCurrency": {
+      "default": "USD",
+      "maxLength": 3,
+      "minLength": 3,
+      "title": "Basecurrency",
+      "type": "string"
+    },
+    "benchmarkSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Benchmarksymbol"
+    },
+    "cadenceMode": {
+      "const": "strategy_native",
+      "default": "strategy_native",
+      "title": "Cadencemode",
+      "type": "string"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    },
+    "createdBy": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdby"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "inceptionDate": {
+      "format": "date",
+      "title": "Inceptiondate",
+      "type": "string"
+    },
+    "mandate": {
+      "default": "",
+      "title": "Mandate",
+      "type": "string"
+    },
+    "mode": {
+      "const": "internal_model_managed",
+      "default": "internal_model_managed",
+      "title": "Mode",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "accountId",
+    "version",
+    "name",
+    "inceptionDate"
+  ],
+  "title": "PortfolioAccountRevision",
+  "type": "object"
+}

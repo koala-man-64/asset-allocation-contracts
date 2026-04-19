@@ -1,0 +1,176 @@
+{
+  "$defs": {
+    "PortfolioPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "format": "date",
+          "title": "Asof",
+          "type": "string"
+        },
+        "averageCost": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Averagecost"
+        },
+        "contributors": {
+          "items": {
+            "$ref": "#/$defs/PortfolioPositionContributor"
+          },
+          "title": "Contributors",
+          "type": "array"
+        },
+        "lastPrice": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastprice"
+        },
+        "marketValue": {
+          "title": "Marketvalue",
+          "type": "number"
+        },
+        "quantity": {
+          "title": "Quantity",
+          "type": "number"
+        },
+        "realizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realizedpnl"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "unrealizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unrealizedpnl"
+        },
+        "weight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "asOf",
+        "symbol",
+        "quantity",
+        "marketValue",
+        "weight"
+      ],
+      "title": "PortfolioPosition",
+      "type": "object"
+    },
+    "PortfolioPositionContributor": {
+      "additionalProperties": false,
+      "properties": {
+        "marketValue": {
+          "title": "Marketvalue",
+          "type": "number"
+        },
+        "quantity": {
+          "title": "Quantity",
+          "type": "number"
+        },
+        "sleeveId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sleeveid",
+          "type": "string"
+        },
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "minimum": 1,
+          "title": "Strategyversion",
+          "type": "integer"
+        },
+        "weight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "sleeveId",
+        "strategyName",
+        "strategyVersion",
+        "quantity",
+        "marketValue",
+        "weight"
+      ],
+      "title": "PortfolioPositionContributor",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "default": 200,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "positions": {
+      "items": {
+        "$ref": "#/$defs/PortfolioPosition"
+      },
+      "title": "Positions",
+      "type": "array"
+    },
+    "total": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "title": "PortfolioPositionListResponse",
+  "type": "object"
+}
