@@ -1,0 +1,466 @@
+{
+  "$defs": {
+    "IntradayMonitorRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "claimedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claimedat"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "dueAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dueat"
+        },
+        "eligibleRefreshCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Eligiblerefreshcount",
+          "type": "integer"
+        },
+        "executionName": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executionname"
+        },
+        "forceRefresh": {
+          "default": false,
+          "title": "Forcerefresh",
+          "type": "boolean"
+        },
+        "lastError": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lasterror"
+        },
+        "observedSymbolCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Observedsymbolcount",
+          "type": "integer"
+        },
+        "queuedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Queuedat"
+        },
+        "refreshBatchCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Refreshbatchcount",
+          "type": "integer"
+        },
+        "runId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "status": {
+          "default": "queued",
+          "enum": [
+            "queued",
+            "claimed",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "symbolCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Symbolcount",
+          "type": "integer"
+        },
+        "triggerKind": {
+          "default": "scheduled",
+          "enum": [
+            "scheduled",
+            "manual"
+          ],
+          "title": "Triggerkind",
+          "type": "string"
+        },
+        "watchlistId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Watchlistid",
+          "type": "string"
+        },
+        "watchlistName": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Watchlistname"
+        }
+      },
+      "required": [
+        "runId",
+        "watchlistId"
+      ],
+      "title": "IntradayMonitorRunSummary",
+      "type": "object"
+    },
+    "IntradaySymbolStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "lastError": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lasterror"
+        },
+        "lastObservedPrice": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastobservedprice"
+        },
+        "lastRunId": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastrunid"
+        },
+        "lastSnapshotAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsnapshotat"
+        },
+        "lastSuccessfulMarketRefreshAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsuccessfulmarketrefreshat"
+        },
+        "monitorStatus": {
+          "default": "idle",
+          "enum": [
+            "idle",
+            "observed",
+            "refresh_queued",
+            "refreshed",
+            "failed"
+          ],
+          "title": "Monitorstatus",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "watchlistId": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Watchlistid"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "IntradaySymbolStatus",
+      "type": "object"
+    },
+    "IntradayWatchlistDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "autoRefreshEnabled": {
+          "default": true,
+          "title": "Autorefreshenabled",
+          "type": "boolean"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "lastRunAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastrunat"
+        },
+        "marketSession": {
+          "const": "us_equities_regular",
+          "default": "us_equities_regular",
+          "title": "Marketsession",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "nextDueAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nextdueat"
+        },
+        "pollIntervalMinutes": {
+          "default": 5,
+          "maximum": 1440,
+          "minimum": 1,
+          "title": "Pollintervalminutes",
+          "type": "integer"
+        },
+        "refreshCooldownMinutes": {
+          "default": 15,
+          "maximum": 1440,
+          "minimum": 1,
+          "title": "Refreshcooldownminutes",
+          "type": "integer"
+        },
+        "symbolCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Symbolcount",
+          "type": "integer"
+        },
+        "symbols": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Symbols",
+          "type": "array"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "watchlistId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Watchlistid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "watchlistId",
+        "name"
+      ],
+      "title": "IntradayWatchlistDetail",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "claimToken": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claimtoken"
+    },
+    "currentSymbolStatuses": {
+      "items": {
+        "$ref": "#/$defs/IntradaySymbolStatus"
+      },
+      "title": "Currentsymbolstatuses",
+      "type": "array"
+    },
+    "run": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IntradayMonitorRunSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "watchlist": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IntradayWatchlistDetail"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "IntradayMonitorClaimResponse",
+  "type": "object"
+}
