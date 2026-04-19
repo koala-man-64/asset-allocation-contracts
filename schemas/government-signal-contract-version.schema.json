@@ -1,0 +1,449 @@
+{
+  "$defs": {
+    "GovernmentContractEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "award_amount_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Award Amount Usd"
+        },
+        "award_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Award Id"
+        },
+        "awarding_agency": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Awarding Agency",
+          "type": "string"
+        },
+        "cancellation_flag": {
+          "default": false,
+          "title": "Cancellation Flag",
+          "type": "boolean"
+        },
+        "competition_type": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Competition Type"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "contract_vehicle": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Vehicle"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "cumulative_obligation_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cumulative Obligation Usd"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "event_at": {
+          "format": "date-time",
+          "title": "Event At",
+          "type": "string"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "opportunity",
+            "award",
+            "modification",
+            "option_exercise",
+            "obligation",
+            "outlay",
+            "termination",
+            "cancellation",
+            "protest",
+            "other"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "funding_agency": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Agency"
+        },
+        "mapping_status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "modification_number": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modification Number"
+        },
+        "naics_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Naics Code"
+        },
+        "obligation_delta_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Obligation Delta Usd"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "option_exercise_flag": {
+          "default": false,
+          "title": "Option Exercise Flag",
+          "type": "boolean"
+        },
+        "outlay_delta_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outlay Delta Usd"
+        },
+        "parent_award_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Award Id"
+        },
+        "place_of_performance_country": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Place Of Performance Country"
+        },
+        "place_of_performance_state": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Place Of Performance State"
+        },
+        "protest_flag": {
+          "default": false,
+          "title": "Protest Flag",
+          "type": "boolean"
+        },
+        "psc_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Psc Code"
+        },
+        "recipient_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Recipient Name",
+          "type": "string"
+        },
+        "recipient_ticker": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipient Ticker"
+        },
+        "set_aside_type": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Set Aside Type"
+        },
+        "solicitation_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Solicitation Id"
+        },
+        "source_event_key": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Source Event Key",
+          "type": "string"
+        },
+        "source_name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "termination_flag": {
+          "default": false,
+          "title": "Termination Flag",
+          "type": "boolean"
+        },
+        "title": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "event_id",
+        "source_name",
+        "source_event_key",
+        "event_type",
+        "event_at",
+        "recipient_name",
+        "awarding_agency",
+        "title"
+      ],
+      "title": "GovernmentContractEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "$ref": "#/$defs/GovernmentContractEvent"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "version_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Version Id",
+      "type": "string"
+    },
+    "version_kind": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Version Kind",
+      "type": "string"
+    },
+    "version_observed_at": {
+      "format": "date-time",
+      "title": "Version Observed At",
+      "type": "string"
+    },
+    "version_seq": {
+      "minimum": 1,
+      "title": "Version Seq",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version_id",
+    "event_id",
+    "version_seq",
+    "version_kind",
+    "version_observed_at",
+    "event"
+  ],
+  "title": "GovernmentContractVersion",
+  "type": "object"
+}

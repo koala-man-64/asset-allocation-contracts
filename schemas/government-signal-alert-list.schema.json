@@ -1,0 +1,157 @@
+{
+  "$defs": {
+    "GovernmentSignalAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "alert_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alert Id",
+          "type": "string"
+        },
+        "alert_type": {
+          "enum": [
+            "congress_trade",
+            "contract_event",
+            "composite"
+          ],
+          "title": "Alert Type",
+          "type": "string"
+        },
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "composite_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Composite Signal Score"
+        },
+        "congress_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Congress Signal Score"
+        },
+        "contract_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Signal Score"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source_event_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Event Ids",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id",
+        "symbol",
+        "as_of_date",
+        "alert_type",
+        "severity",
+        "title",
+        "summary"
+      ],
+      "title": "GovernmentSignalAlert",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "alerts": {
+      "items": {
+        "$ref": "#/$defs/GovernmentSignalAlert"
+      },
+      "title": "Alerts",
+      "type": "array"
+    },
+    "limit": {
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "total": {
+      "minimum": 0,
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "alerts",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "GovernmentSignalAlertListResponse",
+  "type": "object"
+}

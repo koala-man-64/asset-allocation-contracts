@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "GovernmentSignalMappingReviewItem": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "entity_type": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "mapping_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Mapping Id",
+          "type": "string"
+        },
+        "proposed_symbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposed Symbol"
+        },
+        "raw_key": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Raw Key",
+          "type": "string"
+        },
+        "raw_name": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Raw Name",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 1000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "source_name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "mapping_id",
+        "source_name",
+        "entity_type",
+        "raw_key",
+        "raw_name"
+      ],
+      "title": "GovernmentSignalMappingReviewItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/GovernmentSignalMappingReviewItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "limit": {
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "total": {
+      "minimum": 0,
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "items",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "GovernmentSignalMappingReviewResponse",
+  "type": "object"
+}

@@ -1,5 +1,6 @@
 from asset_allocation_contracts.backtest import *
 from asset_allocation_contracts.finance import *
+from asset_allocation_contracts.government_signals import *
 from asset_allocation_contracts.market_history import *
 from asset_allocation_contracts.portfolio import *
 from asset_allocation_contracts.paths import *

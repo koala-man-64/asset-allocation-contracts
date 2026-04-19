@@ -1,0 +1,373 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "amendment_flag": {
+      "default": false,
+      "title": "Amendment Flag",
+      "type": "boolean"
+    },
+    "amount_bucket_label": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Bucket Label"
+    },
+    "amount_lower_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Lower Usd"
+    },
+    "amount_upper_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Upper Usd"
+    },
+    "asset_description": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asset Description"
+    },
+    "asset_name": {
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Asset Name",
+      "type": "string"
+    },
+    "asset_type": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asset Type"
+    },
+    "chamber": {
+      "default": "unknown",
+      "enum": [
+        "house",
+        "senate",
+        "joint",
+        "unknown"
+      ],
+      "title": "Chamber",
+      "type": "string"
+    },
+    "comments": {
+      "anyOf": [
+        {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comments"
+    },
+    "committee_names": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Committee Names",
+      "type": "array"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "district": {
+      "anyOf": [
+        {
+          "maxLength": 16,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "District"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "excess_return": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Excess Return"
+    },
+    "filed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Filed At"
+    },
+    "filing_status": {
+      "default": "unknown",
+      "enum": [
+        "new",
+        "amended",
+        "late",
+        "unknown"
+      ],
+      "title": "Filing Status",
+      "type": "string"
+    },
+    "issuer_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Issuer Name"
+    },
+    "issuer_ticker": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Issuer Ticker"
+    },
+    "late_filing_days": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Late Filing Days"
+    },
+    "mapping_status": {
+      "default": "pending_review",
+      "enum": [
+        "pending_review",
+        "mapped",
+        "ignored"
+      ],
+      "title": "Mapping Status",
+      "type": "string"
+    },
+    "member_id": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Member Id"
+    },
+    "member_name": {
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Member Name",
+      "type": "string"
+    },
+    "notified_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notified At"
+    },
+    "party": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Party"
+    },
+    "relationship_type": {
+      "default": "unknown",
+      "enum": [
+        "self",
+        "spouse",
+        "dependent_child",
+        "joint",
+        "unknown"
+      ],
+      "title": "Relationship Type",
+      "type": "string"
+    },
+    "source_event_key": {
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Source Event Key",
+      "type": "string"
+    },
+    "source_name": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Source Name",
+      "type": "string"
+    },
+    "state": {
+      "anyOf": [
+        {
+          "maxLength": 16,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "State"
+    },
+    "traded_at": {
+      "format": "date-time",
+      "title": "Traded At",
+      "type": "string"
+    },
+    "transaction_type": {
+      "enum": [
+        "purchase",
+        "sale",
+        "partial_sale",
+        "exchange",
+        "other"
+      ],
+      "title": "Transaction Type",
+      "type": "string"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    }
+  },
+  "required": [
+    "event_id",
+    "source_name",
+    "source_event_key",
+    "member_name",
+    "traded_at",
+    "transaction_type",
+    "asset_name"
+  ],
+  "title": "CongressTradeEvent",
+  "type": "object"
+}

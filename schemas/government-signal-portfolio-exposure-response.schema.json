@@ -1,0 +1,496 @@
+{
+  "$defs": {
+    "GovernmentSignalAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "alert_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alert Id",
+          "type": "string"
+        },
+        "alert_type": {
+          "enum": [
+            "congress_trade",
+            "contract_event",
+            "composite"
+          ],
+          "title": "Alert Type",
+          "type": "string"
+        },
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "composite_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Composite Signal Score"
+        },
+        "congress_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Congress Signal Score"
+        },
+        "contract_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Signal Score"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source_event_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Event Ids",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id",
+        "symbol",
+        "as_of_date",
+        "alert_type",
+        "severity",
+        "title",
+        "summary"
+      ],
+      "title": "GovernmentSignalAlert",
+      "type": "object"
+    },
+    "GovernmentSignalPortfolioIssuerExposure": {
+      "additionalProperties": false,
+      "properties": {
+        "alerts": {
+          "items": {
+            "$ref": "#/$defs/GovernmentSignalAlert"
+          },
+          "title": "Alerts",
+          "type": "array"
+        },
+        "issuer_daily": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IssuerGovernmentSignalDaily"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "issuer_name": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Name"
+        },
+        "market_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market Value"
+        },
+        "matched": {
+          "default": true,
+          "title": "Matched",
+          "type": "boolean"
+        },
+        "portfolio_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Portfolio Weight"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "GovernmentSignalPortfolioIssuerExposure",
+      "type": "object"
+    },
+    "IssuerGovernmentSignalDaily": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "congress_amendment_rate_90d": {
+          "default": 0,
+          "title": "Congress Amendment Rate 90D",
+          "type": "number"
+        },
+        "congress_late_filing_rate_90d": {
+          "default": 0,
+          "title": "Congress Late Filing Rate 90D",
+          "type": "number"
+        },
+        "congress_net_amount_proxy_usd_30d": {
+          "default": 0,
+          "title": "Congress Net Amount Proxy Usd 30D",
+          "type": "number"
+        },
+        "congress_net_amount_proxy_usd_90d": {
+          "default": 0,
+          "title": "Congress Net Amount Proxy Usd 90D",
+          "type": "number"
+        },
+        "congress_purchase_count_1d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 1D",
+          "type": "integer"
+        },
+        "congress_purchase_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 30D",
+          "type": "integer"
+        },
+        "congress_purchase_count_7d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 7D",
+          "type": "integer"
+        },
+        "congress_purchase_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 90D",
+          "type": "integer"
+        },
+        "congress_sale_count_1d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 1D",
+          "type": "integer"
+        },
+        "congress_sale_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 30D",
+          "type": "integer"
+        },
+        "congress_sale_count_7d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 7D",
+          "type": "integer"
+        },
+        "congress_sale_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 90D",
+          "type": "integer"
+        },
+        "congress_unique_committees_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Unique Committees 90D",
+          "type": "integer"
+        },
+        "congress_unique_members_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Unique Members 90D",
+          "type": "integer"
+        },
+        "contract_award_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Award Count 30D",
+          "type": "integer"
+        },
+        "contract_award_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Award Count 90D",
+          "type": "integer"
+        },
+        "contract_cancellation_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Cancellation Count 90D",
+          "type": "integer"
+        },
+        "contract_modification_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Modification Count 90D",
+          "type": "integer"
+        },
+        "contract_obligation_delta_usd_30d": {
+          "default": 0,
+          "title": "Contract Obligation Delta Usd 30D",
+          "type": "number"
+        },
+        "contract_obligation_delta_usd_90d": {
+          "default": 0,
+          "title": "Contract Obligation Delta Usd 90D",
+          "type": "number"
+        },
+        "contract_option_exercise_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Option Exercise Count 90D",
+          "type": "integer"
+        },
+        "contract_outlay_delta_usd_30d": {
+          "default": 0,
+          "title": "Contract Outlay Delta Usd 30D",
+          "type": "number"
+        },
+        "contract_outlay_delta_usd_90d": {
+          "default": 0,
+          "title": "Contract Outlay Delta Usd 90D",
+          "type": "number"
+        },
+        "contract_protest_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Protest Count 90D",
+          "type": "integer"
+        },
+        "contract_termination_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Termination Count 90D",
+          "type": "integer"
+        },
+        "contract_unique_awarding_agencies_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Awarding Agencies 90D",
+          "type": "integer"
+        },
+        "contract_unique_naics_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Naics 90D",
+          "type": "integer"
+        },
+        "contract_unique_psc_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Psc 90D",
+          "type": "integer"
+        },
+        "issuer_name": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Name"
+        },
+        "last_congress_trade_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Congress Trade At"
+        },
+        "last_contract_event_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Contract Event At"
+        },
+        "mapping_status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "as_of_date",
+        "symbol"
+      ],
+      "title": "IssuerGovernmentSignalDaily",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of_date": {
+      "format": "date",
+      "title": "As Of Date",
+      "type": "string"
+    },
+    "exposures": {
+      "items": {
+        "$ref": "#/$defs/GovernmentSignalPortfolioIssuerExposure"
+      },
+      "title": "Exposures",
+      "type": "array"
+    },
+    "holdings_analyzed": {
+      "minimum": 0,
+      "title": "Holdings Analyzed",
+      "type": "integer"
+    },
+    "matched_holdings": {
+      "minimum": 0,
+      "title": "Matched Holdings",
+      "type": "integer"
+    },
+    "total_market_value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Market Value"
+    },
+    "total_portfolio_weight": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Portfolio Weight"
+    },
+    "unmatched_symbols": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unmatched Symbols",
+      "type": "array"
+    }
+  },
+  "required": [
+    "as_of_date",
+    "holdings_analyzed",
+    "matched_holdings"
+  ],
+  "title": "GovernmentSignalPortfolioExposureResponse",
+  "type": "object"
+}

@@ -1,0 +1,1189 @@
+{
+  "$defs": {
+    "CongressTradeEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "amendment_flag": {
+          "default": false,
+          "title": "Amendment Flag",
+          "type": "boolean"
+        },
+        "amount_bucket_label": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount Bucket Label"
+        },
+        "amount_lower_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount Lower Usd"
+        },
+        "amount_upper_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount Upper Usd"
+        },
+        "asset_description": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Description"
+        },
+        "asset_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Asset Name",
+          "type": "string"
+        },
+        "asset_type": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Type"
+        },
+        "chamber": {
+          "default": "unknown",
+          "enum": [
+            "house",
+            "senate",
+            "joint",
+            "unknown"
+          ],
+          "title": "Chamber",
+          "type": "string"
+        },
+        "comments": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comments"
+        },
+        "committee_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Committee Names",
+          "type": "array"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "district": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "District"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Event Id",
+          "type": "string"
+        },
+        "excess_return": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excess Return"
+        },
+        "filed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filed At"
+        },
+        "filing_status": {
+          "default": "unknown",
+          "enum": [
+            "new",
+            "amended",
+            "late",
+            "unknown"
+          ],
+          "title": "Filing Status",
+          "type": "string"
+        },
+        "issuer_name": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Name"
+        },
+        "issuer_ticker": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Ticker"
+        },
+        "late_filing_days": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Late Filing Days"
+        },
+        "mapping_status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "member_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Member Id"
+        },
+        "member_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Member Name",
+          "type": "string"
+        },
+        "notified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notified At"
+        },
+        "party": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Party"
+        },
+        "relationship_type": {
+          "default": "unknown",
+          "enum": [
+            "self",
+            "spouse",
+            "dependent_child",
+            "joint",
+            "unknown"
+          ],
+          "title": "Relationship Type",
+          "type": "string"
+        },
+        "source_event_key": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Source Event Key",
+          "type": "string"
+        },
+        "source_name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        },
+        "traded_at": {
+          "format": "date-time",
+          "title": "Traded At",
+          "type": "string"
+        },
+        "transaction_type": {
+          "enum": [
+            "purchase",
+            "sale",
+            "partial_sale",
+            "exchange",
+            "other"
+          ],
+          "title": "Transaction Type",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "event_id",
+        "source_name",
+        "source_event_key",
+        "member_name",
+        "traded_at",
+        "transaction_type",
+        "asset_name"
+      ],
+      "title": "CongressTradeEvent",
+      "type": "object"
+    },
+    "GovernmentContractEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "award_amount_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Award Amount Usd"
+        },
+        "award_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Award Id"
+        },
+        "awarding_agency": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Awarding Agency",
+          "type": "string"
+        },
+        "cancellation_flag": {
+          "default": false,
+          "title": "Cancellation Flag",
+          "type": "boolean"
+        },
+        "competition_type": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Competition Type"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "contract_vehicle": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Vehicle"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "cumulative_obligation_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cumulative Obligation Usd"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "event_at": {
+          "format": "date-time",
+          "title": "Event At",
+          "type": "string"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Event Id",
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "opportunity",
+            "award",
+            "modification",
+            "option_exercise",
+            "obligation",
+            "outlay",
+            "termination",
+            "cancellation",
+            "protest",
+            "other"
+          ],
+          "title": "Event Type",
+          "type": "string"
+        },
+        "funding_agency": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Agency"
+        },
+        "mapping_status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "modification_number": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modification Number"
+        },
+        "naics_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Naics Code"
+        },
+        "obligation_delta_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Obligation Delta Usd"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "option_exercise_flag": {
+          "default": false,
+          "title": "Option Exercise Flag",
+          "type": "boolean"
+        },
+        "outlay_delta_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outlay Delta Usd"
+        },
+        "parent_award_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Award Id"
+        },
+        "place_of_performance_country": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Place Of Performance Country"
+        },
+        "place_of_performance_state": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Place Of Performance State"
+        },
+        "protest_flag": {
+          "default": false,
+          "title": "Protest Flag",
+          "type": "boolean"
+        },
+        "psc_code": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Psc Code"
+        },
+        "recipient_name": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Recipient Name",
+          "type": "string"
+        },
+        "recipient_ticker": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipient Ticker"
+        },
+        "set_aside_type": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Set Aside Type"
+        },
+        "solicitation_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Solicitation Id"
+        },
+        "source_event_key": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Source Event Key",
+          "type": "string"
+        },
+        "source_name": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Source Name",
+          "type": "string"
+        },
+        "termination_flag": {
+          "default": false,
+          "title": "Termination Flag",
+          "type": "boolean"
+        },
+        "title": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updated At"
+        }
+      },
+      "required": [
+        "event_id",
+        "source_name",
+        "source_event_key",
+        "event_type",
+        "event_at",
+        "recipient_name",
+        "awarding_agency",
+        "title"
+      ],
+      "title": "GovernmentContractEvent",
+      "type": "object"
+    },
+    "GovernmentSignalAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "alert_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alert Id",
+          "type": "string"
+        },
+        "alert_type": {
+          "enum": [
+            "congress_trade",
+            "contract_event",
+            "composite"
+          ],
+          "title": "Alert Type",
+          "type": "string"
+        },
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "composite_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Composite Signal Score"
+        },
+        "congress_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Congress Signal Score"
+        },
+        "contract_signal_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Signal Score"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source_event_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Event Ids",
+          "type": "array"
+        },
+        "summary": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id",
+        "symbol",
+        "as_of_date",
+        "alert_type",
+        "severity",
+        "title",
+        "summary"
+      ],
+      "title": "GovernmentSignalAlert",
+      "type": "object"
+    },
+    "IssuerGovernmentSignalDaily": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_date": {
+          "format": "date",
+          "title": "As Of Date",
+          "type": "string"
+        },
+        "congress_amendment_rate_90d": {
+          "default": 0,
+          "title": "Congress Amendment Rate 90D",
+          "type": "number"
+        },
+        "congress_late_filing_rate_90d": {
+          "default": 0,
+          "title": "Congress Late Filing Rate 90D",
+          "type": "number"
+        },
+        "congress_net_amount_proxy_usd_30d": {
+          "default": 0,
+          "title": "Congress Net Amount Proxy Usd 30D",
+          "type": "number"
+        },
+        "congress_net_amount_proxy_usd_90d": {
+          "default": 0,
+          "title": "Congress Net Amount Proxy Usd 90D",
+          "type": "number"
+        },
+        "congress_purchase_count_1d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 1D",
+          "type": "integer"
+        },
+        "congress_purchase_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 30D",
+          "type": "integer"
+        },
+        "congress_purchase_count_7d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 7D",
+          "type": "integer"
+        },
+        "congress_purchase_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Purchase Count 90D",
+          "type": "integer"
+        },
+        "congress_sale_count_1d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 1D",
+          "type": "integer"
+        },
+        "congress_sale_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 30D",
+          "type": "integer"
+        },
+        "congress_sale_count_7d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 7D",
+          "type": "integer"
+        },
+        "congress_sale_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Sale Count 90D",
+          "type": "integer"
+        },
+        "congress_unique_committees_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Unique Committees 90D",
+          "type": "integer"
+        },
+        "congress_unique_members_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Congress Unique Members 90D",
+          "type": "integer"
+        },
+        "contract_award_count_30d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Award Count 30D",
+          "type": "integer"
+        },
+        "contract_award_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Award Count 90D",
+          "type": "integer"
+        },
+        "contract_cancellation_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Cancellation Count 90D",
+          "type": "integer"
+        },
+        "contract_modification_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Modification Count 90D",
+          "type": "integer"
+        },
+        "contract_obligation_delta_usd_30d": {
+          "default": 0,
+          "title": "Contract Obligation Delta Usd 30D",
+          "type": "number"
+        },
+        "contract_obligation_delta_usd_90d": {
+          "default": 0,
+          "title": "Contract Obligation Delta Usd 90D",
+          "type": "number"
+        },
+        "contract_option_exercise_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Option Exercise Count 90D",
+          "type": "integer"
+        },
+        "contract_outlay_delta_usd_30d": {
+          "default": 0,
+          "title": "Contract Outlay Delta Usd 30D",
+          "type": "number"
+        },
+        "contract_outlay_delta_usd_90d": {
+          "default": 0,
+          "title": "Contract Outlay Delta Usd 90D",
+          "type": "number"
+        },
+        "contract_protest_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Protest Count 90D",
+          "type": "integer"
+        },
+        "contract_termination_count_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Termination Count 90D",
+          "type": "integer"
+        },
+        "contract_unique_awarding_agencies_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Awarding Agencies 90D",
+          "type": "integer"
+        },
+        "contract_unique_naics_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Naics 90D",
+          "type": "integer"
+        },
+        "contract_unique_psc_90d": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Contract Unique Psc 90D",
+          "type": "integer"
+        },
+        "issuer_name": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Name"
+        },
+        "last_congress_trade_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Congress Trade At"
+        },
+        "last_contract_event_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Contract Event At"
+        },
+        "mapping_status": {
+          "default": "pending_review",
+          "enum": [
+            "pending_review",
+            "mapped",
+            "ignored"
+          ],
+          "title": "Mapping Status",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "as_of_date",
+        "symbol"
+      ],
+      "title": "IssuerGovernmentSignalDaily",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "active_alerts": {
+      "items": {
+        "$ref": "#/$defs/GovernmentSignalAlert"
+      },
+      "title": "Active Alerts",
+      "type": "array"
+    },
+    "as_of_date": {
+      "format": "date",
+      "title": "As Of Date",
+      "type": "string"
+    },
+    "issuer_daily": {
+      "$ref": "#/$defs/IssuerGovernmentSignalDaily"
+    },
+    "issuer_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Issuer Name"
+    },
+    "recent_congress_trades": {
+      "items": {
+        "$ref": "#/$defs/CongressTradeEvent"
+      },
+      "title": "Recent Congress Trades",
+      "type": "array"
+    },
+    "recent_contract_events": {
+      "items": {
+        "$ref": "#/$defs/GovernmentContractEvent"
+      },
+      "title": "Recent Contract Events",
+      "type": "array"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    }
+  },
+  "required": [
+    "symbol",
+    "as_of_date",
+    "issuer_daily"
+  ],
+  "title": "GovernmentSignalIssuerSummaryResponse",
+  "type": "object"
+}
