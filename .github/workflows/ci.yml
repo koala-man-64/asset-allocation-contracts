@@ -67,12 +67,12 @@ jobs:
           python -m pip install build pytest
           python -m pip install -e python
 
-      - name: Export schemas and fail on drift
+      - name: Export contract artifacts and fail on drift
         shell: bash
         run: |
           set -euo pipefail
           python python/scripts/export_schemas.py
-          git diff --exit-code -- schemas
+          git diff --exit-code -- schemas ts/src/contracts.ts
 
       - name: Run Python contract tests
         shell: bash

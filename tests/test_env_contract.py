@@ -102,7 +102,6 @@ def test_setup_env_reads_dispatch_private_key_from_file(tmp_path: Path) -> None:
     env_path.write_text(
         "\n".join(
             [
-                "CONTROL_PLANE_REPOSITORY=owner/asset-allocation-control-plane",
                 "JOBS_REPOSITORY=owner/asset-allocation-jobs",
                 "UI_REPOSITORY=owner/asset-allocation-ui",
                 "DISPATCH_APP_ID=123456",

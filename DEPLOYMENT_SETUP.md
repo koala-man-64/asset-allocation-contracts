@@ -10,7 +10,7 @@ This repo should publish versioned contract artifacts only:
 - a TypeScript package from `ts/`
 - JSON schemas from `schemas/`
 
-The runtime repos should pin a contracts version and deploy against that version. `contracts_released` dispatches now carry the exact published version so downstream repos can auto-adopt it without manual version edits.
+The runtime repos should pin a contracts version and deploy against that version. `contracts_released` dispatches carry the exact published version for downstream jobs and UI automation.
 
 ## Current State
 
@@ -38,7 +38,7 @@ The operational path is:
 2. run `.github/workflows/security.yml`
 3. publish with `.github/workflows/release.yml`
 
-`release.yml` emits `artifacts/release-manifest.json` and dispatches `contracts_released` to the control-plane, jobs, and UI repos.
+`release.yml` emits `artifacts/release-manifest.json` and dispatches `contracts_released` to the jobs and UI repos.
 
 ## Operate
 
@@ -59,7 +59,7 @@ The operational path is:
 6. Revoke the bootstrap npm token.
 7. Publish with `.github/workflows/release.yml` using `workflow_dispatch`.
    The workflow reads the committed stable semver from `python/pyproject.toml` and `ts/package.json`, verifies manifest parity, checks npm and Python registry availability for that exact version, and then publishes TypeScript to public npm before publishing Python.
-8. Downstream repos receive the exact `contracts_version` in `contracts_released` and auto-pin that version in their own manifests. Humans no longer stage dependency bumps by hand.
+8. Downstream jobs and UI automation receive the exact `contracts_version` in `contracts_released` for their own release handling.
 
 ## Rollback
 
@@ -75,7 +75,7 @@ The operational path is:
 - If a manual `release.yml` run fails because a version already exists, bump both manifests with `scripts/prepare-release.ps1`, commit the change, and rerun release.
 - If TypeScript publish fails, verify npm scope ownership, the trusted publisher configuration on npm, and that the GitHub job has `id-token: write`.
 - If Python publish fails, verify `PYTHON_PACKAGE_INDEX_URL`, `PYTHON_PUBLISH_REPOSITORY_URL`, `PYTHON_PUBLISH_USERNAME`, and `PYTHON_PUBLISH_PASSWORD`.
-- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `CONTROL_PLANE_REPOSITORY`, `JOBS_REPOSITORY`, and `UI_REPOSITORY`. Consumer repos now expect `client_payload.contracts_version` so they can auto-pin the published version.
+- If downstream dispatch fails, verify `DISPATCH_APP_ID`, `DISPATCH_APP_PRIVATE_KEY`, the readable PEM file passed to `scripts/setup-env.ps1`, and the target repo variables `JOBS_REPOSITORY` and `UI_REPOSITORY`.
 
 ## Dependencies
 
@@ -83,7 +83,7 @@ The operational path is:
 - Python package registry credentials
 - npm trusted publisher configuration for `@asset-allocation/contracts`
 - One-time granular npm bootstrap token for the first npm publish only
-- Downstream repos: `asset-allocation-control-plane`, `asset-allocation-jobs`, and `asset-allocation-ui`
+- Downstream repos: `asset-allocation-jobs` and `asset-allocation-ui`
 
 ## Notes
 

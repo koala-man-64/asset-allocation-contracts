@@ -443,7 +443,6 @@ Source of truth:
 This repo uses `.env.web` as the sync surface for GitHub variables and secrets. The example below is structurally valid and matches the documented env contract.
 
 ```dotenv
-CONTROL_PLANE_REPOSITORY=example-org/asset-allocation-control-plane
 JOBS_REPOSITORY=example-org/asset-allocation-jobs
 UI_REPOSITORY=example-org/asset-allocation-ui
 DISPATCH_APP_ID=123456

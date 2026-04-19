@@ -17,6 +17,15 @@ jobs:
     name: release
     runs-on: ubuntu-22.04
     steps:
+      - name: Verify release ref is main
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            printf 'release.yml only publishes from main. Selected ref: %s\n' "${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -269,17 +278,15 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           CONTRACTS_VERSION: ${{ steps.version.outputs.contracts_version }}
-          CONTROL_PLANE_REPOSITORY: ${{ vars.CONTROL_PLANE_REPOSITORY }}
           JOBS_REPOSITORY: ${{ vars.JOBS_REPOSITORY }}
           UI_REPOSITORY: ${{ vars.UI_REPOSITORY }}
         shell: bash
         run: |
           set -euo pipefail
           owner="${GITHUB_REPOSITORY_OWNER}"
-          control_plane_repo="${CONTROL_PLANE_REPOSITORY:-${owner}/asset-allocation-control-plane}"
           jobs_repo="${JOBS_REPOSITORY:-${owner}/asset-allocation-jobs}"
           ui_repo="${UI_REPOSITORY:-${owner}/asset-allocation-ui}"
-          for repo in "${control_plane_repo}" "${jobs_repo}" "${ui_repo}"; do
+          for repo in "${jobs_repo}" "${ui_repo}"; do
             gh api "repos/${repo}/dispatches" \
               --method POST \
               --input - <<EOF
@@ -306,5 +313,5 @@ jobs:
             echo "- Version: \`${CONTRACTS_VERSION}\`"
             echo "- Ref: \`${GITHUB_REF_NAME}\`"
             echo "- Manifest: \`artifacts/release-manifest.json\`"
-            echo "- Downstream dispatch: \`contracts_released\` to control-plane, jobs, and ui"
+            echo "- Downstream dispatch: \`contracts_released\` to jobs and ui"
           } >> "${GITHUB_STEP_SUMMARY}"

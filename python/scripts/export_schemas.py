@@ -1,40 +1,19 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from asset_allocation_contracts.backtest import (
-    BacktestClaimRequest,
-    BacktestCompleteRequest,
-    BacktestFailRequest,
-    BacktestReconcileResponse,
-    BacktestStartRequest,
-    BacktestSummary,
-    ClosedPositionListResponse,
-    RollingMetricsResponse,
-    RunListResponse,
-    RunRecordResponse,
-    TimeseriesResponse,
-    TradeListResponse,
-)
-from asset_allocation_contracts.ranking import RankingSchemaConfig
-from asset_allocation_contracts.regime import (
-    RegimeInputRow,
-    RegimeModelConfig,
-    RegimeModelDetailResponse,
-    RegimeModelRevision,
-    RegimeModelSummary,
-    RegimePolicy,
-    RegimeSnapshot,
-    RegimeTransitionRow,
-)
-from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefinition
-from asset_allocation_contracts.strategy import UniverseCatalogResponse, UniversePreviewResponse
-from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from contract_codegen import SCHEMA_EXPORTS, write_typescript_contracts
 
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMAS = ROOT / "schemas"
+TS_CONTRACTS = ROOT / "ts" / "src" / "contracts.ts"
 
 
 def _write(name: str, model) -> None:
@@ -44,33 +23,9 @@ def _write(name: str, model) -> None:
 
 
 def main() -> None:
-    _write("strategy-config.schema.json", StrategyConfig)
-    _write("universe-definition.schema.json", UniverseDefinition)
-    _write("universe-catalog.schema.json", UniverseCatalogResponse)
-    _write("universe-preview.schema.json", UniversePreviewResponse)
-    _write("ranking-schema.schema.json", RankingSchemaConfig)
-    _write("regime-policy.schema.json", RegimePolicy)
-    _write("regime-model-config.schema.json", RegimeModelConfig)
-    _write("regime-snapshot.schema.json", RegimeSnapshot)
-    _write("regime-input-row.schema.json", RegimeInputRow)
-    _write("regime-transition-row.schema.json", RegimeTransitionRow)
-    _write("regime-model-summary.schema.json", RegimeModelSummary)
-    _write("regime-model-revision.schema.json", RegimeModelRevision)
-    _write("regime-model-detail.schema.json", RegimeModelDetailResponse)
-    _write("ui-runtime-config.schema.json", UiRuntimeConfig)
-    _write("auth-session-status.schema.json", AuthSessionStatus)
-    _write("backtest-run-record.schema.json", RunRecordResponse)
-    _write("backtest-run-list.schema.json", RunListResponse)
-    _write("backtest-summary.schema.json", BacktestSummary)
-    _write("backtest-timeseries.schema.json", TimeseriesResponse)
-    _write("backtest-rolling-metrics.schema.json", RollingMetricsResponse)
-    _write("backtest-trade-list.schema.json", TradeListResponse)
-    _write("backtest-closed-position-list.schema.json", ClosedPositionListResponse)
-    _write("backtest-claim-request.schema.json", BacktestClaimRequest)
-    _write("backtest-start-request.schema.json", BacktestStartRequest)
-    _write("backtest-complete-request.schema.json", BacktestCompleteRequest)
-    _write("backtest-fail-request.schema.json", BacktestFailRequest)
-    _write("backtest-reconcile-response.schema.json", BacktestReconcileResponse)
+    for filename, model in SCHEMA_EXPORTS:
+        _write(filename, model)
+    write_typescript_contracts(TS_CONTRACTS)
 
 
 if __name__ == "__main__":
