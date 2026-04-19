@@ -35,6 +35,15 @@ from asset_allocation_contracts.government_signals import (
     GovernmentSignalPortfolioExposureRequest,
     IssuerGovernmentSignalDaily,
 )
+from asset_allocation_contracts.intraday import (
+    IntradayMonitorClaimResponse,
+    IntradayMonitorCompleteRequest,
+    IntradayMonitorEvent,
+    IntradayMonitorRunSummary,
+    IntradaySymbolStatus,
+    IntradayWatchlistDetail,
+    IntradayWatchlistUpsertRequest,
+)
 from asset_allocation_contracts.portfolio import (
     PortfolioAccount,
     PortfolioAccountUpsertRequest,
@@ -195,6 +204,82 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert schema["required"] == ["authMode", "subject"]
     assert "requiredRoles" in schema["properties"]
     assert "grantedRoles" in schema["properties"]
+
+
+def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:
+    payload = IntradayWatchlistUpsertRequest(
+        name="Large Cap Momentum",
+        description="Operator-managed intraday names.",
+        symbols=["aapl", " msft ", "AAPL"],
+    )
+
+    assert payload.symbols == ["AAPL", "MSFT"]
+    assert payload.pollIntervalMinutes == 5
+    assert payload.refreshCooldownMinutes == 15
+    assert payload.marketSession == "us_equities_regular"
+
+
+def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() -> None:
+    payload = IntradayMonitorClaimResponse(
+        claimToken="claim-1",
+        run=IntradayMonitorRunSummary(
+            runId="run-1",
+            watchlistId="watch-1",
+            watchlistName="Tech Core",
+            triggerKind="manual",
+            status="claimed",
+            forceRefresh=True,
+            symbolCount=2,
+        ),
+        watchlist=IntradayWatchlistDetail(
+            watchlistId="watch-1",
+            name="Tech Core",
+            description="operator list",
+            enabled=True,
+            symbolCount=2,
+            symbols=["AAPL", "MSFT"],
+        ),
+        currentSymbolStatuses=[
+            IntradaySymbolStatus(
+                symbol="aapl",
+                monitorStatus="observed",
+                lastObservedPrice=213.42,
+            )
+        ],
+    )
+
+    assert payload.claimToken == "claim-1"
+    assert payload.run is not None
+    assert payload.run.forceRefresh is True
+    assert payload.watchlist is not None
+    assert payload.watchlist.symbols == ["AAPL", "MSFT"]
+    assert payload.currentSymbolStatuses[0].symbol == "AAPL"
+
+
+def test_intraday_monitor_complete_request_accepts_statuses_and_events() -> None:
+    payload = IntradayMonitorCompleteRequest(
+        claimToken="claim-1",
+        symbolStatuses=[
+            IntradaySymbolStatus(
+                symbol="aapl",
+                monitorStatus="refresh_queued",
+                lastObservedPrice=213.42,
+            )
+        ],
+        events=[
+            IntradayMonitorEvent(
+                eventType="snapshot_polled",
+                severity="info",
+                message="Fetched latest snapshot.",
+                details={"source": "massive"},
+            )
+        ],
+        refreshSymbols=["aapl", "msft", "AAPL"],
+    )
+
+    assert payload.symbolStatuses[0].symbol == "AAPL"
+    assert payload.events[0].details["source"] == "massive"
+    assert payload.refreshSymbols == ["AAPL", "MSFT"]
 
 
 def test_regime_snapshot_and_model_config_validate() -> None:

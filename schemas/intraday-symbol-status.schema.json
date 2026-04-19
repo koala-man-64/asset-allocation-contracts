@@ -1,0 +1,120 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "lastError": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasterror"
+    },
+    "lastObservedPrice": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastobservedprice"
+    },
+    "lastRunId": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastrunid"
+    },
+    "lastSnapshotAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastsnapshotat"
+    },
+    "lastSuccessfulMarketRefreshAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastsuccessfulmarketrefreshat"
+    },
+    "monitorStatus": {
+      "default": "idle",
+      "enum": [
+        "idle",
+        "observed",
+        "refresh_queued",
+        "refreshed",
+        "failed"
+      ],
+      "title": "Monitorstatus",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    },
+    "watchlistId": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Watchlistid"
+    }
+  },
+  "required": [
+    "symbol"
+  ],
+  "title": "IntradaySymbolStatus",
+  "type": "object"
+}

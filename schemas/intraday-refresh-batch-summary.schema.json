@@ -1,0 +1,159 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "batchId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Batchid",
+      "type": "string"
+    },
+    "bucketLetter": {
+      "maxLength": 1,
+      "minLength": 1,
+      "title": "Bucketletter",
+      "type": "string"
+    },
+    "claimedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claimedat"
+    },
+    "completedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completedat"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    },
+    "domain": {
+      "default": "market",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Domain",
+      "type": "string"
+    },
+    "executionName": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Executionname"
+    },
+    "lastError": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasterror"
+    },
+    "runId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "status": {
+      "default": "queued",
+      "enum": [
+        "queued",
+        "claimed",
+        "completed",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "symbolCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Symbolcount",
+      "type": "integer"
+    },
+    "symbols": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Symbols",
+      "type": "array"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    },
+    "watchlistId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Watchlistid",
+      "type": "string"
+    },
+    "watchlistName": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Watchlistname"
+    }
+  },
+  "required": [
+    "batchId",
+    "runId",
+    "watchlistId",
+    "bucketLetter"
+  ],
+  "title": "IntradayRefreshBatchSummary",
+  "type": "object"
+}
