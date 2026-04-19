@@ -1,16 +1,27 @@
 from __future__ import annotations
 
+import json
 import types
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, get_args, get_origin, get_type_hints
 
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
-from asset_allocation_contracts import backtest, ranking, regime, strategy, ui_config
+from asset_allocation_contracts import (
+    ai_chat,
+    backtest,
+    government_signals,
+    portfolio,
+    ranking,
+    regime,
+    strategy,
+    symbol_enrichment,
+    ui_config,
+)
 
 
-SCHEMA_EXPORTS: list[tuple[str, type[BaseModel]]] = [
+SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("strategy-config.schema.json", strategy.StrategyConfig),
     ("universe-definition.schema.json", strategy.UniverseDefinition),
     ("universe-catalog.schema.json", strategy.UniverseCatalogResponse),
@@ -43,6 +54,70 @@ SCHEMA_EXPORTS: list[tuple[str, type[BaseModel]]] = [
     ("backtest-complete-request.schema.json", backtest.BacktestCompleteRequest),
     ("backtest-fail-request.schema.json", backtest.BacktestFailRequest),
     ("backtest-reconcile-response.schema.json", backtest.BacktestReconcileResponse),
+    ("portfolio-account.schema.json", portfolio.PortfolioAccount),
+    ("portfolio-account-detail.schema.json", portfolio.PortfolioAccountDetailResponse),
+    ("portfolio-account-list.schema.json", portfolio.PortfolioAccountListResponse),
+    ("portfolio-account-revision.schema.json", portfolio.PortfolioAccountRevision),
+    ("portfolio-account-upsert-request.schema.json", portfolio.PortfolioAccountUpsertRequest),
+    ("portfolio-alert-list.schema.json", portfolio.PortfolioAlertListResponse),
+    ("portfolio-assignment.schema.json", portfolio.PortfolioAssignment),
+    ("portfolio-assignment-request.schema.json", portfolio.PortfolioAssignmentRequest),
+    ("portfolio-definition.schema.json", portfolio.PortfolioDefinition),
+    ("portfolio-definition-detail.schema.json", portfolio.PortfolioDefinitionDetailResponse),
+    ("portfolio-history.schema.json", portfolio.PortfolioHistoryResponse),
+    ("portfolio-ledger-event.schema.json", portfolio.PortfolioLedgerEvent),
+    ("portfolio-ledger-event-request.schema.json", portfolio.PortfolioLedgerEventPayload),
+    ("portfolio-list.schema.json", portfolio.PortfolioListResponse),
+    ("portfolio-position-list.schema.json", portfolio.PortfolioPositionListResponse),
+    ("portfolio-rebalance-apply-request.schema.json", portfolio.PortfolioRebalanceApplyRequest),
+    ("portfolio-rebalance-preview-request.schema.json", portfolio.PortfolioRebalancePreviewRequest),
+    ("portfolio-rebalance-proposal.schema.json", portfolio.RebalanceProposal),
+    ("portfolio-revision.schema.json", portfolio.PortfolioRevision),
+    ("portfolio-snapshot.schema.json", portfolio.PortfolioSnapshot),
+    ("portfolio-upsert-request.schema.json", portfolio.PortfolioUpsertRequest),
+    ("government-signal-congress-event.schema.json", government_signals.CongressTradeEvent),
+    ("government-signal-congress-event-list.schema.json", government_signals.CongressTradeEventListResponse),
+    ("government-signal-congress-version.schema.json", government_signals.CongressTradeVersion),
+    ("government-signal-contract-event.schema.json", government_signals.GovernmentContractEvent),
+    (
+        "government-signal-contract-event-list.schema.json",
+        government_signals.GovernmentContractEventListResponse,
+    ),
+    ("government-signal-contract-version.schema.json", government_signals.GovernmentContractVersion),
+    ("government-signal-issuer-daily.schema.json", government_signals.IssuerGovernmentSignalDaily),
+    ("government-signal-alert.schema.json", government_signals.GovernmentSignalAlert),
+    ("government-signal-alert-list.schema.json", government_signals.GovernmentSignalAlertListResponse),
+    ("government-signal-mapping-review.schema.json", government_signals.GovernmentSignalMappingReviewResponse),
+    (
+        "government-signal-mapping-override-request.schema.json",
+        government_signals.GovernmentSignalMappingOverrideRequest,
+    ),
+    (
+        "government-signal-mapping-override-response.schema.json",
+        government_signals.GovernmentSignalMappingOverrideResponse,
+    ),
+    ("government-signal-issuer-summary.schema.json", government_signals.GovernmentSignalIssuerSummaryResponse),
+    (
+        "government-signal-portfolio-exposure-request.schema.json",
+        government_signals.GovernmentSignalPortfolioExposureRequest,
+    ),
+    (
+        "government-signal-portfolio-exposure-response.schema.json",
+        government_signals.GovernmentSignalPortfolioExposureResponse,
+    ),
+    ("ai-chat-request.schema.json", ai_chat.AiChatRequest),
+    ("ai-chat-stream-event.schema.json", TypeAdapter(ai_chat.AiChatStreamEvent)),
+    ("symbol-cleanup-work-item.schema.json", symbol_enrichment.SymbolCleanupWorkItem),
+    ("symbol-cleanup-run-summary.schema.json", symbol_enrichment.SymbolCleanupRunSummary),
+    ("symbol-enrichment-resolve-request.schema.json", symbol_enrichment.SymbolEnrichmentResolveRequest),
+    ("symbol-enrichment-resolve-response.schema.json", symbol_enrichment.SymbolEnrichmentResolveResponse),
+    ("symbol-profile-current.schema.json", symbol_enrichment.SymbolProfileCurrent),
+    ("symbol-profile-history-entry.schema.json", symbol_enrichment.SymbolProfileHistoryEntry),
+    ("symbol-profile-override.schema.json", symbol_enrichment.SymbolProfileOverride),
+    ("symbol-enrichment-summary.schema.json", symbol_enrichment.SymbolEnrichmentSummaryResponse),
+    ("symbol-enrichment-symbol-list-item.schema.json", symbol_enrichment.SymbolEnrichmentSymbolListItem),
+    ("symbol-enrichment-symbol-detail.schema.json", symbol_enrichment.SymbolEnrichmentSymbolDetailResponse),
+    ("symbol-enrichment-enqueue-request.schema.json", symbol_enrichment.SymbolEnrichmentEnqueueRequest),
 ]
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
@@ -70,61 +145,8 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("BacktestLookupState", backtest.BacktestLookupState),
     ("BacktestStreamEventType", backtest.BacktestStreamEventType),
     ("TradeRole", backtest.TradeRole),
+    ("AiChatStreamEvent", ai_chat.AiChatStreamEvent),
     ("UniverseNode", strategy.UniverseGroup | strategy.UniverseCondition),
-]
-
-TS_INTERFACE_EXPORTS: list[type[BaseModel]] = [
-    strategy.ExitRule,
-    strategy.UniverseCondition,
-    strategy.UniverseFieldDefinition,
-    strategy.UniverseCatalogResponse,
-    strategy.UniversePreviewResponse,
-    strategy.UniverseGroup,
-    strategy.UniverseDefinition,
-    regime.TargetGrossExposureByRegime,
-    regime.RegimePolicy,
-    strategy.StrategyConfig,
-    ranking.RankingTransform,
-    ranking.RankingFactor,
-    ranking.RankingGroup,
-    ranking.RankingSchemaConfig,
-    ranking.RankingPreviewRow,
-    ranking.RankingMaterializationSummary,
-    regime.RegimeModelConfig,
-    regime.RegimeSnapshot,
-    regime.RegimeInputRow,
-    regime.RegimeTransitionRow,
-    regime.RegimeModelSummary,
-    regime.RegimeModelRevision,
-    regime.RegimeModelDetailResponse,
-    ui_config.UiRuntimeConfig,
-    ui_config.AuthSessionStatus,
-    backtest.RunRecordResponse,
-    backtest.RunListResponse,
-    backtest.RunPinsResponse,
-    backtest.RunStatusResponse,
-    backtest.StrategyReferenceInput,
-    backtest.BacktestResultLinks,
-    backtest.BacktestLookupRequest,
-    backtest.BacktestLookupResponse,
-    backtest.BacktestRunRequest,
-    backtest.BacktestRunResponse,
-    backtest.BacktestSummary,
-    backtest.BacktestResultMetadata,
-    backtest.BacktestStreamEvent,
-    backtest.TimeseriesPointResponse,
-    backtest.TimeseriesResponse,
-    backtest.RollingMetricPointResponse,
-    backtest.RollingMetricsResponse,
-    backtest.TradeResponse,
-    backtest.TradeListResponse,
-    backtest.ClosedPositionResponse,
-    backtest.ClosedPositionListResponse,
-    backtest.BacktestClaimRequest,
-    backtest.BacktestStartRequest,
-    backtest.BacktestCompleteRequest,
-    backtest.BacktestFailRequest,
-    backtest.BacktestReconcileResponse,
 ]
 
 FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
@@ -138,6 +160,12 @@ DEPRECATED_FIELD_NOTES: dict[tuple[str, str], str] = {
 }
 
 _ALIAS_NAME_BY_ANNOTATION: dict[Any, str] = {annotation: name for name, annotation in TS_ALIAS_EXPORTS}
+
+
+def write_schema_exports(path: Path) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    for filename, schema_target in SCHEMA_EXPORTS:
+        (path / filename).write_text(_schema_json(schema_target), encoding="utf-8")
 
 
 def write_typescript_contracts(path: Path) -> None:
@@ -154,11 +182,78 @@ def render_typescript_contracts() -> str:
     for name, annotation in TS_ALIAS_EXPORTS:
         lines.append(f"export type {name} = {_ts_type(annotation, prefer_alias_name=False)};")
 
-    for model in TS_INTERFACE_EXPORTS:
+    for model in _typescript_interface_exports():
         lines.append("")
         lines.extend(_render_interface(model))
 
     return "\n".join(lines) + "\n"
+
+
+def _schema_json(schema_target: Any) -> str:
+    if isinstance(schema_target, TypeAdapter):
+        schema = schema_target.json_schema()
+    elif isinstance(schema_target, type) and issubclass(schema_target, BaseModel):
+        schema = schema_target.model_json_schema()
+    else:
+        raise TypeError(f"Unsupported schema export target: {schema_target!r}")
+    return json.dumps(schema, indent=2, sort_keys=True) + "\n"
+
+
+def _typescript_interface_exports() -> list[type[BaseModel]]:
+    seen: dict[type[BaseModel], None] = {}
+
+    for _, schema_target in SCHEMA_EXPORTS:
+        if isinstance(schema_target, type) and issubclass(schema_target, BaseModel):
+            _collect_model_types(schema_target, seen)
+
+    for _, annotation in TS_ALIAS_EXPORTS:
+        _walk_annotation(annotation, seen)
+
+    return list(seen)
+
+
+def _collect_model_types(model: type[BaseModel], seen: dict[type[BaseModel], None]) -> None:
+    if model in seen:
+        return
+
+    seen[model] = None
+    type_hints = get_type_hints(model, include_extras=True)
+
+    for field_name, field_info in model.model_fields.items():
+        _walk_annotation(type_hints.get(field_name, field_info.annotation), seen)
+
+
+def _walk_annotation(annotation: Any, seen: dict[type[BaseModel], None]) -> None:
+    origin = get_origin(annotation)
+
+    if origin is types.GenericAlias:
+        origin = annotation.__origin__
+
+    if origin is not None and str(origin) == "typing.Annotated":
+        args = get_args(annotation)
+        if args:
+            _walk_annotation(args[0], seen)
+        return
+
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        _collect_model_types(annotation, seen)
+        return
+
+    if origin in {list, set, frozenset, tuple}:
+        for arg in get_args(annotation):
+            if arg is not Ellipsis:
+                _walk_annotation(arg, seen)
+        return
+
+    if origin is dict:
+        args = get_args(annotation)
+        if len(args) == 2:
+            _walk_annotation(args[1], seen)
+        return
+
+    if origin in {types.UnionType, getattr(types, "UnionType", None)} or str(origin) == "typing.Union":
+        for arg in get_args(annotation):
+            _walk_annotation(arg, seen)
 
 
 def _render_interface(model: type[BaseModel]) -> list[str]:

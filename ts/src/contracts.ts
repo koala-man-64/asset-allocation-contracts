@@ -25,76 +25,8 @@ export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
+export type AiChatStreamEvent = AiChatStartedEvent | AiChatStatusEvent | AiChatReasoningSummaryDeltaEvent | AiChatOutputTextDeltaEvent | AiChatCompletedEvent | AiChatErrorEvent;
 export type UniverseNode = UniverseGroup | UniverseCondition;
-
-export interface ExitRule {
-  id: string;
-  type: ExitRuleType;
-  scope: ExitRuleScope;
-  priceField?: ExitRulePriceField | null;
-  value?: number | null;
-  atrColumn?: string | null;
-  priority?: number | null;
-  action: ExitRuleAction;
-  minHoldBars: number;
-  reference?: ExitRuleReference | null;
-}
-
-export interface UniverseCondition {
-  kind: 'condition';
-  field: UniverseFieldId;
-  operator: UniverseConditionOperator;
-  value?: string | number | boolean | null;
-  values?: UniverseValue[] | null;
-}
-
-export interface UniverseFieldDefinition {
-  id: UniverseFieldId;
-  label: string;
-  valueKind: UniverseValueKind;
-  operators: UniverseConditionOperator[];
-}
-
-export interface UniverseCatalogResponse {
-  source: UniverseSource;
-  fields: UniverseFieldDefinition[];
-}
-
-export interface UniversePreviewResponse {
-  source: UniverseSource;
-  symbolCount: number;
-  sampleSymbols: string[];
-  fieldsUsed: UniverseFieldId[];
-  warnings: string[];
-}
-
-export interface UniverseGroup {
-  kind: 'group';
-  operator: UniverseGroupOperator;
-  clauses: UniverseNode[];
-}
-
-export interface UniverseDefinition {
-  source: UniverseSource;
-  root: UniverseGroup;
-}
-
-export interface TargetGrossExposureByRegime {
-  trending_bull: number;
-  trending_bear: number;
-  choppy_mean_reversion: number;
-  high_vol: number;
-  unclassified: number;
-}
-
-export interface RegimePolicy {
-  modelName: string;
-  targetGrossExposureByRegime: TargetGrossExposureByRegime;
-  blockOnTransition: boolean;
-  blockOnUnclassified: boolean;
-  honorHaltFlag: boolean;
-  onBlocked: RegimeBlockedAction;
-}
 
 export interface StrategyConfig {
   universeConfigName?: string | null;
@@ -111,9 +43,86 @@ export interface StrategyConfig {
   exits: ExitRule[];
 }
 
-export interface RankingTransform {
-  type: RankingTransformType;
-  params: Record<string, string | number | boolean | null>;
+export interface UniverseDefinition {
+  source: UniverseSource;
+  root: UniverseGroup;
+}
+
+export interface UniverseGroup {
+  kind: 'group';
+  operator: UniverseGroupOperator;
+  clauses: UniverseNode[];
+}
+
+export interface UniverseCondition {
+  kind: 'condition';
+  field: UniverseFieldId;
+  operator: UniverseConditionOperator;
+  value?: string | number | boolean | null;
+  values?: UniverseValue[] | null;
+}
+
+export interface RegimePolicy {
+  modelName: string;
+  targetGrossExposureByRegime: TargetGrossExposureByRegime;
+  blockOnTransition: boolean;
+  blockOnUnclassified: boolean;
+  honorHaltFlag: boolean;
+  onBlocked: RegimeBlockedAction;
+}
+
+export interface TargetGrossExposureByRegime {
+  trending_bull: number;
+  trending_bear: number;
+  choppy_mean_reversion: number;
+  high_vol: number;
+  unclassified: number;
+}
+
+export interface ExitRule {
+  id: string;
+  type: ExitRuleType;
+  scope: ExitRuleScope;
+  priceField?: ExitRulePriceField | null;
+  value?: number | null;
+  atrColumn?: string | null;
+  priority?: number | null;
+  action: ExitRuleAction;
+  minHoldBars: number;
+  reference?: ExitRuleReference | null;
+}
+
+export interface UniverseCatalogResponse {
+  source: UniverseSource;
+  fields: UniverseFieldDefinition[];
+}
+
+export interface UniverseFieldDefinition {
+  id: UniverseFieldId;
+  label: string;
+  valueKind: UniverseValueKind;
+  operators: UniverseConditionOperator[];
+}
+
+export interface UniversePreviewResponse {
+  source: UniverseSource;
+  symbolCount: number;
+  sampleSymbols: string[];
+  fieldsUsed: UniverseFieldId[];
+  warnings: string[];
+}
+
+export interface RankingSchemaConfig {
+  universeConfigName?: string | null;
+  groups: RankingGroup[];
+  overallTransforms: RankingTransform[];
+}
+
+export interface RankingGroup {
+  name: string;
+  weight: number;
+  factors: RankingFactor[];
+  transforms: RankingTransform[];
 }
 
 export interface RankingFactor {
@@ -126,35 +135,9 @@ export interface RankingFactor {
   transforms: RankingTransform[];
 }
 
-export interface RankingGroup {
-  name: string;
-  weight: number;
-  factors: RankingFactor[];
-  transforms: RankingTransform[];
-}
-
-export interface RankingSchemaConfig {
-  universeConfigName?: string | null;
-  groups: RankingGroup[];
-  overallTransforms: RankingTransform[];
-}
-
-export interface RankingPreviewRow {
-  symbol: string;
-  rank: number;
-  score: number;
-}
-
-export interface RankingMaterializationSummary {
-  runId: string;
-  strategyName: string;
-  rankingSchemaName: string;
-  rankingSchemaVersion: number;
-  outputTableName: string;
-  startDate?: string | null;
-  endDate?: string | null;
-  rowCount: number;
-  dateCount: number;
+export interface RankingTransform {
+  type: RankingTransformType;
+  params: Record<string, string | number | boolean | null>;
 }
 
 export interface RegimeModelConfig {
@@ -294,15 +277,26 @@ export interface RunListResponse {
   offset: number;
 }
 
-export interface RunPinsResponse {
-  strategyName?: string | null;
+export interface BacktestLookupRequest {
+  strategyRef?: StrategyReferenceInput | null;
+  strategyConfig?: StrategyConfig | null;
+  startTs: string;
+  endTs: string;
+  barSize: string;
+  runName?: string | null;
+}
+
+export interface StrategyReferenceInput {
+  strategyName: string;
   strategyVersion?: number | null;
-  rankingSchemaName?: string | null;
-  rankingSchemaVersion?: number | null;
-  universeName?: string | null;
-  universeVersion?: number | null;
-  regimeModelName?: string | null;
-  regimeModelVersion?: number | null;
+}
+
+export interface BacktestLookupResponse {
+  found: boolean;
+  state: BacktestLookupState;
+  run?: RunStatusResponse | null;
+  result?: BacktestSummary | null;
+  links?: BacktestResultLinks | null;
 }
 
 export interface RunStatusResponse {
@@ -324,50 +318,15 @@ export interface RunStatusResponse {
   pins?: RunPinsResponse | null;
 }
 
-export interface StrategyReferenceInput {
-  strategyName: string;
+export interface RunPinsResponse {
+  strategyName?: string | null;
   strategyVersion?: number | null;
-}
-
-export interface BacktestResultLinks {
-  summaryUrl: string;
-  metricsTimeseriesUrl: string;
-  metricsRollingUrl: string;
-  tradesUrl: string;
-  closedPositionsUrl: string;
-}
-
-export interface BacktestLookupRequest {
-  strategyRef?: StrategyReferenceInput | null;
-  strategyConfig?: StrategyConfig | null;
-  startTs: string;
-  endTs: string;
-  barSize: string;
-  runName?: string | null;
-}
-
-export interface BacktestLookupResponse {
-  found: boolean;
-  state: BacktestLookupState;
-  run?: RunStatusResponse | null;
-  result?: BacktestSummary | null;
-  links?: BacktestResultLinks | null;
-}
-
-export interface BacktestRunRequest {
-  strategyRef?: StrategyReferenceInput | null;
-  strategyConfig?: StrategyConfig | null;
-  startTs: string;
-  endTs: string;
-  barSize: string;
-  runName?: string | null;
-}
-
-export interface BacktestRunResponse {
-  run: RunStatusResponse;
-  created: boolean;
-  reusedInflight: boolean;
-  streamUrl: string;
+  rankingSchemaName?: string | null;
+  rankingSchemaVersion?: number | null;
+  universeName?: string | null;
+  universeVersion?: number | null;
+  regimeModelName?: string | null;
+  regimeModelVersion?: number | null;
 }
 
 export interface BacktestSummary {
@@ -408,11 +367,28 @@ export interface BacktestSummary {
   [key: string]: unknown;
 }
 
-export interface BacktestResultMetadata {
-  results_schema_version: number;
-  bar_size: string;
-  periods_per_year: number;
-  strategy_scope: string;
+export interface BacktestResultLinks {
+  summaryUrl: string;
+  metricsTimeseriesUrl: string;
+  metricsRollingUrl: string;
+  tradesUrl: string;
+  closedPositionsUrl: string;
+}
+
+export interface BacktestRunRequest {
+  strategyRef?: StrategyReferenceInput | null;
+  strategyConfig?: StrategyConfig | null;
+  startTs: string;
+  endTs: string;
+  barSize: string;
+  runName?: string | null;
+}
+
+export interface BacktestRunResponse {
+  run: RunStatusResponse;
+  created: boolean;
+  reusedInflight: boolean;
+  streamUrl: string;
 }
 
 export interface BacktestStreamEvent {
@@ -421,6 +397,20 @@ export interface BacktestStreamEvent {
   summary?: BacktestSummary | null;
   metadata?: BacktestResultMetadata | null;
   links?: BacktestResultLinks | null;
+}
+
+export interface BacktestResultMetadata {
+  results_schema_version: number;
+  bar_size: string;
+  periods_per_year: number;
+  strategy_scope: string;
+}
+
+export interface TimeseriesResponse {
+  metadata?: BacktestResultMetadata | null;
+  points: TimeseriesPointResponse[];
+  total_points: number;
+  truncated: boolean;
 }
 
 export interface TimeseriesPointResponse {
@@ -440,9 +430,9 @@ export interface TimeseriesPointResponse {
   trade_count?: number | null;
 }
 
-export interface TimeseriesResponse {
+export interface RollingMetricsResponse {
   metadata?: BacktestResultMetadata | null;
-  points: TimeseriesPointResponse[];
+  points: RollingMetricPointResponse[];
   total_points: number;
   truncated: boolean;
 }
@@ -464,11 +454,11 @@ export interface RollingMetricPointResponse {
   net_exposure_avg?: number | null;
 }
 
-export interface RollingMetricsResponse {
-  metadata?: BacktestResultMetadata | null;
-  points: RollingMetricPointResponse[];
-  total_points: number;
-  truncated: boolean;
+export interface TradeListResponse {
+  trades: TradeResponse[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface TradeResponse {
@@ -484,8 +474,8 @@ export interface TradeResponse {
   trade_role?: TradeRole | null;
 }
 
-export interface TradeListResponse {
-  trades: TradeResponse[];
+export interface ClosedPositionListResponse {
+  positions: ClosedPositionResponse[];
   total: number;
   limit: number;
   offset: number;
@@ -508,13 +498,6 @@ export interface ClosedPositionResponse {
   total_transaction_cost: number;
   exit_reason?: string | null;
   exit_rule_id?: string | null;
-}
-
-export interface ClosedPositionListResponse {
-  positions: ClosedPositionResponse[];
-  total: number;
-  limit: number;
-  offset: number;
 }
 
 export interface BacktestClaimRequest {
@@ -544,84 +527,18 @@ export interface BacktestReconcileResponse {
   failedRunIds: string[];
 }
 
-export type PortfolioStatus = 'draft' | 'active' | 'archived';
-export type PortfolioMode = 'internal_model_managed';
-export type PortfolioAccountingDepth = 'position_level';
-export type PortfolioCadenceMode = 'strategy_native';
-export type PortfolioAssignmentStatus = 'scheduled' | 'active' | 'ended';
-export type LedgerEventType =
-  | 'opening_balance'
-  | 'deposit'
-  | 'withdrawal'
-  | 'fee'
-  | 'dividend'
-  | 'rebalance_buy'
-  | 'rebalance_sell'
-  | 'correction';
-export type FreshnessState = 'fresh' | 'stale' | 'error' | 'missing';
-export type PortfolioDataDomain =
-  | 'valuation'
-  | 'positions'
-  | 'risk'
-  | 'attribution'
-  | 'ledger'
-  | 'alerts';
-export type PortfolioAlertSeverity = 'info' | 'warning' | 'critical';
-export type PortfolioAlertStatus = 'open' | 'acknowledged' | 'resolved';
-export type TradeSide = 'buy' | 'sell';
-
-export interface StrategyVersionReference {
-  strategyName: string;
-  strategyVersion: number;
-}
-
-export interface PortfolioSleeveAllocation {
-  sleeveId: string;
-  sleeveName?: string;
-  strategy: StrategyVersionReference;
-  targetWeight: number;
-  minWeight?: number | null;
-  maxWeight?: number | null;
-  enabled: boolean;
-  rebalancePriority: number;
-  notes?: string;
-}
-
-export interface PortfolioDefinition {
-  name: string;
-  description?: string;
-  benchmarkSymbol?: string | null;
-  status: PortfolioStatus;
-  latestVersion?: number | null;
-  activeVersion?: number | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
-export interface PortfolioRevision {
-  portfolioName: string;
-  version: number;
-  description?: string;
-  benchmarkSymbol?: string | null;
-  allocations: PortfolioSleeveAllocation[];
-  notes?: string;
-  publishedAt?: string | null;
-  createdAt?: string | null;
-  createdBy?: string | null;
-}
-
 export interface PortfolioAccount {
   accountId: string;
   name: string;
-  description?: string;
-  status: PortfolioStatus;
-  mode: PortfolioMode;
-  accountingDepth: PortfolioAccountingDepth;
-  cadenceMode: PortfolioCadenceMode;
+  description: string;
+  status: 'draft' | 'active' | 'archived';
+  mode: 'internal_model_managed';
+  accountingDepth: 'position_level';
+  cadenceMode: 'strategy_native';
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
-  mandate?: string;
+  mandate: string;
   latestRevision?: number | null;
   activeRevision?: number | null;
   activePortfolioName?: string | null;
@@ -632,20 +549,27 @@ export interface PortfolioAccount {
   openAlertCount: number;
 }
 
+export interface PortfolioAccountDetailResponse {
+  account: PortfolioAccount;
+  revision?: PortfolioAccountRevision | null;
+  activeAssignment?: PortfolioAssignment | null;
+  recentLedgerEvents: PortfolioLedgerEvent[];
+}
+
 export interface PortfolioAccountRevision {
   accountId: string;
   version: number;
   name: string;
-  description?: string;
-  mandate?: string;
-  status: PortfolioStatus;
-  mode: PortfolioMode;
-  accountingDepth: PortfolioAccountingDepth;
-  cadenceMode: PortfolioCadenceMode;
+  description: string;
+  mandate: string;
+  status: 'draft' | 'active' | 'archived';
+  mode: 'internal_model_managed';
+  accountingDepth: 'position_level';
+  cadenceMode: 'strategy_native';
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
-  notes?: string;
+  notes: string;
   createdAt?: string | null;
   createdBy?: string | null;
 }
@@ -658,14 +582,14 @@ export interface PortfolioAssignment {
   portfolioVersion: number;
   effectiveFrom: string;
   effectiveTo?: string | null;
-  status: PortfolioAssignmentStatus;
-  notes?: string;
+  status: 'scheduled' | 'active' | 'ended';
+  notes: string;
   createdAt?: string | null;
 }
 
-export interface PortfolioLedgerEventPayload {
+export interface PortfolioLedgerEvent {
   effectiveAt: string;
-  eventType: LedgerEventType;
+  eventType: 'opening_balance' | 'deposit' | 'withdrawal' | 'fee' | 'dividend' | 'rebalance_buy' | 'rebalance_sell' | 'correction';
   currency: string;
   cashAmount: number;
   symbol?: string | null;
@@ -673,30 +597,40 @@ export interface PortfolioLedgerEventPayload {
   price?: number | null;
   commission: number;
   slippageCost: number;
-  description?: string;
-}
-
-export interface PortfolioLedgerEvent extends PortfolioLedgerEventPayload {
+  description: string;
   eventId: string;
   accountId: string;
 }
 
-export interface FreshnessStatus {
-  domain: PortfolioDataDomain;
-  state: FreshnessState;
-  asOf?: string | null;
-  checkedAt?: string | null;
-  reason?: string;
+export interface PortfolioAccountListResponse {
+  accounts: PortfolioAccount[];
+}
+
+export interface PortfolioAccountUpsertRequest {
+  name: string;
+  description: string;
+  mandate: string;
+  baseCurrency: string;
+  benchmarkSymbol?: string | null;
+  inceptionDate: string;
+  openingCash?: number | null;
+  notes: string;
+}
+
+export interface PortfolioAlertListResponse {
+  alerts: PortfolioAlert[];
+  total: number;
+  openCount: number;
 }
 
 export interface PortfolioAlert {
   alertId: string;
   accountId: string;
-  severity: PortfolioAlertSeverity;
-  status: PortfolioAlertStatus;
+  severity: 'info' | 'warning' | 'critical';
+  status: 'open' | 'acknowledged' | 'resolved';
   code: string;
   title: string;
-  description?: string;
+  description: string;
   detectedAt: string;
   acknowledgedAt?: string | null;
   acknowledgedBy?: string | null;
@@ -704,30 +638,103 @@ export interface PortfolioAlert {
   asOf?: string | null;
 }
 
-export interface StrategySliceAttribution {
-  asOf: string;
-  sleeveId: string;
-  strategyName: string;
-  strategyVersion: number;
-  targetWeight: number;
-  actualWeight: number;
-  marketValue: number;
-  grossExposure: number;
-  netExposure: number;
-  pnlContribution: number;
-  returnContribution: number;
-  drawdownContribution: number;
-  turnover?: number | null;
-  sinceInceptionReturn?: number | null;
+export interface PortfolioAssignmentRequest {
+  accountVersion: number;
+  portfolioName: string;
+  portfolioVersion: number;
+  effectiveFrom: string;
+  notes: string;
 }
 
-export interface PortfolioPositionContributor {
+export interface PortfolioDefinition {
+  name: string;
+  description: string;
+  benchmarkSymbol?: string | null;
+  status: 'draft' | 'active' | 'archived';
+  latestVersion?: number | null;
+  activeVersion?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface PortfolioDefinitionDetailResponse {
+  portfolio: PortfolioDefinition;
+  activeRevision?: PortfolioRevision | null;
+  revisions: PortfolioRevision[];
+}
+
+export interface PortfolioRevision {
+  portfolioName: string;
+  version: number;
+  description: string;
+  benchmarkSymbol?: string | null;
+  allocations: PortfolioSleeveAllocation[];
+  notes: string;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface PortfolioSleeveAllocation {
   sleeveId: string;
+  sleeveName: string;
+  strategy: StrategyVersionReference;
+  targetWeight: number;
+  minWeight?: number | null;
+  maxWeight?: number | null;
+  enabled: boolean;
+  rebalancePriority: number;
+  notes: string;
+}
+
+export interface StrategyVersionReference {
   strategyName: string;
   strategyVersion: number;
-  quantity: number;
-  marketValue: number;
-  weight: number;
+}
+
+export interface PortfolioHistoryResponse {
+  points: PortfolioHistoryPoint[];
+  totalPoints: number;
+  truncated: boolean;
+}
+
+export interface PortfolioHistoryPoint {
+  asOf: string;
+  nav: number;
+  cash: number;
+  grossExposure: number;
+  netExposure: number;
+  periodPnl?: number | null;
+  periodReturn?: number | null;
+  cumulativePnl?: number | null;
+  cumulativeReturn?: number | null;
+  drawdown?: number | null;
+  turnover?: number | null;
+  costDragBps?: number | null;
+}
+
+export interface PortfolioLedgerEventPayload {
+  effectiveAt: string;
+  eventType: 'opening_balance' | 'deposit' | 'withdrawal' | 'fee' | 'dividend' | 'rebalance_buy' | 'rebalance_sell' | 'correction';
+  currency: string;
+  cashAmount: number;
+  symbol?: string | null;
+  quantity?: number | null;
+  price?: number | null;
+  commission: number;
+  slippageCost: number;
+  description: string;
+}
+
+export interface PortfolioListResponse {
+  portfolios: PortfolioDefinition[];
+}
+
+export interface PortfolioPositionListResponse {
+  positions: PortfolioPosition[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface PortfolioPosition {
@@ -741,6 +748,51 @@ export interface PortfolioPosition {
   unrealizedPnl?: number | null;
   realizedPnl?: number | null;
   contributors: PortfolioPositionContributor[];
+}
+
+export interface PortfolioPositionContributor {
+  sleeveId: string;
+  strategyName: string;
+  strategyVersion: number;
+  quantity: number;
+  marketValue: number;
+  weight: number;
+}
+
+export interface PortfolioRebalanceApplyRequest {
+  proposalId: string;
+  executedAt: string;
+  notes: string;
+}
+
+export interface PortfolioRebalancePreviewRequest {
+  asOf: string;
+  notes: string;
+}
+
+export interface RebalanceProposal {
+  proposalId: string;
+  accountId: string;
+  asOf: string;
+  portfolioName: string;
+  portfolioVersion: number;
+  blocked: boolean;
+  warnings: string[];
+  blockedReasons: string[];
+  estimatedCashImpact: number;
+  estimatedTurnover: number;
+  trades: RebalanceTradeProposal[];
+}
+
+export interface RebalanceTradeProposal {
+  sleeveId: string;
+  symbol: string;
+  side: 'buy' | 'sell';
+  quantity: number;
+  estimatedPrice: number;
+  estimatedNotional: number;
+  estimatedCommission: number;
+  estimatedSlippageCost: number;
 }
 
 export interface PortfolioSnapshot {
@@ -761,120 +813,520 @@ export interface PortfolioSnapshot {
   slices: StrategySliceAttribution[];
 }
 
-export interface PortfolioHistoryPoint {
-  asOf: string;
-  nav: number;
-  cash: number;
-  grossExposure: number;
-  netExposure: number;
-  periodPnl?: number | null;
-  periodReturn?: number | null;
-  cumulativePnl?: number | null;
-  cumulativeReturn?: number | null;
-  drawdown?: number | null;
-  turnover?: number | null;
-  costDragBps?: number | null;
+export interface FreshnessStatus {
+  domain: 'valuation' | 'positions' | 'risk' | 'attribution' | 'ledger' | 'alerts';
+  state: 'fresh' | 'stale' | 'error' | 'missing';
+  asOf?: string | null;
+  checkedAt?: string | null;
+  reason: string;
 }
 
-export interface PortfolioPositionListResponse {
-  positions: PortfolioPosition[];
+export interface StrategySliceAttribution {
+  asOf: string;
+  sleeveId: string;
+  strategyName: string;
+  strategyVersion: number;
+  targetWeight: number;
+  actualWeight: number;
+  marketValue: number;
+  grossExposure: number;
+  netExposure: number;
+  pnlContribution: number;
+  returnContribution: number;
+  drawdownContribution: number;
+  turnover?: number | null;
+  sinceInceptionReturn?: number | null;
+}
+
+export interface PortfolioUpsertRequest {
+  name: string;
+  description: string;
+  benchmarkSymbol?: string | null;
+  allocations: PortfolioSleeveAllocation[];
+  notes: string;
+}
+
+export interface CongressTradeEvent {
+  event_id: string;
+  source_name: string;
+  source_event_key: string;
+  member_id?: string | null;
+  member_name: string;
+  chamber: 'house' | 'senate' | 'joint' | 'unknown';
+  party?: string | null;
+  state?: string | null;
+  district?: string | null;
+  committee_names: string[];
+  traded_at: string;
+  filed_at?: string | null;
+  notified_at?: string | null;
+  relationship_type: 'self' | 'spouse' | 'dependent_child' | 'joint' | 'unknown';
+  transaction_type: 'purchase' | 'sale' | 'partial_sale' | 'exchange' | 'other';
+  filing_status: 'new' | 'amended' | 'late' | 'unknown';
+  amendment_flag: boolean;
+  late_filing_days?: number | null;
+  asset_name: string;
+  asset_description?: string | null;
+  asset_type?: string | null;
+  issuer_name?: string | null;
+  issuer_ticker?: string | null;
+  amount_lower_usd?: number | null;
+  amount_upper_usd?: number | null;
+  amount_bucket_label?: string | null;
+  comments?: string | null;
+  excess_return?: number | null;
+  confidence?: number | null;
+  mapping_status: 'pending_review' | 'mapped' | 'ignored';
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface CongressTradeEventListResponse {
+  events: CongressTradeEvent[];
   total: number;
   limit: number;
   offset: number;
 }
 
-export interface PortfolioHistoryResponse {
-  points: PortfolioHistoryPoint[];
-  totalPoints: number;
-  truncated: boolean;
+export interface CongressTradeVersion {
+  version_id: string;
+  event_id: string;
+  version_seq: number;
+  version_kind: string;
+  version_observed_at: string;
+  event: CongressTradeEvent;
 }
 
-export interface PortfolioAlertListResponse {
-  alerts: PortfolioAlert[];
+export interface GovernmentContractEvent {
+  event_id: string;
+  source_name: string;
+  source_event_key: string;
+  event_type: 'opportunity' | 'award' | 'modification' | 'option_exercise' | 'obligation' | 'outlay' | 'termination' | 'cancellation' | 'protest' | 'other';
+  event_at: string;
+  recipient_name: string;
+  recipient_ticker?: string | null;
+  awarding_agency: string;
+  funding_agency?: string | null;
+  award_id?: string | null;
+  parent_award_id?: string | null;
+  opportunity_id?: string | null;
+  solicitation_id?: string | null;
+  title: string;
+  description?: string | null;
+  award_amount_usd?: number | null;
+  obligation_delta_usd?: number | null;
+  outlay_delta_usd?: number | null;
+  cumulative_obligation_usd?: number | null;
+  modification_number?: string | null;
+  option_exercise_flag: boolean;
+  termination_flag: boolean;
+  cancellation_flag: boolean;
+  protest_flag: boolean;
+  naics_code?: string | null;
+  psc_code?: string | null;
+  competition_type?: string | null;
+  set_aside_type?: string | null;
+  contract_vehicle?: string | null;
+  place_of_performance_country?: string | null;
+  place_of_performance_state?: string | null;
+  confidence?: number | null;
+  mapping_status: 'pending_review' | 'mapped' | 'ignored';
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface GovernmentContractEventListResponse {
+  events: GovernmentContractEvent[];
   total: number;
-  openCount: number;
+  limit: number;
+  offset: number;
 }
 
-export interface RebalanceTradeProposal {
-  sleeveId: string;
+export interface GovernmentContractVersion {
+  version_id: string;
+  event_id: string;
+  version_seq: number;
+  version_kind: string;
+  version_observed_at: string;
+  event: GovernmentContractEvent;
+}
+
+export interface IssuerGovernmentSignalDaily {
+  as_of_date: string;
   symbol: string;
-  side: TradeSide;
-  quantity: number;
-  estimatedPrice: number;
-  estimatedNotional: number;
-  estimatedCommission: number;
-  estimatedSlippageCost: number;
+  issuer_name?: string | null;
+  congress_purchase_count_1d: number;
+  congress_purchase_count_7d: number;
+  congress_purchase_count_30d: number;
+  congress_purchase_count_90d: number;
+  congress_sale_count_1d: number;
+  congress_sale_count_7d: number;
+  congress_sale_count_30d: number;
+  congress_sale_count_90d: number;
+  congress_net_amount_proxy_usd_30d: number;
+  congress_net_amount_proxy_usd_90d: number;
+  congress_amendment_rate_90d: number;
+  congress_late_filing_rate_90d: number;
+  congress_unique_members_90d: number;
+  congress_unique_committees_90d: number;
+  contract_award_count_30d: number;
+  contract_award_count_90d: number;
+  contract_obligation_delta_usd_30d: number;
+  contract_obligation_delta_usd_90d: number;
+  contract_outlay_delta_usd_30d: number;
+  contract_outlay_delta_usd_90d: number;
+  contract_modification_count_90d: number;
+  contract_option_exercise_count_90d: number;
+  contract_termination_count_90d: number;
+  contract_cancellation_count_90d: number;
+  contract_protest_count_90d: number;
+  contract_unique_awarding_agencies_90d: number;
+  contract_unique_naics_90d: number;
+  contract_unique_psc_90d: number;
+  last_congress_trade_at?: string | null;
+  last_contract_event_at?: string | null;
+  mapping_status: 'pending_review' | 'mapped' | 'ignored';
 }
 
-export interface RebalanceProposal {
-  proposalId: string;
-  accountId: string;
-  asOf: string;
-  portfolioName: string;
-  portfolioVersion: number;
-  blocked: boolean;
+export interface GovernmentSignalAlert {
+  alert_id: string;
+  symbol: string;
+  as_of_date: string;
+  alert_type: 'congress_trade' | 'contract_event' | 'composite';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  summary: string;
+  congress_signal_score?: number | null;
+  contract_signal_score?: number | null;
+  composite_signal_score?: number | null;
+  source_event_ids: string[];
+  created_at?: string | null;
+}
+
+export interface GovernmentSignalAlertListResponse {
+  alerts: GovernmentSignalAlert[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GovernmentSignalMappingReviewResponse {
+  items: GovernmentSignalMappingReviewItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GovernmentSignalMappingReviewItem {
+  mapping_id: string;
+  source_name: string;
+  entity_type: string;
+  raw_key: string;
+  raw_name: string;
+  proposed_symbol?: string | null;
+  confidence?: number | null;
+  status: 'pending_review' | 'mapped' | 'ignored';
+  reason?: string | null;
+  updated_at?: string | null;
+}
+
+export interface GovernmentSignalMappingOverrideRequest {
+  action: 'map' | 'ignore' | 'defer';
+  symbol?: string | null;
+  reason?: string | null;
+}
+
+export interface GovernmentSignalMappingOverrideResponse {
+  mapping_id: string;
+  status: 'pending_review' | 'mapped' | 'ignored';
+  symbol?: string | null;
+  updated_at: string;
+}
+
+export interface GovernmentSignalIssuerSummaryResponse {
+  symbol: string;
+  issuer_name?: string | null;
+  as_of_date: string;
+  issuer_daily: IssuerGovernmentSignalDaily;
+  recent_congress_trades: CongressTradeEvent[];
+  recent_contract_events: GovernmentContractEvent[];
+  active_alerts: GovernmentSignalAlert[];
+}
+
+export interface GovernmentSignalPortfolioExposureRequest {
+  as_of_date?: string | null;
+  holdings: GovernmentSignalPortfolioHolding[];
+}
+
+export interface GovernmentSignalPortfolioHolding {
+  symbol: string;
+  shares?: number | null;
+  market_value?: number | null;
+  portfolio_weight?: number | null;
+}
+
+export interface GovernmentSignalPortfolioExposureResponse {
+  as_of_date: string;
+  holdings_analyzed: number;
+  matched_holdings: number;
+  unmatched_symbols: string[];
+  total_market_value?: number | null;
+  total_portfolio_weight?: number | null;
+  exposures: GovernmentSignalPortfolioIssuerExposure[];
+}
+
+export interface GovernmentSignalPortfolioIssuerExposure {
+  symbol: string;
+  issuer_name?: string | null;
+  matched: boolean;
+  market_value?: number | null;
+  portfolio_weight?: number | null;
+  issuer_daily?: IssuerGovernmentSignalDaily | null;
+  alerts: GovernmentSignalAlert[];
+}
+
+export interface AiChatRequest {
+  prompt: string;
+  role?: string | null;
+  systemInstructions?: string | null;
+}
+
+export interface SymbolCleanupWorkItem {
+  workId: string;
+  runId: string;
+  symbol: string;
+  status: 'queued' | 'claimed' | 'completed' | 'failed';
+  requestedFields: ('security_type_norm' | 'exchange_mic' | 'country_of_risk' | 'sector_norm' | 'industry_group_norm' | 'industry_norm' | 'is_adr' | 'is_etf' | 'is_cef' | 'is_preferred' | 'share_class' | 'listing_status_norm' | 'issuer_summary_short')[];
+  attemptCount: number;
+  executionName?: string | null;
+  claimedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface SymbolCleanupRunSummary {
+  runId: string;
+  status: RunStatus;
+  mode: 'fill_missing' | 'full_reconcile';
+  queuedCount: number;
+  claimedCount: number;
+  completedCount: number;
+  failedCount: number;
+  acceptedUpdateCount: number;
+  rejectedUpdateCount: number;
+  lockedSkipCount: number;
+  overwriteCount: number;
+  startedAt?: string | null;
+  completedAt?: string | null;
+}
+
+export interface SymbolEnrichmentResolveRequest {
+  symbol: string;
+  overwriteMode: 'fill_missing' | 'full_reconcile';
+  requestedFields: ('security_type_norm' | 'exchange_mic' | 'country_of_risk' | 'sector_norm' | 'industry_group_norm' | 'industry_norm' | 'is_adr' | 'is_etf' | 'is_cef' | 'is_preferred' | 'share_class' | 'listing_status_norm' | 'issuer_summary_short')[];
+  providerFacts: SymbolProviderFacts;
+  currentProfile?: SymbolProfileValues | null;
+}
+
+export interface SymbolProviderFacts {
+  symbol: string;
+  name?: string | null;
+  description?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  industry2?: string | null;
+  country?: string | null;
+  exchange?: string | null;
+  assetType?: string | null;
+  ipoDate?: string | null;
+  delistingDate?: string | null;
+  status?: string | null;
+  isOptionable?: boolean | null;
+  sourceNasdaq?: boolean | null;
+  sourceMassive?: boolean | null;
+  sourceAlphaVantage?: boolean | null;
+}
+
+export interface SymbolProfileValues {
+  security_type_norm?: string | null;
+  exchange_mic?: string | null;
+  country_of_risk?: string | null;
+  sector_norm?: string | null;
+  industry_group_norm?: string | null;
+  industry_norm?: string | null;
+  is_adr?: boolean | null;
+  is_etf?: boolean | null;
+  is_cef?: boolean | null;
+  is_preferred?: boolean | null;
+  share_class?: string | null;
+  listing_status_norm?: string | null;
+  issuer_summary_short?: string | null;
+}
+
+export interface SymbolEnrichmentResolveResponse {
+  symbol: string;
+  profile: SymbolProfileValues;
+  model?: string | null;
+  confidence?: number | null;
+  sourceFingerprint?: string | null;
   warnings: string[];
-  blockedReasons: string[];
-  estimatedCashImpact: number;
-  estimatedTurnover: number;
-  trades: RebalanceTradeProposal[];
 }
 
-export interface PortfolioAccountListResponse {
-  accounts: PortfolioAccount[];
+export interface SymbolProfileCurrent {
+  security_type_norm?: string | null;
+  exchange_mic?: string | null;
+  country_of_risk?: string | null;
+  sector_norm?: string | null;
+  industry_group_norm?: string | null;
+  industry_norm?: string | null;
+  is_adr?: boolean | null;
+  is_etf?: boolean | null;
+  is_cef?: boolean | null;
+  is_preferred?: boolean | null;
+  share_class?: string | null;
+  listing_status_norm?: string | null;
+  issuer_summary_short?: string | null;
+  symbol: string;
+  sourceKind: 'provider' | 'ai' | 'derived' | 'override';
+  sourceFingerprint?: string | null;
+  aiModel?: string | null;
+  aiConfidence?: number | null;
+  validationStatus: 'accepted' | 'rejected' | 'pending' | 'locked';
+  marketCapUsd?: number | null;
+  marketCapBucket?: string | null;
+  avgDollarVolume20d?: number | null;
+  liquidityBucket?: string | null;
+  isTradeableCommonEquity?: boolean | null;
+  dataCompletenessScore?: number | null;
+  updatedAt?: string | null;
 }
 
-export interface PortfolioAccountDetailResponse {
-  account: PortfolioAccount;
-  revision?: PortfolioAccountRevision | null;
-  activeAssignment?: PortfolioAssignment | null;
-  recentLedgerEvents: PortfolioLedgerEvent[];
+export interface SymbolProfileHistoryEntry {
+  historyId: string;
+  symbol: string;
+  fieldName: 'security_type_norm' | 'exchange_mic' | 'country_of_risk' | 'sector_norm' | 'industry_group_norm' | 'industry_norm' | 'is_adr' | 'is_etf' | 'is_cef' | 'is_preferred' | 'share_class' | 'listing_status_norm' | 'issuer_summary_short';
+  previousValue?: string | number | boolean | null;
+  newValue?: string | number | boolean | null;
+  sourceKind: 'provider' | 'ai' | 'derived' | 'override';
+  aiModel?: string | null;
+  aiConfidence?: number | null;
+  changeReason?: string | null;
+  runId?: string | null;
+  updatedAt: string;
 }
 
-export interface PortfolioListResponse {
-  portfolios: PortfolioDefinition[];
+export interface SymbolProfileOverride {
+  symbol: string;
+  fieldName: 'security_type_norm' | 'exchange_mic' | 'country_of_risk' | 'sector_norm' | 'industry_group_norm' | 'industry_norm' | 'is_adr' | 'is_etf' | 'is_cef' | 'is_preferred' | 'share_class' | 'listing_status_norm' | 'issuer_summary_short';
+  value?: string | number | boolean | null;
+  isLocked: boolean;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
 }
 
-export interface PortfolioDefinitionDetailResponse {
-  portfolio: PortfolioDefinition;
-  activeRevision?: PortfolioRevision | null;
-  revisions: PortfolioRevision[];
+export interface SymbolEnrichmentSummaryResponse {
+  backlogCount: number;
+  lastRun?: SymbolCleanupRunSummary | null;
+  activeRun?: SymbolCleanupRunSummary | null;
+  validationFailureCount: number;
+  lockCount: number;
 }
 
-export interface PortfolioAccountUpsertRequest {
-  name: string;
-  description?: string;
-  mandate?: string;
-  baseCurrency: string;
-  benchmarkSymbol?: string | null;
-  inceptionDate: string;
-  openingCash?: number | null;
-  notes?: string;
+export interface SymbolEnrichmentSymbolListItem {
+  symbol: string;
+  name?: string | null;
+  status: 'accepted' | 'rejected' | 'pending' | 'locked';
+  sourceKind: 'provider' | 'ai' | 'derived' | 'override';
+  updatedAt?: string | null;
+  missingFieldCount: number;
+  lockedFieldCount: number;
+  dataCompletenessScore?: number | null;
 }
 
-export interface PortfolioUpsertRequest {
-  name: string;
-  description?: string;
-  benchmarkSymbol?: string | null;
-  allocations: PortfolioSleeveAllocation[];
-  notes?: string;
+export interface SymbolEnrichmentSymbolDetailResponse {
+  providerFacts: SymbolProviderFacts;
+  currentProfile?: SymbolProfileCurrent | null;
+  overrides: SymbolProfileOverride[];
+  history: SymbolProfileHistoryEntry[];
 }
 
-export interface PortfolioAssignmentRequest {
-  accountVersion: number;
-  portfolioName: string;
-  portfolioVersion: number;
-  effectiveFrom: string;
-  notes?: string;
+export interface SymbolEnrichmentEnqueueRequest {
+  symbols: string[];
+  fullScan: boolean;
+  overwriteMode: 'fill_missing' | 'full_reconcile';
+  maxSymbols?: number | null;
 }
 
-export interface PortfolioRebalancePreviewRequest {
-  asOf: string;
-  notes?: string;
+export interface AiChatStartedEvent {
+  sequenceNumber: number;
+  event: 'started';
+  data: AiChatStartedData;
 }
 
-export interface PortfolioRebalanceApplyRequest {
-  proposalId: string;
-  executedAt: string;
-  notes?: string;
+export interface AiChatStartedData {
+  requestId: string;
+  model: string;
+  providerResponseId?: string | null;
+}
+
+export interface AiChatStatusEvent {
+  sequenceNumber: number;
+  event: 'status';
+  data: AiChatStatusData;
+}
+
+export interface AiChatStatusData {
+  code: string;
+  message: string;
+  providerResponseId?: string | null;
+}
+
+export interface AiChatReasoningSummaryDeltaEvent {
+  sequenceNumber: number;
+  event: 'reasoning_summary_delta';
+  data: AiChatReasoningSummaryDeltaData;
+}
+
+export interface AiChatReasoningSummaryDeltaData {
+  delta: string;
+}
+
+export interface AiChatOutputTextDeltaEvent {
+  sequenceNumber: number;
+  event: 'output_text_delta';
+  data: AiChatOutputTextDeltaData;
+}
+
+export interface AiChatOutputTextDeltaData {
+  delta: string;
+}
+
+export interface AiChatCompletedEvent {
+  sequenceNumber: number;
+  event: 'completed';
+  data: AiChatCompletedData;
+}
+
+export interface AiChatCompletedData {
+  requestId: string;
+  model: string;
+  providerResponseId?: string | null;
+  outputText: string;
+  reasoningSummary: string;
+  finishReason?: string | null;
+}
+
+export interface AiChatErrorEvent {
+  sequenceNumber: number;
+  event: 'error';
+  data: AiChatErrorData;
+}
+
+export interface AiChatErrorData {
+  error: AiChatError;
+}
+
+export interface AiChatError {
+  code: string;
+  message: string;
+  retryable: boolean;
 }

@@ -1,4 +1,5 @@
 import type {
+  AiChatStreamEvent,
   AuthSessionStatus,
   BacktestClaimRequest,
   BacktestCompleteRequest,
@@ -10,6 +11,9 @@ import type {
   BacktestRunResponse,
   BacktestStartRequest,
   BacktestStreamEvent,
+  CongressTradeEventListResponse,
+  GovernmentSignalMappingOverrideRequest,
+  GovernmentSignalPortfolioExposureRequest,
   RunPinsResponse,
   RunRecordResponse,
   RunStatusResponse,
@@ -17,6 +21,9 @@ import type {
   PortfolioRevision,
   PortfolioSnapshot,
   PortfolioUpsertRequest,
+  SymbolCleanupRunSummary,
+  SymbolEnrichmentResolveRequest,
+  SymbolEnrichmentSymbolDetailResponse,
   StrategyConfig,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
@@ -217,6 +224,7 @@ void point;
 const portfolioAccount: PortfolioAccount = {
   accountId: "acct-001",
   name: "Core Long Only",
+  description: "",
   status: "active",
   mode: "internal_model_managed",
   accountingDepth: "position_level",
@@ -230,6 +238,7 @@ const portfolioAccount: PortfolioAccount = {
 const portfolioRevision: PortfolioRevision = {
   portfolioName: "core-balanced",
   version: 3,
+  description: "",
   allocations: [
     {
       sleeveId: "quality-core",
@@ -256,6 +265,7 @@ const portfolioRevision: PortfolioRevision = {
       notes: "",
     },
   ],
+  notes: "",
 };
 
 const portfolioSnapshot: PortfolioSnapshot = {
@@ -276,7 +286,76 @@ const portfolioSnapshot: PortfolioSnapshot = {
 
 const portfolioUpsert: PortfolioUpsertRequest = {
   name: "core-balanced",
+  description: "",
   allocations: portfolioRevision.allocations,
+  notes: "",
+};
+
+const congressEvents: CongressTradeEventListResponse = {
+  events: [],
+  total: 0,
+  limit: 50,
+  offset: 0,
+};
+
+const overrideRequest: GovernmentSignalMappingOverrideRequest = {
+  action: "map",
+  symbol: "LMT",
+  reason: "Manual recipient mapping",
+};
+
+const exposureRequest: GovernmentSignalPortfolioExposureRequest = {
+  holdings: [{ symbol: "LMT", market_value: 100000, portfolio_weight: 0.05 }],
+};
+
+const resolveRequest: SymbolEnrichmentResolveRequest = {
+  symbol: "AAPL",
+  overwriteMode: "fill_missing",
+  requestedFields: ["sector_norm", "issuer_summary_short"],
+  providerFacts: {
+    symbol: "AAPL",
+    name: "Apple Inc.",
+    exchange: "NASDAQ",
+  },
+};
+
+const detail: SymbolEnrichmentSymbolDetailResponse = {
+  providerFacts: {
+    symbol: "AAPL",
+  },
+  currentProfile: {
+    symbol: "AAPL",
+    sourceKind: "ai",
+    validationStatus: "accepted",
+    sector_norm: "Technology",
+  },
+  overrides: [],
+  history: [],
+};
+
+const runSummary: SymbolCleanupRunSummary = {
+  runId: "run-1",
+  status: "queued",
+  mode: "fill_missing",
+  queuedCount: 1,
+  claimedCount: 0,
+  completedCount: 0,
+  failedCount: 0,
+  acceptedUpdateCount: 0,
+  rejectedUpdateCount: 0,
+  lockedSkipCount: 0,
+  overwriteCount: 0,
+};
+
+const aiEvent: AiChatStreamEvent = {
+  sequenceNumber: 1,
+  event: "completed",
+  data: {
+    requestId: "req-1",
+    model: "gpt-5.4",
+    outputText: "Apple summary",
+    reasoningSummary: "",
+  },
 };
 
 void catalog;
@@ -286,3 +365,10 @@ void portfolioAccount;
 void portfolioRevision;
 void portfolioSnapshot;
 void portfolioUpsert;
+void congressEvents;
+void overrideRequest;
+void exposureRequest;
+void resolveRequest;
+void detail;
+void runSummary;
+void aiEvent;

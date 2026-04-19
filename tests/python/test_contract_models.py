@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pydantic import TypeAdapter
+
+from asset_allocation_contracts.ai_chat import AiChatRequest, AiChatStreamEvent
 from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
@@ -22,6 +25,16 @@ from asset_allocation_contracts.backtest import (
     TimeseriesPointResponse,
     TimeseriesResponse,
 )
+from asset_allocation_contracts.government_signals import (
+    CongressTradeEvent,
+    CongressTradeVersion,
+    GovernmentContractEvent,
+    GovernmentSignalAlert,
+    GovernmentSignalIssuerSummaryResponse,
+    GovernmentSignalMappingOverrideRequest,
+    GovernmentSignalPortfolioExposureRequest,
+    IssuerGovernmentSignalDaily,
+)
 from asset_allocation_contracts.portfolio import (
     PortfolioAccount,
     PortfolioAccountUpsertRequest,
@@ -38,6 +51,15 @@ from asset_allocation_contracts.portfolio import (
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
+from asset_allocation_contracts.symbol_enrichment import (
+    SymbolCleanupRunSummary,
+    SymbolEnrichmentResolveRequest,
+    SymbolEnrichmentResolveResponse,
+    SymbolEnrichmentSummaryResponse,
+    SymbolEnrichmentSymbolDetailResponse,
+    SymbolProfileCurrent,
+    SymbolProfileOverride,
+)
 from asset_allocation_contracts.strategy import (
     StrategyConfig,
     UniverseCatalogResponse,
@@ -789,3 +811,187 @@ def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts(
     assert position.symbol == "MSFT"
     assert alert.status == "open"
     assert upsert.allocations[1].strategy.strategyVersion == 2
+
+
+def test_government_signal_congress_trade_validates_amount_bounds() -> None:
+    payload = CongressTradeEvent(
+        event_id="house-123",
+        source_name="quiver",
+        source_event_key="house-123",
+        member_name="Member Example",
+        chamber="house",
+        committee_names=["Armed Services"],
+        traded_at="2026-04-15T14:30:00Z",
+        transaction_type="purchase",
+        asset_name="Lockheed Martin Corporation",
+        issuer_name="Lockheed Martin Corporation",
+        issuer_ticker="LMT",
+        amount_lower_usd=1_000,
+        amount_upper_usd=15_000,
+    )
+
+    assert payload.issuer_ticker == "LMT"
+    assert payload.mapping_status == "pending_review"
+
+    try:
+        CongressTradeEvent(
+            event_id="house-124",
+            source_name="quiver",
+            source_event_key="house-124",
+            member_name="Member Example",
+            committee_names=[],
+            traded_at="2026-04-15T14:30:00Z",
+            transaction_type="purchase",
+            asset_name="Lockheed Martin Corporation",
+            amount_lower_usd=15_000,
+            amount_upper_usd=1_000,
+        )
+    except Exception as exc:
+        assert "amount_upper_usd" in str(exc)
+    else:
+        raise AssertionError("Expected congress amount bounds validation failure.")
+
+
+def test_government_signal_contract_and_summary_models_accept_expected_payloads() -> None:
+    contract_event = GovernmentContractEvent(
+        event_id="award-1",
+        source_name="usaspending",
+        source_event_key="award-1",
+        event_type="award",
+        event_at="2026-04-16T00:00:00Z",
+        recipient_name="Lockheed Martin Corporation",
+        recipient_ticker="LMT",
+        awarding_agency="Department of Defense",
+        title="Missile systems support",
+        award_amount_usd=125_000_000,
+        obligation_delta_usd=125_000_000,
+    )
+    daily = IssuerGovernmentSignalDaily(as_of_date="2026-04-16", symbol="LMT")
+    summary = GovernmentSignalIssuerSummaryResponse(
+        symbol="LMT",
+        as_of_date="2026-04-16",
+        issuer_daily=daily,
+        recent_congress_trades=[],
+        recent_contract_events=[contract_event],
+        active_alerts=[
+            GovernmentSignalAlert(
+                alert_id="alert-1",
+                symbol="LMT",
+                as_of_date="2026-04-16",
+                alert_type="contract_event",
+                severity="high",
+                title="Large defense award",
+                summary="Lockheed received a large new award.",
+            )
+        ],
+    )
+    version = CongressTradeVersion(
+        version_id="v1",
+        event_id="house-123",
+        version_seq=1,
+        version_kind="initial",
+        version_observed_at="2026-04-16T00:00:00Z",
+        event=CongressTradeEvent(
+            event_id="house-123",
+            source_name="quiver",
+            source_event_key="house-123",
+            member_name="Member Example",
+            committee_names=[],
+            traded_at="2026-04-15T14:30:00Z",
+            transaction_type="purchase",
+            asset_name="Lockheed Martin Corporation",
+        ),
+    )
+
+    assert summary.recent_contract_events[0].recipient_ticker == "LMT"
+    assert version.event.event_id == "house-123"
+
+
+def test_government_signal_mapping_override_and_portfolio_request_validate() -> None:
+    payload = GovernmentSignalMappingOverrideRequest(action="map", symbol="RTX", reason="Matched issuer")
+    exposure = GovernmentSignalPortfolioExposureRequest(
+        holdings=[{"symbol": "LMT", "market_value": 100_000, "portfolio_weight": 0.1}]
+    )
+
+    assert payload.symbol == "RTX"
+    assert exposure.holdings[0].symbol == "LMT"
+
+    try:
+        GovernmentSignalMappingOverrideRequest(action="map")
+    except Exception as exc:
+        assert "symbol is required" in str(exc)
+    else:
+        raise AssertionError("Expected map action to require a symbol.")
+
+    try:
+        GovernmentSignalPortfolioExposureRequest(holdings=[])
+    except Exception as exc:
+        assert "holdings must not be empty" in str(exc)
+    else:
+        raise AssertionError("Expected non-empty holdings validation failure.")
+
+
+def test_ai_chat_contracts_validate_and_discriminate_stream_events() -> None:
+    request = AiChatRequest(prompt="Summarize AAPL.")
+    adapter = TypeAdapter(AiChatStreamEvent)
+    completed = adapter.validate_python(
+        {
+            "sequenceNumber": 1,
+            "event": "completed",
+            "data": {
+                "requestId": "req-1",
+                "model": "gpt-5.4",
+                "outputText": "Apple summary",
+                "reasoningSummary": "",
+            },
+        }
+    )
+
+    assert request.prompt == "Summarize AAPL."
+    assert completed.event == "completed"
+    assert completed.data.outputText == "Apple summary"
+
+
+def test_symbol_enrichment_contracts_validate_current_profile_and_response() -> None:
+    resolve_request = SymbolEnrichmentResolveRequest(
+        symbol="AAPL",
+        requestedFields=["sector_norm", "industry_norm", "issuer_summary_short"],
+        providerFacts={"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ"},
+    )
+    resolve_response = SymbolEnrichmentResolveResponse(
+        symbol="AAPL",
+        profile={
+            "sector_norm": "Technology",
+            "industry_norm": "Technology Hardware, Storage & Peripherals",
+            "issuer_summary_short": "Consumer hardware and services company.",
+        },
+        model="gpt-5.4",
+        confidence=0.92,
+    )
+    current = SymbolProfileCurrent(
+        symbol="AAPL",
+        sourceKind="ai",
+        validationStatus="accepted",
+        sector_norm="Technology",
+        marketCapBucket="mega",
+        avgDollarVolume20d=125_000_000.0,
+    )
+
+    assert resolve_request.providerFacts.symbol == "AAPL"
+    assert resolve_response.profile.industry_norm is not None
+    assert current.marketCapBucket == "mega"
+
+
+def test_symbol_enrichment_operator_contracts_default_lists() -> None:
+    detail = SymbolEnrichmentSymbolDetailResponse(
+        providerFacts={"symbol": "AAPL"},
+        currentProfile={"symbol": "AAPL", "sourceKind": "provider"},
+    )
+    summary = SymbolEnrichmentSummaryResponse()
+    override = SymbolProfileOverride(symbol="AAPL", fieldName="sector_norm", value="Technology", isLocked=True)
+    run = SymbolCleanupRunSummary(runId="run-1", status="queued")
+
+    assert detail.overrides == []
+    assert summary.backlogCount == 0
+    assert override.isLocked is True
+    assert run.mode == "fill_missing"
