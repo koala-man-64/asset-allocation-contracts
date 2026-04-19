@@ -207,7 +207,25 @@ Purpose:
 - Carry additive backtest result metadata for v2 semantics on timeseries and rolling metrics responses without removing legacy field names
 - Preserve compatibility shims where the runtime still emits or accepts old payload keys such as `daily_return` and `window_days`
 
-### 4.5 UI Runtime Config Contract
+### 4.5 Portfolio Workspace Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/portfolio.py`
+- `schemas/portfolio-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define internal portfolio-account and reusable portfolio-definition contracts for the portfolio workspace feature
+- Define immutable ledger-event, assignment, rebalance-proposal, snapshot, history, position, attribution, and alert payloads shared across control-plane, jobs, and UI
+- Encode the current v1 operating boundary explicitly: internal-only, model-managed accounts with position-level accounting and strategy-native sleeve cadence
+
+Key design note:
+
+These contracts intentionally stop short of broker or custody-grade accounting. They support internal ledger truth, pinned strategy revisions, and derived monitoring surfaces, but they do not imply external execution, lot accounting, settlement, or reconciliation ownership in this repo.
+
+### 4.6 UI Runtime Config Contract
 
 Owned by:
 
@@ -220,7 +238,7 @@ Purpose:
 - Define the browser bootstrap/runtime config surface for API base URL and OIDC/auth settings, including the derived post-logout completion URI
 - Normalize scope/audience list handling
 
-### 4.6 Auth Session Contract
+### 4.7 Auth Session Contract
 
 Owned by:
 
@@ -234,7 +252,7 @@ Purpose:
 - Give the UI a typed auth/authz probe that is distinct from general system-health data
 - Keep the control-plane, UI, and any future non-browser consumer aligned on the same minimal session summary fields
 
-### 4.6 Shared Finance and Path Constants
+### 4.8 Shared Finance and Path Constants
 
 Owned by:
 
@@ -249,7 +267,7 @@ Purpose:
 
 These are still contract surfaces even though they are constants rather than large object models.
 
-### 4.7 Release and Env/Config Surfaces
+### 4.9 Release and Env/Config Surfaces
 
 Owned by:
 

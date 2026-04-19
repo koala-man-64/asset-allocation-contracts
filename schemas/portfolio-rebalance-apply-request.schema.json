@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "executedAt": {
+      "format": "date-time",
+      "title": "Executedat",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "proposalId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Proposalid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "proposalId",
+    "executedAt"
+  ],
+  "title": "PortfolioRebalanceApplyRequest",
+  "type": "object"
+}

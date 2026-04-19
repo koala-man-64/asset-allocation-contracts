@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "asOf": {
+      "format": "date",
+      "title": "Asof",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "asOf"
+  ],
+  "title": "PortfolioRebalancePreviewRequest",
+  "type": "object"
+}

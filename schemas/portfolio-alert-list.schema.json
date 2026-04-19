@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "PortfolioAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "acknowledgedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedat"
+        },
+        "acknowledgedBy": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedby"
+        },
+        "alertId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alertid",
+          "type": "string"
+        },
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "detectedAt": {
+          "format": "date-time",
+          "title": "Detectedat",
+          "type": "string"
+        },
+        "resolvedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolvedat"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "acknowledged",
+            "resolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alertId",
+        "accountId",
+        "severity",
+        "code",
+        "title",
+        "detectedAt"
+      ],
+      "title": "PortfolioAlert",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "alerts": {
+      "items": {
+        "$ref": "#/$defs/PortfolioAlert"
+      },
+      "title": "Alerts",
+      "type": "array"
+    },
+    "openCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Opencount",
+      "type": "integer"
+    },
+    "total": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "title": "PortfolioAlertListResponse",
+  "type": "object"
+}

@@ -1,0 +1,99 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "cashAmount": {
+      "title": "Cashamount",
+      "type": "number"
+    },
+    "commission": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Commission",
+      "type": "number"
+    },
+    "currency": {
+      "default": "USD",
+      "maxLength": 3,
+      "minLength": 3,
+      "title": "Currency",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "effectiveAt": {
+      "format": "date-time",
+      "title": "Effectiveat",
+      "type": "string"
+    },
+    "eventType": {
+      "enum": [
+        "opening_balance",
+        "deposit",
+        "withdrawal",
+        "fee",
+        "dividend",
+        "rebalance_buy",
+        "rebalance_sell",
+        "correction"
+      ],
+      "title": "Eventtype",
+      "type": "string"
+    },
+    "price": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Price"
+    },
+    "quantity": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quantity"
+    },
+    "slippageCost": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Slippagecost",
+      "type": "number"
+    },
+    "symbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Symbol"
+    }
+  },
+  "required": [
+    "effectiveAt",
+    "eventType",
+    "cashAmount"
+  ],
+  "title": "PortfolioLedgerEventPayload",
+  "type": "object"
+}

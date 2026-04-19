@@ -15,6 +15,19 @@ from asset_allocation_contracts.backtest import (
     TimeseriesPointResponse,
     TimeseriesResponse,
 )
+from asset_allocation_contracts.portfolio import (
+    PortfolioAccount,
+    PortfolioAccountUpsertRequest,
+    PortfolioAlert,
+    PortfolioAssignment,
+    PortfolioLedgerEvent,
+    PortfolioPosition,
+    PortfolioRevision,
+    PortfolioSleeveAllocation,
+    PortfolioSnapshot,
+    PortfolioUpsertRequest,
+    RebalanceProposal,
+)
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
@@ -406,3 +419,218 @@ def test_trade_and_closed_position_contracts_support_position_lifecycle_fields()
 def test_shared_path_rules_are_stable() -> None:
     assert DataPaths.get_gold_finance_bucket_path("Balance Sheet", "a") == "finance/balance_sheet/buckets/A"
     assert bucket_letter("1msft") == "M"
+
+
+def test_portfolio_revision_requires_enabled_weights_to_sum_to_one() -> None:
+    revision = PortfolioRevision(
+        portfolioName="core-balanced",
+        version=3,
+        allocations=[
+            PortfolioSleeveAllocation(
+                sleeveId="quality-core",
+                sleeveName="Quality Core",
+                strategy={"strategyName": "quality-trend", "strategyVersion": 4},
+                targetWeight=0.6,
+            ),
+            PortfolioSleeveAllocation(
+                sleeveId="defensive",
+                sleeveName="Defensive",
+                strategy={"strategyName": "defensive-value", "strategyVersion": 2},
+                targetWeight=0.4,
+                minWeight=0.2,
+                maxWeight=0.5,
+            ),
+        ],
+    )
+
+    assert revision.portfolioName == "core-balanced"
+    assert revision.allocations[0].strategy.strategyVersion == 4
+
+    try:
+        PortfolioRevision(
+            portfolioName="broken-balanced",
+            version=1,
+            allocations=[
+                PortfolioSleeveAllocation(
+                    sleeveId="only-sleeve",
+                    strategy={"strategyName": "quality-trend", "strategyVersion": 4},
+                    targetWeight=0.8,
+                )
+            ],
+        )
+    except Exception as exc:
+        assert "sum to 1.0" in str(exc)
+    else:
+        raise AssertionError("Expected revision validation failure when weights do not sum to 1.0.")
+
+
+def test_portfolio_account_defaults_capture_internal_model_managed_scope() -> None:
+    account = PortfolioAccount(
+        accountId="acct-001",
+        name="Core Long Only",
+        baseCurrency="usd",
+        inceptionDate="2026-01-02",
+        mandate="Internal model sleeve account",
+    )
+    request = PortfolioAccountUpsertRequest(
+        name="Core Long Only",
+        baseCurrency="usd",
+        inceptionDate="2026-01-02",
+        openingCash=1_000_000,
+    )
+
+    assert account.mode == "internal_model_managed"
+    assert account.accountingDepth == "position_level"
+    assert account.cadenceMode == "strategy_native"
+    assert account.baseCurrency == "USD"
+    assert request.openingCash == 1_000_000
+
+
+def test_portfolio_ledger_event_separates_cash_and_trade_shapes() -> None:
+    deposit = PortfolioLedgerEvent(
+        eventId="evt-001",
+        accountId="acct-001",
+        effectiveAt="2026-01-02T15:30:00Z",
+        eventType="deposit",
+        currency="usd",
+        cashAmount=50_000,
+        description="Additional funding",
+    )
+    trade = PortfolioLedgerEvent(
+        eventId="evt-002",
+        accountId="acct-001",
+        effectiveAt="2026-01-03T15:30:00Z",
+        eventType="rebalance_buy",
+        currency="USD",
+        cashAmount=-10_050,
+        symbol="msft",
+        quantity=100,
+        price=100,
+        commission=25,
+        slippageCost=25,
+    )
+
+    assert deposit.cashAmount == 50_000
+    assert deposit.currency == "USD"
+    assert trade.symbol == "MSFT"
+    assert trade.commission == 25
+
+    try:
+        PortfolioLedgerEvent(
+            eventId="evt-003",
+            accountId="acct-001",
+            effectiveAt="2026-01-04T15:30:00Z",
+            eventType="fee",
+            currency="USD",
+            cashAmount=-10,
+            symbol="AAPL",
+        )
+    except Exception as exc:
+        assert "does not accept symbol" in str(exc)
+    else:
+        raise AssertionError("Expected fee event validation failure when symbol is provided.")
+
+
+def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts() -> None:
+    assignment = PortfolioAssignment(
+        assignmentId="asg-001",
+        accountId="acct-001",
+        accountVersion=2,
+        portfolioName="core-balanced",
+        portfolioVersion=3,
+        effectiveFrom="2026-01-02",
+        status="active",
+    )
+    snapshot = PortfolioSnapshot(
+        accountId="acct-001",
+        accountName="Core Long Only",
+        asOf="2026-03-31",
+        nav=1_025_000,
+        cash=25_000,
+        grossExposure=1.0,
+        netExposure=1.0,
+        sinceInceptionPnl=25_000,
+        sinceInceptionReturn=0.025,
+        currentDrawdown=0.03,
+        openAlertCount=1,
+        activeAssignment=assignment,
+        freshness=[{"domain": "valuation", "state": "fresh"}],
+        slices=[
+            {
+                "asOf": "2026-03-31",
+                "sleeveId": "quality-core",
+                "strategyName": "quality-trend",
+                "strategyVersion": 4,
+                "targetWeight": 0.6,
+                "actualWeight": 0.58,
+                "marketValue": 594_500,
+            }
+        ],
+    )
+    proposal = RebalanceProposal(
+        proposalId="rb-001",
+        accountId="acct-001",
+        asOf="2026-03-31",
+        portfolioName="core-balanced",
+        portfolioVersion=3,
+        warnings=["Sector overlap elevated"],
+        trades=[
+            {
+                "sleeveId": "quality-core",
+                "symbol": "MSFT",
+                "side": "buy",
+                "quantity": 25,
+                "estimatedPrice": 101.5,
+                "estimatedNotional": 2_537.5,
+            }
+        ],
+    )
+    position = PortfolioPosition(
+        asOf="2026-03-31",
+        symbol="msft",
+        quantity=125,
+        marketValue=12_687.5,
+        weight=0.012375,
+        averageCost=97.0,
+        lastPrice=101.5,
+        contributors=[
+            {
+                "sleeveId": "quality-core",
+                "strategyName": "quality-trend",
+                "strategyVersion": 4,
+                "quantity": 125,
+                "marketValue": 12_687.5,
+                "weight": 0.012375,
+            }
+        ],
+    )
+    alert = PortfolioAlert(
+        alertId="alt-001",
+        accountId="acct-001",
+        severity="warning",
+        code="allocation_drift",
+        title="Allocation drift is above policy",
+        detectedAt="2026-03-31T21:00:00Z",
+    )
+    upsert = PortfolioUpsertRequest(
+        name="core-balanced",
+        allocations=[
+            {
+                "sleeveId": "quality-core",
+                "strategy": {"strategyName": "quality-trend", "strategyVersion": 4},
+                "targetWeight": 0.6,
+            },
+            {
+                "sleeveId": "defensive",
+                "strategy": {"strategyName": "defensive-value", "strategyVersion": 2},
+                "targetWeight": 0.4,
+            },
+        ],
+    )
+
+    assert snapshot.activeAssignment is not None
+    assert snapshot.slices[0].actualWeight == 0.58
+    assert proposal.trades[0].side == "buy"
+    assert position.symbol == "MSFT"
+    assert alert.status == "open"
+    assert upsert.allocations[1].strategy.strategyVersion == 2

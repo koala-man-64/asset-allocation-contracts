@@ -1,0 +1,89 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "accountVersion": {
+      "minimum": 1,
+      "title": "Accountversion",
+      "type": "integer"
+    },
+    "assignmentId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Assignmentid",
+      "type": "string"
+    },
+    "createdAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Createdat"
+    },
+    "effectiveFrom": {
+      "format": "date",
+      "title": "Effectivefrom",
+      "type": "string"
+    },
+    "effectiveTo": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Effectiveto"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "portfolioName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Portfolioname",
+      "type": "string"
+    },
+    "portfolioVersion": {
+      "minimum": 1,
+      "title": "Portfolioversion",
+      "type": "integer"
+    },
+    "status": {
+      "default": "scheduled",
+      "enum": [
+        "scheduled",
+        "active",
+        "ended"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "assignmentId",
+    "accountId",
+    "accountVersion",
+    "portfolioName",
+    "portfolioVersion",
+    "effectiveFrom"
+  ],
+  "title": "PortfolioAssignment",
+  "type": "object"
+}

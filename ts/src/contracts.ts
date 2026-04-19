@@ -474,3 +474,338 @@ export interface BacktestReconcileResponse {
   dispatchFailedRunIds: string[];
   failedRunIds: string[];
 }
+
+export type PortfolioStatus = 'draft' | 'active' | 'archived';
+export type PortfolioMode = 'internal_model_managed';
+export type PortfolioAccountingDepth = 'position_level';
+export type PortfolioCadenceMode = 'strategy_native';
+export type PortfolioAssignmentStatus = 'scheduled' | 'active' | 'ended';
+export type LedgerEventType =
+  | 'opening_balance'
+  | 'deposit'
+  | 'withdrawal'
+  | 'fee'
+  | 'dividend'
+  | 'rebalance_buy'
+  | 'rebalance_sell'
+  | 'correction';
+export type FreshnessState = 'fresh' | 'stale' | 'error' | 'missing';
+export type PortfolioDataDomain =
+  | 'valuation'
+  | 'positions'
+  | 'risk'
+  | 'attribution'
+  | 'ledger'
+  | 'alerts';
+export type PortfolioAlertSeverity = 'info' | 'warning' | 'critical';
+export type PortfolioAlertStatus = 'open' | 'acknowledged' | 'resolved';
+export type TradeSide = 'buy' | 'sell';
+
+export interface StrategyVersionReference {
+  strategyName: string;
+  strategyVersion: number;
+}
+
+export interface PortfolioSleeveAllocation {
+  sleeveId: string;
+  sleeveName?: string;
+  strategy: StrategyVersionReference;
+  targetWeight: number;
+  minWeight?: number | null;
+  maxWeight?: number | null;
+  enabled: boolean;
+  rebalancePriority: number;
+  notes?: string;
+}
+
+export interface PortfolioDefinition {
+  name: string;
+  description?: string;
+  benchmarkSymbol?: string | null;
+  status: PortfolioStatus;
+  latestVersion?: number | null;
+  activeVersion?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface PortfolioRevision {
+  portfolioName: string;
+  version: number;
+  description?: string;
+  benchmarkSymbol?: string | null;
+  allocations: PortfolioSleeveAllocation[];
+  notes?: string;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface PortfolioAccount {
+  accountId: string;
+  name: string;
+  description?: string;
+  status: PortfolioStatus;
+  mode: PortfolioMode;
+  accountingDepth: PortfolioAccountingDepth;
+  cadenceMode: PortfolioCadenceMode;
+  baseCurrency: string;
+  benchmarkSymbol?: string | null;
+  inceptionDate: string;
+  mandate?: string;
+  latestRevision?: number | null;
+  activeRevision?: number | null;
+  activePortfolioName?: string | null;
+  activePortfolioVersion?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  lastMaterializedAt?: string | null;
+  openAlertCount: number;
+}
+
+export interface PortfolioAccountRevision {
+  accountId: string;
+  version: number;
+  name: string;
+  description?: string;
+  mandate?: string;
+  status: PortfolioStatus;
+  mode: PortfolioMode;
+  accountingDepth: PortfolioAccountingDepth;
+  cadenceMode: PortfolioCadenceMode;
+  baseCurrency: string;
+  benchmarkSymbol?: string | null;
+  inceptionDate: string;
+  notes?: string;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface PortfolioAssignment {
+  assignmentId: string;
+  accountId: string;
+  accountVersion: number;
+  portfolioName: string;
+  portfolioVersion: number;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  status: PortfolioAssignmentStatus;
+  notes?: string;
+  createdAt?: string | null;
+}
+
+export interface PortfolioLedgerEventPayload {
+  effectiveAt: string;
+  eventType: LedgerEventType;
+  currency: string;
+  cashAmount: number;
+  symbol?: string | null;
+  quantity?: number | null;
+  price?: number | null;
+  commission: number;
+  slippageCost: number;
+  description?: string;
+}
+
+export interface PortfolioLedgerEvent extends PortfolioLedgerEventPayload {
+  eventId: string;
+  accountId: string;
+}
+
+export interface FreshnessStatus {
+  domain: PortfolioDataDomain;
+  state: FreshnessState;
+  asOf?: string | null;
+  checkedAt?: string | null;
+  reason?: string;
+}
+
+export interface PortfolioAlert {
+  alertId: string;
+  accountId: string;
+  severity: PortfolioAlertSeverity;
+  status: PortfolioAlertStatus;
+  code: string;
+  title: string;
+  description?: string;
+  detectedAt: string;
+  acknowledgedAt?: string | null;
+  acknowledgedBy?: string | null;
+  resolvedAt?: string | null;
+  asOf?: string | null;
+}
+
+export interface StrategySliceAttribution {
+  asOf: string;
+  sleeveId: string;
+  strategyName: string;
+  strategyVersion: number;
+  targetWeight: number;
+  actualWeight: number;
+  marketValue: number;
+  grossExposure: number;
+  netExposure: number;
+  pnlContribution: number;
+  returnContribution: number;
+  drawdownContribution: number;
+  turnover?: number | null;
+  sinceInceptionReturn?: number | null;
+}
+
+export interface PortfolioPositionContributor {
+  sleeveId: string;
+  strategyName: string;
+  strategyVersion: number;
+  quantity: number;
+  marketValue: number;
+  weight: number;
+}
+
+export interface PortfolioPosition {
+  asOf: string;
+  symbol: string;
+  quantity: number;
+  marketValue: number;
+  weight: number;
+  averageCost?: number | null;
+  lastPrice?: number | null;
+  unrealizedPnl?: number | null;
+  realizedPnl?: number | null;
+  contributors: PortfolioPositionContributor[];
+}
+
+export interface PortfolioSnapshot {
+  accountId: string;
+  accountName: string;
+  asOf: string;
+  nav: number;
+  cash: number;
+  grossExposure: number;
+  netExposure: number;
+  sinceInceptionPnl: number;
+  sinceInceptionReturn: number;
+  currentDrawdown: number;
+  maxDrawdown?: number | null;
+  openAlertCount: number;
+  activeAssignment?: PortfolioAssignment | null;
+  freshness: FreshnessStatus[];
+  slices: StrategySliceAttribution[];
+}
+
+export interface PortfolioHistoryPoint {
+  asOf: string;
+  nav: number;
+  cash: number;
+  grossExposure: number;
+  netExposure: number;
+  periodPnl?: number | null;
+  periodReturn?: number | null;
+  cumulativePnl?: number | null;
+  cumulativeReturn?: number | null;
+  drawdown?: number | null;
+  turnover?: number | null;
+  costDragBps?: number | null;
+}
+
+export interface PortfolioPositionListResponse {
+  positions: PortfolioPosition[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface PortfolioHistoryResponse {
+  points: PortfolioHistoryPoint[];
+  totalPoints: number;
+  truncated: boolean;
+}
+
+export interface PortfolioAlertListResponse {
+  alerts: PortfolioAlert[];
+  total: number;
+  openCount: number;
+}
+
+export interface RebalanceTradeProposal {
+  sleeveId: string;
+  symbol: string;
+  side: TradeSide;
+  quantity: number;
+  estimatedPrice: number;
+  estimatedNotional: number;
+  estimatedCommission: number;
+  estimatedSlippageCost: number;
+}
+
+export interface RebalanceProposal {
+  proposalId: string;
+  accountId: string;
+  asOf: string;
+  portfolioName: string;
+  portfolioVersion: number;
+  blocked: boolean;
+  warnings: string[];
+  blockedReasons: string[];
+  estimatedCashImpact: number;
+  estimatedTurnover: number;
+  trades: RebalanceTradeProposal[];
+}
+
+export interface PortfolioAccountListResponse {
+  accounts: PortfolioAccount[];
+}
+
+export interface PortfolioAccountDetailResponse {
+  account: PortfolioAccount;
+  revision?: PortfolioAccountRevision | null;
+  activeAssignment?: PortfolioAssignment | null;
+  recentLedgerEvents: PortfolioLedgerEvent[];
+}
+
+export interface PortfolioListResponse {
+  portfolios: PortfolioDefinition[];
+}
+
+export interface PortfolioDefinitionDetailResponse {
+  portfolio: PortfolioDefinition;
+  activeRevision?: PortfolioRevision | null;
+  revisions: PortfolioRevision[];
+}
+
+export interface PortfolioAccountUpsertRequest {
+  name: string;
+  description?: string;
+  mandate?: string;
+  baseCurrency: string;
+  benchmarkSymbol?: string | null;
+  inceptionDate: string;
+  openingCash?: number | null;
+  notes?: string;
+}
+
+export interface PortfolioUpsertRequest {
+  name: string;
+  description?: string;
+  benchmarkSymbol?: string | null;
+  allocations: PortfolioSleeveAllocation[];
+  notes?: string;
+}
+
+export interface PortfolioAssignmentRequest {
+  accountVersion: number;
+  portfolioName: string;
+  portfolioVersion: number;
+  effectiveFrom: string;
+  notes?: string;
+}
+
+export interface PortfolioRebalancePreviewRequest {
+  asOf: string;
+  notes?: string;
+}
+
+export interface PortfolioRebalanceApplyRequest {
+  proposalId: string;
+  executedAt: string;
+  notes?: string;
+}

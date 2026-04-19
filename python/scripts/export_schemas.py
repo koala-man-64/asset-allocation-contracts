@@ -17,6 +17,29 @@ from asset_allocation_contracts.backtest import (
     TimeseriesResponse,
     TradeListResponse,
 )
+from asset_allocation_contracts.portfolio import (
+    PortfolioAccount,
+    PortfolioAccountDetailResponse,
+    PortfolioAccountListResponse,
+    PortfolioAccountRevision,
+    PortfolioAccountUpsertRequest,
+    PortfolioAlertListResponse,
+    PortfolioAssignment,
+    PortfolioAssignmentRequest,
+    PortfolioDefinition,
+    PortfolioDefinitionDetailResponse,
+    PortfolioHistoryResponse,
+    PortfolioLedgerEvent,
+    PortfolioLedgerEventPayload,
+    PortfolioListResponse,
+    PortfolioPositionListResponse,
+    PortfolioRebalanceApplyRequest,
+    PortfolioRebalancePreviewRequest,
+    PortfolioRevision,
+    PortfolioSnapshot,
+    PortfolioUpsertRequest,
+    RebalanceProposal,
+)
 from asset_allocation_contracts.ranking import RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     RegimeInputRow,
@@ -71,6 +94,27 @@ def main() -> None:
     _write("backtest-complete-request.schema.json", BacktestCompleteRequest)
     _write("backtest-fail-request.schema.json", BacktestFailRequest)
     _write("backtest-reconcile-response.schema.json", BacktestReconcileResponse)
+    _write("portfolio-account.schema.json", PortfolioAccount)
+    _write("portfolio-account-detail.schema.json", PortfolioAccountDetailResponse)
+    _write("portfolio-account-list.schema.json", PortfolioAccountListResponse)
+    _write("portfolio-account-revision.schema.json", PortfolioAccountRevision)
+    _write("portfolio-account-upsert-request.schema.json", PortfolioAccountUpsertRequest)
+    _write("portfolio-alert-list.schema.json", PortfolioAlertListResponse)
+    _write("portfolio-assignment.schema.json", PortfolioAssignment)
+    _write("portfolio-assignment-request.schema.json", PortfolioAssignmentRequest)
+    _write("portfolio-definition.schema.json", PortfolioDefinition)
+    _write("portfolio-definition-detail.schema.json", PortfolioDefinitionDetailResponse)
+    _write("portfolio-history.schema.json", PortfolioHistoryResponse)
+    _write("portfolio-ledger-event.schema.json", PortfolioLedgerEvent)
+    _write("portfolio-ledger-event-request.schema.json", PortfolioLedgerEventPayload)
+    _write("portfolio-list.schema.json", PortfolioListResponse)
+    _write("portfolio-position-list.schema.json", PortfolioPositionListResponse)
+    _write("portfolio-rebalance-apply-request.schema.json", PortfolioRebalanceApplyRequest)
+    _write("portfolio-rebalance-preview-request.schema.json", PortfolioRebalancePreviewRequest)
+    _write("portfolio-rebalance-proposal.schema.json", RebalanceProposal)
+    _write("portfolio-revision.schema.json", PortfolioRevision)
+    _write("portfolio-snapshot.schema.json", PortfolioSnapshot)
+    _write("portfolio-upsert-request.schema.json", PortfolioUpsertRequest)
 
 
 if __name__ == "__main__":

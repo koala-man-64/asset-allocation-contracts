@@ -1,0 +1,366 @@
+{
+  "$defs": {
+    "FreshnessStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "checkedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Checkedat"
+        },
+        "domain": {
+          "enum": [
+            "valuation",
+            "positions",
+            "risk",
+            "attribution",
+            "ledger",
+            "alerts"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "fresh",
+            "stale",
+            "error",
+            "missing"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "state"
+      ],
+      "title": "FreshnessStatus",
+      "type": "object"
+    },
+    "PortfolioAssignment": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "accountVersion": {
+          "minimum": 1,
+          "title": "Accountversion",
+          "type": "integer"
+        },
+        "assignmentId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Assignmentid",
+          "type": "string"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "effectiveFrom": {
+          "format": "date",
+          "title": "Effectivefrom",
+          "type": "string"
+        },
+        "effectiveTo": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effectiveto"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "portfolioName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Portfolioname",
+          "type": "string"
+        },
+        "portfolioVersion": {
+          "minimum": 1,
+          "title": "Portfolioversion",
+          "type": "integer"
+        },
+        "status": {
+          "default": "scheduled",
+          "enum": [
+            "scheduled",
+            "active",
+            "ended"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "assignmentId",
+        "accountId",
+        "accountVersion",
+        "portfolioName",
+        "portfolioVersion",
+        "effectiveFrom"
+      ],
+      "title": "PortfolioAssignment",
+      "type": "object"
+    },
+    "StrategySliceAttribution": {
+      "additionalProperties": false,
+      "properties": {
+        "actualWeight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Actualweight",
+          "type": "number"
+        },
+        "asOf": {
+          "format": "date",
+          "title": "Asof",
+          "type": "string"
+        },
+        "drawdownContribution": {
+          "default": 0.0,
+          "title": "Drawdowncontribution",
+          "type": "number"
+        },
+        "grossExposure": {
+          "default": 0.0,
+          "title": "Grossexposure",
+          "type": "number"
+        },
+        "marketValue": {
+          "title": "Marketvalue",
+          "type": "number"
+        },
+        "netExposure": {
+          "default": 0.0,
+          "title": "Netexposure",
+          "type": "number"
+        },
+        "pnlContribution": {
+          "default": 0.0,
+          "title": "Pnlcontribution",
+          "type": "number"
+        },
+        "returnContribution": {
+          "default": 0.0,
+          "title": "Returncontribution",
+          "type": "number"
+        },
+        "sinceInceptionReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sinceinceptionreturn"
+        },
+        "sleeveId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sleeveid",
+          "type": "string"
+        },
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "minimum": 1,
+          "title": "Strategyversion",
+          "type": "integer"
+        },
+        "targetWeight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Targetweight",
+          "type": "number"
+        },
+        "turnover": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turnover"
+        }
+      },
+      "required": [
+        "asOf",
+        "sleeveId",
+        "strategyName",
+        "strategyVersion",
+        "targetWeight",
+        "actualWeight",
+        "marketValue"
+      ],
+      "title": "StrategySliceAttribution",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "accountName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountname",
+      "type": "string"
+    },
+    "activeAssignment": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PortfolioAssignment"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "asOf": {
+      "format": "date",
+      "title": "Asof",
+      "type": "string"
+    },
+    "cash": {
+      "title": "Cash",
+      "type": "number"
+    },
+    "currentDrawdown": {
+      "title": "Currentdrawdown",
+      "type": "number"
+    },
+    "freshness": {
+      "items": {
+        "$ref": "#/$defs/FreshnessStatus"
+      },
+      "title": "Freshness",
+      "type": "array"
+    },
+    "grossExposure": {
+      "title": "Grossexposure",
+      "type": "number"
+    },
+    "maxDrawdown": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxdrawdown"
+    },
+    "nav": {
+      "title": "Nav",
+      "type": "number"
+    },
+    "netExposure": {
+      "title": "Netexposure",
+      "type": "number"
+    },
+    "openAlertCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Openalertcount",
+      "type": "integer"
+    },
+    "sinceInceptionPnl": {
+      "title": "Sinceinceptionpnl",
+      "type": "number"
+    },
+    "sinceInceptionReturn": {
+      "title": "Sinceinceptionreturn",
+      "type": "number"
+    },
+    "slices": {
+      "items": {
+        "$ref": "#/$defs/StrategySliceAttribution"
+      },
+      "title": "Slices",
+      "type": "array"
+    }
+  },
+  "required": [
+    "accountId",
+    "accountName",
+    "asOf",
+    "nav",
+    "cash",
+    "grossExposure",
+    "netExposure",
+    "sinceInceptionPnl",
+    "sinceInceptionReturn",
+    "currentDrawdown"
+  ],
+  "title": "PortfolioSnapshot",
+  "type": "object"
+}

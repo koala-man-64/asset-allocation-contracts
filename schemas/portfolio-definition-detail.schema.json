@@ -1,0 +1,323 @@
+{
+  "$defs": {
+    "PortfolioDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "activeVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activeversion"
+        },
+        "benchmarkSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmarksymbol"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "latestVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latestversion"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "archived"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PortfolioDefinition",
+      "type": "object"
+    },
+    "PortfolioRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/PortfolioSleeveAllocation"
+          },
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "benchmarkSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmarksymbol"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdby"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "portfolioName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Portfolioname",
+          "type": "string"
+        },
+        "publishedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publishedat"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "portfolioName",
+        "version",
+        "allocations"
+      ],
+      "title": "PortfolioRevision",
+      "type": "object"
+    },
+    "PortfolioSleeveAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "maxWeight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxweight"
+        },
+        "minWeight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minweight"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "rebalancePriority": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rebalancepriority",
+          "type": "integer"
+        },
+        "sleeveId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sleeveid",
+          "type": "string"
+        },
+        "sleeveName": {
+          "default": "",
+          "title": "Sleevename",
+          "type": "string"
+        },
+        "strategy": {
+          "$ref": "#/$defs/StrategyVersionReference"
+        },
+        "targetWeight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Targetweight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "sleeveId",
+        "strategy",
+        "targetWeight"
+      ],
+      "title": "PortfolioSleeveAllocation",
+      "type": "object"
+    },
+    "StrategyVersionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "minimum": 1,
+          "title": "Strategyversion",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strategyName",
+        "strategyVersion"
+      ],
+      "title": "StrategyVersionReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PortfolioRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "portfolio": {
+      "$ref": "#/$defs/PortfolioDefinition"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/PortfolioRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "portfolio"
+  ],
+  "title": "PortfolioDefinitionDetailResponse",
+  "type": "object"
+}

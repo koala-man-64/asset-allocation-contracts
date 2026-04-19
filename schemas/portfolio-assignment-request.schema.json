@@ -1,0 +1,39 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountVersion": {
+      "minimum": 1,
+      "title": "Accountversion",
+      "type": "integer"
+    },
+    "effectiveFrom": {
+      "format": "date",
+      "title": "Effectivefrom",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "portfolioName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Portfolioname",
+      "type": "string"
+    },
+    "portfolioVersion": {
+      "minimum": 1,
+      "title": "Portfolioversion",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "accountVersion",
+    "portfolioName",
+    "portfolioVersion",
+    "effectiveFrom"
+  ],
+  "title": "PortfolioAssignmentRequest",
+  "type": "object"
+}
