@@ -13,7 +13,7 @@ Documentation:
 - `docs/architecture/configuration-examples.md` contains valid examples for the shared configuration contract surfaces.
 - `docs/ops/env-contract.md` and `docs/ops/env-contract.csv` document the repo bootstrap env contract used for release and dispatch automation.
 
-Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout, and `contracts_released` dispatches carry the exact published version for downstream auto-adoption.
+Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout, and `contracts_released` dispatches carry the exact published version for downstream jobs and UI automation.
 
 It does not own runtime IO, storage, Postgres, Delta, monitoring, or orchestration helpers.
 

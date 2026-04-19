@@ -367,7 +367,6 @@ The release workflow dispatches the GitHub repository event `contracts_released`
 
 Current workflow behavior targets:
 
-- Control plane
 - Jobs
 - UI
 

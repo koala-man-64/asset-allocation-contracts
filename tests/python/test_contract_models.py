@@ -3,7 +3,13 @@ from __future__ import annotations
 from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
+    BacktestLookupRequest,
+    BacktestLookupResponse,
+    BacktestResultLinks,
+    BacktestRunRequest,
+    BacktestRunResponse,
     BacktestSummary,
+    BacktestStreamEvent,
     ClosedPositionResponse,
     BacktestReconcileResponse,
     BacktestResultMetadata,
@@ -11,6 +17,7 @@ from asset_allocation_contracts.backtest import (
     RollingMetricsResponse,
     RunRecordResponse,
     RunStatusResponse,
+    StrategyReferenceInput,
     TradeResponse,
     TimeseriesPointResponse,
     TimeseriesResponse,
@@ -220,6 +227,119 @@ def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
     assert payload.pins.rankingSchemaVersion == 7
 
 
+def test_strategy_reference_input_accepts_optional_version() -> None:
+    payload = StrategyReferenceInput(strategyName="quality-trend")
+    assert payload.strategyName == "quality-trend"
+    assert payload.strategyVersion is None
+
+
+def test_backtest_lookup_request_requires_exactly_one_strategy_input() -> None:
+    payload = BacktestLookupRequest(
+        strategyRef={"strategyName": "quality-trend", "strategyVersion": 4},
+        startTs="2026-03-08T00:00:00Z",
+        endTs="2026-03-09T00:00:00Z",
+        barSize="1d",
+        runName="lookup-smoke",
+    )
+    assert payload.strategyRef is not None
+    assert payload.strategyConfig is None
+    schema = BacktestLookupRequest.model_json_schema()
+    assert schema["oneOf"] == [{"required": ["strategyRef"]}, {"required": ["strategyConfig"]}]
+
+    for invalid_payload in (
+        {
+            "startTs": "2026-03-08T00:00:00Z",
+            "endTs": "2026-03-09T00:00:00Z",
+            "barSize": "1d",
+        },
+        {
+            "strategyRef": {"strategyName": "quality-trend"},
+            "strategyConfig": {
+                "universeConfigName": "large-cap-quality",
+                "rebalance": "weekly",
+                "longOnly": True,
+                "topN": 2,
+                "lookbackWindow": 20,
+                "holdingPeriod": 5,
+                "costModel": "default",
+                "rankingSchemaName": "quality",
+                "intrabarConflictPolicy": "stop_first",
+                "exits": [],
+            },
+            "startTs": "2026-03-08T00:00:00Z",
+            "endTs": "2026-03-09T00:00:00Z",
+            "barSize": "1d",
+        },
+    ):
+        try:
+            BacktestLookupRequest.model_validate(invalid_payload)
+        except Exception as exc:
+            assert "Exactly one of strategyRef or strategyConfig must be provided" in str(exc)
+        else:
+            raise AssertionError("Expected BacktestLookupRequest to enforce exactly one strategy input.")
+
+
+def test_backtest_run_response_and_lookup_response_support_links_and_summary() -> None:
+    run = RunStatusResponse(
+        run_id="run-123",
+        status="completed",
+        submitted_at="2026-03-08T00:00:00Z",
+        results_ready_at="2026-03-08T01:05:00Z",
+        results_schema_version=4,
+    )
+    links = BacktestResultLinks(
+        summaryUrl="/api/backtests/run-123/summary",
+        metricsTimeseriesUrl="/api/backtests/run-123/metrics/timeseries",
+        metricsRollingUrl="/api/backtests/run-123/metrics/rolling",
+        tradesUrl="/api/backtests/run-123/trades",
+        closedPositionsUrl="/api/backtests/run-123/positions/closed",
+    )
+    summary = BacktestSummary(total_return=0.12)
+
+    lookup = BacktestLookupResponse(
+        found=True,
+        state="completed",
+        run=run,
+        result=summary,
+        links=links,
+    )
+    run_response = BacktestRunResponse(
+        run=run,
+        created=True,
+        reusedInflight=False,
+        streamUrl="/api/backtests/run-123/events",
+    )
+
+    assert lookup.links is not None
+    assert lookup.links.closedPositionsUrl.endswith("/positions/closed")
+    assert lookup.result is not None
+    assert lookup.result.total_return == 0.12
+    assert run_response.streamUrl.endswith("/events")
+
+
+def test_backtest_run_request_accepts_inline_strategy_config() -> None:
+    payload = BacktestRunRequest(
+        strategyConfig={
+            "universeConfigName": "large-cap-quality",
+            "rebalance": "weekly",
+            "longOnly": True,
+            "topN": 2,
+            "lookbackWindow": 20,
+            "holdingPeriod": 5,
+            "costModel": "default",
+            "rankingSchemaName": "quality",
+            "intrabarConflictPolicy": "stop_first",
+            "exits": [],
+        },
+        startTs="2026-03-08T00:00:00Z",
+        endTs="2026-03-09T00:00:00Z",
+        barSize="1d",
+        runName="run-smoke",
+    )
+    assert payload.strategyConfig is not None
+    assert payload.strategyRef is None
+
+
 def test_backtest_complete_request_rejects_legacy_artifact_manifest_path() -> None:
     try:
         BacktestCompleteRequest(summary={"run_id": "run-123"}, artifactManifestPath="backtests/run-123")
@@ -258,6 +378,41 @@ def test_backtest_result_metadata_and_response_schema() -> None:
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
     assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 4
+
+
+def test_backtest_stream_event_supports_terminal_payload() -> None:
+    payload = BacktestStreamEvent(
+        event="completed",
+        run={
+            "run_id": "run-123",
+            "status": "completed",
+            "submitted_at": "2026-03-08T00:00:00Z",
+            "completed_at": "2026-03-08T01:00:00Z",
+            "results_ready_at": "2026-03-08T01:05:00Z",
+            "results_schema_version": 4,
+        },
+        summary={"total_return": 0.12},
+        metadata={
+            "results_schema_version": 4,
+            "bar_size": "1d",
+            "periods_per_year": 252,
+            "strategy_scope": "long_only",
+        },
+        links={
+            "summaryUrl": "/api/backtests/run-123/summary",
+            "metricsTimeseriesUrl": "/api/backtests/run-123/metrics/timeseries",
+            "metricsRollingUrl": "/api/backtests/run-123/metrics/rolling",
+            "tradesUrl": "/api/backtests/run-123/trades",
+            "closedPositionsUrl": "/api/backtests/run-123/positions/closed",
+        },
+    )
+
+    assert payload.event == "completed"
+    assert payload.summary is not None
+    assert payload.summary.total_return == 0.12
+    assert payload.links is not None
+    assert payload.metadata is not None
+    assert payload.metadata.periods_per_year == 252
 
 
 def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> None:

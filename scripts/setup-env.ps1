@@ -81,10 +81,6 @@ $contractRows = Load-ContractRows -Path $contractPath
 function Resolve-DiscoveredValue {
     param([string]$Key)
     switch ($Key) {
-        "CONTROL_PLANE_REPOSITORY" {
-            $slug = Get-RepoSlug -RepoName "asset-allocation-control-plane"
-            if ($slug) { return (New-Resolution -Value $slug -Source "git") }
-        }
         "JOBS_REPOSITORY" {
             $slug = Get-RepoSlug -RepoName "asset-allocation-jobs"
             if ($slug) { return (New-Resolution -Value $slug -Source "git") }
