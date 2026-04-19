@@ -1,3 +1,4 @@
+from asset_allocation_contracts.ai_chat import *
 from asset_allocation_contracts.backtest import *
 from asset_allocation_contracts.finance import *
 from asset_allocation_contracts.government_signals import *
@@ -6,5 +7,6 @@ from asset_allocation_contracts.portfolio import *
 from asset_allocation_contracts.paths import *
 from asset_allocation_contracts.ranking import *
 from asset_allocation_contracts.regime import *
+from asset_allocation_contracts.symbol_enrichment import *
 from asset_allocation_contracts.strategy import *
 from asset_allocation_contracts.ui_config import *

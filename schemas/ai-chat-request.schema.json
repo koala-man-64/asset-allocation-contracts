@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "prompt": {
+      "maxLength": 40000,
+      "minLength": 1,
+      "title": "Prompt",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Role"
+    },
+    "systemInstructions": {
+      "anyOf": [
+        {
+          "maxLength": 10000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Systeminstructions"
+    }
+  },
+  "required": [
+    "prompt"
+  ],
+  "title": "AiChatRequest",
+  "type": "object"
+}

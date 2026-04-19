@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "fullScan": {
+      "default": false,
+      "title": "Fullscan",
+      "type": "boolean"
+    },
+    "maxSymbols": {
+      "anyOf": [
+        {
+          "maximum": 50000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxsymbols"
+    },
+    "overwriteMode": {
+      "default": "fill_missing",
+      "enum": [
+        "fill_missing",
+        "full_reconcile"
+      ],
+      "title": "Overwritemode",
+      "type": "string"
+    },
+    "symbols": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Symbols",
+      "type": "array"
+    }
+  },
+  "title": "SymbolEnrichmentEnqueueRequest",
+  "type": "object"
+}
