@@ -1,0 +1,149 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "aiConfidence": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Aiconfidence"
+    },
+    "aiModel": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Aimodel"
+    },
+    "changeReason": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Changereason"
+    },
+    "fieldName": {
+      "enum": [
+        "security_type_norm",
+        "exchange_mic",
+        "country_of_risk",
+        "sector_norm",
+        "industry_group_norm",
+        "industry_norm",
+        "is_adr",
+        "is_etf",
+        "is_cef",
+        "is_preferred",
+        "share_class",
+        "listing_status_norm",
+        "issuer_summary_short"
+      ],
+      "title": "Fieldname",
+      "type": "string"
+    },
+    "historyId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Historyid",
+      "type": "string"
+    },
+    "newValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Newvalue"
+    },
+    "previousValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previousvalue"
+    },
+    "runId": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Runid"
+    },
+    "sourceKind": {
+      "enum": [
+        "provider",
+        "ai",
+        "derived",
+        "override"
+      ],
+      "title": "Sourcekind",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "updatedAt": {
+      "format": "date-time",
+      "title": "Updatedat",
+      "type": "string"
+    }
+  },
+  "required": [
+    "historyId",
+    "symbol",
+    "fieldName",
+    "sourceKind",
+    "updatedAt"
+  ],
+  "title": "SymbolProfileHistoryEntry",
+  "type": "object"
+}

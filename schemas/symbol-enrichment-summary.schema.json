@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "SymbolCleanupRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Acceptedupdatecount",
+          "type": "integer"
+        },
+        "claimedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Claimedcount",
+          "type": "integer"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "completedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Completedcount",
+          "type": "integer"
+        },
+        "failedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Failedcount",
+          "type": "integer"
+        },
+        "lockedSkipCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Lockedskipcount",
+          "type": "integer"
+        },
+        "mode": {
+          "default": "fill_missing",
+          "enum": [
+            "fill_missing",
+            "full_reconcile"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "overwriteCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Overwritecount",
+          "type": "integer"
+        },
+        "queuedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Queuedcount",
+          "type": "integer"
+        },
+        "rejectedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rejectedupdatecount",
+          "type": "integer"
+        },
+        "runId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startedat"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "status"
+      ],
+      "title": "SymbolCleanupRunSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRun": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SymbolCleanupRunSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "backlogCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Backlogcount",
+      "type": "integer"
+    },
+    "lastRun": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SymbolCleanupRunSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "lockCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Lockcount",
+      "type": "integer"
+    },
+    "validationFailureCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Validationfailurecount",
+      "type": "integer"
+    }
+  },
+  "title": "SymbolEnrichmentSummaryResponse",
+  "type": "object"
+}

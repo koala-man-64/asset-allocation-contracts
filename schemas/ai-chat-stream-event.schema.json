@@ -1,0 +1,379 @@
+{
+  "$defs": {
+    "AiChatCompletedData": {
+      "additionalProperties": false,
+      "properties": {
+        "finishReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finishreason"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "outputText": {
+          "default": "",
+          "title": "Outputtext",
+          "type": "string"
+        },
+        "providerResponseId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerresponseid"
+        },
+        "reasoningSummary": {
+          "default": "",
+          "title": "Reasoningsummary",
+          "type": "string"
+        },
+        "requestId": {
+          "minLength": 1,
+          "title": "Requestid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requestId",
+        "model"
+      ],
+      "title": "AiChatCompletedData",
+      "type": "object"
+    },
+    "AiChatCompletedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatCompletedData"
+        },
+        "event": {
+          "const": "completed",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatCompletedEvent",
+      "type": "object"
+    },
+    "AiChatError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "retryable"
+      ],
+      "title": "AiChatError",
+      "type": "object"
+    },
+    "AiChatErrorData": {
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/AiChatError"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "title": "AiChatErrorData",
+      "type": "object"
+    },
+    "AiChatErrorEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatErrorData"
+        },
+        "event": {
+          "const": "error",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatErrorEvent",
+      "type": "object"
+    },
+    "AiChatOutputTextDeltaData": {
+      "additionalProperties": false,
+      "properties": {
+        "delta": {
+          "minLength": 1,
+          "title": "Delta",
+          "type": "string"
+        }
+      },
+      "required": [
+        "delta"
+      ],
+      "title": "AiChatOutputTextDeltaData",
+      "type": "object"
+    },
+    "AiChatOutputTextDeltaEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatOutputTextDeltaData"
+        },
+        "event": {
+          "const": "output_text_delta",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatOutputTextDeltaEvent",
+      "type": "object"
+    },
+    "AiChatReasoningSummaryDeltaData": {
+      "additionalProperties": false,
+      "properties": {
+        "delta": {
+          "minLength": 1,
+          "title": "Delta",
+          "type": "string"
+        }
+      },
+      "required": [
+        "delta"
+      ],
+      "title": "AiChatReasoningSummaryDeltaData",
+      "type": "object"
+    },
+    "AiChatReasoningSummaryDeltaEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatReasoningSummaryDeltaData"
+        },
+        "event": {
+          "const": "reasoning_summary_delta",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatReasoningSummaryDeltaEvent",
+      "type": "object"
+    },
+    "AiChatStartedData": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "providerResponseId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerresponseid"
+        },
+        "requestId": {
+          "minLength": 1,
+          "title": "Requestid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requestId",
+        "model"
+      ],
+      "title": "AiChatStartedData",
+      "type": "object"
+    },
+    "AiChatStartedEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatStartedData"
+        },
+        "event": {
+          "const": "started",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatStartedEvent",
+      "type": "object"
+    },
+    "AiChatStatusData": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "providerResponseId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerresponseid"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "AiChatStatusData",
+      "type": "object"
+    },
+    "AiChatStatusEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AiChatStatusData"
+        },
+        "event": {
+          "const": "status",
+          "title": "Event",
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "minimum": 1,
+          "title": "Sequencenumber",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequenceNumber",
+        "event",
+        "data"
+      ],
+      "title": "AiChatStatusEvent",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "completed": "#/$defs/AiChatCompletedEvent",
+      "error": "#/$defs/AiChatErrorEvent",
+      "output_text_delta": "#/$defs/AiChatOutputTextDeltaEvent",
+      "reasoning_summary_delta": "#/$defs/AiChatReasoningSummaryDeltaEvent",
+      "started": "#/$defs/AiChatStartedEvent",
+      "status": "#/$defs/AiChatStatusEvent"
+    },
+    "propertyName": "event"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/AiChatStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/AiChatStatusEvent"
+    },
+    {
+      "$ref": "#/$defs/AiChatReasoningSummaryDeltaEvent"
+    },
+    {
+      "$ref": "#/$defs/AiChatOutputTextDeltaEvent"
+    },
+    {
+      "$ref": "#/$defs/AiChatCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/AiChatErrorEvent"
+    }
+  ]
+}

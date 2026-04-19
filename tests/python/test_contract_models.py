@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pydantic import TypeAdapter
+from asset_allocation_contracts.ai_chat import AiChatRequest, AiChatStreamEvent
 from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
@@ -18,6 +20,15 @@ from asset_allocation_contracts.backtest import (
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
+from asset_allocation_contracts.symbol_enrichment import (
+    SymbolCleanupRunSummary,
+    SymbolEnrichmentResolveRequest,
+    SymbolEnrichmentResolveResponse,
+    SymbolEnrichmentSummaryResponse,
+    SymbolEnrichmentSymbolDetailResponse,
+    SymbolProfileCurrent,
+    SymbolProfileOverride,
+)
 from asset_allocation_contracts.strategy import (
     StrategyConfig,
     UniverseCatalogResponse,
@@ -258,6 +269,72 @@ def test_backtest_result_metadata_and_response_schema() -> None:
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
     assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 4
+
+
+def test_ai_chat_contracts_validate_and_discriminate_stream_events() -> None:
+    request = AiChatRequest(prompt="Summarize AAPL.")
+    adapter = TypeAdapter(AiChatStreamEvent)
+    completed = adapter.validate_python(
+        {
+            "sequenceNumber": 1,
+            "event": "completed",
+            "data": {
+                "requestId": "req-1",
+                "model": "gpt-5.4",
+                "outputText": "Apple summary",
+                "reasoningSummary": "",
+            },
+        }
+    )
+
+    assert request.prompt == "Summarize AAPL."
+    assert completed.event == "completed"
+    assert completed.data.outputText == "Apple summary"
+
+
+def test_symbol_enrichment_contracts_validate_current_profile_and_response() -> None:
+    resolve_request = SymbolEnrichmentResolveRequest(
+        symbol="AAPL",
+        requestedFields=["sector_norm", "industry_norm", "issuer_summary_short"],
+        providerFacts={"symbol": "AAPL", "name": "Apple Inc.", "exchange": "NASDAQ"},
+    )
+    resolve_response = SymbolEnrichmentResolveResponse(
+        symbol="AAPL",
+        profile={
+            "sector_norm": "Technology",
+            "industry_norm": "Technology Hardware, Storage & Peripherals",
+            "issuer_summary_short": "Consumer hardware and services company.",
+        },
+        model="gpt-5.4",
+        confidence=0.92,
+    )
+    current = SymbolProfileCurrent(
+        symbol="AAPL",
+        sourceKind="ai",
+        validationStatus="accepted",
+        sector_norm="Technology",
+        marketCapBucket="mega",
+        avgDollarVolume20d=125_000_000.0,
+    )
+
+    assert resolve_request.providerFacts.symbol == "AAPL"
+    assert resolve_response.profile.industry_norm is not None
+    assert current.marketCapBucket == "mega"
+
+
+def test_symbol_enrichment_operator_contracts_default_lists() -> None:
+    detail = SymbolEnrichmentSymbolDetailResponse(
+        providerFacts={"symbol": "AAPL"},
+        currentProfile={"symbol": "AAPL", "sourceKind": "provider"},
+    )
+    summary = SymbolEnrichmentSummaryResponse()
+    override = SymbolProfileOverride(symbol="AAPL", fieldName="sector_norm", value="Technology", isLocked=True)
+    run = SymbolCleanupRunSummary(runId="run-1", status="queued")
+
+    assert detail.overrides == []
+    assert summary.backlogCount == 0
+    assert override.isLocked is True
+    assert run.mode == "fill_missing"
 
 
 def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> None:

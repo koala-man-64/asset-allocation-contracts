@@ -60,6 +60,25 @@ export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
+export type SymbolCleanupStatus = 'queued' | 'running' | 'completed' | 'failed';
+export type SymbolWorkStatus = 'queued' | 'claimed' | 'completed' | 'failed';
+export type SymbolSourceKind = 'provider' | 'ai' | 'derived' | 'override';
+export type SymbolValidationStatus = 'accepted' | 'rejected' | 'pending' | 'locked';
+export type SymbolOverwriteMode = 'fill_missing' | 'full_reconcile';
+export type SymbolEnrichmentField =
+  | 'security_type_norm'
+  | 'exchange_mic'
+  | 'country_of_risk'
+  | 'sector_norm'
+  | 'industry_group_norm'
+  | 'industry_norm'
+  | 'is_adr'
+  | 'is_etf'
+  | 'is_cef'
+  | 'is_preferred'
+  | 'share_class'
+  | 'listing_status_norm'
+  | 'issuer_summary_short';
 
 export interface ExitRule {
   id: string;
@@ -160,6 +179,247 @@ export interface RankingFactor {
   direction: RankingDirection;
   missingValuePolicy: RankingMissingValuePolicy;
   transforms: RankingTransform[];
+}
+
+export interface AiChatRequest {
+  prompt: string;
+  role?: string | null;
+  systemInstructions?: string | null;
+}
+
+export interface AiChatError {
+  code: string;
+  message: string;
+  retryable: boolean;
+}
+
+export interface AiChatStartedData {
+  requestId: string;
+  model: string;
+  providerResponseId?: string | null;
+}
+
+export interface AiChatStatusData {
+  code: string;
+  message: string;
+  providerResponseId?: string | null;
+}
+
+export interface AiChatReasoningSummaryDeltaData {
+  delta: string;
+}
+
+export interface AiChatOutputTextDeltaData {
+  delta: string;
+}
+
+export interface AiChatCompletedData {
+  requestId: string;
+  model: string;
+  providerResponseId?: string | null;
+  outputText: string;
+  reasoningSummary: string;
+  finishReason?: string | null;
+}
+
+export interface AiChatErrorData {
+  error: AiChatError;
+}
+
+export interface AiChatStartedEvent {
+  sequenceNumber: number;
+  event: 'started';
+  data: AiChatStartedData;
+}
+
+export interface AiChatStatusEvent {
+  sequenceNumber: number;
+  event: 'status';
+  data: AiChatStatusData;
+}
+
+export interface AiChatReasoningSummaryDeltaEvent {
+  sequenceNumber: number;
+  event: 'reasoning_summary_delta';
+  data: AiChatReasoningSummaryDeltaData;
+}
+
+export interface AiChatOutputTextDeltaEvent {
+  sequenceNumber: number;
+  event: 'output_text_delta';
+  data: AiChatOutputTextDeltaData;
+}
+
+export interface AiChatCompletedEvent {
+  sequenceNumber: number;
+  event: 'completed';
+  data: AiChatCompletedData;
+}
+
+export interface AiChatErrorEvent {
+  sequenceNumber: number;
+  event: 'error';
+  data: AiChatErrorData;
+}
+
+export type AiChatStreamEvent =
+  | AiChatStartedEvent
+  | AiChatStatusEvent
+  | AiChatReasoningSummaryDeltaEvent
+  | AiChatOutputTextDeltaEvent
+  | AiChatCompletedEvent
+  | AiChatErrorEvent;
+
+export interface SymbolProviderFacts {
+  symbol: string;
+  name?: string | null;
+  description?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  industry2?: string | null;
+  country?: string | null;
+  exchange?: string | null;
+  assetType?: string | null;
+  ipoDate?: string | null;
+  delistingDate?: string | null;
+  status?: string | null;
+  isOptionable?: boolean | null;
+  sourceNasdaq?: boolean | null;
+  sourceMassive?: boolean | null;
+  sourceAlphaVantage?: boolean | null;
+}
+
+export interface SymbolProfileValues {
+  security_type_norm?: string | null;
+  exchange_mic?: string | null;
+  country_of_risk?: string | null;
+  sector_norm?: string | null;
+  industry_group_norm?: string | null;
+  industry_norm?: string | null;
+  is_adr?: boolean | null;
+  is_etf?: boolean | null;
+  is_cef?: boolean | null;
+  is_preferred?: boolean | null;
+  share_class?: string | null;
+  listing_status_norm?: string | null;
+  issuer_summary_short?: string | null;
+}
+
+export interface SymbolCleanupWorkItem {
+  workId: string;
+  runId: string;
+  symbol: string;
+  status: SymbolWorkStatus;
+  requestedFields: SymbolEnrichmentField[];
+  attemptCount: number;
+  executionName?: string | null;
+  claimedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface SymbolCleanupRunSummary {
+  runId: string;
+  status: SymbolCleanupStatus;
+  mode: SymbolOverwriteMode;
+  queuedCount: number;
+  claimedCount: number;
+  completedCount: number;
+  failedCount: number;
+  acceptedUpdateCount: number;
+  rejectedUpdateCount: number;
+  lockedSkipCount: number;
+  overwriteCount: number;
+  startedAt?: string | null;
+  completedAt?: string | null;
+}
+
+export interface SymbolEnrichmentResolveRequest {
+  symbol: string;
+  overwriteMode: SymbolOverwriteMode;
+  requestedFields: SymbolEnrichmentField[];
+  providerFacts: SymbolProviderFacts;
+  currentProfile?: SymbolProfileValues | null;
+}
+
+export interface SymbolEnrichmentResolveResponse {
+  symbol: string;
+  profile: SymbolProfileValues;
+  model?: string | null;
+  confidence?: number | null;
+  sourceFingerprint?: string | null;
+  warnings: string[];
+}
+
+export interface SymbolProfileCurrent extends SymbolProfileValues {
+  symbol: string;
+  sourceKind: SymbolSourceKind;
+  sourceFingerprint?: string | null;
+  aiModel?: string | null;
+  aiConfidence?: number | null;
+  validationStatus: SymbolValidationStatus;
+  marketCapUsd?: number | null;
+  marketCapBucket?: string | null;
+  avgDollarVolume20d?: number | null;
+  liquidityBucket?: string | null;
+  isTradeableCommonEquity?: boolean | null;
+  dataCompletenessScore?: number | null;
+  updatedAt?: string | null;
+}
+
+export interface SymbolProfileHistoryEntry {
+  historyId: string;
+  symbol: string;
+  fieldName: SymbolEnrichmentField;
+  previousValue?: string | number | boolean | null;
+  newValue?: string | number | boolean | null;
+  sourceKind: SymbolSourceKind;
+  aiModel?: string | null;
+  aiConfidence?: number | null;
+  changeReason?: string | null;
+  runId?: string | null;
+  updatedAt: string;
+}
+
+export interface SymbolProfileOverride {
+  symbol: string;
+  fieldName: SymbolEnrichmentField;
+  value?: string | number | boolean | null;
+  isLocked: boolean;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface SymbolEnrichmentSummaryResponse {
+  backlogCount: number;
+  lastRun?: SymbolCleanupRunSummary | null;
+  activeRun?: SymbolCleanupRunSummary | null;
+  validationFailureCount: number;
+  lockCount: number;
+}
+
+export interface SymbolEnrichmentSymbolListItem {
+  symbol: string;
+  name?: string | null;
+  status: SymbolValidationStatus;
+  sourceKind: SymbolSourceKind;
+  updatedAt?: string | null;
+  missingFieldCount: number;
+  lockedFieldCount: number;
+  dataCompletenessScore?: number | null;
+}
+
+export interface SymbolEnrichmentSymbolDetailResponse {
+  providerFacts: SymbolProviderFacts;
+  currentProfile?: SymbolProfileCurrent | null;
+  overrides: SymbolProfileOverride[];
+  history: SymbolProfileHistoryEntry[];
+}
+
+export interface SymbolEnrichmentEnqueueRequest {
+  symbols: string[];
+  fullScan: boolean;
+  overwriteMode: SymbolOverwriteMode;
+  maxSymbols?: number | null;
 }
 
 export interface RankingGroup {

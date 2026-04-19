@@ -1,0 +1,109 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "attemptCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Attemptcount",
+      "type": "integer"
+    },
+    "claimedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claimedat"
+    },
+    "executionName": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Executionname"
+    },
+    "lastError": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasterror"
+    },
+    "requestedFields": {
+      "items": {
+        "enum": [
+          "security_type_norm",
+          "exchange_mic",
+          "country_of_risk",
+          "sector_norm",
+          "industry_group_norm",
+          "industry_norm",
+          "is_adr",
+          "is_etf",
+          "is_cef",
+          "is_preferred",
+          "share_class",
+          "listing_status_norm",
+          "issuer_summary_short"
+        ],
+        "type": "string"
+      },
+      "title": "Requestedfields",
+      "type": "array"
+    },
+    "runId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "claimed",
+        "completed",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "workId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Workid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "workId",
+    "runId",
+    "symbol",
+    "status",
+    "requestedFields"
+  ],
+  "title": "SymbolCleanupWorkItem",
+  "type": "object"
+}

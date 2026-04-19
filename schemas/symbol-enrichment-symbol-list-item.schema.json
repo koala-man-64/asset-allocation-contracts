@@ -1,0 +1,90 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "dataCompletenessScore": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Datacompletenessscore"
+    },
+    "lockedFieldCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Lockedfieldcount",
+      "type": "integer"
+    },
+    "missingFieldCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Missingfieldcount",
+      "type": "integer"
+    },
+    "name": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Name"
+    },
+    "sourceKind": {
+      "enum": [
+        "provider",
+        "ai",
+        "derived",
+        "override"
+      ],
+      "title": "Sourcekind",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "accepted",
+        "rejected",
+        "pending",
+        "locked"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    }
+  },
+  "required": [
+    "symbol",
+    "status",
+    "sourceKind"
+  ],
+  "title": "SymbolEnrichmentSymbolListItem",
+  "type": "object"
+}
