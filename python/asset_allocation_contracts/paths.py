@@ -9,9 +9,15 @@ FINANCE_ALPHA26_SUBDOMAINS: tuple[str, ...] = (
     "cash_flow",
     "valuation",
 )
+QUIVER_DOMAIN_SLUG: str = "quiver"
+QUIVER_SILVER_DOMAIN_SLUG: str = "quiver-data"
 
 
 def normalize_finance_folder(folder: str) -> str:
+    return str(folder or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def normalize_quiver_folder(folder: str) -> str:
     return str(folder or "").strip().lower().replace(" ", "_").replace("-", "_")
 
 
@@ -80,3 +86,18 @@ class DataPaths:
     def get_silver_finance_bucket_path(folder: str, bucket: str) -> str:
         clean_folder = normalize_finance_folder(folder)
         return f"finance-data/{clean_folder}/buckets/{str(bucket).strip().upper()}"
+
+    @staticmethod
+    def get_silver_quiver_bucket_path(folder: str, bucket: str) -> str:
+        clean_folder = normalize_quiver_folder(folder)
+        return f"{QUIVER_SILVER_DOMAIN_SLUG}/{clean_folder}/buckets/{str(bucket).strip().upper()}"
+
+    @staticmethod
+    def get_gold_quiver_bucket_path(folder: str, bucket: str) -> str:
+        clean_folder = normalize_quiver_folder(folder)
+        return f"{QUIVER_DOMAIN_SLUG}/{clean_folder}/buckets/{str(bucket).strip().upper()}"
+
+    @staticmethod
+    def get_gold_quiver_domain_path(folder: str) -> str:
+        clean_folder = normalize_quiver_folder(folder)
+        return f"{QUIVER_DOMAIN_SLUG}/{clean_folder}"
