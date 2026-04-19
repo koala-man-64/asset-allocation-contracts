@@ -35,6 +35,15 @@ from asset_allocation_contracts.government_signals import (
     GovernmentSignalPortfolioExposureRequest,
     IssuerGovernmentSignalDaily,
 )
+from asset_allocation_contracts.intraday import (
+    IntradayMonitorClaimResponse,
+    IntradayMonitorCompleteRequest,
+    IntradayMonitorEvent,
+    IntradayMonitorRunSummary,
+    IntradaySymbolStatus,
+    IntradayWatchlistDetail,
+    IntradayWatchlistUpsertRequest,
+)
 from asset_allocation_contracts.portfolio import (
     PortfolioAccount,
     PortfolioAccountUpsertRequest,
@@ -50,7 +59,15 @@ from asset_allocation_contracts.portfolio import (
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
-from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
+from asset_allocation_contracts.regime import (
+    CANONICAL_DEFAULT_REGIME_VERSION,
+    RegimeModelConfig,
+    RegimePolicy,
+    RegimeSnapshot,
+    canonical_default_regime_config_errors,
+    canonical_default_regime_model_config,
+    validate_canonical_default_regime_config,
+)
 from asset_allocation_contracts.symbol_enrichment import (
     SymbolCleanupRunSummary,
     SymbolEnrichmentResolveRequest,
@@ -197,6 +214,82 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert "grantedRoles" in schema["properties"]
 
 
+def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:
+    payload = IntradayWatchlistUpsertRequest(
+        name="Large Cap Momentum",
+        description="Operator-managed intraday names.",
+        symbols=["aapl", " msft ", "AAPL"],
+    )
+
+    assert payload.symbols == ["AAPL", "MSFT"]
+    assert payload.pollIntervalMinutes == 5
+    assert payload.refreshCooldownMinutes == 15
+    assert payload.marketSession == "us_equities_regular"
+
+
+def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() -> None:
+    payload = IntradayMonitorClaimResponse(
+        claimToken="claim-1",
+        run=IntradayMonitorRunSummary(
+            runId="run-1",
+            watchlistId="watch-1",
+            watchlistName="Tech Core",
+            triggerKind="manual",
+            status="claimed",
+            forceRefresh=True,
+            symbolCount=2,
+        ),
+        watchlist=IntradayWatchlistDetail(
+            watchlistId="watch-1",
+            name="Tech Core",
+            description="operator list",
+            enabled=True,
+            symbolCount=2,
+            symbols=["AAPL", "MSFT"],
+        ),
+        currentSymbolStatuses=[
+            IntradaySymbolStatus(
+                symbol="aapl",
+                monitorStatus="observed",
+                lastObservedPrice=213.42,
+            )
+        ],
+    )
+
+    assert payload.claimToken == "claim-1"
+    assert payload.run is not None
+    assert payload.run.forceRefresh is True
+    assert payload.watchlist is not None
+    assert payload.watchlist.symbols == ["AAPL", "MSFT"]
+    assert payload.currentSymbolStatuses[0].symbol == "AAPL"
+
+
+def test_intraday_monitor_complete_request_accepts_statuses_and_events() -> None:
+    payload = IntradayMonitorCompleteRequest(
+        claimToken="claim-1",
+        symbolStatuses=[
+            IntradaySymbolStatus(
+                symbol="aapl",
+                monitorStatus="refresh_queued",
+                lastObservedPrice=213.42,
+            )
+        ],
+        events=[
+            IntradayMonitorEvent(
+                eventType="snapshot_polled",
+                severity="info",
+                message="Fetched latest snapshot.",
+                details={"source": "massive"},
+            )
+        ],
+        refreshSymbols=["aapl", "msft", "AAPL"],
+    )
+
+    assert payload.symbolStatuses[0].symbol == "AAPL"
+    assert payload.events[0].details["source"] == "massive"
+    assert payload.refreshSymbols == ["AAPL", "MSFT"]
+
+
 def test_regime_snapshot_and_model_config_validate() -> None:
     snapshot = RegimeSnapshot(
         as_of_date="2026-03-07",
@@ -207,9 +300,30 @@ def test_regime_snapshot_and_model_config_validate() -> None:
         regime_status="confirmed",
         halt_flag=False,
     )
-    config = RegimeModelConfig()
+    config = canonical_default_regime_model_config()
     assert snapshot.model_version == 2
     assert config.highVolEnterThreshold == 28.0
+    assert config.highVolExitThreshold == 28.0
+
+
+def test_default_regime_canonical_v2_config_rejects_transition_band_and_halt_drift() -> None:
+    assert CANONICAL_DEFAULT_REGIME_VERSION == 2
+    canonical = validate_canonical_default_regime_config({})
+    assert canonical.highVolEnterThreshold == 28.0
+    assert canonical.highVolExitThreshold == 28.0
+    assert canonical.haltVixThreshold == 32.0
+    assert canonical.haltVixStreakDays == 2
+
+    errors = canonical_default_regime_config_errors(
+        {
+            "highVolExitThreshold": 25.0,
+            "haltVixThreshold": 31.5,
+            "haltVixStreakDays": 3,
+        }
+    )
+    assert any("highVolExitThreshold" in message for message in errors)
+    assert any("haltVixThreshold" in message for message in errors)
+    assert any("haltVixStreakDays" in message for message in errors)
 
 
 def test_backtest_claim_request_accepts_optional_execution_name() -> None:

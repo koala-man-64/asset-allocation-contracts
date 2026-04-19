@@ -1,0 +1,23 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claimToken": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Claimtoken",
+      "type": "string"
+    },
+    "error": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Error",
+      "type": "string"
+    }
+  },
+  "required": [
+    "claimToken",
+    "error"
+  ],
+  "title": "IntradayRefreshFailRequest",
+  "type": "object"
+}
