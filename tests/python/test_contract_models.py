@@ -50,7 +50,15 @@ from asset_allocation_contracts.portfolio import (
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
-from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
+from asset_allocation_contracts.regime import (
+    CANONICAL_DEFAULT_REGIME_VERSION,
+    RegimeModelConfig,
+    RegimePolicy,
+    RegimeSnapshot,
+    canonical_default_regime_config_errors,
+    canonical_default_regime_model_config,
+    validate_canonical_default_regime_config,
+)
 from asset_allocation_contracts.symbol_enrichment import (
     SymbolCleanupRunSummary,
     SymbolEnrichmentResolveRequest,
@@ -207,9 +215,30 @@ def test_regime_snapshot_and_model_config_validate() -> None:
         regime_status="confirmed",
         halt_flag=False,
     )
-    config = RegimeModelConfig()
+    config = canonical_default_regime_model_config()
     assert snapshot.model_version == 2
     assert config.highVolEnterThreshold == 28.0
+    assert config.highVolExitThreshold == 28.0
+
+
+def test_default_regime_canonical_v2_config_rejects_transition_band_and_halt_drift() -> None:
+    assert CANONICAL_DEFAULT_REGIME_VERSION == 2
+    canonical = validate_canonical_default_regime_config({})
+    assert canonical.highVolEnterThreshold == 28.0
+    assert canonical.highVolExitThreshold == 28.0
+    assert canonical.haltVixThreshold == 32.0
+    assert canonical.haltVixStreakDays == 2
+
+    errors = canonical_default_regime_config_errors(
+        {
+            "highVolExitThreshold": 25.0,
+            "haltVixThreshold": 31.5,
+            "haltVixStreakDays": 3,
+        }
+    )
+    assert any("highVolExitThreshold" in message for message in errors)
+    assert any("haltVixThreshold" in message for message in errors)
+    assert any("haltVixStreakDays" in message for message in errors)
 
 
 def test_backtest_claim_request_accepts_optional_execution_name() -> None:

@@ -364,7 +364,7 @@ Source of truth:
   "curveContangoThreshold": 0.5,
   "curveInvertedThreshold": -0.5,
   "highVolEnterThreshold": 28.0,
-  "highVolExitThreshold": 25.0,
+  "highVolExitThreshold": 28.0,
   "bearVolMin": 15.0,
   "bearVolMaxExclusive": 25.0,
   "bullVolMaxExclusive": 15.0,
@@ -387,6 +387,14 @@ Validation notes:
 - `haltVixStreakDays` must be at least `1`.
 - `precedence` must contain valid regime codes.
 - `RegimePolicy.modelName` is trimmed and falls back to `default-regime` when blank.
+- `highVolExitThreshold` remains for one compatibility release, but canonical `default-regime` v2 sets it equal to `highVolEnterThreshold` so the `25-28` transition band is disabled.
+
+Canonical `default-regime` v2 rule matrix:
+
+- Trend state: `positive` when `return_20d > 0.02`, `negative` when `return_20d < -0.02`, otherwise `near_zero`.
+- Curve state: `contango` when `vix_slope >= 0.5`, `inverted` when `vix_slope <= -0.5`, otherwise `flat`.
+- High-vol entry: requires `rvol_10d_ann > 28.0` and an `inverted` curve. Exact `28.0` does not trigger `high_vol`; `28.01` does.
+- Halt overlay: requires `vix_spot_close > 32.0` for `2+` consecutive sessions. Exact `32.0` does not halt; `32.01` does.
 
 ## UI Runtime Configuration
 

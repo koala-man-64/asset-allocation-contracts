@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import date, datetime
 from typing import Any, Literal
 
@@ -19,6 +20,14 @@ RegimeBlockedAction = Literal["skip_entries", "skip_rebalance"]
 
 DEFAULT_REGIME_MODEL_NAME = "default-regime"
 DEFAULT_HALT_REASON = "vix_spot_close_gt_32_for_2_days"
+CANONICAL_DEFAULT_REGIME_VERSION = 2
+_CANONICAL_DEFAULT_REGIME_PRECEDENCE: list[RegimeCode] = [
+    "high_vol",
+    "trending_bear",
+    "trending_bull",
+    "choppy_mean_reversion",
+    "unclassified",
+]
 
 
 class TargetGrossExposureByRegime(BaseModel):
@@ -57,7 +66,9 @@ class RegimeModelConfig(BaseModel):
     curveContangoThreshold: float = 0.50
     curveInvertedThreshold: float = -0.50
     highVolEnterThreshold: float = 28.0
-    highVolExitThreshold: float = 25.0
+    # Deprecated compatibility field. Canonical default-regime v2 disables the
+    # transition band by matching the strict high-vol entry threshold.
+    highVolExitThreshold: float = 28.0
     bearVolMin: float = 15.0
     bearVolMaxExclusive: float = 25.0
     bullVolMaxExclusive: float = 15.0
@@ -66,13 +77,7 @@ class RegimeModelConfig(BaseModel):
     haltVixThreshold: float = 32.0
     haltVixStreakDays: int = Field(default=2, ge=1)
     precedence: list[RegimeCode] = Field(
-        default_factory=lambda: [
-            "high_vol",
-            "trending_bear",
-            "trending_bull",
-            "choppy_mean_reversion",
-            "unclassified",
-        ]
+        default_factory=lambda: list(_CANONICAL_DEFAULT_REGIME_PRECEDENCE)
     )
 
 
@@ -166,4 +171,70 @@ class RegimeModelDetailResponse(BaseModel):
 
 
 def default_regime_model_config() -> dict[str, Any]:
-    return RegimeModelConfig().model_dump(mode="json")
+    return canonical_default_regime_model_config().model_dump(mode="json")
+
+
+def canonical_default_regime_model_config() -> RegimeModelConfig:
+    return RegimeModelConfig(
+        trendPositiveThreshold=0.02,
+        trendNegativeThreshold=-0.02,
+        curveContangoThreshold=0.50,
+        curveInvertedThreshold=-0.50,
+        highVolEnterThreshold=28.0,
+        highVolExitThreshold=28.0,
+        bearVolMin=15.0,
+        bearVolMaxExclusive=25.0,
+        bullVolMaxExclusive=15.0,
+        choppyVolMin=10.0,
+        choppyVolMaxExclusive=18.0,
+        haltVixThreshold=32.0,
+        haltVixStreakDays=2,
+        precedence=list(_CANONICAL_DEFAULT_REGIME_PRECEDENCE),
+    )
+
+
+def canonical_default_regime_config_errors(
+    config: RegimeModelConfig | Mapping[str, Any] | None,
+) -> list[str]:
+    cfg = config if isinstance(config, RegimeModelConfig) else RegimeModelConfig.model_validate(config or {})
+    expected = canonical_default_regime_model_config()
+    errors: list[str] = []
+
+    comparable_fields = (
+        "trendPositiveThreshold",
+        "trendNegativeThreshold",
+        "curveContangoThreshold",
+        "curveInvertedThreshold",
+        "highVolEnterThreshold",
+        "highVolExitThreshold",
+        "bearVolMin",
+        "bearVolMaxExclusive",
+        "bullVolMaxExclusive",
+        "choppyVolMin",
+        "choppyVolMaxExclusive",
+        "haltVixThreshold",
+        "haltVixStreakDays",
+    )
+    for field_name in comparable_fields:
+        actual = getattr(cfg, field_name)
+        canonical = getattr(expected, field_name)
+        if actual != canonical:
+            errors.append(f"{field_name}={actual!r} must equal canonical value {canonical!r}")
+
+    if list(cfg.precedence) != list(expected.precedence):
+        errors.append(
+            "precedence must equal canonical order "
+            f"{list(expected.precedence)!r}"
+        )
+    return errors
+
+
+def validate_canonical_default_regime_config(
+    config: RegimeModelConfig | Mapping[str, Any] | None,
+) -> RegimeModelConfig:
+    cfg = config if isinstance(config, RegimeModelConfig) else RegimeModelConfig.model_validate(config or {})
+    errors = canonical_default_regime_config_errors(cfg)
+    if errors:
+        joined = "; ".join(errors)
+        raise ValueError(f"default-regime must use canonical v2 semantics: {joined}")
+    return cfg

@@ -53,7 +53,7 @@
       "type": "number"
     },
     "highVolExitThreshold": {
-      "default": 25.0,
+      "default": 28.0,
       "title": "Highvolexitthreshold",
       "type": "number"
     },

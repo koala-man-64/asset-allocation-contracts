@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from asset_allocation_contracts.ranking import RankingSchemaConfig, RankingTransform
-from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy
+from asset_allocation_contracts.regime import (
+    RegimeModelConfig,
+    RegimePolicy,
+    validate_canonical_default_regime_config,
+)
 from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefinition
 from asset_allocation_contracts.ui_config import UiRuntimeConfig
 
@@ -245,7 +249,7 @@ def test_documented_regime_examples_are_valid() -> None:
             "curveContangoThreshold": 0.5,
             "curveInvertedThreshold": -0.5,
             "highVolEnterThreshold": 28.0,
-            "highVolExitThreshold": 25.0,
+            "highVolExitThreshold": 28.0,
             "bearVolMin": 15.0,
             "bearVolMaxExclusive": 25.0,
             "bullVolMaxExclusive": 15.0,
@@ -265,6 +269,7 @@ def test_documented_regime_examples_are_valid() -> None:
 
     assert policy.onBlocked == "skip_entries"
     assert config.haltVixStreakDays == 2
+    assert validate_canonical_default_regime_config(config) == config
 
 
 def test_documented_ui_runtime_config_examples_are_valid() -> None:
