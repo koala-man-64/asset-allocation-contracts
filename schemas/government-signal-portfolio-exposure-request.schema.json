@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "GovernmentSignalPortfolioHolding": {
+      "additionalProperties": false,
+      "properties": {
+        "market_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market Value"
+        },
+        "portfolio_weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Portfolio Weight"
+        },
+        "shares": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shares"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "GovernmentSignalPortfolioHolding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "as_of_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "As Of Date"
+    },
+    "holdings": {
+      "items": {
+        "$ref": "#/$defs/GovernmentSignalPortfolioHolding"
+      },
+      "title": "Holdings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "holdings"
+  ],
+  "title": "GovernmentSignalPortfolioExposureRequest",
+  "type": "object"
+}

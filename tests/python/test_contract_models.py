@@ -15,6 +15,16 @@ from asset_allocation_contracts.backtest import (
     TimeseriesPointResponse,
     TimeseriesResponse,
 )
+from asset_allocation_contracts.government_signals import (
+    CongressTradeEvent,
+    CongressTradeVersion,
+    GovernmentContractEvent,
+    GovernmentSignalAlert,
+    GovernmentSignalIssuerSummaryResponse,
+    GovernmentSignalMappingOverrideRequest,
+    GovernmentSignalPortfolioExposureRequest,
+    IssuerGovernmentSignalDaily,
+)
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimeModelConfig, RegimePolicy, RegimeSnapshot
@@ -406,3 +416,123 @@ def test_trade_and_closed_position_contracts_support_position_lifecycle_fields()
 def test_shared_path_rules_are_stable() -> None:
     assert DataPaths.get_gold_finance_bucket_path("Balance Sheet", "a") == "finance/balance_sheet/buckets/A"
     assert bucket_letter("1msft") == "M"
+
+
+def test_government_signal_congress_trade_validates_amount_bounds() -> None:
+    payload = CongressTradeEvent(
+        event_id="house-123",
+        source_name="quiver",
+        source_event_key="house-123",
+        member_name="Member Example",
+        chamber="house",
+        committee_names=["Armed Services"],
+        traded_at="2026-04-15T14:30:00Z",
+        transaction_type="purchase",
+        asset_name="Lockheed Martin Corporation",
+        issuer_name="Lockheed Martin Corporation",
+        issuer_ticker="LMT",
+        amount_lower_usd=1000,
+        amount_upper_usd=15000,
+    )
+
+    assert payload.issuer_ticker == "LMT"
+    assert payload.mapping_status == "pending_review"
+
+    try:
+        CongressTradeEvent(
+            event_id="house-124",
+            source_name="quiver",
+            source_event_key="house-124",
+            member_name="Member Example",
+            committee_names=[],
+            traded_at="2026-04-15T14:30:00Z",
+            transaction_type="purchase",
+            asset_name="Lockheed Martin Corporation",
+            amount_lower_usd=15000,
+            amount_upper_usd=1000,
+        )
+    except Exception as exc:
+        assert "amount_upper_usd" in str(exc)
+    else:
+        raise AssertionError("Expected congress amount bounds validation failure.")
+
+
+def test_government_signal_contract_and_summary_models_accept_expected_payloads() -> None:
+    contract_event = GovernmentContractEvent(
+        event_id="award-1",
+        source_name="usaspending",
+        source_event_key="award-1",
+        event_type="award",
+        event_at="2026-04-16T00:00:00Z",
+        recipient_name="Lockheed Martin Corporation",
+        recipient_ticker="LMT",
+        awarding_agency="Department of Defense",
+        title="Missile systems support",
+        award_amount_usd=125000000,
+        obligation_delta_usd=125000000,
+    )
+    daily = IssuerGovernmentSignalDaily(as_of_date="2026-04-16", symbol="LMT")
+    summary = GovernmentSignalIssuerSummaryResponse(
+        symbol="LMT",
+        as_of_date="2026-04-16",
+        issuer_daily=daily,
+        recent_congress_trades=[],
+        recent_contract_events=[contract_event],
+        active_alerts=[
+            GovernmentSignalAlert(
+                alert_id="alert-1",
+                symbol="LMT",
+                as_of_date="2026-04-16",
+                alert_type="contract_event",
+                severity="high",
+                title="Large defense award",
+                summary="Lockheed received a large new award.",
+            )
+        ],
+    )
+
+    version = CongressTradeVersion(
+        version_id="v1",
+        event_id="house-123",
+        version_seq=1,
+        version_kind="initial",
+        version_observed_at="2026-04-16T00:00:00Z",
+        event=CongressTradeEvent(
+            event_id="house-123",
+            source_name="quiver",
+            source_event_key="house-123",
+            member_name="Member Example",
+            committee_names=[],
+            traded_at="2026-04-15T14:30:00Z",
+            transaction_type="purchase",
+            asset_name="Lockheed Martin Corporation",
+        ),
+    )
+
+    assert summary.recent_contract_events[0].recipient_ticker == "LMT"
+    assert summary.active_alerts[0].severity == "high"
+    assert version.version_seq == 1
+
+
+def test_government_signal_mapping_override_and_portfolio_request_validate() -> None:
+    payload = GovernmentSignalMappingOverrideRequest(action="map", symbol="RTX", reason="Matched issuer")
+    exposure = GovernmentSignalPortfolioExposureRequest(
+        holdings=[{"symbol": "LMT", "market_value": 100000, "portfolio_weight": 0.1}]
+    )
+
+    assert payload.symbol == "RTX"
+    assert exposure.holdings[0].symbol == "LMT"
+
+    try:
+        GovernmentSignalMappingOverrideRequest(action="map")
+    except Exception as exc:
+        assert "symbol is required" in str(exc)
+    else:
+        raise AssertionError("Expected map action to require a symbol.")
+
+    try:
+        GovernmentSignalPortfolioExposureRequest(holdings=[])
+    except Exception as exc:
+        assert "holdings must not be empty" in str(exc)
+    else:
+        raise AssertionError("Expected non-empty holdings validation failure.")

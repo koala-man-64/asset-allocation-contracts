@@ -17,6 +17,23 @@ from asset_allocation_contracts.backtest import (
     TimeseriesResponse,
     TradeListResponse,
 )
+from asset_allocation_contracts.government_signals import (
+    CongressTradeEvent,
+    CongressTradeEventListResponse,
+    CongressTradeVersion,
+    GovernmentContractEvent,
+    GovernmentContractEventListResponse,
+    GovernmentContractVersion,
+    GovernmentSignalAlert,
+    GovernmentSignalAlertListResponse,
+    GovernmentSignalIssuerSummaryResponse,
+    GovernmentSignalMappingOverrideRequest,
+    GovernmentSignalMappingOverrideResponse,
+    GovernmentSignalMappingReviewResponse,
+    GovernmentSignalPortfolioExposureRequest,
+    GovernmentSignalPortfolioExposureResponse,
+    IssuerGovernmentSignalDaily,
+)
 from asset_allocation_contracts.ranking import RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     RegimeInputRow,
@@ -71,6 +88,21 @@ def main() -> None:
     _write("backtest-complete-request.schema.json", BacktestCompleteRequest)
     _write("backtest-fail-request.schema.json", BacktestFailRequest)
     _write("backtest-reconcile-response.schema.json", BacktestReconcileResponse)
+    _write("government-signal-congress-event.schema.json", CongressTradeEvent)
+    _write("government-signal-congress-event-list.schema.json", CongressTradeEventListResponse)
+    _write("government-signal-congress-version.schema.json", CongressTradeVersion)
+    _write("government-signal-contract-event.schema.json", GovernmentContractEvent)
+    _write("government-signal-contract-event-list.schema.json", GovernmentContractEventListResponse)
+    _write("government-signal-contract-version.schema.json", GovernmentContractVersion)
+    _write("government-signal-issuer-daily.schema.json", IssuerGovernmentSignalDaily)
+    _write("government-signal-alert.schema.json", GovernmentSignalAlert)
+    _write("government-signal-alert-list.schema.json", GovernmentSignalAlertListResponse)
+    _write("government-signal-mapping-review.schema.json", GovernmentSignalMappingReviewResponse)
+    _write("government-signal-mapping-override-request.schema.json", GovernmentSignalMappingOverrideRequest)
+    _write("government-signal-mapping-override-response.schema.json", GovernmentSignalMappingOverrideResponse)
+    _write("government-signal-issuer-summary.schema.json", GovernmentSignalIssuerSummaryResponse)
+    _write("government-signal-portfolio-exposure-request.schema.json", GovernmentSignalPortfolioExposureRequest)
+    _write("government-signal-portfolio-exposure-response.schema.json", GovernmentSignalPortfolioExposureResponse)
 
 
 if __name__ == "__main__":

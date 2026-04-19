@@ -474,3 +474,262 @@ export interface BacktestReconcileResponse {
   dispatchFailedRunIds: string[];
   failedRunIds: string[];
 }
+
+export type GovernmentSignalSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type GovernmentSignalMappingStatus = 'pending_review' | 'mapped' | 'ignored';
+export type GovernmentSignalMappingAction = 'map' | 'ignore' | 'defer';
+export type GovernmentSignalAlertType = 'congress_trade' | 'contract_event' | 'composite';
+export type CongressTradeChamber = 'house' | 'senate' | 'joint' | 'unknown';
+export type CongressTradeRelationship = 'self' | 'spouse' | 'dependent_child' | 'joint' | 'unknown';
+export type CongressTradeType = 'purchase' | 'sale' | 'partial_sale' | 'exchange' | 'other';
+export type CongressTradeFilingStatus = 'new' | 'amended' | 'late' | 'unknown';
+export type GovernmentContractEventType =
+  | 'opportunity'
+  | 'award'
+  | 'modification'
+  | 'option_exercise'
+  | 'obligation'
+  | 'outlay'
+  | 'termination'
+  | 'cancellation'
+  | 'protest'
+  | 'other';
+
+export interface CongressTradeEvent {
+  event_id: string;
+  source_name: string;
+  source_event_key: string;
+  member_id?: string | null;
+  member_name: string;
+  chamber: CongressTradeChamber;
+  party?: string | null;
+  state?: string | null;
+  district?: string | null;
+  committee_names: string[];
+  traded_at: string;
+  filed_at?: string | null;
+  notified_at?: string | null;
+  relationship_type: CongressTradeRelationship;
+  transaction_type: CongressTradeType;
+  filing_status: CongressTradeFilingStatus;
+  amendment_flag: boolean;
+  late_filing_days?: number | null;
+  asset_name: string;
+  asset_description?: string | null;
+  asset_type?: string | null;
+  issuer_name?: string | null;
+  issuer_ticker?: string | null;
+  amount_lower_usd?: number | null;
+  amount_upper_usd?: number | null;
+  amount_bucket_label?: string | null;
+  comments?: string | null;
+  excess_return?: number | null;
+  confidence?: number | null;
+  mapping_status: GovernmentSignalMappingStatus;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface CongressTradeVersion {
+  version_id: string;
+  event_id: string;
+  version_seq: number;
+  version_kind: string;
+  version_observed_at: string;
+  event: CongressTradeEvent;
+}
+
+export interface CongressTradeEventListResponse {
+  events: CongressTradeEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GovernmentContractEvent {
+  event_id: string;
+  source_name: string;
+  source_event_key: string;
+  event_type: GovernmentContractEventType;
+  event_at: string;
+  recipient_name: string;
+  recipient_ticker?: string | null;
+  awarding_agency: string;
+  funding_agency?: string | null;
+  award_id?: string | null;
+  parent_award_id?: string | null;
+  opportunity_id?: string | null;
+  solicitation_id?: string | null;
+  title: string;
+  description?: string | null;
+  award_amount_usd?: number | null;
+  obligation_delta_usd?: number | null;
+  outlay_delta_usd?: number | null;
+  cumulative_obligation_usd?: number | null;
+  modification_number?: string | null;
+  option_exercise_flag: boolean;
+  termination_flag: boolean;
+  cancellation_flag: boolean;
+  protest_flag: boolean;
+  naics_code?: string | null;
+  psc_code?: string | null;
+  competition_type?: string | null;
+  set_aside_type?: string | null;
+  contract_vehicle?: string | null;
+  place_of_performance_country?: string | null;
+  place_of_performance_state?: string | null;
+  confidence?: number | null;
+  mapping_status: GovernmentSignalMappingStatus;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface GovernmentContractVersion {
+  version_id: string;
+  event_id: string;
+  version_seq: number;
+  version_kind: string;
+  version_observed_at: string;
+  event: GovernmentContractEvent;
+}
+
+export interface GovernmentContractEventListResponse {
+  events: GovernmentContractEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface IssuerGovernmentSignalDaily {
+  as_of_date: string;
+  symbol: string;
+  issuer_name?: string | null;
+  congress_purchase_count_1d: number;
+  congress_purchase_count_7d: number;
+  congress_purchase_count_30d: number;
+  congress_purchase_count_90d: number;
+  congress_sale_count_1d: number;
+  congress_sale_count_7d: number;
+  congress_sale_count_30d: number;
+  congress_sale_count_90d: number;
+  congress_net_amount_proxy_usd_30d: number;
+  congress_net_amount_proxy_usd_90d: number;
+  congress_amendment_rate_90d: number;
+  congress_late_filing_rate_90d: number;
+  congress_unique_members_90d: number;
+  congress_unique_committees_90d: number;
+  contract_award_count_30d: number;
+  contract_award_count_90d: number;
+  contract_obligation_delta_usd_30d: number;
+  contract_obligation_delta_usd_90d: number;
+  contract_outlay_delta_usd_30d: number;
+  contract_outlay_delta_usd_90d: number;
+  contract_modification_count_90d: number;
+  contract_option_exercise_count_90d: number;
+  contract_termination_count_90d: number;
+  contract_cancellation_count_90d: number;
+  contract_protest_count_90d: number;
+  contract_unique_awarding_agencies_90d: number;
+  contract_unique_naics_90d: number;
+  contract_unique_psc_90d: number;
+  last_congress_trade_at?: string | null;
+  last_contract_event_at?: string | null;
+  mapping_status: GovernmentSignalMappingStatus;
+}
+
+export interface GovernmentSignalAlert {
+  alert_id: string;
+  symbol: string;
+  as_of_date: string;
+  alert_type: GovernmentSignalAlertType;
+  severity: GovernmentSignalSeverity;
+  title: string;
+  summary: string;
+  congress_signal_score?: number | null;
+  contract_signal_score?: number | null;
+  composite_signal_score?: number | null;
+  source_event_ids: string[];
+  created_at?: string | null;
+}
+
+export interface GovernmentSignalAlertListResponse {
+  alerts: GovernmentSignalAlert[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GovernmentSignalMappingReviewItem {
+  mapping_id: string;
+  source_name: string;
+  entity_type: string;
+  raw_key: string;
+  raw_name: string;
+  proposed_symbol?: string | null;
+  confidence?: number | null;
+  status: GovernmentSignalMappingStatus;
+  reason?: string | null;
+  updated_at?: string | null;
+}
+
+export interface GovernmentSignalMappingReviewResponse {
+  items: GovernmentSignalMappingReviewItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface GovernmentSignalMappingOverrideRequest {
+  action: GovernmentSignalMappingAction;
+  symbol?: string | null;
+  reason?: string | null;
+}
+
+export interface GovernmentSignalMappingOverrideResponse {
+  mapping_id: string;
+  status: GovernmentSignalMappingStatus;
+  symbol?: string | null;
+  updated_at: string;
+}
+
+export interface GovernmentSignalIssuerSummaryResponse {
+  symbol: string;
+  issuer_name?: string | null;
+  as_of_date: string;
+  issuer_daily: IssuerGovernmentSignalDaily;
+  recent_congress_trades: CongressTradeEvent[];
+  recent_contract_events: GovernmentContractEvent[];
+  active_alerts: GovernmentSignalAlert[];
+}
+
+export interface GovernmentSignalPortfolioHolding {
+  symbol: string;
+  shares?: number | null;
+  market_value?: number | null;
+  portfolio_weight?: number | null;
+}
+
+export interface GovernmentSignalPortfolioIssuerExposure {
+  symbol: string;
+  issuer_name?: string | null;
+  matched: boolean;
+  market_value?: number | null;
+  portfolio_weight?: number | null;
+  issuer_daily?: IssuerGovernmentSignalDaily | null;
+  alerts: GovernmentSignalAlert[];
+}
+
+export interface GovernmentSignalPortfolioExposureRequest {
+  as_of_date?: string | null;
+  holdings: GovernmentSignalPortfolioHolding[];
+}
+
+export interface GovernmentSignalPortfolioExposureResponse {
+  as_of_date: string;
+  holdings_analyzed: number;
+  matched_holdings: number;
+  unmatched_symbols: string[];
+  total_market_value?: number | null;
+  total_portfolio_weight?: number | null;
+  exposures: GovernmentSignalPortfolioIssuerExposure[];
+}
