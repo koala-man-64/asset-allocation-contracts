@@ -1,0 +1,66 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "autoRefreshEnabled": {
+      "default": true,
+      "title": "Autorefreshenabled",
+      "type": "boolean"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "enabled": {
+      "default": true,
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "marketSession": {
+      "const": "us_equities_regular",
+      "default": "us_equities_regular",
+      "title": "Marketsession",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "pollIntervalMinutes": {
+      "default": 5,
+      "maximum": 1440,
+      "minimum": 1,
+      "title": "Pollintervalminutes",
+      "type": "integer"
+    },
+    "refreshCooldownMinutes": {
+      "default": 15,
+      "maximum": 1440,
+      "minimum": 1,
+      "title": "Refreshcooldownminutes",
+      "type": "integer"
+    },
+    "symbols": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Symbols",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "IntradayWatchlistUpsertRequest",
+  "type": "object"
+}
