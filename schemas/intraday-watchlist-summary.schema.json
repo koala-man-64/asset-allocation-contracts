@@ -1,0 +1,111 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "autoRefreshEnabled": {
+      "default": true,
+      "title": "Autorefreshenabled",
+      "type": "boolean"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "enabled": {
+      "default": true,
+      "title": "Enabled",
+      "type": "boolean"
+    },
+    "lastRunAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastrunat"
+    },
+    "marketSession": {
+      "const": "us_equities_regular",
+      "default": "us_equities_regular",
+      "title": "Marketsession",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 255,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "nextDueAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nextdueat"
+    },
+    "pollIntervalMinutes": {
+      "default": 5,
+      "maximum": 1440,
+      "minimum": 1,
+      "title": "Pollintervalminutes",
+      "type": "integer"
+    },
+    "refreshCooldownMinutes": {
+      "default": 15,
+      "maximum": 1440,
+      "minimum": 1,
+      "title": "Refreshcooldownminutes",
+      "type": "integer"
+    },
+    "symbolCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Symbolcount",
+      "type": "integer"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    },
+    "watchlistId": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Watchlistid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "watchlistId",
+    "name"
+  ],
+  "title": "IntradayWatchlistSummary",
+  "type": "object"
+}

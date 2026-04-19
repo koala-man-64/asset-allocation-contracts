@@ -1256,6 +1256,151 @@ export interface SymbolEnrichmentEnqueueRequest {
   maxSymbols?: number | null;
 }
 
+export interface IntradayWatchlistSummary {
+  watchlistId: string;
+  name: string;
+  description?: string | null;
+  enabled: boolean;
+  symbolCount: number;
+  pollIntervalMinutes: number;
+  refreshCooldownMinutes: number;
+  autoRefreshEnabled: boolean;
+  marketSession: 'us_equities_regular';
+  nextDueAt?: string | null;
+  lastRunAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface IntradayWatchlistDetail {
+  watchlistId: string;
+  name: string;
+  description?: string | null;
+  enabled: boolean;
+  symbolCount: number;
+  pollIntervalMinutes: number;
+  refreshCooldownMinutes: number;
+  autoRefreshEnabled: boolean;
+  marketSession: 'us_equities_regular';
+  nextDueAt?: string | null;
+  lastRunAt?: string | null;
+  updatedAt?: string | null;
+  symbols: string[];
+  createdAt?: string | null;
+}
+
+export interface IntradayWatchlistUpsertRequest {
+  name: string;
+  description?: string | null;
+  enabled: boolean;
+  symbols: string[];
+  pollIntervalMinutes: number;
+  refreshCooldownMinutes: number;
+  autoRefreshEnabled: boolean;
+  marketSession: 'us_equities_regular';
+}
+
+export interface IntradaySymbolStatus {
+  watchlistId?: string | null;
+  symbol: string;
+  monitorStatus: 'idle' | 'observed' | 'refresh_queued' | 'refreshed' | 'failed';
+  lastSnapshotAt?: string | null;
+  lastObservedPrice?: number | null;
+  lastSuccessfulMarketRefreshAt?: string | null;
+  lastRunId?: string | null;
+  lastError?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface IntradayMonitorRunSummary {
+  runId: string;
+  watchlistId: string;
+  watchlistName?: string | null;
+  triggerKind: 'scheduled' | 'manual';
+  status: 'queued' | 'claimed' | 'completed' | 'failed';
+  forceRefresh: boolean;
+  symbolCount: number;
+  observedSymbolCount: number;
+  eligibleRefreshCount: number;
+  refreshBatchCount: number;
+  executionName?: string | null;
+  dueAt?: string | null;
+  queuedAt?: string | null;
+  claimedAt?: string | null;
+  completedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface IntradayMonitorEvent {
+  eventId?: string | null;
+  runId?: string | null;
+  watchlistId?: string | null;
+  symbol?: string | null;
+  eventType: string;
+  severity: 'info' | 'warning' | 'error';
+  message: string;
+  details: Record<string, unknown>;
+  createdAt?: string | null;
+}
+
+export interface IntradayMonitorClaimRequest {
+  executionName?: string | null;
+}
+
+export interface IntradayMonitorClaimResponse {
+  run?: IntradayMonitorRunSummary | null;
+  watchlist?: IntradayWatchlistDetail | null;
+  currentSymbolStatuses: IntradaySymbolStatus[];
+  claimToken?: string | null;
+}
+
+export interface IntradayMonitorCompleteRequest {
+  claimToken: string;
+  symbolStatuses: IntradaySymbolStatus[];
+  events: IntradayMonitorEvent[];
+  refreshSymbols: string[];
+}
+
+export interface IntradayMonitorFailRequest {
+  claimToken: string;
+  error: string;
+}
+
+export interface IntradayRefreshBatchSummary {
+  batchId: string;
+  runId: string;
+  watchlistId: string;
+  watchlistName?: string | null;
+  domain: string;
+  bucketLetter: string;
+  status: 'queued' | 'claimed' | 'completed' | 'failed';
+  symbols: string[];
+  symbolCount: number;
+  executionName?: string | null;
+  claimedAt?: string | null;
+  completedAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface IntradayRefreshClaimRequest {
+  executionName?: string | null;
+}
+
+export interface IntradayRefreshClaimResponse {
+  batch?: IntradayRefreshBatchSummary | null;
+  claimToken?: string | null;
+}
+
+export interface IntradayRefreshCompleteRequest {
+  claimToken: string;
+}
+
+export interface IntradayRefreshFailRequest {
+  claimToken: string;
+  error: string;
+}
+
 export interface AiChatStartedEvent {
   sequenceNumber: number;
   event: 'started';
