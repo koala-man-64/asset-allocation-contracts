@@ -1,0 +1,12 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "default": "",
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "title": "ReconnectBrokerAccountRequest",
+  "type": "object"
+}

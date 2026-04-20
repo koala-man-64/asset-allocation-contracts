@@ -1,0 +1,840 @@
+{
+  "$defs": {
+    "BrokerAccountActivity": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "activityId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Activityid",
+          "type": "string"
+        },
+        "activityType": {
+          "enum": [
+            "reconnect",
+            "pause_sync",
+            "resume_sync",
+            "refresh",
+            "acknowledge_alert"
+          ],
+          "title": "Activitytype",
+          "type": "string"
+        },
+        "actor": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "relatedAlertId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Relatedalertid"
+        },
+        "requestedAt": {
+          "format": "date-time",
+          "title": "Requestedat",
+          "type": "string"
+        },
+        "status": {
+          "default": "accepted",
+          "enum": [
+            "accepted",
+            "in_progress",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "summary": {
+          "default": "",
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "activityId",
+        "accountId",
+        "activityType",
+        "requestedAt"
+      ],
+      "title": "BrokerAccountActivity",
+      "type": "object"
+    },
+    "BrokerAccountAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "acknowledgedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedat"
+        },
+        "acknowledgedBy": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedby"
+        },
+        "alertId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alertid",
+          "type": "string"
+        },
+        "asOfDate": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asofdate"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "title": "Message",
+          "type": "string"
+        },
+        "observedAt": {
+          "format": "date-time",
+          "title": "Observedat",
+          "type": "string"
+        },
+        "resolvedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolvedat"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "acknowledged",
+            "resolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alertId",
+        "accountId",
+        "code",
+        "title",
+        "observedAt"
+      ],
+      "title": "BrokerAccountAlert",
+      "type": "object"
+    },
+    "BrokerAccountSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "accountNumberMasked": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accountnumbermasked"
+        },
+        "activePortfolioName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activeportfolioname"
+        },
+        "alertCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Alertcount",
+          "type": "integer"
+        },
+        "baseCurrency": {
+          "default": "USD",
+          "maxLength": 3,
+          "minLength": 3,
+          "title": "Basecurrency",
+          "type": "string"
+        },
+        "broker": {
+          "enum": [
+            "alpaca",
+            "schwab",
+            "etrade"
+          ],
+          "title": "Broker",
+          "type": "string"
+        },
+        "buyingPower": {
+          "default": 0.0,
+          "title": "Buyingpower",
+          "type": "number"
+        },
+        "cash": {
+          "default": 0.0,
+          "title": "Cash",
+          "type": "number"
+        },
+        "connectionHealth": {
+          "$ref": "#/$defs/BrokerConnectionHealth"
+        },
+        "equity": {
+          "default": 0.0,
+          "title": "Equity",
+          "type": "number"
+        },
+        "highestAlertSeverity": {
+          "anyOf": [
+            {
+              "enum": [
+                "info",
+                "warning",
+                "critical"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Highestalertseverity"
+        },
+        "lastSyncedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsyncedat"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "openOrderCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Openordercount",
+          "type": "integer"
+        },
+        "openPositionCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Openpositioncount",
+          "type": "integer"
+        },
+        "overallStatus": {
+          "default": "warning",
+          "enum": [
+            "healthy",
+            "warning",
+            "critical"
+          ],
+          "title": "Overallstatus",
+          "type": "string"
+        },
+        "snapshotAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Snapshotasof"
+        },
+        "strategyLabel": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategylabel"
+        },
+        "tradeReadiness": {
+          "default": "review",
+          "enum": [
+            "ready",
+            "review",
+            "blocked"
+          ],
+          "title": "Tradereadiness",
+          "type": "string"
+        },
+        "tradeReadinessReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradereadinessreason"
+        }
+      },
+      "required": [
+        "accountId",
+        "broker",
+        "name"
+      ],
+      "title": "BrokerAccountSummary",
+      "type": "object"
+    },
+    "BrokerCapabilityFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "canAcknowledgeAlerts": {
+          "default": false,
+          "title": "Canacknowledgealerts",
+          "type": "boolean"
+        },
+        "canPauseSync": {
+          "default": false,
+          "title": "Canpausesync",
+          "type": "boolean"
+        },
+        "canReadBalances": {
+          "default": false,
+          "title": "Canreadbalances",
+          "type": "boolean"
+        },
+        "canReadOrders": {
+          "default": false,
+          "title": "Canreadorders",
+          "type": "boolean"
+        },
+        "canReadPositions": {
+          "default": false,
+          "title": "Canreadpositions",
+          "type": "boolean"
+        },
+        "canReconnect": {
+          "default": false,
+          "title": "Canreconnect",
+          "type": "boolean"
+        },
+        "canRefresh": {
+          "default": false,
+          "title": "Canrefresh",
+          "type": "boolean"
+        },
+        "canTrade": {
+          "default": false,
+          "title": "Cantrade",
+          "type": "boolean"
+        }
+      },
+      "title": "BrokerCapabilityFlags",
+      "type": "object"
+    },
+    "BrokerConnectionHealth": {
+      "additionalProperties": false,
+      "properties": {
+        "authExpiresAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authexpiresat"
+        },
+        "authStatus": {
+          "default": "not_connected",
+          "enum": [
+            "authenticated",
+            "expires_soon",
+            "expired",
+            "reauth_required",
+            "not_connected"
+          ],
+          "title": "Authstatus",
+          "type": "string"
+        },
+        "connectionState": {
+          "default": "disconnected",
+          "enum": [
+            "connected",
+            "degraded",
+            "disconnected",
+            "reconnect_required"
+          ],
+          "title": "Connectionstate",
+          "type": "string"
+        },
+        "failureMessage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Failuremessage"
+        },
+        "lastCheckedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastcheckedat"
+        },
+        "lastFailedSyncAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastfailedsyncat"
+        },
+        "lastSuccessfulSyncAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsuccessfulsyncat"
+        },
+        "overallStatus": {
+          "default": "warning",
+          "enum": [
+            "healthy",
+            "warning",
+            "critical"
+          ],
+          "title": "Overallstatus",
+          "type": "string"
+        },
+        "staleReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stalereason"
+        },
+        "syncPaused": {
+          "default": false,
+          "title": "Syncpaused",
+          "type": "boolean"
+        },
+        "syncStatus": {
+          "default": "never_synced",
+          "enum": [
+            "fresh",
+            "stale",
+            "syncing",
+            "paused",
+            "failed",
+            "never_synced"
+          ],
+          "title": "Syncstatus",
+          "type": "string"
+        }
+      },
+      "title": "BrokerConnectionHealth",
+      "type": "object"
+    },
+    "BrokerSyncRun": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "errorMessage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Errormessage"
+        },
+        "requestedAt": {
+          "format": "date-time",
+          "title": "Requestedat",
+          "type": "string"
+        },
+        "rowsSynced": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rowssynced"
+        },
+        "runId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "scope": {
+          "default": "full",
+          "enum": [
+            "balances",
+            "positions",
+            "orders",
+            "full"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startedat"
+        },
+        "status": {
+          "default": "queued",
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
+        },
+        "trigger": {
+          "default": "scheduled",
+          "enum": [
+            "scheduled",
+            "manual",
+            "reconnect",
+            "backfill"
+          ],
+          "title": "Trigger",
+          "type": "string"
+        },
+        "warningCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Warningcount",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId",
+        "accountId",
+        "requestedAt"
+      ],
+      "title": "BrokerSyncRun",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "account": {
+      "$ref": "#/$defs/BrokerAccountSummary"
+    },
+    "accountType": {
+      "default": "other",
+      "enum": [
+        "cash",
+        "margin",
+        "retirement",
+        "paper",
+        "other"
+      ],
+      "title": "Accounttype",
+      "type": "string"
+    },
+    "alerts": {
+      "items": {
+        "$ref": "#/$defs/BrokerAccountAlert"
+      },
+      "title": "Alerts",
+      "type": "array"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/BrokerCapabilityFlags"
+    },
+    "dayTradeBuyingPower": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Daytradebuyingpower"
+    },
+    "maintenanceExcess": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maintenanceexcess"
+    },
+    "recentActivity": {
+      "items": {
+        "$ref": "#/$defs/BrokerAccountActivity"
+      },
+      "title": "Recentactivity",
+      "type": "array"
+    },
+    "syncRuns": {
+      "items": {
+        "$ref": "#/$defs/BrokerSyncRun"
+      },
+      "title": "Syncruns",
+      "type": "array"
+    },
+    "tradingBlocked": {
+      "default": false,
+      "title": "Tradingblocked",
+      "type": "boolean"
+    },
+    "tradingBlockedReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tradingblockedreason"
+    },
+    "unsettledFunds": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unsettledfunds"
+    }
+  },
+  "required": [
+    "account"
+  ],
+  "title": "BrokerAccountDetail",
+  "type": "object"
+}

@@ -1,0 +1,134 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "authExpiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Authexpiresat"
+    },
+    "authStatus": {
+      "default": "not_connected",
+      "enum": [
+        "authenticated",
+        "expires_soon",
+        "expired",
+        "reauth_required",
+        "not_connected"
+      ],
+      "title": "Authstatus",
+      "type": "string"
+    },
+    "connectionState": {
+      "default": "disconnected",
+      "enum": [
+        "connected",
+        "degraded",
+        "disconnected",
+        "reconnect_required"
+      ],
+      "title": "Connectionstate",
+      "type": "string"
+    },
+    "failureMessage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failuremessage"
+    },
+    "lastCheckedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastcheckedat"
+    },
+    "lastFailedSyncAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastfailedsyncat"
+    },
+    "lastSuccessfulSyncAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastsuccessfulsyncat"
+    },
+    "overallStatus": {
+      "default": "warning",
+      "enum": [
+        "healthy",
+        "warning",
+        "critical"
+      ],
+      "title": "Overallstatus",
+      "type": "string"
+    },
+    "staleReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stalereason"
+    },
+    "syncPaused": {
+      "default": false,
+      "title": "Syncpaused",
+      "type": "boolean"
+    },
+    "syncStatus": {
+      "default": "never_synced",
+      "enum": [
+        "fresh",
+        "stale",
+        "syncing",
+        "paused",
+        "failed",
+        "never_synced"
+      ],
+      "title": "Syncstatus",
+      "type": "string"
+    }
+  },
+  "title": "BrokerConnectionHealth",
+  "type": "object"
+}

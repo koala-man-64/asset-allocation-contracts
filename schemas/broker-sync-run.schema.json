@@ -1,0 +1,131 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "completedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completedat"
+    },
+    "errorMessage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Errormessage"
+    },
+    "requestedAt": {
+      "format": "date-time",
+      "title": "Requestedat",
+      "type": "string"
+    },
+    "rowsSynced": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rowssynced"
+    },
+    "runId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "scope": {
+      "default": "full",
+      "enum": [
+        "balances",
+        "positions",
+        "orders",
+        "full"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "startedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Startedat"
+    },
+    "status": {
+      "default": "queued",
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Summary"
+    },
+    "trigger": {
+      "default": "scheduled",
+      "enum": [
+        "scheduled",
+        "manual",
+        "reconnect",
+        "backfill"
+      ],
+      "title": "Trigger",
+      "type": "string"
+    },
+    "warningCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Warningcount",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "runId",
+    "accountId",
+    "requestedAt"
+  ],
+  "title": "BrokerSyncRun",
+  "type": "object"
+}

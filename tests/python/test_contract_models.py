@@ -25,6 +25,19 @@ from asset_allocation_contracts.backtest import (
     TimeseriesPointResponse,
     TimeseriesResponse,
 )
+from asset_allocation_contracts.broker_accounts import (
+    AcknowledgeBrokerAlertRequest,
+    BrokerAccountActionResponse,
+    BrokerAccountDetail,
+    BrokerAccountListResponse,
+    BrokerAccountSummary,
+    BrokerCapabilityFlags,
+    BrokerConnectionHealth,
+    BrokerSyncRun,
+    PauseBrokerSyncRequest,
+    ReconnectBrokerAccountRequest,
+    RefreshBrokerAccountRequest,
+)
 from asset_allocation_contracts.government_signals import (
     CongressTradeEvent,
     CongressTradeVersion,
@@ -1109,3 +1122,127 @@ def test_symbol_enrichment_operator_contracts_default_lists() -> None:
     assert summary.backlogCount == 0
     assert override.isLocked is True
     assert run.mode == "fill_missing"
+
+
+def test_broker_account_contracts_capture_normalized_operations_surface() -> None:
+    summary = BrokerAccountSummary(
+        accountId=" alpaca-core ",
+        broker="alpaca",
+        name=" Core Long Only ",
+        accountNumberMasked=" ****1234 ",
+        baseCurrency="usd",
+        overallStatus="warning",
+        tradeReadiness="blocked",
+        tradeReadinessReason="Auth refresh is required.",
+        highestAlertSeverity="critical",
+        connectionHealth={
+            "overallStatus": "warning",
+            "authStatus": "reauth_required",
+            "connectionState": "reconnect_required",
+            "syncStatus": "stale",
+            "lastSuccessfulSyncAt": "2026-04-20T13:30:00Z",
+            "staleReason": "Positions are older than the freshness threshold.",
+            "syncPaused": False,
+        },
+        equity=250000.0,
+        cash=42000.0,
+        buyingPower=180000.0,
+        openPositionCount=12,
+        openOrderCount=3,
+        lastSyncedAt="2026-04-20T13:30:00Z",
+        snapshotAsOf="2026-04-20T13:29:00Z",
+        activePortfolioName="growth-core",
+        strategyLabel="Quality / Momentum",
+        alertCount=2,
+    )
+    detail = BrokerAccountDetail(
+        account=summary,
+        capabilities=BrokerCapabilityFlags(
+            canReadBalances=True,
+            canReadPositions=True,
+            canReadOrders=True,
+            canTrade=True,
+            canReconnect=True,
+            canPauseSync=True,
+            canRefresh=True,
+            canAcknowledgeAlerts=True,
+        ),
+        accountType="margin",
+        tradingBlocked=True,
+        tradingBlockedReason="Manual reconnect required before trading resumes.",
+        dayTradeBuyingPower=95000.0,
+        maintenanceExcess=32000.0,
+        alerts=[
+            {
+                "alertId": "alert-1",
+                "accountId": "alpaca-core",
+                "severity": "critical",
+                "code": "auth_expired",
+                "title": "Broker token expired",
+                "message": "Reconnect the broker account.",
+                "observedAt": "2026-04-20T13:31:00Z",
+            }
+        ],
+        syncRuns=[
+            BrokerSyncRun(
+                runId="sync-1",
+                accountId="alpaca-core",
+                trigger="manual",
+                scope="full",
+                status="failed",
+                requestedAt="2026-04-20T13:31:00Z",
+                completedAt="2026-04-20T13:32:00Z",
+                warningCount=1,
+                errorMessage="Token refresh failed.",
+            )
+        ],
+        recentActivity=[
+            {
+                "activityId": "activity-1",
+                "accountId": "alpaca-core",
+                "activityType": "acknowledge_alert",
+                "status": "completed",
+                "requestedAt": "2026-04-20T13:40:00Z",
+                "completedAt": "2026-04-20T13:40:02Z",
+                "actor": "ops@example.com",
+                "summary": "Acknowledged token-expiry alert.",
+                "relatedAlertId": "alert-1",
+            }
+        ],
+    )
+    reconnect = ReconnectBrokerAccountRequest(reason="Operator initiated reconnect.")
+    pause = PauseBrokerSyncRequest(paused=False, reason="Resume after token refresh.")
+    refresh = RefreshBrokerAccountRequest(scope="full", force=True)
+    acknowledge = AcknowledgeBrokerAlertRequest(note="Connector rerouted to manual follow-up.")
+    action_response = BrokerAccountActionResponse(
+        actionId="action-1",
+        accountId="alpaca-core",
+        action="refresh",
+        status="accepted",
+        requestedAt="2026-04-20T13:45:00Z",
+        message="Refresh queued.",
+        resultingConnectionHealth=BrokerConnectionHealth(
+            overallStatus="warning",
+            authStatus="reauth_required",
+            connectionState="reconnect_required",
+            syncStatus="syncing",
+        ),
+        tradeReadiness="review",
+        syncPaused=False,
+    )
+    listing = BrokerAccountListResponse(accounts=[summary], generatedAt="2026-04-20T13:45:00Z")
+
+    assert summary.accountId == "alpaca-core"
+    assert summary.name == "Core Long Only"
+    assert summary.accountNumberMasked == "****1234"
+    assert summary.highestAlertSeverity == "critical"
+    assert detail.capabilities.canReconnect is True
+    assert detail.alerts[0].severity == "critical"
+    assert detail.syncRuns[0].status == "failed"
+    assert reconnect.reason == "Operator initiated reconnect."
+    assert pause.paused is False
+    assert refresh.force is True
+    assert acknowledge.note == "Connector rerouted to manual follow-up."
+    assert action_response.resultingConnectionHealth is not None
+    assert action_response.resultingConnectionHealth.syncStatus == "syncing"
+    assert listing.accounts[0].tradeReadiness == "blocked"

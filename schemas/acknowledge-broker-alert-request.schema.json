@@ -1,0 +1,12 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "note": {
+      "default": "",
+      "title": "Note",
+      "type": "string"
+    }
+  },
+  "title": "AcknowledgeBrokerAlertRequest",
+  "type": "object"
+}

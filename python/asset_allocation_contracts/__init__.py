@@ -1,5 +1,6 @@
 from asset_allocation_contracts.ai_chat import *
 from asset_allocation_contracts.backtest import *
+from asset_allocation_contracts.broker_accounts import *
 from asset_allocation_contracts.finance import *
 from asset_allocation_contracts.government_signals import *
 from asset_allocation_contracts.intraday import *
