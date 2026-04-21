@@ -63,17 +63,7 @@ def test_documented_strategy_example_is_valid() -> None:
             "rankingSchemaName": "quality-momentum-v1",
             "regimePolicy": {
                 "modelName": "default-regime",
-                "targetGrossExposureByRegime": {
-                    "trending_bull": 1.0,
-                    "trending_bear": 0.5,
-                    "choppy_mean_reversion": 0.75,
-                    "high_vol": 0.0,
-                    "unclassified": 0.0,
-                },
-                "blockOnTransition": True,
-                "blockOnUnclassified": True,
-                "honorHaltFlag": True,
-                "onBlocked": "skip_entries",
+                "mode": "observe_only",
             },
             "intrabarConflictPolicy": "priority_order",
             "exits": [
@@ -229,45 +219,14 @@ def test_documented_regime_examples_are_valid() -> None:
     policy = RegimePolicy.model_validate(
         {
             "modelName": "default-regime",
-            "targetGrossExposureByRegime": {
-                "trending_bull": 1.0,
-                "trending_bear": 0.5,
-                "choppy_mean_reversion": 0.75,
-                "high_vol": 0.0,
-                "unclassified": 0.0,
-            },
-            "blockOnTransition": True,
-            "blockOnUnclassified": True,
-            "honorHaltFlag": True,
-            "onBlocked": "skip_entries",
+            "mode": "observe_only",
         }
     )
     config = RegimeModelConfig.model_validate(
-        {
-            "trendPositiveThreshold": 0.02,
-            "trendNegativeThreshold": -0.02,
-            "curveContangoThreshold": 0.5,
-            "curveInvertedThreshold": -0.5,
-            "highVolEnterThreshold": 28.0,
-            "highVolExitThreshold": 28.0,
-            "bearVolMin": 15.0,
-            "bearVolMaxExclusive": 25.0,
-            "bullVolMaxExclusive": 15.0,
-            "choppyVolMin": 10.0,
-            "choppyVolMaxExclusive": 18.0,
-            "haltVixThreshold": 32.0,
-            "haltVixStreakDays": 2,
-            "precedence": [
-                "high_vol",
-                "trending_bear",
-                "trending_bull",
-                "choppy_mean_reversion",
-                "unclassified",
-            ],
-        }
+        validate_canonical_default_regime_config({}).model_dump(mode="python")
     )
 
-    assert policy.onBlocked == "skip_entries"
+    assert policy.mode == "observe_only"
     assert config.haltVixStreakDays == 2
     assert validate_canonical_default_regime_config(config) == config
 

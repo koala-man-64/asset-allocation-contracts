@@ -7,8 +7,7 @@ export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
 export type ExitRuleReference = 'entry_price' | 'highest_since_entry';
 export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'priority_order';
-export type RegimeCode = 'trending_bull' | 'trending_bear' | 'choppy_mean_reversion' | 'high_vol' | 'unclassified';
-export type RegimeBlockedAction = 'skip_entries' | 'skip_rebalance';
+export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
 export type UniverseConditionOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'is_null' | 'is_not_null';
@@ -18,7 +17,9 @@ export type UniverseValueKind = 'string' | 'number' | 'boolean' | 'date' | 'date
 export type RankingTransformType = 'percentile_rank' | 'zscore' | 'minmax' | 'clip' | 'winsorize' | 'coalesce' | 'log1p' | 'negate' | 'abs';
 export type RankingDirection = 'asc' | 'desc';
 export type RankingMissingValuePolicy = 'exclude' | 'zero';
-export type RegimeStatus = 'confirmed' | 'transition' | 'unclassified';
+export type RegimeSignalState = 'active' | 'inactive' | 'insufficient_data';
+export type RegimeTransitionType = 'entered' | 'exited';
+export type RegimePolicyMode = 'observe_only';
 export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
@@ -64,19 +65,7 @@ export interface UniverseCondition {
 
 export interface RegimePolicy {
   modelName: string;
-  targetGrossExposureByRegime: TargetGrossExposureByRegime;
-  blockOnTransition: boolean;
-  blockOnUnclassified: boolean;
-  honorHaltFlag: boolean;
-  onBlocked: RegimeBlockedAction;
-}
-
-export interface TargetGrossExposureByRegime {
-  trending_bull: number;
-  trending_bear: number;
-  choppy_mean_reversion: number;
-  high_vol: number;
-  unclassified: number;
+  mode: RegimePolicyMode;
 }
 
 export interface ExitRule {
@@ -141,20 +130,24 @@ export interface RankingTransform {
 }
 
 export interface RegimeModelConfig {
-  trendPositiveThreshold: number;
-  trendNegativeThreshold: number;
-  curveContangoThreshold: number;
-  curveInvertedThreshold: number;
-  highVolEnterThreshold: number;
-  highVolExitThreshold: number;
-  bearVolMin: number;
-  bearVolMaxExclusive: number;
-  bullVolMaxExclusive: number;
-  choppyVolMin: number;
-  choppyVolMaxExclusive: number;
+  activationThreshold: number;
+  signalConfigs: Record<string, RegimeSignalConfig>;
   haltVixThreshold: number;
   haltVixStreakDays: number;
-  precedence: RegimeCode[];
+}
+
+export interface RegimeSignalConfig {
+  displayName: string;
+  requiredMetrics: string[];
+  rules: RegimeMetricRule[];
+}
+
+export interface RegimeMetricRule {
+  metric: string;
+  comparison: 'gte' | 'lte' | 'between' | 'bool_true';
+  lower?: number | null;
+  upper?: number | null;
+  description: string;
 }
 
 export interface RegimeSnapshot {
@@ -162,34 +155,27 @@ export interface RegimeSnapshot {
   effective_from_date: string;
   model_name: string;
   model_version: number;
-  regime_code: RegimeCode;
-  regime_status: RegimeStatus;
-  matched_rule_id?: string | null;
+  signals: RegimeSignal[];
+  active_regimes: RegimeCode[];
   halt_flag: boolean;
   halt_reason?: string | null;
-  spy_return_20d?: number | null;
-  rvol_10d_ann?: number | null;
-  vix_spot_close?: number | null;
-  vix3m_close?: number | null;
-  vix_slope?: number | null;
-  trend_state?: TrendState | null;
-  curve_state?: CurveState | null;
-  vix_gt_32_streak?: number | null;
   computed_at?: string | null;
+}
+
+export interface RegimeSignal {
+  regime_code: RegimeCode;
+  display_name: string;
+  signal_state: RegimeSignalState;
+  score: number;
+  activation_threshold: number;
+  is_active: boolean;
+  matched_rule_id?: string | null;
+  evidence: Record<string, unknown>;
 }
 
 export interface RegimeInputRow {
   as_of_date: string;
-  spy_close?: number | null;
-  return_1d?: number | null;
-  return_20d?: number | null;
-  rvol_10d_ann?: number | null;
-  vix_spot_close?: number | null;
-  vix3m_close?: number | null;
-  vix_slope?: number | null;
-  trend_state?: TrendState | null;
-  curve_state?: CurveState | null;
-  vix_gt_32_streak?: number | null;
+  metric_values: Record<string, unknown>;
   inputs_complete_flag: boolean;
   computed_at?: string | null;
 }
@@ -198,8 +184,11 @@ export interface RegimeTransitionRow {
   model_name: string;
   model_version: number;
   effective_from_date: string;
-  prior_regime_code?: RegimeCode | null;
-  new_regime_code: RegimeCode;
+  regime_code: RegimeCode;
+  transition_type: RegimeTransitionType;
+  prior_score?: number | null;
+  new_score?: number | null;
+  activation_threshold: number;
   trigger_rule_id?: string | null;
   computed_at?: string | null;
 }
