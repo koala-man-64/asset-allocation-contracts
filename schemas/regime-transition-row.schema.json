@@ -1,6 +1,12 @@
 {
   "additionalProperties": false,
   "properties": {
+    "activation_threshold": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Activation Threshold",
+      "type": "number"
+    },
     "computed_at": {
       "anyOf": [
         {
@@ -27,35 +33,55 @@
       "title": "Model Version",
       "type": "integer"
     },
-    "new_regime_code": {
-      "enum": [
-        "trending_bull",
-        "trending_bear",
-        "choppy_mean_reversion",
-        "high_vol",
-        "unclassified"
-      ],
-      "title": "New Regime Code",
-      "type": "string"
-    },
-    "prior_regime_code": {
+    "new_score": {
       "anyOf": [
         {
-          "enum": [
-            "trending_bull",
-            "trending_bear",
-            "choppy_mean_reversion",
-            "high_vol",
-            "unclassified"
-          ],
-          "type": "string"
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
         },
         {
           "type": "null"
         }
       ],
       "default": null,
-      "title": "Prior Regime Code"
+      "title": "New Score"
+    },
+    "prior_score": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prior Score"
+    },
+    "regime_code": {
+      "enum": [
+        "trending_up",
+        "trending_down",
+        "mean_reverting",
+        "low_volatility",
+        "high_volatility",
+        "liquidity_stress",
+        "macro_alignment",
+        "unclassified"
+      ],
+      "title": "Regime Code",
+      "type": "string"
+    },
+    "transition_type": {
+      "enum": [
+        "entered",
+        "exited"
+      ],
+      "title": "Transition Type",
+      "type": "string"
     },
     "trigger_rule_id": {
       "anyOf": [
@@ -74,7 +100,9 @@
     "model_name",
     "model_version",
     "effective_from_date",
-    "new_regime_code"
+    "regime_code",
+    "transition_type",
+    "activation_threshold"
   ],
   "title": "RegimeTransitionRow",
   "type": "object"

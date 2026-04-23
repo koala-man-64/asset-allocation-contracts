@@ -1,39 +1,100 @@
 {
+  "$defs": {
+    "RegimeMetricRule": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison": {
+          "enum": [
+            "gte",
+            "lte",
+            "between",
+            "bool_true"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 512,
+          "title": "Description",
+          "type": "string"
+        },
+        "lower": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lower"
+        },
+        "metric": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Metric",
+          "type": "string"
+        },
+        "upper": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upper"
+        }
+      },
+      "required": [
+        "metric",
+        "comparison"
+      ],
+      "title": "RegimeMetricRule",
+      "type": "object"
+    },
+    "RegimeSignalConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "displayName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Displayname",
+          "type": "string"
+        },
+        "requiredMetrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requiredmetrics",
+          "type": "array"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/RegimeMetricRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "displayName"
+      ],
+      "title": "RegimeSignalConfig",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
-    "bearVolMaxExclusive": {
-      "default": 25.0,
-      "title": "Bearvolmaxexclusive",
-      "type": "number"
-    },
-    "bearVolMin": {
-      "default": 15.0,
-      "title": "Bearvolmin",
-      "type": "number"
-    },
-    "bullVolMaxExclusive": {
-      "default": 15.0,
-      "title": "Bullvolmaxexclusive",
-      "type": "number"
-    },
-    "choppyVolMaxExclusive": {
-      "default": 18.0,
-      "title": "Choppyvolmaxexclusive",
-      "type": "number"
-    },
-    "choppyVolMin": {
-      "default": 10.0,
-      "title": "Choppyvolmin",
-      "type": "number"
-    },
-    "curveContangoThreshold": {
-      "default": 0.5,
-      "title": "Curvecontangothreshold",
-      "type": "number"
-    },
-    "curveInvertedThreshold": {
-      "default": -0.5,
-      "title": "Curveinvertedthreshold",
+    "activationThreshold": {
+      "default": 0.6,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Activationthreshold",
       "type": "number"
     },
     "haltVixStreakDays": {
@@ -47,39 +108,24 @@
       "title": "Haltvixthreshold",
       "type": "number"
     },
-    "highVolEnterThreshold": {
-      "default": 28.0,
-      "title": "Highvolenterthreshold",
-      "type": "number"
-    },
-    "highVolExitThreshold": {
-      "default": 28.0,
-      "title": "Highvolexitthreshold",
-      "type": "number"
-    },
-    "precedence": {
-      "items": {
-        "enum": [
-          "trending_bull",
-          "trending_bear",
-          "choppy_mean_reversion",
-          "high_vol",
-          "unclassified"
-        ],
-        "type": "string"
+    "signalConfigs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RegimeSignalConfig"
       },
-      "title": "Precedence",
-      "type": "array"
-    },
-    "trendNegativeThreshold": {
-      "default": -0.02,
-      "title": "Trendnegativethreshold",
-      "type": "number"
-    },
-    "trendPositiveThreshold": {
-      "default": 0.02,
-      "title": "Trendpositivethreshold",
-      "type": "number"
+      "propertyNames": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ]
+      },
+      "title": "Signalconfigs",
+      "type": "object"
     }
   },
   "title": "RegimeModelConfig",

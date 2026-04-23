@@ -63,6 +63,7 @@ from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
     RegimeModelConfig,
     RegimePolicy,
+    RegimeSignal,
     RegimeSnapshot,
     canonical_default_regime_config_errors,
     canonical_default_regime_model_config,
@@ -103,6 +104,7 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     )
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
+    assert payload.regimePolicy.mode == "observe_only"
 
 
 def test_ranking_schema_requires_groups() -> None:
@@ -310,35 +312,67 @@ def test_regime_snapshot_and_model_config_validate() -> None:
         as_of_date="2026-03-07",
         effective_from_date="2026-03-10",
         model_name="default-regime",
-        model_version=2,
-        regime_code="trending_bull",
-        regime_status="confirmed",
+        model_version=3,
+        signals=[
+            RegimeSignal(
+                regime_code="trending_up",
+                display_name="Trending (Up)",
+                signal_state="active",
+                score=1.0,
+                activation_threshold=0.6,
+                is_active=True,
+                matched_rule_id="trending_up",
+                evidence={"spy_above_sma_200": True},
+            )
+        ],
+        active_regimes=["trending_up"],
         halt_flag=False,
     )
     config = canonical_default_regime_model_config()
-    assert snapshot.model_version == 2
-    assert config.highVolEnterThreshold == 28.0
-    assert config.highVolExitThreshold == 28.0
+    assert snapshot.model_version == 3
+    assert snapshot.active_regimes == ["trending_up"]
+    assert config.activationThreshold == 0.6
+    assert config.signalConfigs["trending_up"].displayName == "Trending (Up)"
 
 
-def test_default_regime_canonical_v2_config_rejects_transition_band_and_halt_drift() -> None:
-    assert CANONICAL_DEFAULT_REGIME_VERSION == 2
+def test_default_regime_canonical_v3_config_rejects_rule_drift_and_halt_drift() -> None:
+    assert CANONICAL_DEFAULT_REGIME_VERSION == 3
     canonical = validate_canonical_default_regime_config({})
-    assert canonical.highVolEnterThreshold == 28.0
-    assert canonical.highVolExitThreshold == 28.0
+    assert canonical.activationThreshold == 0.6
     assert canonical.haltVixThreshold == 32.0
     assert canonical.haltVixStreakDays == 2
 
     errors = canonical_default_regime_config_errors(
         {
-            "highVolExitThreshold": 25.0,
+            "signalConfigs": {
+                **canonical.model_dump(mode="python")["signalConfigs"],
+                "trending_up": {
+                    **canonical.model_dump(mode="python")["signalConfigs"]["trending_up"],
+                    "displayName": "Trend Up",
+                },
+            },
             "haltVixThreshold": 31.5,
             "haltVixStreakDays": 3,
         }
     )
-    assert any("highVolExitThreshold" in message for message in errors)
+    assert any("signalConfigs.trending_up" in message for message in errors)
     assert any("haltVixThreshold" in message for message in errors)
     assert any("haltVixStreakDays" in message for message in errors)
+
+
+def test_default_regime_policy_rejects_legacy_fields() -> None:
+    try:
+        RegimePolicy.model_validate(
+            {
+                "modelName": "default-regime",
+                "targetGrossExposureByRegime": {"trending_up": 1.0},
+            }
+        )
+    except Exception as exc:
+        assert "legacy fields" in str(exc)
+        assert "observe_only" in str(exc)
+    else:
+        raise AssertionError("Expected legacy default-regime policy fields to be rejected.")
 
 
 def test_backtest_claim_request_accepts_optional_execution_name() -> None:
