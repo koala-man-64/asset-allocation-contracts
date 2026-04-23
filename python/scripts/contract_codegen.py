@@ -150,6 +150,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
 ]
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
+    ("AuthSessionMode", ui_config.AuthSessionMode),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleScope", strategy.ExitScope),
     ("ExitRuleAction", strategy.ExitAction),
@@ -157,7 +158,6 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("ExitRuleReference", strategy.ExitReference),
     ("IntrabarConflictPolicy", strategy.IntrabarConflictPolicy),
     ("RegimeCode", regime.RegimeCode),
-    ("RegimeBlockedAction", regime.RegimeBlockedAction),
     ("UniverseSource", strategy.UniverseSource),
     ("UniverseGroupOperator", strategy.UniverseGroupOperator),
     ("UniverseConditionOperator", strategy.UniverseConditionOperator),
@@ -167,7 +167,9 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("RankingTransformType", ranking.RankingTransformType),
     ("RankingDirection", ranking.RankingDirection),
     ("RankingMissingValuePolicy", ranking.RankingMissingValuePolicy),
-    ("RegimeStatus", regime.RegimeStatus),
+    ("RegimeSignalState", regime.RegimeSignalState),
+    ("RegimeTransitionType", regime.RegimeTransitionType),
+    ("RegimePolicyMode", regime.RegimePolicyMode),
     ("TrendState", regime.TrendState),
     ("CurveState", regime.CurveState),
     ("RunStatus", backtest.RunStatus),

@@ -19,139 +19,14 @@
       "default": null,
       "title": "Computed At"
     },
-    "curve_state": {
-      "anyOf": [
-        {
-          "enum": [
-            "contango",
-            "flat",
-            "inverted"
-          ],
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Curve State"
-    },
     "inputs_complete_flag": {
       "title": "Inputs Complete Flag",
       "type": "boolean"
     },
-    "return_1d": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Return 1D"
-    },
-    "return_20d": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Return 20D"
-    },
-    "rvol_10d_ann": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Rvol 10D Ann"
-    },
-    "spy_close": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Spy Close"
-    },
-    "trend_state": {
-      "anyOf": [
-        {
-          "enum": [
-            "positive",
-            "negative",
-            "near_zero"
-          ],
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Trend State"
-    },
-    "vix3m_close": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Vix3M Close"
-    },
-    "vix_gt_32_streak": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Vix Gt 32 Streak"
-    },
-    "vix_slope": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Vix Slope"
-    },
-    "vix_spot_close": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Vix Spot Close"
+    "metric_values": {
+      "additionalProperties": true,
+      "title": "Metric Values",
+      "type": "object"
     }
   },
   "required": [

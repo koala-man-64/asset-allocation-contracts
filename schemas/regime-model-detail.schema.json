@@ -1,41 +1,70 @@
 {
   "$defs": {
+    "RegimeMetricRule": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison": {
+          "enum": [
+            "gte",
+            "lte",
+            "between",
+            "bool_true"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 512,
+          "title": "Description",
+          "type": "string"
+        },
+        "lower": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lower"
+        },
+        "metric": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Metric",
+          "type": "string"
+        },
+        "upper": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upper"
+        }
+      },
+      "required": [
+        "metric",
+        "comparison"
+      ],
+      "title": "RegimeMetricRule",
+      "type": "object"
+    },
     "RegimeModelConfig": {
       "additionalProperties": false,
       "properties": {
-        "bearVolMaxExclusive": {
-          "default": 25.0,
-          "title": "Bearvolmaxexclusive",
-          "type": "number"
-        },
-        "bearVolMin": {
-          "default": 15.0,
-          "title": "Bearvolmin",
-          "type": "number"
-        },
-        "bullVolMaxExclusive": {
-          "default": 15.0,
-          "title": "Bullvolmaxexclusive",
-          "type": "number"
-        },
-        "choppyVolMaxExclusive": {
-          "default": 18.0,
-          "title": "Choppyvolmaxexclusive",
-          "type": "number"
-        },
-        "choppyVolMin": {
-          "default": 10.0,
-          "title": "Choppyvolmin",
-          "type": "number"
-        },
-        "curveContangoThreshold": {
-          "default": 0.5,
-          "title": "Curvecontangothreshold",
-          "type": "number"
-        },
-        "curveInvertedThreshold": {
-          "default": -0.5,
-          "title": "Curveinvertedthreshold",
+        "activationThreshold": {
+          "default": 0.6,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Activationthreshold",
           "type": "number"
         },
         "haltVixStreakDays": {
@@ -49,39 +78,24 @@
           "title": "Haltvixthreshold",
           "type": "number"
         },
-        "highVolEnterThreshold": {
-          "default": 28.0,
-          "title": "Highvolenterthreshold",
-          "type": "number"
-        },
-        "highVolExitThreshold": {
-          "default": 28.0,
-          "title": "Highvolexitthreshold",
-          "type": "number"
-        },
-        "precedence": {
-          "items": {
-            "enum": [
-              "trending_bull",
-              "trending_bear",
-              "choppy_mean_reversion",
-              "high_vol",
-              "unclassified"
-            ],
-            "type": "string"
+        "signalConfigs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RegimeSignalConfig"
           },
-          "title": "Precedence",
-          "type": "array"
-        },
-        "trendNegativeThreshold": {
-          "default": -0.02,
-          "title": "Trendnegativethreshold",
-          "type": "number"
-        },
-        "trendPositiveThreshold": {
-          "default": 0.02,
-          "title": "Trendpositivethreshold",
-          "type": "number"
+          "propertyNames": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ]
+          },
+          "title": "Signalconfigs",
+          "type": "object"
         }
       },
       "title": "RegimeModelConfig",
@@ -264,9 +278,133 @@
       "title": "RegimeModelSummary",
       "type": "object"
     },
+    "RegimeSignal": {
+      "additionalProperties": false,
+      "properties": {
+        "activation_threshold": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Activation Threshold",
+          "type": "number"
+        },
+        "display_name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        },
+        "is_active": {
+          "title": "Is Active",
+          "type": "boolean"
+        },
+        "matched_rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Matched Rule Id"
+        },
+        "regime_code": {
+          "enum": [
+            "trending_up",
+            "trending_down",
+            "mean_reverting",
+            "low_volatility",
+            "high_volatility",
+            "liquidity_stress",
+            "macro_alignment",
+            "unclassified"
+          ],
+          "title": "Regime Code",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        },
+        "signal_state": {
+          "enum": [
+            "active",
+            "inactive",
+            "insufficient_data"
+          ],
+          "title": "Signal State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "regime_code",
+        "display_name",
+        "signal_state",
+        "score",
+        "activation_threshold",
+        "is_active"
+      ],
+      "title": "RegimeSignal",
+      "type": "object"
+    },
+    "RegimeSignalConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "displayName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Displayname",
+          "type": "string"
+        },
+        "requiredMetrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requiredmetrics",
+          "type": "array"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/RegimeMetricRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "displayName"
+      ],
+      "title": "RegimeSignalConfig",
+      "type": "object"
+    },
     "RegimeSnapshot": {
       "additionalProperties": false,
       "properties": {
+        "active_regimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Active Regimes",
+          "type": "array"
+        },
         "as_of_date": {
           "format": "date",
           "title": "As Of Date",
@@ -284,23 +422,6 @@
           ],
           "default": null,
           "title": "Computed At"
-        },
-        "curve_state": {
-          "anyOf": [
-            {
-              "enum": [
-                "contango",
-                "flat",
-                "inverted"
-              ],
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Curve State"
         },
         "effective_from_date": {
           "format": "date",
@@ -323,18 +444,6 @@
           "default": null,
           "title": "Halt Reason"
         },
-        "matched_rule_id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Matched Rule Id"
-        },
         "model_name": {
           "title": "Model Name",
           "type": "string"
@@ -343,114 +452,12 @@
           "title": "Model Version",
           "type": "integer"
         },
-        "regime_code": {
-          "enum": [
-            "trending_bull",
-            "trending_bear",
-            "choppy_mean_reversion",
-            "high_vol",
-            "unclassified"
-          ],
-          "title": "Regime Code",
-          "type": "string"
-        },
-        "regime_status": {
-          "enum": [
-            "confirmed",
-            "transition",
-            "unclassified"
-          ],
-          "title": "Regime Status",
-          "type": "string"
-        },
-        "rvol_10d_ann": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Rvol 10D Ann"
-        },
-        "spy_return_20d": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Spy Return 20D"
-        },
-        "trend_state": {
-          "anyOf": [
-            {
-              "enum": [
-                "positive",
-                "negative",
-                "near_zero"
-              ],
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Trend State"
-        },
-        "vix3m_close": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Vix3M Close"
-        },
-        "vix_gt_32_streak": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Vix Gt 32 Streak"
-        },
-        "vix_slope": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Vix Slope"
-        },
-        "vix_spot_close": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Vix Spot Close"
+        "signals": {
+          "items": {
+            "$ref": "#/$defs/RegimeSignal"
+          },
+          "title": "Signals",
+          "type": "array"
         }
       },
       "required": [
@@ -458,8 +465,6 @@
         "effective_from_date",
         "model_name",
         "model_version",
-        "regime_code",
-        "regime_status",
         "halt_flag"
       ],
       "title": "RegimeSnapshot",

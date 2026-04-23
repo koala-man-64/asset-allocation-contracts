@@ -409,6 +409,7 @@ Source of truth:
 ```json
 {
   "apiBaseUrl": "/api",
+  "authSessionMode": "bearer",
   "oidcEnabled": false,
   "authRequired": false,
   "oidcScopes": [],
@@ -423,6 +424,7 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
 ```json
 {
   "apiBaseUrl": "https://control-plane.example.com/api",
+  "authSessionMode": "cookie",
   "oidcEnabled": true,
   "authRequired": true,
   "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -437,6 +439,7 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
 Validation notes:
 
 - `apiBaseUrl` must be a non-empty string.
+- `authSessionMode` defaults to `bearer`; deployed browser sessions may set `cookie`.
 - `oidcScopes` and `oidcAudience` normalize `string`, `list`, `tuple`, and `set` inputs into string arrays.
 
 ## Repo Bootstrap Env Configuration

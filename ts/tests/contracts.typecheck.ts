@@ -74,6 +74,7 @@ const strategy: StrategyConfig = {
 
 const runtimeConfig: UiRuntimeConfig = {
   apiBaseUrl: "/api",
+  authSessionMode: "cookie",
   oidcEnabled: true,
   authRequired: true,
   oidcAuthority: "https://login.example.com/tenant/v2.0",
