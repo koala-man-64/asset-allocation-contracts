@@ -181,9 +181,24 @@ def test_universe_preview_response_rejects_unknown_field_ids() -> None:
 def test_ui_runtime_config_defaults_to_api_root() -> None:
     config = UiRuntimeConfig()
     assert config.apiBaseUrl == "/api"
+    assert config.authSessionMode == "bearer"
     assert config.oidcScopes == []
     assert config.oidcAudience == []
     assert config.oidcPostLogoutRedirectUri is None
+
+
+def test_ui_runtime_config_accepts_cookie_auth_session_mode() -> None:
+    config = UiRuntimeConfig(authSessionMode="cookie")
+    assert config.authSessionMode == "cookie"
+
+
+def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
+    try:
+        UiRuntimeConfig(authSessionMode="local-storage")
+    except Exception as exc:
+        assert "authSessionMode" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for unknown auth session mode.")
 
 
 def test_ui_runtime_config_normalizes_string_scopes() -> None:

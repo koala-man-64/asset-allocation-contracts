@@ -137,6 +137,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
 ]
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
+    ("AuthSessionMode", ui_config.AuthSessionMode),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleScope", strategy.ExitScope),
     ("ExitRuleAction", strategy.ExitAction),

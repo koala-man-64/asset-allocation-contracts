@@ -10,6 +10,30 @@ from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefiniti
 from asset_allocation_contracts.ui_config import UiRuntimeConfig
 
 
+def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
+    payload = UiRuntimeConfig.model_validate(
+        {
+            "apiBaseUrl": "/api",
+            "authSessionMode": "cookie",
+            "oidcEnabled": True,
+            "authRequired": True,
+            "oidcAuthority": "https://login.example.com/tenant/v2.0",
+            "oidcClientId": "11111111-2222-3333-4444-555555555555",
+            "oidcScopes": "api://asset-allocation-api/user_impersonation openid profile",
+            "oidcRedirectUri": "https://ui.example.com/auth/callback",
+            "oidcPostLogoutRedirectUri": "https://ui.example.com/auth/logout-complete",
+            "oidcAudience": "asset-allocation-api,asset-allocation-jobs",
+        }
+    )
+
+    assert payload.authSessionMode == "cookie"
+    assert payload.oidcScopes == [
+        "api://asset-allocation-api/user_impersonation",
+        "openid",
+        "profile",
+    ]
+
+
 def test_documented_universe_definition_example_is_valid() -> None:
     payload = UniverseDefinition.model_validate(
         {

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -22,10 +22,14 @@ def _normalize_scopes(value: Any) -> list[str]:
     return [text] if text else []
 
 
+AuthSessionMode = Literal["bearer", "cookie"]
+
+
 class UiRuntimeConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     apiBaseUrl: str = Field(default="/api", min_length=1)
+    authSessionMode: AuthSessionMode = "bearer"
     oidcEnabled: bool = False
     authRequired: bool = False
     oidcAuthority: str | None = None
