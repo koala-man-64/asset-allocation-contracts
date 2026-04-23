@@ -1,6 +1,7 @@
 import type {
   AiChatStreamEvent,
   AuthSessionStatus,
+  AcknowledgeBrokerAlertRequest,
   BacktestClaimRequest,
   BacktestCompleteRequest,
   BacktestLookupRequest,
@@ -11,9 +12,14 @@ import type {
   BacktestRunResponse,
   BacktestStartRequest,
   BacktestStreamEvent,
+  BrokerAccountActionResponse,
+  BrokerAccountDetail,
+  BrokerAccountListResponse,
+  BrokerAccountSummary,
   CongressTradeEventListResponse,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
+  PauseBrokerSyncRequest,
   RunPinsResponse,
   RunRecordResponse,
   RunStatusResponse,
@@ -24,6 +30,8 @@ import type {
   SymbolCleanupRunSummary,
   SymbolEnrichmentResolveRequest,
   SymbolEnrichmentSymbolDetailResponse,
+  ReconnectBrokerAccountRequest,
+  RefreshBrokerAccountRequest,
   StrategyConfig,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
@@ -80,6 +88,136 @@ const authSession: AuthSessionStatus = {
   subject: "user-123",
   requiredRoles: ["admin"],
   grantedRoles: ["admin"],
+};
+
+const brokerSummary: BrokerAccountSummary = {
+  accountId: "alpaca-core",
+  broker: "alpaca",
+  name: "Core Long Only",
+  accountNumberMasked: "****1234",
+  baseCurrency: "USD",
+  overallStatus: "warning",
+  tradeReadiness: "blocked",
+  tradeReadinessReason: "Reconnect required.",
+  highestAlertSeverity: "critical",
+  connectionHealth: {
+    overallStatus: "warning",
+    authStatus: "reauth_required",
+    connectionState: "reconnect_required",
+    syncStatus: "stale",
+    lastSuccessfulSyncAt: "2026-04-20T13:30:00Z",
+    staleReason: "Positions are stale.",
+    syncPaused: false,
+  },
+  equity: 250000,
+  cash: 42000,
+  buyingPower: 180000,
+  openPositionCount: 12,
+  openOrderCount: 3,
+  lastSyncedAt: "2026-04-20T13:30:00Z",
+  snapshotAsOf: "2026-04-20T13:29:00Z",
+  activePortfolioName: "growth-core",
+  strategyLabel: "Quality / Momentum",
+  alertCount: 2,
+};
+
+const brokerList: BrokerAccountListResponse = {
+  accounts: [brokerSummary],
+  generatedAt: "2026-04-20T13:45:00Z",
+};
+
+const brokerDetail: BrokerAccountDetail = {
+  account: brokerList.accounts[0],
+  capabilities: {
+    canReadBalances: true,
+    canReadPositions: true,
+    canReadOrders: true,
+    canTrade: true,
+    canReconnect: true,
+    canPauseSync: true,
+    canRefresh: true,
+    canAcknowledgeAlerts: true,
+  },
+  accountType: "margin",
+  tradingBlocked: true,
+  tradingBlockedReason: "Reconnect before trading resumes.",
+  dayTradeBuyingPower: 95000,
+  maintenanceExcess: 32000,
+  alerts: [
+    {
+      alertId: "alert-1",
+      accountId: "alpaca-core",
+      severity: "critical",
+      status: "open",
+      code: "auth_expired",
+      title: "Broker token expired",
+      message: "Reconnect the broker account.",
+      observedAt: "2026-04-20T13:31:00Z",
+    },
+  ],
+  syncRuns: [
+    {
+      runId: "sync-1",
+      accountId: "alpaca-core",
+      trigger: "manual",
+      scope: "full",
+      status: "failed",
+      requestedAt: "2026-04-20T13:31:00Z",
+      completedAt: "2026-04-20T13:32:00Z",
+      warningCount: 1,
+      errorMessage: "Token refresh failed.",
+    },
+  ],
+  recentActivity: [
+    {
+      activityId: "activity-1",
+      accountId: "alpaca-core",
+      activityType: "acknowledge_alert",
+      status: "completed",
+      requestedAt: "2026-04-20T13:40:00Z",
+      completedAt: "2026-04-20T13:40:02Z",
+      actor: "ops@example.com",
+      summary: "Acknowledged token expiry.",
+      relatedAlertId: "alert-1",
+    },
+  ],
+};
+
+const reconnectRequest: ReconnectBrokerAccountRequest = {
+  reason: "Manual reconnect from the desk.",
+};
+
+const pauseRequest: PauseBrokerSyncRequest = {
+  paused: false,
+  reason: "Resume after reconnect.",
+};
+
+const refreshRequest: RefreshBrokerAccountRequest = {
+  scope: "full",
+  force: true,
+  reason: "Operator refresh.",
+};
+
+const acknowledgeRequest: AcknowledgeBrokerAlertRequest = {
+  note: "Queued for desk follow-up.",
+};
+
+const actionResponse: BrokerAccountActionResponse = {
+  actionId: "action-1",
+  accountId: "alpaca-core",
+  action: "refresh",
+  status: "accepted",
+  requestedAt: "2026-04-20T13:45:00Z",
+  message: "Refresh queued.",
+  resultingConnectionHealth: {
+    overallStatus: "warning",
+    authStatus: "reauth_required",
+    connectionState: "reconnect_required",
+    syncStatus: "syncing",
+    syncPaused: false,
+  },
+  tradeReadiness: "review",
+  syncPaused: false,
 };
 
 const claimRequest: BacktestClaimRequest = {
@@ -208,6 +346,14 @@ const condition: UniverseCondition = {
 void strategy;
 void runtimeConfig;
 void authSession;
+void brokerSummary;
+void brokerList;
+void brokerDetail;
+void reconnectRequest;
+void pauseRequest;
+void refreshRequest;
+void acknowledgeRequest;
+void actionResponse;
 void claimRequest;
 void startRequest;
 void completeRequest;

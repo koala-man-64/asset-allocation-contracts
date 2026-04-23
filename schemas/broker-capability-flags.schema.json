@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "canAcknowledgeAlerts": {
+      "default": false,
+      "title": "Canacknowledgealerts",
+      "type": "boolean"
+    },
+    "canPauseSync": {
+      "default": false,
+      "title": "Canpausesync",
+      "type": "boolean"
+    },
+    "canReadBalances": {
+      "default": false,
+      "title": "Canreadbalances",
+      "type": "boolean"
+    },
+    "canReadOrders": {
+      "default": false,
+      "title": "Canreadorders",
+      "type": "boolean"
+    },
+    "canReadPositions": {
+      "default": false,
+      "title": "Canreadpositions",
+      "type": "boolean"
+    },
+    "canReconnect": {
+      "default": false,
+      "title": "Canreconnect",
+      "type": "boolean"
+    },
+    "canRefresh": {
+      "default": false,
+      "title": "Canrefresh",
+      "type": "boolean"
+    },
+    "canTrade": {
+      "default": false,
+      "title": "Cantrade",
+      "type": "boolean"
+    }
+  },
+  "title": "BrokerCapabilityFlags",
+  "type": "object"
+}

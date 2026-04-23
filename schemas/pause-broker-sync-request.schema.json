@@ -1,0 +1,17 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "paused": {
+      "default": true,
+      "title": "Paused",
+      "type": "boolean"
+    },
+    "reason": {
+      "default": "",
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "title": "PauseBrokerSyncRequest",
+  "type": "object"
+}
