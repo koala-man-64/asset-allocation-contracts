@@ -6,7 +6,7 @@ It is intentionally normative, not just descriptive. It defines what this repo i
 
 Use [original-monolith-and-five-repo-map.md](./original-monolith-and-five-repo-map.md) for lineage and system-split context. Use this document for current intended design, operational contract boundaries, and repo update rules.
 
-Verified against the current worktree on 2026-04-17.
+Verified against the current worktree on 2026-04-24.
 
 ## 1. Purpose and Non-Goals
 
@@ -225,7 +225,29 @@ Key design note:
 
 These contracts intentionally stop short of broker or custody-grade accounting. They support internal ledger truth, pinned strategy revisions, and derived monitoring surfaces, but they do not imply external execution, lot accounting, settlement, or reconciliation ownership in this repo.
 
-### 4.6 UI Runtime Config Contract
+### 4.6 Job Metadata and Strategy Publication Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/job_metadata.py`
+- `python/asset_allocation_contracts/strategy_publication.py`
+- `schemas/runtime-job-metadata.schema.json`
+- `schemas/strategy-publication-reconcile-signal-request.schema.json`
+- `schemas/strategy-publication-reconcile-signal-response.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define the additive system-health taxonomy fields `jobCategory`, `jobKey`, `jobRole`, `triggerOwner`, `metadataSource`, and `metadataStatus`
+- Keep strategy-compute jobs, medallion data-pipeline jobs, and operational-support jobs distinct without relying on job-name substring inference
+- Define the durable regime publication reconcile signal request and response shared between jobs and the control-plane internal API
+- Preserve server ownership of reconcile signal state: producers send typed publication metadata, while the control plane assigns `pending`, `processed`, or `error`
+
+Key design note:
+
+`strategy-compute` is a workflow category, not a medallion layer. `gold-regime-job` remains the ACA resource name and may write gold outputs, but its contract category is `strategy-compute`. `platinum-rankings-job` follows the same rule for platinum outputs.
+
+### 4.7 UI Runtime Config Contract
 
 Owned by:
 
@@ -238,7 +260,7 @@ Purpose:
 - Define the browser bootstrap/runtime config surface for API base URL and OIDC/auth settings, including the derived post-logout completion URI
 - Normalize scope/audience list handling
 
-### 4.7 Auth Session Contract
+### 4.8 Auth Session Contract
 
 Owned by:
 
@@ -252,7 +274,7 @@ Purpose:
 - Give the UI a typed auth/authz probe that is distinct from general system-health data
 - Keep the control-plane, UI, and any future non-browser consumer aligned on the same minimal session summary fields
 
-### 4.8 Shared Finance and Path Constants
+### 4.9 Shared Finance and Path Constants
 
 Owned by:
 
@@ -267,7 +289,7 @@ Purpose:
 
 These are still contract surfaces even though they are constants rather than large object models.
 
-### 4.9 Release and Env/Config Surfaces
+### 4.10 Release and Env/Config Surfaces
 
 Owned by:
 
@@ -293,6 +315,8 @@ Purpose:
 - `python/asset_allocation_contracts/ranking.py`
 - `python/asset_allocation_contracts/regime.py`
 - `python/asset_allocation_contracts/backtest.py`
+- `python/asset_allocation_contracts/job_metadata.py`
+- `python/asset_allocation_contracts/strategy_publication.py`
 - `python/asset_allocation_contracts/ui_config.py`
 - `python/asset_allocation_contracts/finance.py`
 - `python/asset_allocation_contracts/paths.py`

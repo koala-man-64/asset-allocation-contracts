@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "created": {
+      "title": "Created",
+      "type": "boolean"
+    },
+    "createdAt": {
+      "format": "date-time",
+      "title": "Createdat",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "jobKey": {
+      "title": "Jobkey",
+      "type": "string"
+    },
+    "processedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Processedat"
+    },
+    "sourceFingerprint": {
+      "title": "Sourcefingerprint",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "processed",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "updatedAt": {
+      "format": "date-time",
+      "title": "Updatedat",
+      "type": "string"
+    }
+  },
+  "required": [
+    "jobKey",
+    "sourceFingerprint",
+    "status",
+    "created",
+    "createdAt",
+    "updatedAt"
+  ],
+  "title": "StrategyPublicationReconcileSignalResponse",
+  "type": "object"
+}

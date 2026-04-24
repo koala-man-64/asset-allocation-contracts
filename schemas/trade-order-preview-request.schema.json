@@ -1,0 +1,153 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "allowExtendedHours": {
+      "default": false,
+      "title": "Allowextendedhours",
+      "type": "boolean"
+    },
+    "assetClass": {
+      "default": "equity",
+      "enum": [
+        "equity",
+        "etf",
+        "option",
+        "crypto",
+        "mutual_fund",
+        "unknown"
+      ],
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "clientRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Clientrequestid",
+      "type": "string"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "limitPrice": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Limitprice"
+    },
+    "notional": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notional"
+    },
+    "orderType": {
+      "enum": [
+        "market",
+        "limit",
+        "stop",
+        "stop_limit"
+      ],
+      "title": "Ordertype",
+      "type": "string"
+    },
+    "quantity": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quantity"
+    },
+    "side": {
+      "enum": [
+        "buy",
+        "sell"
+      ],
+      "title": "Side",
+      "type": "string"
+    },
+    "source": {
+      "default": "manual",
+      "enum": [
+        "manual",
+        "rebalance_preview",
+        "system"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "stopPrice": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stopprice"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "timeInForce": {
+      "default": "day",
+      "enum": [
+        "day",
+        "gtc",
+        "opg",
+        "cls",
+        "ioc",
+        "fok"
+      ],
+      "title": "Timeinforce",
+      "type": "string"
+    }
+  },
+  "required": [
+    "accountId",
+    "environment",
+    "clientRequestId",
+    "symbol",
+    "side",
+    "orderType"
+  ],
+  "title": "TradeOrderPreviewRequest",
+  "type": "object"
+}

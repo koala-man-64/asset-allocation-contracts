@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "blocking": {
+      "default": false,
+      "title": "Blocking",
+      "type": "boolean"
+    },
+    "checkId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Checkid",
+      "type": "string"
+    },
+    "code": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Code",
+      "type": "string"
+    },
+    "label": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "severity": {
+      "default": "info",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "pass",
+        "warning",
+        "fail"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "checkId",
+    "code",
+    "label",
+    "status"
+  ],
+  "title": "TradeRiskCheck",
+  "type": "object"
+}

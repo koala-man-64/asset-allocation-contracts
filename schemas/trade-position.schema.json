@@ -1,0 +1,143 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "asOf": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asof"
+    },
+    "assetClass": {
+      "default": "equity",
+      "enum": [
+        "equity",
+        "etf",
+        "option",
+        "crypto",
+        "mutual_fund",
+        "unknown"
+      ],
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "averageEntryPrice": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Averageentryprice"
+    },
+    "costBasis": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Costbasis"
+    },
+    "dayPnl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Daypnl"
+    },
+    "lastPrice": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastprice"
+    },
+    "marketValue": {
+      "default": 0.0,
+      "title": "Marketvalue",
+      "type": "number"
+    },
+    "quantity": {
+      "default": 0.0,
+      "title": "Quantity",
+      "type": "number"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "unrealizedPnl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unrealizedpnl"
+    },
+    "unrealizedPnlPercent": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unrealizedpnlpercent"
+    },
+    "weight": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Weight"
+    }
+  },
+  "required": [
+    "accountId",
+    "symbol"
+  ],
+  "title": "TradePosition",
+  "type": "object"
+}
