@@ -14,10 +14,12 @@ from asset_allocation_contracts import (
     broker_accounts,
     government_signals,
     intraday,
+    job_metadata,
     portfolio,
     ranking,
     regime,
     strategy,
+    strategy_publication,
     symbol_enrichment,
     ui_config,
 )
@@ -39,6 +41,15 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("regime-model-detail.schema.json", regime.RegimeModelDetailResponse),
     ("ui-runtime-config.schema.json", ui_config.UiRuntimeConfig),
     ("auth-session-status.schema.json", ui_config.AuthSessionStatus),
+    ("runtime-job-metadata.schema.json", job_metadata.RuntimeJobMetadata),
+    (
+        "strategy-publication-reconcile-signal-request.schema.json",
+        strategy_publication.StrategyPublicationReconcileSignalRequest,
+    ),
+    (
+        "strategy-publication-reconcile-signal-response.schema.json",
+        strategy_publication.StrategyPublicationReconcileSignalResponse,
+    ),
     ("backtest-run-record.schema.json", backtest.RunRecordResponse),
     ("backtest-run-list.schema.json", backtest.RunListResponse),
     ("backtest-lookup-request.schema.json", backtest.BacktestLookupRequest),
@@ -151,6 +162,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("AuthSessionMode", ui_config.AuthSessionMode),
+    ("JobCategory", job_metadata.JobCategory),
+    ("JobMetadataSource", job_metadata.JobMetadataSource),
+    ("JobMetadataStatus", job_metadata.JobMetadataStatus),
+    ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleScope", strategy.ExitScope),
     ("ExitRuleAction", strategy.ExitAction),
