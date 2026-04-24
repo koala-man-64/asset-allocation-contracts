@@ -1,0 +1,285 @@
+{
+  "$defs": {
+    "TradeDataFreshness": {
+      "additionalProperties": false,
+      "properties": {
+        "balancesAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Balancesasof"
+        },
+        "balancesState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Balancesstate",
+          "type": "string"
+        },
+        "maxAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxageseconds"
+        },
+        "ordersAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ordersasof"
+        },
+        "ordersState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Ordersstate",
+          "type": "string"
+        },
+        "positionsAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Positionsasof"
+        },
+        "positionsState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Positionsstate",
+          "type": "string"
+        },
+        "staleReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stalereason"
+        }
+      },
+      "title": "TradeDataFreshness",
+      "type": "object"
+    },
+    "TradePosition": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "assetClass": {
+          "default": "equity",
+          "enum": [
+            "equity",
+            "etf",
+            "option",
+            "crypto",
+            "mutual_fund",
+            "unknown"
+          ],
+          "title": "Assetclass",
+          "type": "string"
+        },
+        "averageEntryPrice": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Averageentryprice"
+        },
+        "costBasis": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Costbasis"
+        },
+        "dayPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Daypnl"
+        },
+        "lastPrice": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastprice"
+        },
+        "marketValue": {
+          "default": 0.0,
+          "title": "Marketvalue",
+          "type": "number"
+        },
+        "quantity": {
+          "default": 0.0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "unrealizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unrealizedpnl"
+        },
+        "unrealizedPnlPercent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unrealizedpnlpercent"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weight"
+        }
+      },
+      "required": [
+        "accountId",
+        "symbol"
+      ],
+      "title": "TradePosition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "freshness": {
+      "$ref": "#/$defs/TradeDataFreshness"
+    },
+    "generatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generatedat"
+    },
+    "positions": {
+      "items": {
+        "$ref": "#/$defs/TradePosition"
+      },
+      "title": "Positions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "accountId"
+  ],
+  "title": "TradePositionListResponse",
+  "type": "object"
+}

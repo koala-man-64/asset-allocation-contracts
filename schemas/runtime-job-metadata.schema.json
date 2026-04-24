@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "jobCategory": {
+      "enum": [
+        "data-pipeline",
+        "strategy-compute",
+        "operational-support"
+      ],
+      "title": "Jobcategory",
+      "type": "string"
+    },
+    "jobKey": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Jobkey",
+      "type": "string"
+    },
+    "jobRole": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Jobrole",
+      "type": "string"
+    },
+    "metadataSource": {
+      "enum": [
+        "tags",
+        "legacy-catalog",
+        "unknown"
+      ],
+      "title": "Metadatasource",
+      "type": "string"
+    },
+    "metadataStatus": {
+      "enum": [
+        "valid",
+        "fallback",
+        "invalid"
+      ],
+      "title": "Metadatastatus",
+      "type": "string"
+    },
+    "triggerOwner": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Triggerowner",
+      "type": "string"
+    }
+  },
+  "required": [
+    "jobCategory",
+    "jobKey",
+    "jobRole",
+    "triggerOwner",
+    "metadataSource",
+    "metadataStatus"
+  ],
+  "title": "RuntimeJobMetadata",
+  "type": "object"
+}

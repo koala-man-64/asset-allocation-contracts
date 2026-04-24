@@ -1,0 +1,697 @@
+{
+  "$defs": {
+    "TradeDataFreshness": {
+      "additionalProperties": false,
+      "properties": {
+        "balancesAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Balancesasof"
+        },
+        "balancesState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Balancesstate",
+          "type": "string"
+        },
+        "maxAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxageseconds"
+        },
+        "ordersAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ordersasof"
+        },
+        "ordersState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Ordersstate",
+          "type": "string"
+        },
+        "positionsAsOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Positionsasof"
+        },
+        "positionsState": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "unknown"
+          ],
+          "title": "Positionsstate",
+          "type": "string"
+        },
+        "staleReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stalereason"
+        }
+      },
+      "title": "TradeDataFreshness",
+      "type": "object"
+    },
+    "TradeOrder": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acceptedat"
+        },
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "assetClass": {
+          "default": "equity",
+          "enum": [
+            "equity",
+            "etf",
+            "option",
+            "crypto",
+            "mutual_fund",
+            "unknown"
+          ],
+          "title": "Assetclass",
+          "type": "string"
+        },
+        "averageFillPrice": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Averagefillprice"
+        },
+        "cancelledAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cancelledat"
+        },
+        "clientRequestId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clientrequestid"
+        },
+        "correlationId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correlationid"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "estimatedNotional": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatednotional"
+        },
+        "estimatedPrice": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedprice"
+        },
+        "expiresAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expiresat"
+        },
+        "filledAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filledat"
+        },
+        "filledQuantity": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Filledquantity",
+          "type": "number"
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idempotencykey"
+        },
+        "limitPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitprice"
+        },
+        "notional": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notional"
+        },
+        "orderId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Orderid",
+          "type": "string"
+        },
+        "orderType": {
+          "enum": [
+            "market",
+            "limit",
+            "stop",
+            "stop_limit"
+          ],
+          "title": "Ordertype",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "alpaca",
+            "etrade",
+            "schwab"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "providerCorrelationId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providercorrelationid"
+        },
+        "providerOrderId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerorderid"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "reconciliationRequired": {
+          "default": false,
+          "title": "Reconciliationrequired",
+          "type": "boolean"
+        },
+        "riskChecks": {
+          "items": {
+            "$ref": "#/$defs/TradeRiskCheck"
+          },
+          "title": "Riskchecks",
+          "type": "array"
+        },
+        "side": {
+          "enum": [
+            "buy",
+            "sell"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "previewed",
+            "submitted",
+            "accepted",
+            "partially_filled",
+            "filled",
+            "cancel_pending",
+            "cancelled",
+            "rejected",
+            "expired",
+            "unknown_reconcile_required"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "statusReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Statusreason"
+        },
+        "stopPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stopprice"
+        },
+        "submittedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submittedat"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timeInForce": {
+          "default": "day",
+          "enum": [
+            "day",
+            "gtc",
+            "opg",
+            "cls",
+            "ioc",
+            "fok"
+          ],
+          "title": "Timeinforce",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        }
+      },
+      "required": [
+        "orderId",
+        "accountId",
+        "provider",
+        "environment",
+        "status",
+        "symbol",
+        "side",
+        "orderType"
+      ],
+      "title": "TradeOrder",
+      "type": "object"
+    },
+    "TradeRiskCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "checkId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Checkid",
+          "type": "string"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "title": "Message",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "severity": {
+          "default": "info",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "warning",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkId",
+        "code",
+        "label",
+        "status"
+      ],
+      "title": "TradeRiskCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "blockReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blockreason"
+    },
+    "blocked": {
+      "default": false,
+      "title": "Blocked",
+      "type": "boolean"
+    },
+    "buyingPowerAfter": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Buyingpowerafter"
+    },
+    "cashAfter": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cashafter"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "estimatedCost": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimatedcost"
+    },
+    "estimatedFees": {
+      "default": 0.0,
+      "minimum": 0,
+      "title": "Estimatedfees",
+      "type": "number"
+    },
+    "expiresAt": {
+      "format": "date-time",
+      "title": "Expiresat",
+      "type": "string"
+    },
+    "freshness": {
+      "$ref": "#/$defs/TradeDataFreshness"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "order": {
+      "$ref": "#/$defs/TradeOrder"
+    },
+    "previewId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Previewid",
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "alpaca",
+        "etrade",
+        "schwab"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "riskChecks": {
+      "items": {
+        "$ref": "#/$defs/TradeRiskCheck"
+      },
+      "title": "Riskchecks",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "previewId",
+    "accountId",
+    "provider",
+    "environment",
+    "order",
+    "generatedAt",
+    "expiresAt"
+  ],
+  "title": "TradeOrderPreviewResponse",
+  "type": "object"
+}
