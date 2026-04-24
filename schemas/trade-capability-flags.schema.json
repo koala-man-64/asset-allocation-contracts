@@ -1,0 +1,104 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "canCancel": {
+      "default": false,
+      "title": "Cancancel",
+      "type": "boolean"
+    },
+    "canPreview": {
+      "default": false,
+      "title": "Canpreview",
+      "type": "boolean"
+    },
+    "canReadAccount": {
+      "default": false,
+      "title": "Canreadaccount",
+      "type": "boolean"
+    },
+    "canReadHistory": {
+      "default": false,
+      "title": "Canreadhistory",
+      "type": "boolean"
+    },
+    "canReadOrders": {
+      "default": false,
+      "title": "Canreadorders",
+      "type": "boolean"
+    },
+    "canReadPositions": {
+      "default": false,
+      "title": "Canreadpositions",
+      "type": "boolean"
+    },
+    "canSubmitLive": {
+      "default": false,
+      "title": "Cansubmitlive",
+      "type": "boolean"
+    },
+    "canSubmitPaper": {
+      "default": false,
+      "title": "Cansubmitpaper",
+      "type": "boolean"
+    },
+    "canSubmitSandbox": {
+      "default": false,
+      "title": "Cansubmitsandbox",
+      "type": "boolean"
+    },
+    "readOnly": {
+      "default": true,
+      "title": "Readonly",
+      "type": "boolean"
+    },
+    "supportsEquities": {
+      "default": false,
+      "title": "Supportsequities",
+      "type": "boolean"
+    },
+    "supportsEtfs": {
+      "default": false,
+      "title": "Supportsetfs",
+      "type": "boolean"
+    },
+    "supportsFractionalQuantity": {
+      "default": false,
+      "title": "Supportsfractionalquantity",
+      "type": "boolean"
+    },
+    "supportsLimitOrders": {
+      "default": false,
+      "title": "Supportslimitorders",
+      "type": "boolean"
+    },
+    "supportsMarketOrders": {
+      "default": false,
+      "title": "Supportsmarketorders",
+      "type": "boolean"
+    },
+    "supportsNotionalOrders": {
+      "default": false,
+      "title": "Supportsnotionalorders",
+      "type": "boolean"
+    },
+    "supportsStopOrders": {
+      "default": false,
+      "title": "Supportsstoporders",
+      "type": "boolean"
+    },
+    "unsupportedReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unsupportedreason"
+    }
+  },
+  "title": "TradeCapabilityFlags",
+  "type": "object"
+}

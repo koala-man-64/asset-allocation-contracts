@@ -38,6 +38,18 @@ export type BrokerSyncScope = 'balances' | 'positions' | 'orders' | 'full';
 export type BrokerSyncRunStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type BrokerAccountActionType = 'reconnect' | 'pause_sync' | 'resume_sync' | 'refresh' | 'acknowledge_alert';
 export type BrokerAccountActionStatus = 'accepted' | 'in_progress' | 'completed' | 'failed';
+export type TradeProvider = 'alpaca' | 'etrade' | 'schwab';
+export type TradeEnvironment = 'paper' | 'sandbox' | 'live';
+export type TradeReadiness = 'ready' | 'review' | 'blocked';
+export type TradeAssetClass = 'equity' | 'etf' | 'option' | 'crypto' | 'mutual_fund' | 'unknown';
+export type TradeOrderSide = 'buy' | 'sell';
+export type TradeOrderType = 'market' | 'limit' | 'stop' | 'stop_limit';
+export type TradeTimeInForce = 'day' | 'gtc' | 'opg' | 'cls' | 'ioc' | 'fok';
+export type TradeOrderStatus = 'draft' | 'previewed' | 'submitted' | 'accepted' | 'partially_filled' | 'filled' | 'cancel_pending' | 'cancelled' | 'rejected' | 'expired' | 'unknown_reconcile_required';
+export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
+export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
+export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
+export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
@@ -548,14 +560,14 @@ export interface BrokerAccountDetail {
 
 export interface BrokerAccountSummary {
   accountId: string;
-  broker: BrokerVendor;
+  broker: TradeProvider;
   name: string;
   accountNumberMasked?: string | null;
   baseCurrency: string;
   overallStatus: BrokerHealthTone;
-  tradeReadiness: BrokerTradeReadiness;
+  tradeReadiness: TradeReadiness;
   tradeReadinessReason?: string | null;
-  highestAlertSeverity?: BrokerAlertSeverity | null;
+  highestAlertSeverity?: TradeAuditSeverity | null;
   connectionHealth: BrokerConnectionHealth;
   equity: number;
   cash: number;
@@ -597,7 +609,7 @@ export interface BrokerCapabilityFlags {
 export interface BrokerAccountAlert {
   alertId: string;
   accountId: string;
-  severity: BrokerAlertSeverity;
+  severity: TradeAuditSeverity;
   status: BrokerAlertStatus;
   code: string;
   title: string;
@@ -650,7 +662,7 @@ export interface BrokerAccountActionResponse {
   requestedAt: string;
   message?: string | null;
   resultingConnectionHealth?: BrokerConnectionHealth | null;
-  tradeReadiness?: BrokerTradeReadiness | null;
+  tradeReadiness?: TradeReadiness | null;
   syncPaused?: boolean | null;
 }
 
@@ -671,6 +683,270 @@ export interface RefreshBrokerAccountRequest {
 
 export interface AcknowledgeBrokerAlertRequest {
   note: string;
+}
+
+export interface TradeAccountSummary {
+  accountId: string;
+  name: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  accountNumberMasked?: string | null;
+  baseCurrency: string;
+  readiness: TradeReadiness;
+  readinessReason?: string | null;
+  capabilities: TradeCapabilityFlags;
+  cash: number;
+  buyingPower: number;
+  equity: number;
+  openOrderCount: number;
+  positionCount: number;
+  unresolvedAlertCount: number;
+  killSwitchActive: boolean;
+  lastSyncedAt?: string | null;
+  snapshotAsOf?: string | null;
+  freshness: TradeDataFreshness;
+}
+
+export interface TradeCapabilityFlags {
+  canReadAccount: boolean;
+  canReadPositions: boolean;
+  canReadOrders: boolean;
+  canReadHistory: boolean;
+  canPreview: boolean;
+  canSubmitPaper: boolean;
+  canSubmitSandbox: boolean;
+  canSubmitLive: boolean;
+  canCancel: boolean;
+  supportsMarketOrders: boolean;
+  supportsLimitOrders: boolean;
+  supportsStopOrders: boolean;
+  supportsFractionalQuantity: boolean;
+  supportsNotionalOrders: boolean;
+  supportsEquities: boolean;
+  supportsEtfs: boolean;
+  readOnly: boolean;
+  unsupportedReason?: string | null;
+}
+
+export interface TradeDataFreshness {
+  balancesState: TradeDataFreshnessState;
+  positionsState: TradeDataFreshnessState;
+  ordersState: TradeDataFreshnessState;
+  balancesAsOf?: string | null;
+  positionsAsOf?: string | null;
+  ordersAsOf?: string | null;
+  maxAgeSeconds?: number | null;
+  staleReason?: string | null;
+}
+
+export interface TradeAccountDetail {
+  account: TradeAccountSummary;
+  restrictions: string[];
+  riskLimits: TradeRiskLimit;
+  unresolvedAlerts: string[];
+  recentAuditEvents: TradeDeskAuditEvent[];
+}
+
+export interface TradeRiskLimit {
+  maxOrderNotional?: number | null;
+  maxDailyNotional?: number | null;
+  maxShareQuantity?: number | null;
+  allowedAssetClasses: TradeAssetClass[];
+  allowedOrderTypes: TradeOrderType[];
+  liveTradingAllowed: boolean;
+  liveTradingReason?: string | null;
+}
+
+export interface TradeDeskAuditEvent {
+  eventId: string;
+  accountId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  eventType: TradeAuditEventType;
+  severity: TradeAuditSeverity;
+  occurredAt: string;
+  actor?: string | null;
+  orderId?: string | null;
+  providerOrderId?: string | null;
+  clientRequestId?: string | null;
+  idempotencyKey?: string | null;
+  statusBefore?: TradeOrderStatus | null;
+  statusAfter?: TradeOrderStatus | null;
+  summary: string;
+  sanitizedError?: string | null;
+  details: Record<string, unknown>;
+}
+
+export interface TradeAccountListResponse {
+  accounts: TradeAccountSummary[];
+  generatedAt?: string | null;
+}
+
+export interface TradePosition {
+  accountId: string;
+  symbol: string;
+  assetClass: TradeAssetClass;
+  quantity: number;
+  marketValue: number;
+  averageEntryPrice?: number | null;
+  lastPrice?: number | null;
+  costBasis?: number | null;
+  unrealizedPnl?: number | null;
+  unrealizedPnlPercent?: number | null;
+  dayPnl?: number | null;
+  weight?: number | null;
+  asOf?: string | null;
+}
+
+export interface TradePositionListResponse {
+  accountId: string;
+  positions: TradePosition[];
+  generatedAt?: string | null;
+  freshness: TradeDataFreshness;
+}
+
+export interface TradeOrder {
+  orderId: string;
+  accountId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  status: TradeOrderStatus;
+  symbol: string;
+  side: TradeOrderSide;
+  orderType: TradeOrderType;
+  timeInForce: TradeTimeInForce;
+  assetClass: TradeAssetClass;
+  clientRequestId?: string | null;
+  idempotencyKey?: string | null;
+  correlationId?: string | null;
+  providerOrderId?: string | null;
+  providerCorrelationId?: string | null;
+  quantity?: number | null;
+  notional?: number | null;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+  estimatedPrice?: number | null;
+  estimatedNotional?: number | null;
+  filledQuantity: number;
+  averageFillPrice?: number | null;
+  submittedAt?: string | null;
+  acceptedAt?: string | null;
+  filledAt?: string | null;
+  cancelledAt?: string | null;
+  expiresAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  statusReason?: string | null;
+  riskChecks: TradeRiskCheck[];
+  reconciliationRequired: boolean;
+}
+
+export interface TradeRiskCheck {
+  checkId: string;
+  code: string;
+  label: string;
+  status: TradeRiskCheckStatus;
+  severity: TradeAuditSeverity;
+  blocking: boolean;
+  message: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface TradeOrderHistoryResponse {
+  accountId: string;
+  orders: TradeOrder[];
+  generatedAt?: string | null;
+  nextCursor?: string | null;
+}
+
+export interface TradeOrderPreviewRequest {
+  accountId: string;
+  environment: TradeEnvironment;
+  clientRequestId: string;
+  symbol: string;
+  side: TradeOrderSide;
+  orderType: TradeOrderType;
+  timeInForce: TradeTimeInForce;
+  assetClass: TradeAssetClass;
+  quantity?: number | null;
+  notional?: number | null;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+  allowExtendedHours: boolean;
+  source: 'manual' | 'rebalance_preview' | 'system';
+}
+
+export interface TradeOrderPreviewResponse {
+  previewId: string;
+  accountId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  order: TradeOrder;
+  generatedAt: string;
+  expiresAt: string;
+  estimatedCost?: number | null;
+  estimatedFees: number;
+  cashAfter?: number | null;
+  buyingPowerAfter?: number | null;
+  riskChecks: TradeRiskCheck[];
+  warnings: string[];
+  blocked: boolean;
+  blockReason?: string | null;
+  freshness: TradeDataFreshness;
+}
+
+export interface TradeOrderPlaceRequest {
+  accountId: string;
+  environment: TradeEnvironment;
+  clientRequestId: string;
+  symbol: string;
+  side: TradeOrderSide;
+  orderType: TradeOrderType;
+  timeInForce: TradeTimeInForce;
+  assetClass: TradeAssetClass;
+  quantity?: number | null;
+  notional?: number | null;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+  allowExtendedHours: boolean;
+  source: 'manual' | 'rebalance_preview' | 'system';
+  idempotencyKey: string;
+  previewId: string;
+  confirmedAt: string;
+  confirmedRiskCheckIds: string[];
+}
+
+export interface TradeOrderPlaceResponse {
+  order: TradeOrder;
+  submitted: boolean;
+  replayed: boolean;
+  reconciliationRequired: boolean;
+  auditEventId?: string | null;
+  message?: string | null;
+}
+
+export interface TradeOrderCancelRequest {
+  accountId: string;
+  orderId: string;
+  clientRequestId: string;
+  idempotencyKey: string;
+  reason: string;
+}
+
+export interface TradeOrderCancelResponse {
+  order: TradeOrder;
+  cancelAccepted: boolean;
+  replayed: boolean;
+  reconciliationRequired: boolean;
+  auditEventId?: string | null;
+  message?: string | null;
+}
+
+export interface TradeDeskAuditEventListResponse {
+  accountId: string;
+  events: TradeDeskAuditEvent[];
+  generatedAt?: string | null;
+  nextCursor?: string | null;
 }
 
 export interface PortfolioAccount {
@@ -772,7 +1048,7 @@ export interface PortfolioAlertListResponse {
 export interface PortfolioAlert {
   alertId: string;
   accountId: string;
-  severity: BrokerAlertSeverity;
+  severity: TradeAuditSeverity;
   status: BrokerAlertStatus;
   code: string;
   title: string;
@@ -933,7 +1209,7 @@ export interface RebalanceProposal {
 export interface RebalanceTradeProposal {
   sleeveId: string;
   symbol: string;
-  side: 'buy' | 'sell';
+  side: TradeOrderSide;
   quantity: number;
   estimatedPrice: number;
   estimatedNotional: number;

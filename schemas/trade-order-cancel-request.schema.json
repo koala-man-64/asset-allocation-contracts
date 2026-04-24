@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "clientRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Clientrequestid",
+      "type": "string"
+    },
+    "idempotencyKey": {
+      "maxLength": 160,
+      "minLength": 16,
+      "title": "Idempotencykey",
+      "type": "string"
+    },
+    "orderId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Orderid",
+      "type": "string"
+    },
+    "reason": {
+      "default": "",
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "accountId",
+    "orderId",
+    "clientRequestId",
+    "idempotencyKey"
+  ],
+  "title": "TradeOrderCancelRequest",
+  "type": "object"
+}
