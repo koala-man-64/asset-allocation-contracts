@@ -57,6 +57,7 @@ from asset_allocation_contracts.intraday import (
     IntradayWatchlistDetail,
     IntradayWatchlistUpsertRequest,
 )
+from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
 from asset_allocation_contracts.portfolio import (
     PortfolioAccount,
     PortfolioAccountUpsertRequest,
@@ -81,6 +82,10 @@ from asset_allocation_contracts.regime import (
     canonical_default_regime_config_errors,
     canonical_default_regime_model_config,
     validate_canonical_default_regime_config,
+)
+from asset_allocation_contracts.strategy_publication import (
+    RegimePublicationReconcileMetadata,
+    StrategyPublicationReconcileSignalRequest,
 )
 from asset_allocation_contracts.symbol_enrichment import (
     SymbolCleanupRunSummary,
@@ -242,6 +247,89 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert schema["required"] == ["authMode", "subject"]
     assert "requiredRoles" in schema["properties"]
     assert "grantedRoles" in schema["properties"]
+
+
+def test_runtime_job_metadata_contract_validates_strategy_compute_fields() -> None:
+    payload = RuntimeJobMetadata(
+        jobCategory="strategy-compute",
+        jobKey="regime",
+        jobRole="publish",
+        triggerOwner="schedule",
+        metadataSource="tags",
+        metadataStatus="valid",
+    )
+    schema = RuntimeJobMetadata.model_json_schema()
+
+    assert payload.jobCategory == "strategy-compute"
+    assert schema["properties"]["jobCategory"]["enum"] == [
+        "data-pipeline",
+        "strategy-compute",
+        "operational-support",
+    ]
+    assert schema["required"] == [
+        "jobCategory",
+        "jobKey",
+        "jobRole",
+        "triggerOwner",
+        "metadataSource",
+        "metadataStatus",
+    ]
+
+
+def test_runtime_job_metadata_rejects_unknown_category() -> None:
+    try:
+        RuntimeJobMetadata(
+            jobCategory="data-ingest",
+            jobKey="market",
+            jobRole="load",
+            triggerOwner="pipeline-chain",
+            metadataSource="tags",
+            metadataStatus="valid",
+        )
+    except Exception as exc:
+        assert "jobCategory" in str(exc)
+    else:
+        raise AssertionError("Expected RuntimeJobMetadata to reject legacy job categories.")
+
+
+def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> None:
+    payload = StrategyPublicationReconcileSignalRequest(
+        jobKey="regime",
+        sourceFingerprint="abc123",
+        metadata=RegimePublicationReconcileMetadata(
+            publishedAsOfDate="2026-04-23",
+            inputAsOfDate="2026-04-23",
+            historyRows=10,
+            latestRows=1,
+            transitionRows=0,
+            activeModels=[{"model_name": "default-regime", "model_version": 1}],
+            domainArtifactPath="regime/_metadata/domain.json",
+        ),
+    )
+
+    assert payload.jobKey == "regime"
+    assert payload.sourceFingerprint == "abc123"
+    assert payload.metadata.activeModels[0].modelName == "default-regime"
+
+    try:
+        StrategyPublicationReconcileSignalRequest(
+            jobKey="Gold Regime",
+            sourceFingerprint="",
+            metadata={
+                "publishedAsOfDate": "2026-04-23",
+                "historyRows": -1,
+                "latestRows": 1,
+                "transitionRows": 0,
+                "unexpected": True,
+            },
+        )
+    except Exception as exc:
+        assert "jobKey" in str(exc)
+        assert "sourceFingerprint" in str(exc)
+        assert "historyRows" in str(exc)
+        assert "unexpected" in str(exc)
+    else:
+        raise AssertionError("Expected strategy publication signal request validation to reject bad inputs.")
 
 
 def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:

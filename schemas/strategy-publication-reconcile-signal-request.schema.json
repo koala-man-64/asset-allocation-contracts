@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "RegimePublicationModelReference": {
+      "additionalProperties": false,
+      "properties": {
+        "modelName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "minimum": 1,
+          "title": "Modelversion",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "modelName",
+        "modelVersion"
+      ],
+      "title": "RegimePublicationModelReference",
+      "type": "object"
+    },
+    "RegimePublicationReconcileMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "activeModels": {
+          "items": {
+            "$ref": "#/$defs/RegimePublicationModelReference"
+          },
+          "maxItems": 16,
+          "title": "Activemodels",
+          "type": "array"
+        },
+        "domainArtifactPath": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domainartifactpath"
+        },
+        "historyRows": {
+          "minimum": 0,
+          "title": "Historyrows",
+          "type": "integer"
+        },
+        "inputAsOfDate": {
+          "anyOf": [
+            {
+              "maxLength": 10,
+              "minLength": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inputasofdate"
+        },
+        "latestRows": {
+          "minimum": 0,
+          "title": "Latestrows",
+          "type": "integer"
+        },
+        "producerJobName": {
+          "default": "gold-regime-job",
+          "pattern": "^gold-regime-job$",
+          "title": "Producerjobname",
+          "type": "string"
+        },
+        "publishedAsOfDate": {
+          "maxLength": 10,
+          "minLength": 10,
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Publishedasofdate",
+          "type": "string"
+        },
+        "transitionRows": {
+          "minimum": 0,
+          "title": "Transitionrows",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "publishedAsOfDate",
+        "historyRows",
+        "latestRows",
+        "transitionRows"
+      ],
+      "title": "RegimePublicationReconcileMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "jobKey": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "title": "Jobkey",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/RegimePublicationReconcileMetadata"
+    },
+    "publishedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Publishedat"
+    },
+    "sourceFingerprint": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Sourcefingerprint",
+      "type": "string"
+    }
+  },
+  "required": [
+    "jobKey",
+    "sourceFingerprint",
+    "metadata"
+  ],
+  "title": "StrategyPublicationReconcileSignalRequest",
+  "type": "object"
+}

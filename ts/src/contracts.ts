@@ -2,6 +2,10 @@
 // Do not edit by hand.
 
 export type AuthSessionMode = 'bearer' | 'cookie';
+export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-support';
+export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
+export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
+export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop';
 export type ExitRuleScope = 'position';
 export type ExitRuleAction = 'exit_full';
@@ -270,6 +274,49 @@ export interface AuthSessionStatus {
   username?: string | null;
   requiredRoles: string[];
   grantedRoles: string[];
+}
+
+export interface RuntimeJobMetadata {
+  jobCategory: JobCategory;
+  jobKey: string;
+  jobRole: string;
+  triggerOwner: string;
+  metadataSource: JobMetadataSource;
+  metadataStatus: JobMetadataStatus;
+}
+
+export interface StrategyPublicationReconcileSignalRequest {
+  jobKey: string;
+  sourceFingerprint: string;
+  publishedAt?: string | null;
+  metadata: RegimePublicationReconcileMetadata;
+}
+
+export interface RegimePublicationReconcileMetadata {
+  publishedAsOfDate: string;
+  inputAsOfDate?: string | null;
+  historyRows: number;
+  latestRows: number;
+  transitionRows: number;
+  activeModels: RegimePublicationModelReference[];
+  domainArtifactPath?: string | null;
+  producerJobName: string;
+}
+
+export interface RegimePublicationModelReference {
+  modelName: string;
+  modelVersion: number;
+}
+
+export interface StrategyPublicationReconcileSignalResponse {
+  jobKey: string;
+  sourceFingerprint: string;
+  status: PublicationReconcileStatus;
+  created: boolean;
+  createdAt: string;
+  updatedAt: string;
+  processedAt?: string | null;
+  error?: string | null;
 }
 
 export interface RunRecordResponse {
