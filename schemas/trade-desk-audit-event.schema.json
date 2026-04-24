@@ -1,0 +1,217 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "actor": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Actor"
+    },
+    "clientRequestId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Clientrequestid"
+    },
+    "details": {
+      "additionalProperties": true,
+      "title": "Details",
+      "type": "object"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "eventId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Eventid",
+      "type": "string"
+    },
+    "eventType": {
+      "enum": [
+        "preview",
+        "submit",
+        "cancel",
+        "status_update",
+        "reject",
+        "fill",
+        "reconcile",
+        "system_block",
+        "authz_block"
+      ],
+      "title": "Eventtype",
+      "type": "string"
+    },
+    "idempotencyKey": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Idempotencykey"
+    },
+    "occurredAt": {
+      "format": "date-time",
+      "title": "Occurredat",
+      "type": "string"
+    },
+    "orderId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Orderid"
+    },
+    "provider": {
+      "enum": [
+        "alpaca",
+        "etrade",
+        "schwab"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerOrderId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providerorderid"
+    },
+    "sanitizedError": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sanitizederror"
+    },
+    "severity": {
+      "default": "info",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "statusAfter": {
+      "anyOf": [
+        {
+          "enum": [
+            "draft",
+            "previewed",
+            "submitted",
+            "accepted",
+            "partially_filled",
+            "filled",
+            "cancel_pending",
+            "cancelled",
+            "rejected",
+            "expired",
+            "unknown_reconcile_required"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Statusafter"
+    },
+    "statusBefore": {
+      "anyOf": [
+        {
+          "enum": [
+            "draft",
+            "previewed",
+            "submitted",
+            "accepted",
+            "partially_filled",
+            "filled",
+            "cancel_pending",
+            "cancelled",
+            "rejected",
+            "expired",
+            "unknown_reconcile_required"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Statusbefore"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "eventId",
+    "accountId",
+    "provider",
+    "environment",
+    "eventType",
+    "occurredAt"
+  ],
+  "title": "TradeDeskAuditEvent",
+  "type": "object"
+}
