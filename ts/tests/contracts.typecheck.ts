@@ -137,6 +137,11 @@ const brokerDetail: BrokerAccountDetail = {
     canPauseSync: true,
     canRefresh: true,
     canAcknowledgeAlerts: true,
+    canReadTradingPolicy: true,
+    canWriteTradingPolicy: true,
+    canReadAllocation: true,
+    canWriteAllocation: true,
+    canReleaseTradeConfirmation: true,
   },
   accountType: "margin",
   tradingBlocked: true,
@@ -386,6 +391,7 @@ const portfolioRevision: PortfolioRevision = {
   portfolioName: "core-balanced",
   version: 3,
   description: "",
+  allocationMode: "percent",
   allocations: [
     {
       sleeveId: "quality-core",
@@ -393,6 +399,7 @@ const portfolioRevision: PortfolioRevision = {
         strategyName: "quality-trend",
         strategyVersion: 4,
       },
+      allocationMode: "percent",
       targetWeight: 0.6,
       enabled: true,
       rebalancePriority: 0,
@@ -405,6 +412,7 @@ const portfolioRevision: PortfolioRevision = {
         strategyName: "defensive-value",
         strategyVersion: 2,
       },
+      allocationMode: "percent",
       targetWeight: 0.4,
       enabled: true,
       rebalancePriority: 1,
@@ -434,6 +442,7 @@ const portfolioSnapshot: PortfolioSnapshot = {
 const portfolioUpsert: PortfolioUpsertRequest = {
   name: "core-balanced",
   description: "",
+  allocationMode: "percent",
   allocations: portfolioRevision.allocations,
   notes: "",
 };
