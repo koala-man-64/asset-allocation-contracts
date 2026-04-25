@@ -1,6 +1,6 @@
 {
   "$defs": {
-    "PortfolioSleeveAllocation": {
+    "BrokerStrategyAllocationItem": {
       "additionalProperties": false,
       "properties": {
         "allocationMode": {
@@ -12,10 +12,10 @@
           "title": "Allocationmode",
           "type": "string"
         },
-        "derivedWeight": {
+        "derivedWeightPct": {
           "anyOf": [
             {
-              "maximum": 1.0,
+              "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
@@ -24,51 +24,17 @@
             }
           ],
           "default": null,
-          "title": "Derivedweight"
+          "title": "Derivedweightpct"
         },
         "enabled": {
           "default": true,
           "title": "Enabled",
           "type": "boolean"
         },
-        "maxWeight": {
-          "anyOf": [
-            {
-              "maximum": 1.0,
-              "minimum": 0.0,
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Maxweight"
-        },
-        "minWeight": {
-          "anyOf": [
-            {
-              "maximum": 1.0,
-              "minimum": 0.0,
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Minweight"
-        },
         "notes": {
           "default": "",
           "title": "Notes",
           "type": "string"
-        },
-        "rebalancePriority": {
-          "default": 0,
-          "minimum": 0,
-          "title": "Rebalancepriority",
-          "type": "integer"
         },
         "sleeveId": {
           "maxLength": 128,
@@ -82,7 +48,7 @@
           "type": "string"
         },
         "strategy": {
-          "$ref": "#/$defs/StrategyVersionReference"
+          "$ref": "#/$defs/BrokerStrategyReference"
         },
         "targetNotionalBaseCcy": {
           "anyOf": [
@@ -97,10 +63,10 @@
           "default": null,
           "title": "Targetnotionalbaseccy"
         },
-        "targetWeight": {
+        "targetWeightPct": {
           "anyOf": [
             {
-              "maximum": 1.0,
+              "maximum": 100.0,
               "minimum": 0.0,
               "type": "number"
             },
@@ -109,17 +75,17 @@
             }
           ],
           "default": null,
-          "title": "Targetweight"
+          "title": "Targetweightpct"
         }
       },
       "required": [
         "sleeveId",
         "strategy"
       ],
-      "title": "PortfolioSleeveAllocation",
+      "title": "BrokerStrategyAllocationItem",
       "type": "object"
     },
-    "StrategyVersionReference": {
+    "BrokerStrategyReference": {
       "additionalProperties": false,
       "properties": {
         "strategyName": {
@@ -138,7 +104,7 @@
         "strategyName",
         "strategyVersion"
       ],
-      "title": "StrategyVersionReference",
+      "title": "BrokerStrategyReference",
       "type": "object"
     }
   },
@@ -166,19 +132,10 @@
       "title": "Allocationmode",
       "type": "string"
     },
-    "allocations": {
-      "items": {
-        "$ref": "#/$defs/PortfolioSleeveAllocation"
-      },
-      "minItems": 1,
-      "title": "Allocations",
-      "type": "array"
-    },
-    "benchmarkSymbol": {
+    "effectiveFrom": {
       "anyOf": [
         {
-          "maxLength": 32,
-          "minLength": 1,
+          "format": "date",
           "type": "string"
         },
         {
@@ -186,18 +143,27 @@
         }
       ],
       "default": null,
-      "title": "Benchmarksymbol"
+      "title": "Effectivefrom"
     },
-    "description": {
-      "default": "",
-      "title": "Description",
-      "type": "string"
+    "expectedConfigurationVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expectedconfigurationversion"
     },
-    "name": {
-      "maxLength": 128,
-      "minLength": 1,
-      "title": "Name",
-      "type": "string"
+    "items": {
+      "items": {
+        "$ref": "#/$defs/BrokerStrategyAllocationItem"
+      },
+      "title": "Items",
+      "type": "array"
     },
     "notes": {
       "default": "",
@@ -205,10 +171,6 @@
       "type": "string"
     }
   },
-  "required": [
-    "name",
-    "allocations"
-  ],
-  "title": "PortfolioUpsertRequest",
+  "title": "BrokerAccountAllocationUpdateRequest",
   "type": "object"
 }

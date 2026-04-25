@@ -35,6 +35,32 @@
       "default": null,
       "title": "Clientrequestid"
     },
+    "confirmationTokenId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confirmationtokenid"
+    },
+    "denialReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Denialreason"
+    },
     "details": {
       "additionalProperties": true,
       "title": "Details",
@@ -70,6 +96,13 @@
       "title": "Eventtype",
       "type": "string"
     },
+    "grantedRoles": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Grantedroles",
+      "type": "array"
+    },
     "idempotencyKey": {
       "anyOf": [
         {
@@ -103,6 +136,20 @@
       "default": null,
       "title": "Orderid"
     },
+    "previewId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previewid"
+    },
     "provider": {
       "enum": [
         "alpaca",
@@ -125,6 +172,20 @@
       ],
       "default": null,
       "title": "Providerorderid"
+    },
+    "requestId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requestid"
     },
     "sanitizedError": {
       "anyOf": [

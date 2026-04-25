@@ -31,6 +31,20 @@
       "title": "Clientrequestid",
       "type": "string"
     },
+    "confirmationToken": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confirmationtoken"
+    },
     "confirmedAt": {
       "format": "date-time",
       "title": "Confirmedat",
@@ -84,6 +98,20 @@
       "default": null,
       "title": "Notional"
     },
+    "orderHash": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Orderhash"
+    },
     "orderType": {
       "enum": [
         "market",
@@ -93,6 +121,19 @@
       ],
       "title": "Ordertype",
       "type": "string"
+    },
+    "policyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Policyversion"
     },
     "previewId": {
       "maxLength": 128,

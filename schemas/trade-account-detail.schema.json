@@ -1,5 +1,87 @@
 {
   "$defs": {
+    "BrokerPositionSizeLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "pct_of_allocatable_capital",
+          "enum": [
+            "pct_of_allocatable_capital",
+            "notional_base_ccy"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "value": {
+          "exclusiveMinimum": 0.0,
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "BrokerPositionSizeLimit",
+      "type": "object"
+    },
+    "BrokerTradingPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedAssetClasses": {
+          "items": {
+            "enum": [
+              "equity",
+              "option"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedassetclasses",
+          "type": "array"
+        },
+        "allowedSides": {
+          "items": {
+            "enum": [
+              "long",
+              "short"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedsides",
+          "type": "array"
+        },
+        "maxOpenPositions": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxopenpositions"
+        },
+        "maxSinglePositionExposure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrokerPositionSizeLimit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "requireOrderConfirmation": {
+          "default": false,
+          "title": "Requireorderconfirmation",
+          "type": "boolean"
+        }
+      },
+      "title": "BrokerTradingPolicy",
+      "type": "object"
+    },
     "TradeAccountSummary": {
       "additionalProperties": false,
       "properties": {
@@ -42,6 +124,11 @@
           "default": 0.0,
           "title": "Cash",
           "type": "number"
+        },
+        "confirmationRequired": {
+          "default": false,
+          "title": "Confirmationrequired",
+          "type": "boolean"
         },
         "environment": {
           "enum": [
@@ -90,11 +177,35 @@
           "title": "Openordercount",
           "type": "integer"
         },
+        "policyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policyversion"
+        },
         "positionCount": {
           "default": 0,
           "minimum": 0,
           "title": "Positioncount",
           "type": "integer"
+        },
+        "projectedTradingPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrokerTradingPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "provider": {
           "enum": [
@@ -237,6 +348,11 @@
         "supportsNotionalOrders": {
           "default": false,
           "title": "Supportsnotionalorders",
+          "type": "boolean"
+        },
+        "supportsOptions": {
+          "default": false,
+          "title": "Supportsoptions",
           "type": "boolean"
         },
         "supportsStopOrders": {
@@ -398,6 +514,32 @@
           "default": null,
           "title": "Clientrequestid"
         },
+        "confirmationTokenId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmationtokenid"
+        },
+        "denialReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Denialreason"
+        },
         "details": {
           "additionalProperties": true,
           "title": "Details",
@@ -433,6 +575,13 @@
           "title": "Eventtype",
           "type": "string"
         },
+        "grantedRoles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Grantedroles",
+          "type": "array"
+        },
         "idempotencyKey": {
           "anyOf": [
             {
@@ -466,6 +615,20 @@
           "default": null,
           "title": "Orderid"
         },
+        "previewId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previewid"
+        },
         "provider": {
           "enum": [
             "alpaca",
@@ -488,6 +651,20 @@
           ],
           "default": null,
           "title": "Providerorderid"
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requestid"
         },
         "sanitizedError": {
           "anyOf": [

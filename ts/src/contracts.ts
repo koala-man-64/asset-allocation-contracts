@@ -40,7 +40,13 @@ export type BrokerAlertStatus = 'open' | 'acknowledged' | 'resolved';
 export type BrokerSyncTrigger = 'scheduled' | 'manual' | 'reconnect' | 'backfill';
 export type BrokerSyncScope = 'balances' | 'positions' | 'orders' | 'full';
 export type BrokerSyncRunStatus = 'queued' | 'running' | 'completed' | 'failed';
-export type BrokerAccountActionType = 'reconnect' | 'pause_sync' | 'resume_sync' | 'refresh' | 'acknowledge_alert';
+export type BrokerPolicySide = 'long' | 'short';
+export type BrokerPolicyAssetClass = 'equity' | 'option';
+export type BrokerPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
+export type BrokerAllocationMode = 'percent' | 'notional_base_ccy';
+export type BrokerConfigurationAuditCategory = 'trading_policy' | 'allocation';
+export type BrokerConfigurationAuditOutcome = 'saved' | 'denied' | 'warning';
+export type BrokerAccountActionType = 'reconnect' | 'pause_sync' | 'resume_sync' | 'refresh' | 'acknowledge_alert' | 'update_trading_policy' | 'update_allocation';
 export type BrokerAccountActionStatus = 'accepted' | 'in_progress' | 'completed' | 'failed';
 export type TradeProvider = 'alpaca' | 'etrade' | 'schwab';
 export type TradeEnvironment = 'paper' | 'sandbox' | 'live';
@@ -54,6 +60,7 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
+export type PortfolioAllocationMode = 'percent' | 'notional_base_ccy';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
@@ -603,6 +610,7 @@ export interface BrokerAccountDetail {
   alerts: BrokerAccountAlert[];
   syncRuns: BrokerSyncRun[];
   recentActivity: BrokerAccountActivity[];
+  configuration?: BrokerAccountConfiguration | null;
 }
 
 export interface BrokerAccountSummary {
@@ -625,6 +633,8 @@ export interface BrokerAccountSummary {
   snapshotAsOf?: string | null;
   activePortfolioName?: string | null;
   strategyLabel?: string | null;
+  configurationVersion?: number | null;
+  allocationSummary?: BrokerStrategyAllocationSummary | null;
   alertCount: number;
 }
 
@@ -642,6 +652,37 @@ export interface BrokerConnectionHealth {
   syncPaused: boolean;
 }
 
+export interface BrokerStrategyAllocationSummary {
+  portfolioName?: string | null;
+  portfolioVersion?: number | null;
+  allocationMode: PortfolioAllocationMode;
+  allocatableCapital?: number | null;
+  allocatedPercent?: number | null;
+  allocatedNotionalBaseCcy?: number | null;
+  remainingPercent?: number | null;
+  remainingNotionalBaseCcy?: number | null;
+  sharedActivePortfolio: boolean;
+  effectiveFrom?: string | null;
+  items: BrokerStrategyAllocationItem[];
+}
+
+export interface BrokerStrategyAllocationItem {
+  sleeveId: string;
+  sleeveName: string;
+  strategy: BrokerStrategyReference;
+  allocationMode: PortfolioAllocationMode;
+  targetWeightPct?: number | null;
+  targetNotionalBaseCcy?: number | null;
+  derivedWeightPct?: number | null;
+  enabled: boolean;
+  notes: string;
+}
+
+export interface BrokerStrategyReference {
+  strategyName: string;
+  strategyVersion: number;
+}
+
 export interface BrokerCapabilityFlags {
   canReadBalances: boolean;
   canReadPositions: boolean;
@@ -651,6 +692,12 @@ export interface BrokerCapabilityFlags {
   canPauseSync: boolean;
   canRefresh: boolean;
   canAcknowledgeAlerts: boolean;
+  canReadTradingPolicy: boolean;
+  canWriteTradingPolicy: boolean;
+  canReadAllocation: boolean;
+  canWriteAllocation: boolean;
+  canReleaseTradeConfirmation: boolean;
+  readOnlyReason?: string | null;
 }
 
 export interface BrokerAccountAlert {
@@ -696,6 +743,49 @@ export interface BrokerAccountActivity {
   relatedAlertId?: string | null;
 }
 
+export interface BrokerAccountConfiguration {
+  accountId: string;
+  accountName?: string | null;
+  baseCurrency: string;
+  configurationVersion: number;
+  requestedPolicy: BrokerTradingPolicy;
+  effectivePolicy: BrokerTradingPolicy;
+  capabilities: BrokerCapabilityFlags;
+  allocation: BrokerStrategyAllocationSummary;
+  warnings: string[];
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+  audit: BrokerAccountConfigurationAuditRecord[];
+}
+
+export interface BrokerTradingPolicy {
+  maxOpenPositions?: number | null;
+  maxSinglePositionExposure?: BrokerPositionSizeLimit | null;
+  allowedSides: BrokerPolicySide[];
+  allowedAssetClasses: BrokerPolicyAssetClass[];
+  requireOrderConfirmation: boolean;
+}
+
+export interface BrokerPositionSizeLimit {
+  mode: BrokerPositionSizeMode;
+  value: number;
+}
+
+export interface BrokerAccountConfigurationAuditRecord {
+  auditId: string;
+  accountId: string;
+  category: BrokerConfigurationAuditCategory;
+  outcome: BrokerConfigurationAuditOutcome;
+  requestedAt: string;
+  actor?: string | null;
+  requestId?: string | null;
+  grantedRoles: string[];
+  summary: string;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+  denialReason?: string | null;
+}
+
 export interface BrokerAccountListResponse {
   accounts: BrokerAccountSummary[];
   generatedAt?: string | null;
@@ -711,6 +801,20 @@ export interface BrokerAccountActionResponse {
   resultingConnectionHealth?: BrokerConnectionHealth | null;
   tradeReadiness?: TradeReadiness | null;
   syncPaused?: boolean | null;
+}
+
+export interface BrokerAccountAllocationUpdateRequest {
+  expectedConfigurationVersion?: number | null;
+  allocationMode: PortfolioAllocationMode;
+  allocatableCapital?: number | null;
+  effectiveFrom?: string | null;
+  items: BrokerStrategyAllocationItem[];
+  notes: string;
+}
+
+export interface BrokerTradingPolicyUpdateRequest {
+  expectedConfigurationVersion?: number | null;
+  requestedPolicy: BrokerTradingPolicy;
 }
 
 export interface ReconnectBrokerAccountRequest {
@@ -752,6 +856,9 @@ export interface TradeAccountSummary {
   lastSyncedAt?: string | null;
   snapshotAsOf?: string | null;
   freshness: TradeDataFreshness;
+  policyVersion?: number | null;
+  projectedTradingPolicy?: BrokerTradingPolicy | null;
+  confirmationRequired: boolean;
 }
 
 export interface TradeCapabilityFlags {
@@ -771,6 +878,7 @@ export interface TradeCapabilityFlags {
   supportsNotionalOrders: boolean;
   supportsEquities: boolean;
   supportsEtfs: boolean;
+  supportsOptions: boolean;
   readOnly: boolean;
   unsupportedReason?: string | null;
 }
@@ -817,10 +925,15 @@ export interface TradeDeskAuditEvent {
   providerOrderId?: string | null;
   clientRequestId?: string | null;
   idempotencyKey?: string | null;
+  previewId?: string | null;
+  confirmationTokenId?: string | null;
+  requestId?: string | null;
   statusBefore?: TradeOrderStatus | null;
   statusAfter?: TradeOrderStatus | null;
   summary: string;
   sanitizedError?: string | null;
+  denialReason?: string | null;
+  grantedRoles: string[];
   details: Record<string, unknown>;
 }
 
@@ -940,6 +1053,11 @@ export interface TradeOrderPreviewResponse {
   blocked: boolean;
   blockReason?: string | null;
   freshness: TradeDataFreshness;
+  projectedPolicy?: BrokerTradingPolicy | null;
+  policyVersion?: number | null;
+  confirmationRequired: boolean;
+  orderHash?: string | null;
+  confirmationToken?: string | null;
 }
 
 export interface TradeOrderPlaceRequest {
@@ -961,6 +1079,9 @@ export interface TradeOrderPlaceRequest {
   previewId: string;
   confirmedAt: string;
   confirmedRiskCheckIds: string[];
+  policyVersion?: number | null;
+  orderHash?: string | null;
+  confirmationToken?: string | null;
 }
 
 export interface TradeOrderPlaceResponse {
@@ -970,6 +1091,8 @@ export interface TradeOrderPlaceResponse {
   reconciliationRequired: boolean;
   auditEventId?: string | null;
   message?: string | null;
+  confirmationRequired: boolean;
+  policyVersion?: number | null;
 }
 
 export interface TradeOrderCancelRequest {
@@ -1137,6 +1260,8 @@ export interface PortfolioRevision {
   version: number;
   description: string;
   benchmarkSymbol?: string | null;
+  allocationMode: PortfolioAllocationMode;
+  allocatableCapital?: number | null;
   allocations: PortfolioSleeveAllocation[];
   notes: string;
   publishedAt?: string | null;
@@ -1148,7 +1273,10 @@ export interface PortfolioSleeveAllocation {
   sleeveId: string;
   sleeveName: string;
   strategy: StrategyVersionReference;
-  targetWeight: number;
+  allocationMode: PortfolioAllocationMode;
+  targetWeight?: number | null;
+  targetNotionalBaseCcy?: number | null;
+  derivedWeight?: number | null;
   minWeight?: number | null;
   maxWeight?: number | null;
   enabled: boolean;
@@ -1311,6 +1439,8 @@ export interface PortfolioUpsertRequest {
   name: string;
   description: string;
   benchmarkSymbol?: string | null;
+  allocationMode: PortfolioAllocationMode;
+  allocatableCapital?: number | null;
   allocations: PortfolioSleeveAllocation[];
   notes: string;
 }

@@ -81,6 +81,11 @@
       "title": "Supportsnotionalorders",
       "type": "boolean"
     },
+    "supportsOptions": {
+      "default": false,
+      "title": "Supportsoptions",
+      "type": "boolean"
+    },
     "supportsStopOrders": {
       "default": false,
       "title": "Supportsstoporders",

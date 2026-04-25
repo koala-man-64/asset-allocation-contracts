@@ -100,6 +100,28 @@
     "PortfolioRevision": {
       "additionalProperties": false,
       "properties": {
+        "allocatableCapital": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allocatablecapital"
+        },
+        "allocationMode": {
+          "default": "percent",
+          "enum": [
+            "percent",
+            "notional_base_ccy"
+          ],
+          "title": "Allocationmode",
+          "type": "string"
+        },
         "allocations": {
           "items": {
             "$ref": "#/$defs/PortfolioSleeveAllocation"
@@ -195,6 +217,29 @@
     "PortfolioSleeveAllocation": {
       "additionalProperties": false,
       "properties": {
+        "allocationMode": {
+          "default": "percent",
+          "enum": [
+            "percent",
+            "notional_base_ccy"
+          ],
+          "title": "Allocationmode",
+          "type": "string"
+        },
+        "derivedWeight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Derivedweight"
+        },
         "enabled": {
           "default": true,
           "title": "Enabled",
@@ -253,17 +298,37 @@
         "strategy": {
           "$ref": "#/$defs/StrategyVersionReference"
         },
+        "targetNotionalBaseCcy": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targetnotionalbaseccy"
+        },
         "targetWeight": {
-          "maximum": 1.0,
-          "minimum": 0.0,
-          "title": "Targetweight",
-          "type": "number"
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targetweight"
         }
       },
       "required": [
         "sleeveId",
-        "strategy",
-        "targetWeight"
+        "strategy"
       ],
       "title": "PortfolioSleeveAllocation",
       "type": "object"

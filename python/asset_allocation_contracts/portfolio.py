@@ -11,6 +11,7 @@ PortfolioStatus = Literal["draft", "active", "archived"]
 PortfolioMode = Literal["internal_model_managed"]
 PortfolioAccountingDepth = Literal["position_level"]
 PortfolioCadenceMode = Literal["strategy_native"]
+PortfolioAllocationMode = Literal["percent", "notional_base_ccy"]
 PortfolioAssignmentStatus = Literal["scheduled", "active", "ended"]
 LedgerEventType = Literal[
     "opening_balance",
@@ -73,7 +74,10 @@ class PortfolioSleeveAllocation(BaseModel):
     sleeveId: str = Field(..., min_length=1, max_length=128)
     sleeveName: str = ""
     strategy: StrategyVersionReference
-    targetWeight: float = Field(..., ge=0.0, le=1.0)
+    allocationMode: PortfolioAllocationMode = "percent"
+    targetWeight: float | None = Field(default=None, ge=0.0, le=1.0)
+    targetNotionalBaseCcy: float | None = Field(default=None, gt=0.0)
+    derivedWeight: float | None = Field(default=None, ge=0.0, le=1.0)
     minWeight: float | None = Field(default=None, ge=0.0, le=1.0)
     maxWeight: float | None = Field(default=None, ge=0.0, le=1.0)
     enabled: bool = True
@@ -92,12 +96,25 @@ class PortfolioSleeveAllocation(BaseModel):
 
     @model_validator(mode="after")
     def validate_bounds(self) -> "PortfolioSleeveAllocation":
-        if self.minWeight is not None and self.minWeight > self.targetWeight:
-            raise ValueError("minWeight cannot exceed targetWeight.")
-        if self.maxWeight is not None and self.maxWeight < self.targetWeight:
-            raise ValueError("maxWeight cannot be below targetWeight.")
-        if self.minWeight is not None and self.maxWeight is not None and self.minWeight > self.maxWeight:
-            raise ValueError("minWeight cannot exceed maxWeight.")
+        if self.allocationMode == "percent":
+            if self.targetWeight is None:
+                raise ValueError("Percent allocations require targetWeight.")
+            if self.targetNotionalBaseCcy is not None:
+                raise ValueError("Percent allocations do not accept targetNotionalBaseCcy.")
+            if self.minWeight is not None and self.minWeight > self.targetWeight:
+                raise ValueError("minWeight cannot exceed targetWeight.")
+            if self.maxWeight is not None and self.maxWeight < self.targetWeight:
+                raise ValueError("maxWeight cannot be below targetWeight.")
+            if self.minWeight is not None and self.maxWeight is not None and self.minWeight > self.maxWeight:
+                raise ValueError("minWeight cannot exceed maxWeight.")
+            return self
+
+        if self.targetNotionalBaseCcy is None:
+            raise ValueError("Notional allocations require targetNotionalBaseCcy.")
+        if self.targetWeight is not None:
+            raise ValueError("Notional allocations do not accept targetWeight.")
+        if self.minWeight is not None or self.maxWeight is not None:
+            raise ValueError("Notional allocations do not accept minWeight or maxWeight in v1.")
         return self
 
 
@@ -136,6 +153,8 @@ class PortfolioRevision(BaseModel):
     version: int = Field(..., ge=1)
     description: str = ""
     benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    allocationMode: PortfolioAllocationMode = "percent"
+    allocatableCapital: float | None = Field(default=None, gt=0.0)
     allocations: list[PortfolioSleeveAllocation] = Field(..., min_length=1)
     notes: str = ""
     publishedAt: datetime | None = None
@@ -170,13 +189,25 @@ class PortfolioRevision(BaseModel):
             if allocation.sleeveId in seen_sleeve_ids:
                 raise ValueError(f"Duplicate sleeveId '{allocation.sleeveId}'.")
             seen_sleeve_ids.add(allocation.sleeveId)
+            if allocation.allocationMode != self.allocationMode:
+                raise ValueError("Mixed allocation modes are not supported in a single portfolio revision.")
 
         if not enabled_allocations:
             raise ValueError("At least one allocation must be enabled.")
 
-        enabled_total = sum(allocation.targetWeight for allocation in enabled_allocations)
-        if abs(enabled_total - 1.0) > PORTFOLIO_WEIGHT_TOLERANCE:
-            raise ValueError("Enabled target weights must sum to 1.0.")
+        if self.allocationMode == "percent":
+            enabled_total = sum(float(allocation.targetWeight or 0.0) for allocation in enabled_allocations)
+            if abs(enabled_total - 1.0) > PORTFOLIO_WEIGHT_TOLERANCE:
+                raise ValueError("Enabled target weights must sum to 1.0.")
+            return self
+
+        if self.allocatableCapital is None:
+            raise ValueError("allocatableCapital is required for notional allocation mode.")
+        enabled_total_notional = sum(
+            float(allocation.targetNotionalBaseCcy or 0.0) for allocation in enabled_allocations
+        )
+        if enabled_total_notional - float(self.allocatableCapital) > 0.01:
+            raise ValueError("Enabled notional targets cannot exceed allocatableCapital.")
         return self
 
 
@@ -675,6 +706,8 @@ class PortfolioUpsertRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=128)
     description: str = ""
     benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    allocationMode: PortfolioAllocationMode = "percent"
+    allocatableCapital: float | None = Field(default=None, gt=0.0)
     allocations: list[PortfolioSleeveAllocation] = Field(..., min_length=1)
     notes: str = ""
 
@@ -700,6 +733,8 @@ class PortfolioUpsertRequest(BaseModel):
             version=1,
             description=self.description,
             benchmarkSymbol=self.benchmarkSymbol,
+            allocationMode=self.allocationMode,
+            allocatableCapital=self.allocatableCapital,
             allocations=self.allocations,
             notes=self.notes,
         )

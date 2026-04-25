@@ -6,7 +6,7 @@ It is intentionally normative, not just descriptive. It defines what this repo i
 
 Use [original-monolith-and-five-repo-map.md](./original-monolith-and-five-repo-map.md) for lineage and system-split context. Use this document for current intended design, operational contract boundaries, and repo update rules.
 
-Verified against the current worktree on 2026-04-24.
+Verified against the current worktree on 2026-04-25.
 
 ## 1. Purpose and Non-Goals
 
@@ -219,13 +219,35 @@ Purpose:
 
 - Define internal portfolio-account and reusable portfolio-definition contracts for the portfolio workspace feature
 - Define immutable ledger-event, assignment, rebalance-proposal, snapshot, history, position, attribution, and alert payloads shared across control-plane, jobs, and UI
+- Define the active-portfolio allocation model used by account-scoped orchestration, including v1 `percent` and `notional_base_ccy` sleeve allocation modes
 - Encode the current v1 operating boundary explicitly: internal-only, model-managed accounts with position-level accounting and strategy-native sleeve cadence
 
 Key design note:
 
-These contracts intentionally stop short of broker or custody-grade accounting. They support internal ledger truth, pinned strategy revisions, and derived monitoring surfaces, but they do not imply external execution, lot accounting, settlement, or reconciliation ownership in this repo.
+These contracts intentionally stop short of broker or custody-grade accounting. They support internal ledger truth, pinned strategy revisions, dual-mode sleeve budgeting, and derived monitoring surfaces, but they do not imply external execution, lot accounting, settlement, or reconciliation ownership in this repo.
 
-### 4.6 Job Metadata and Strategy Publication Contracts
+### 4.6 Broker Account Operations Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/broker_accounts.py`
+- `python/asset_allocation_contracts/trade_desk.py`
+- `schemas/broker-account-*.schema.json`
+- `schemas/trade-account-*.schema.json`
+- `schemas/trade-order-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define broker-account trading policy, effective policy, configuration versioning, edit capabilities, and append-only audit payloads shared by control-plane and UI
+- Define account-scoped strategy allocation summaries and update requests that orchestrate active-portfolio changes without introducing a second source of truth on the account
+- Define trade-desk preview and submit confirmation fields such as `policyVersion`, `confirmationRequired`, `orderHash`, `confirmationToken`, and `expiresAt`
+
+Key design note:
+
+Broker-account contracts own account-level hard controls and operator-facing configuration state. They do not move portfolio construction ownership away from the active portfolio. Account allocation edits are orchestrated through broker-account commands, but the active portfolio remains the canonical source for sleeve definitions and allocation rows.
+
+### 4.7 Job Metadata and Strategy Publication Contracts
 
 Owned by:
 
@@ -247,7 +269,7 @@ Key design note:
 
 `strategy-compute` is a workflow category, not a medallion layer. `gold-regime-job` remains the ACA resource name and may write gold outputs, but its contract category is `strategy-compute`. `platinum-rankings-job` follows the same rule for platinum outputs.
 
-### 4.7 UI Runtime Config Contract
+### 4.8 UI Runtime Config Contract
 
 Owned by:
 
@@ -260,7 +282,7 @@ Purpose:
 - Define the browser bootstrap/runtime config surface for API base URL and OIDC/auth settings, including the derived post-logout completion URI
 - Normalize scope/audience list handling
 
-### 4.8 Auth Session Contract
+### 4.9 Auth Session Contract
 
 Owned by:
 
@@ -274,7 +296,7 @@ Purpose:
 - Give the UI a typed auth/authz probe that is distinct from general system-health data
 - Keep the control-plane, UI, and any future non-browser consumer aligned on the same minimal session summary fields
 
-### 4.9 Shared Finance and Path Constants
+### 4.10 Shared Finance and Path Constants
 
 Owned by:
 
@@ -289,7 +311,7 @@ Purpose:
 
 These are still contract surfaces even though they are constants rather than large object models.
 
-### 4.10 Release and Env/Config Surfaces
+### 4.11 Release and Env/Config Surfaces
 
 Owned by:
 
@@ -315,8 +337,10 @@ Purpose:
 - `python/asset_allocation_contracts/ranking.py`
 - `python/asset_allocation_contracts/regime.py`
 - `python/asset_allocation_contracts/backtest.py`
+- `python/asset_allocation_contracts/broker_accounts.py`
 - `python/asset_allocation_contracts/job_metadata.py`
 - `python/asset_allocation_contracts/strategy_publication.py`
+- `python/asset_allocation_contracts/trade_desk.py`
 - `python/asset_allocation_contracts/ui_config.py`
 - `python/asset_allocation_contracts/finance.py`
 - `python/asset_allocation_contracts/paths.py`
