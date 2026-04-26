@@ -60,6 +60,8 @@ from asset_allocation_contracts.intraday import (
     IntradayMonitorRunSummary,
     IntradaySymbolStatus,
     IntradayWatchlistDetail,
+    IntradayWatchlistSymbolAppendRequest,
+    IntradayWatchlistSymbolAppendResponse,
     IntradayWatchlistUpsertRequest,
 )
 from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
@@ -80,7 +82,6 @@ from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
-    RegimeModelConfig,
     RegimePolicy,
     RegimeSignal,
     RegimeSnapshot,
@@ -348,6 +349,42 @@ def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None
     assert payload.pollIntervalMinutes == 5
     assert payload.refreshCooldownMinutes == 15
     assert payload.marketSession == "us_equities_regular"
+
+
+def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_state() -> None:
+    request = IntradayWatchlistSymbolAppendRequest(
+        symbols=[" aapl ", "MSFT", "AAPL"],
+        reason="  operator add  ",
+    )
+
+    response = IntradayWatchlistSymbolAppendResponse(
+        watchlist=IntradayWatchlistDetail(
+            watchlistId="watch-1",
+            name="Tech Core",
+            enabled=True,
+            symbolCount=3,
+            symbols=["AAPL", "MSFT", "NVDA"],
+        ),
+        addedSymbols=["msft"],
+        alreadyPresentSymbols=[" aapl "],
+        queuedRun=IntradayMonitorRunSummary(
+            runId="run-1",
+            watchlistId="watch-1",
+            triggerKind="manual",
+            status="queued",
+            forceRefresh=False,
+            symbolCount=3,
+        ),
+    )
+
+    assert request.symbols == ["AAPL", "MSFT"]
+    assert request.queueRun is True
+    assert request.reason == "operator add"
+    assert response.addedSymbols == ["MSFT"]
+    assert response.alreadyPresentSymbols == ["AAPL"]
+    assert response.queuedRun is not None
+    assert response.queuedRun.forceRefresh is False
+    assert response.runSkippedReason is None
 
 
 def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() -> None:

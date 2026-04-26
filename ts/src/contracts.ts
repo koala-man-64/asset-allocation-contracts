@@ -60,6 +60,7 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
+export type IntradayWatchlistSymbolAppendRunSkippedReason = 'watchlist_disabled' | 'no_new_symbols' | 'queue_run_disabled';
 export type PortfolioAllocationMode = 'percent' | 'notional_base_ccy';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
@@ -1898,16 +1899,18 @@ export interface IntradayWatchlistUpsertRequest {
   marketSession: 'us_equities_regular';
 }
 
-export interface IntradaySymbolStatus {
-  watchlistId?: string | null;
-  symbol: string;
-  monitorStatus: 'idle' | 'observed' | 'refresh_queued' | 'refreshed' | 'failed';
-  lastSnapshotAt?: string | null;
-  lastObservedPrice?: number | null;
-  lastSuccessfulMarketRefreshAt?: string | null;
-  lastRunId?: string | null;
-  lastError?: string | null;
-  updatedAt?: string | null;
+export interface IntradayWatchlistSymbolAppendRequest {
+  symbols: string[];
+  queueRun: boolean;
+  reason?: string | null;
+}
+
+export interface IntradayWatchlistSymbolAppendResponse {
+  watchlist: IntradayWatchlistDetail;
+  addedSymbols: string[];
+  alreadyPresentSymbols: string[];
+  queuedRun?: IntradayMonitorRunSummary | null;
+  runSkippedReason?: IntradayWatchlistSymbolAppendRunSkippedReason | null;
 }
 
 export interface IntradayMonitorRunSummary {
@@ -1927,6 +1930,18 @@ export interface IntradayMonitorRunSummary {
   claimedAt?: string | null;
   completedAt?: string | null;
   lastError?: string | null;
+}
+
+export interface IntradaySymbolStatus {
+  watchlistId?: string | null;
+  symbol: string;
+  monitorStatus: 'idle' | 'observed' | 'refresh_queued' | 'refreshed' | 'failed';
+  lastSnapshotAt?: string | null;
+  lastObservedPrice?: number | null;
+  lastSuccessfulMarketRefreshAt?: string | null;
+  lastRunId?: string | null;
+  lastError?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface IntradayMonitorEvent {
