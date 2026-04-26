@@ -1,0 +1,463 @@
+{
+  "$defs": {
+    "NotificationDeliveryResult": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "maxLength": 320,
+          "minLength": 1,
+          "title": "Address",
+          "type": "string"
+        },
+        "attemptedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attemptedat"
+        },
+        "channel": {
+          "enum": [
+            "email",
+            "sms"
+          ],
+          "title": "Channel",
+          "type": "string"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "providerMessageId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providermessageid"
+        },
+        "recipientId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Recipientid",
+          "type": "string"
+        },
+        "sanitizedError": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sanitizederror"
+        },
+        "status": {
+          "default": "pending",
+          "enum": [
+            "pending",
+            "sent",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "recipientId",
+        "channel",
+        "address"
+      ],
+      "title": "NotificationDeliveryResult",
+      "type": "object"
+    },
+    "TradeApprovalDisplay": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "limitPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitprice"
+        },
+        "notional": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notional"
+        },
+        "orderHash": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Orderhash",
+          "type": "string"
+        },
+        "orderType": {
+          "enum": [
+            "market",
+            "limit",
+            "stop",
+            "stop_limit"
+          ],
+          "title": "Ordertype",
+          "type": "string"
+        },
+        "previewId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Previewid",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "side": {
+          "enum": [
+            "buy",
+            "sell"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "stopPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stopprice"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timeInForce": {
+          "default": "day",
+          "enum": [
+            "day",
+            "gtc",
+            "opg",
+            "cls",
+            "ioc",
+            "fok"
+          ],
+          "title": "Timeinforce",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountId",
+        "previewId",
+        "orderHash",
+        "environment",
+        "symbol",
+        "side",
+        "orderType"
+      ],
+      "title": "TradeApprovalDisplay",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clientRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Clientrequestid",
+      "type": "string"
+    },
+    "createdAt": {
+      "format": "date-time",
+      "title": "Createdat",
+      "type": "string"
+    },
+    "decidedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decidedat"
+    },
+    "decidedBy": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decidedby"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "enum": [
+            "approve",
+            "deny"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decision"
+    },
+    "decisionStatus": {
+      "default": "not_required",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "denied",
+        "expired"
+      ],
+      "title": "Decisionstatus",
+      "type": "string"
+    },
+    "deliveries": {
+      "items": {
+        "$ref": "#/$defs/NotificationDeliveryResult"
+      },
+      "title": "Deliveries",
+      "type": "array"
+    },
+    "description": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "executionMessage": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Executionmessage"
+    },
+    "executionOrderId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Executionorderid"
+    },
+    "executionStatus": {
+      "default": "not_applicable",
+      "enum": [
+        "not_applicable",
+        "pending_approval",
+        "submitted",
+        "blocked",
+        "release_failed"
+      ],
+      "title": "Executionstatus",
+      "type": "string"
+    },
+    "expiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expiresat"
+    },
+    "kind": {
+      "enum": [
+        "message",
+        "trade_approval"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "requestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Requestid",
+      "type": "string"
+    },
+    "sourceRepo": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Sourcerepo",
+      "type": "string"
+    },
+    "sourceSystem": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourcesystem"
+    },
+    "status": {
+      "default": "pending",
+      "enum": [
+        "pending",
+        "delivered",
+        "delivery_failed",
+        "decided",
+        "expired"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "targetUrl": {
+      "anyOf": [
+        {
+          "maxLength": 2048,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Targeturl"
+    },
+    "title": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tradeApproval": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TradeApprovalDisplay"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "updatedAt": {
+      "format": "date-time",
+      "title": "Updatedat",
+      "type": "string"
+    }
+  },
+  "required": [
+    "requestId",
+    "kind",
+    "sourceRepo",
+    "clientRequestId",
+    "title",
+    "description",
+    "createdAt",
+    "updatedAt"
+  ],
+  "title": "NotificationStatusResponse",
+  "type": "object"
+}

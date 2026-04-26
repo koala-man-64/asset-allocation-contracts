@@ -247,7 +247,25 @@ Key design note:
 
 Broker-account contracts own account-level hard controls and operator-facing configuration state. They do not move portfolio construction ownership away from the active portfolio. Account allocation edits are orchestrated through broker-account commands, but the active portfolio remains the canonical source for sleeve definitions and allocation rows.
 
-### 4.7 Job Metadata and Strategy Publication Contracts
+### 4.7 Notification And Trade Approval Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/notifications.py`
+- `schemas/notification-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define control-plane-owned notification request, delivery, polling-status, magic-link detail, and decision payloads shared by internal callers and UI consumers
+- Support one-way message delivery and trade approval requests without duplicating the existing trade-desk order-intent contract
+- Preserve the boundary that notification contracts define payload semantics only; runtime delivery, token storage, audit persistence, and trade release logic belong to `asset-allocation-control-plane`
+
+Key design note:
+
+Trade approval payloads carry an existing `TradeOrderPreviewRequest` plus release identifiers such as `previewId`, `orderHash`, and `placeIdempotencyKey`. Approval does not bypass trade-desk controls; the control plane remains responsible for revalidating freshness, kill switches, policy, and idempotency before releasing a trade.
+
+### 4.8 Job Metadata and Strategy Publication Contracts
 
 Owned by:
 

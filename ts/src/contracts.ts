@@ -60,6 +60,13 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
+export type NotificationKind = 'message' | 'trade_approval';
+export type NotificationDeliveryChannel = 'email' | 'sms';
+export type NotificationDeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+export type NotificationDecision = 'approve' | 'deny';
+export type NotificationDecisionStatus = 'not_required' | 'pending' | 'approved' | 'denied' | 'expired';
+export type NotificationExecutionStatus = 'not_applicable' | 'pending_approval' | 'submitted' | 'blocked' | 'release_failed';
+export type NotificationRequestStatus = 'pending' | 'delivered' | 'delivery_failed' | 'decided' | 'expired';
 export type IntradayWatchlistSymbolAppendRunSkippedReason = 'watchlist_disabled' | 'no_new_symbols' | 'queue_run_disabled';
 export type PortfolioAllocationMode = 'percent' | 'notional_base_ccy';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
@@ -1118,6 +1125,106 @@ export interface TradeDeskAuditEventListResponse {
   events: TradeDeskAuditEvent[];
   generatedAt?: string | null;
   nextCursor?: string | null;
+}
+
+export interface CreateNotificationRequest {
+  sourceRepo: string;
+  sourceSystem?: string | null;
+  clientRequestId: string;
+  idempotencyKey: string;
+  kind: NotificationKind;
+  title: string;
+  description: string;
+  targetUrl?: string | null;
+  recipients: NotificationRecipient[];
+  expiresAt?: string | null;
+  tradeApproval?: TradeApprovalPayload | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface NotificationRecipient {
+  recipientId?: string | null;
+  displayName?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  channels: NotificationDeliveryChannel[];
+}
+
+export interface TradeApprovalPayload {
+  accountId: string;
+  previewId: string;
+  orderHash: string;
+  placeIdempotencyKey: string;
+  order: TradeOrderPreviewRequest;
+}
+
+export interface NotificationStatusResponse {
+  requestId: string;
+  kind: NotificationKind;
+  status: NotificationRequestStatus;
+  sourceRepo: string;
+  sourceSystem?: string | null;
+  clientRequestId: string;
+  title: string;
+  description: string;
+  targetUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt?: string | null;
+  decisionStatus: NotificationDecisionStatus;
+  decision?: NotificationDecision | null;
+  decidedAt?: string | null;
+  decidedBy?: string | null;
+  executionStatus: NotificationExecutionStatus;
+  executionOrderId?: string | null;
+  executionMessage?: string | null;
+  deliveries: NotificationDeliveryResult[];
+  tradeApproval?: TradeApprovalDisplay | null;
+}
+
+export interface NotificationDeliveryResult {
+  recipientId: string;
+  channel: NotificationDeliveryChannel;
+  address: string;
+  status: NotificationDeliveryStatus;
+  provider?: string | null;
+  providerMessageId?: string | null;
+  attemptedAt?: string | null;
+  sanitizedError?: string | null;
+}
+
+export interface TradeApprovalDisplay {
+  accountId: string;
+  previewId: string;
+  orderHash: string;
+  environment: TradeEnvironment;
+  symbol: string;
+  side: TradeOrderSide;
+  orderType: TradeOrderType;
+  timeInForce: TradeTimeInForce;
+  quantity?: number | null;
+  notional?: number | null;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+}
+
+export interface NotificationActionDetailResponse {
+  requestId: string;
+  tokenId: string;
+  kind: NotificationKind;
+  title: string;
+  description: string;
+  targetUrl?: string | null;
+  createdAt: string;
+  expiresAt?: string | null;
+  decisionStatus: NotificationDecisionStatus;
+  executionStatus: NotificationExecutionStatus;
+  tradeApproval?: TradeApprovalDisplay | null;
+}
+
+export interface NotificationDecisionRequest {
+  decision: NotificationDecision;
+  reason: string;
 }
 
 export interface PortfolioAccount {

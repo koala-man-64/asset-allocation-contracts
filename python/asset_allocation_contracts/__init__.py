@@ -6,6 +6,7 @@ from asset_allocation_contracts.government_signals import *
 from asset_allocation_contracts.intraday import *
 from asset_allocation_contracts.job_metadata import *
 from asset_allocation_contracts.market_history import *
+from asset_allocation_contracts.notifications import *
 from asset_allocation_contracts.portfolio import *
 from asset_allocation_contracts.quiver_signals import *
 from asset_allocation_contracts.paths import *
