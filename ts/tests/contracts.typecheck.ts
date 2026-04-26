@@ -1,6 +1,8 @@
 import type {
   AiChatStreamEvent,
+  AuthProvider,
   AuthSessionStatus,
+  PasswordAuthSessionRequest,
   AcknowledgeBrokerAlertRequest,
   BacktestClaimRequest,
   BacktestCompleteRequest,
@@ -75,6 +77,7 @@ const strategy: StrategyConfig = {
 const runtimeConfig: UiRuntimeConfig = {
   apiBaseUrl: "/api",
   authSessionMode: "cookie",
+  authProvider: "oidc",
   oidcEnabled: true,
   authRequired: true,
   oidcAuthority: "https://login.example.com/tenant/v2.0",
@@ -83,11 +86,17 @@ const runtimeConfig: UiRuntimeConfig = {
   oidcAudience: ["asset-allocation-api"],
 };
 
+const authProvider: AuthProvider = "password";
+
 const authSession: AuthSessionStatus = {
   authMode: "oidc",
   subject: "user-123",
   requiredRoles: ["admin"],
   grantedRoles: ["admin"],
+};
+
+const passwordSessionRequest: PasswordAuthSessionRequest = {
+  password: "operator-secret",
 };
 
 const brokerSummary: BrokerAccountSummary = {
@@ -350,7 +359,9 @@ const condition: UniverseCondition = {
 
 void strategy;
 void runtimeConfig;
+void authProvider;
 void authSession;
+void passwordSessionRequest;
 void brokerSummary;
 void brokerList;
 void brokerDetail;
