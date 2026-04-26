@@ -1235,6 +1235,8 @@ export interface PortfolioAccount {
   mode: 'internal_model_managed';
   accountingDepth: 'position_level';
   cadenceMode: 'strategy_native';
+  rebalanceCadence: 'daily' | 'weekly' | 'monthly';
+  rebalanceAnchor: string;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
@@ -1266,6 +1268,8 @@ export interface PortfolioAccountRevision {
   mode: 'internal_model_managed';
   accountingDepth: 'position_level';
   cadenceMode: 'strategy_native';
+  rebalanceCadence: 'daily' | 'weekly' | 'monthly';
+  rebalanceAnchor: string;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
@@ -1310,6 +1314,8 @@ export interface PortfolioAccountUpsertRequest {
   name: string;
   description: string;
   mandate: string;
+  rebalanceCadence?: 'daily' | 'weekly' | 'monthly' | null;
+  rebalanceAnchor?: string | null;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;

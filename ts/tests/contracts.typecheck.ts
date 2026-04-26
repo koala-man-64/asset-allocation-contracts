@@ -381,6 +381,8 @@ const portfolioAccount: PortfolioAccount = {
   mode: "internal_model_managed",
   accountingDepth: "position_level",
   cadenceMode: "strategy_native",
+  rebalanceCadence: "weekly",
+  rebalanceAnchor: "Strategy native cadence",
   baseCurrency: "USD",
   inceptionDate: "2026-01-02",
   mandate: "Internal model sleeve account",
