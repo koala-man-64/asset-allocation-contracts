@@ -63,7 +63,9 @@ from asset_allocation_contracts.portfolio import (
     PortfolioAccountUpsertRequest,
     PortfolioAlert,
     PortfolioAssignment,
+    PortfolioForecastResponse,
     PortfolioLedgerEvent,
+    PortfolioNextRebalanceResponse,
     PortfolioPosition,
     PortfolioRevision,
     PortfolioSleeveAllocation,
@@ -923,8 +925,23 @@ def test_portfolio_account_defaults_capture_internal_model_managed_scope() -> No
     assert account.mode == "internal_model_managed"
     assert account.accountingDepth == "position_level"
     assert account.cadenceMode == "strategy_native"
+    assert account.rebalanceCadence == "weekly"
+    assert account.rebalanceAnchor == "Strategy native cadence"
     assert account.baseCurrency == "USD"
     assert request.openingCash == 1_000_000
+
+
+def test_portfolio_account_upsert_request_accepts_optional_rebalance_schedule_overrides() -> None:
+    payload = PortfolioAccountUpsertRequest(
+        name="Core Long Only",
+        baseCurrency="usd",
+        inceptionDate="2026-01-02",
+        rebalanceCadence="monthly",
+        rebalanceAnchor="15th close",
+    )
+
+    assert payload.rebalanceCadence == "monthly"
+    assert payload.rebalanceAnchor == "15th close"
 
 
 def test_portfolio_ledger_event_separates_cash_and_trade_shapes() -> None:
@@ -1075,6 +1092,44 @@ def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts(
     assert position.symbol == "MSFT"
     assert alert.status == "open"
     assert upsert.allocations[1].strategy.strategyVersion == 2
+
+
+def test_portfolio_forecast_and_next_rebalance_contracts_capture_authoritative_monitoring_shapes() -> None:
+    forecast = PortfolioForecastResponse(
+        accountId="acct-001",
+        asOf="2026-04-18",
+        modelName="default-regime",
+        modelVersion=3,
+        benchmarkSymbol="spy",
+        horizon="3M",
+        assumption="current",
+        costDragOverrideBps=12,
+        expectedReturnPct=4.2,
+        expectedActiveReturnPct=1.1,
+        downsidePct=-2.3,
+        upsidePct=7.6,
+        confidence="medium",
+        confidenceLabel="Medium confidence",
+        sampleSize=11,
+        sampleMode="regime-conditioned",
+        appliedRegimeCode="trending_up",
+        notes=["Regime sample is moderately deep."],
+    )
+    rebalance = PortfolioNextRebalanceResponse(
+        accountId="acct-001",
+        asOf="2026-04-18",
+        rebalanceCadence="weekly",
+        anchorText="Monday close",
+        nextDate="2026-04-20",
+        inferred=False,
+        basis="anchor",
+        reason="Weekly cadence is anchored to the parsed weekday in the rebalance anchor.",
+    )
+
+    assert forecast.benchmarkSymbol == "SPY"
+    assert forecast.confidence == "medium"
+    assert rebalance.anchorText == "Monday close"
+    assert rebalance.nextDate is not None
 
 
 def test_government_signal_congress_trade_validates_amount_bounds() -> None:

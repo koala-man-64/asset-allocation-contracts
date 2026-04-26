@@ -11,6 +11,7 @@ PortfolioStatus = Literal["draft", "active", "archived"]
 PortfolioMode = Literal["internal_model_managed"]
 PortfolioAccountingDepth = Literal["position_level"]
 PortfolioCadenceMode = Literal["strategy_native"]
+PortfolioRebalanceCadence = Literal["daily", "weekly", "monthly"]
 PortfolioAssignmentStatus = Literal["scheduled", "active", "ended"]
 LedgerEventType = Literal[
     "opening_balance",
@@ -27,6 +28,21 @@ PortfolioDataDomain = Literal["valuation", "positions", "risk", "attribution", "
 PortfolioAlertSeverity = Literal["info", "warning", "critical"]
 PortfolioAlertStatus = Literal["open", "acknowledged", "resolved"]
 TradeSide = Literal["buy", "sell"]
+PortfolioForecastHorizon = Literal["1M", "3M", "6M"]
+PortfolioForecastAssumption = Literal[
+    "current",
+    "trending_up",
+    "trending_down",
+    "mean_reverting",
+    "low_volatility",
+    "high_volatility",
+    "liquidity_stress",
+    "macro_alignment",
+    "unclassified",
+]
+PortfolioForecastConfidence = Literal["high", "medium", "low", "thin"]
+PortfolioForecastSampleMode = Literal["regime-conditioned", "fallback-history", "insufficient-history"]
+PortfolioRebalanceBasis = Literal["anchor", "cadence", "unknown"]
 
 
 def _normalize_required_text(value: object, field_name: str) -> str:
@@ -190,6 +206,8 @@ class PortfolioAccount(BaseModel):
     mode: PortfolioMode = "internal_model_managed"
     accountingDepth: PortfolioAccountingDepth = "position_level"
     cadenceMode: PortfolioCadenceMode = "strategy_native"
+    rebalanceCadence: PortfolioRebalanceCadence = "weekly"
+    rebalanceAnchor: str = Field(default="Strategy native cadence", min_length=1, max_length=160)
     baseCurrency: str = Field(default="USD", min_length=3, max_length=3)
     benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
     inceptionDate: date
@@ -212,6 +230,11 @@ class PortfolioAccount(BaseModel):
     @classmethod
     def normalize_text(cls, value: object) -> str:
         return str(value or "").strip()
+
+    @field_validator("rebalanceAnchor", mode="before")
+    @classmethod
+    def normalize_rebalance_anchor(cls, value: object) -> str:
+        return _normalize_required_text(value, "rebalanceAnchor")
 
     @field_validator("baseCurrency", mode="before")
     @classmethod
@@ -241,6 +264,8 @@ class PortfolioAccountRevision(BaseModel):
     mode: PortfolioMode = "internal_model_managed"
     accountingDepth: PortfolioAccountingDepth = "position_level"
     cadenceMode: PortfolioCadenceMode = "strategy_native"
+    rebalanceCadence: PortfolioRebalanceCadence = "weekly"
+    rebalanceAnchor: str = Field(default="Strategy native cadence", min_length=1, max_length=160)
     baseCurrency: str = Field(default="USD", min_length=3, max_length=3)
     benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
     inceptionDate: date
@@ -257,6 +282,11 @@ class PortfolioAccountRevision(BaseModel):
     @classmethod
     def normalize_text(cls, value: object) -> str:
         return str(value or "").strip()
+
+    @field_validator("rebalanceAnchor", mode="before")
+    @classmethod
+    def normalize_rebalance_anchor(cls, value: object) -> str:
+        return _normalize_required_text(value, "rebalanceAnchor")
 
     @field_validator("baseCurrency", mode="before")
     @classmethod
@@ -528,6 +558,69 @@ class PortfolioHistoryPoint(BaseModel):
     costDragBps: float | None = None
 
 
+class PortfolioForecastResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    asOf: date | None = None
+    modelName: str = Field(..., min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
+    benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    horizon: PortfolioForecastHorizon
+    assumption: PortfolioForecastAssumption
+    costDragOverrideBps: float = 0.0
+    expectedReturnPct: float | None = None
+    expectedActiveReturnPct: float | None = None
+    downsidePct: float | None = None
+    upsidePct: float | None = None
+    confidence: PortfolioForecastConfidence
+    confidenceLabel: str = Field(..., min_length=1, max_length=64)
+    sampleSize: int = Field(default=0, ge=0)
+    sampleMode: PortfolioForecastSampleMode
+    appliedRegimeCode: str = Field(..., min_length=1, max_length=64)
+    notes: list[str] = Field(default_factory=list)
+
+    @field_validator("accountId", "modelName", "confidenceLabel", "appliedRegimeCode", mode="before")
+    @classmethod
+    def normalize_required_text(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("benchmarkSymbol", mode="before")
+    @classmethod
+    def normalize_benchmark_symbol(cls, value: object) -> str | None:
+        return _normalize_optional_symbol(value)
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class PortfolioNextRebalanceResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    asOf: date | None = None
+    rebalanceCadence: PortfolioRebalanceCadence
+    anchorText: str = Field(..., min_length=1, max_length=160)
+    nextDate: date | None = None
+    inferred: bool = False
+    basis: PortfolioRebalanceBasis = "unknown"
+    reason: str = ""
+
+    @field_validator("accountId", "anchorText", mode="before")
+    @classmethod
+    def normalize_required_text(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def normalize_reason(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
 class PortfolioPositionListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -642,6 +735,8 @@ class PortfolioAccountUpsertRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=128)
     description: str = ""
     mandate: str = ""
+    rebalanceCadence: PortfolioRebalanceCadence | None = None
+    rebalanceAnchor: str | None = Field(default=None, min_length=1, max_length=160)
     baseCurrency: str = Field(default="USD", min_length=3, max_length=3)
     benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
     inceptionDate: date
@@ -657,6 +752,11 @@ class PortfolioAccountUpsertRequest(BaseModel):
     @classmethod
     def normalize_text(cls, value: object) -> str:
         return str(value or "").strip()
+
+    @field_validator("rebalanceAnchor", mode="before")
+    @classmethod
+    def normalize_rebalance_anchor(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
 
     @field_validator("baseCurrency", mode="before")
     @classmethod

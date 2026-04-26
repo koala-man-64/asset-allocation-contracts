@@ -154,6 +154,23 @@
           "title": "Openalertcount",
           "type": "integer"
         },
+        "rebalanceAnchor": {
+          "default": "Strategy native cadence",
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Rebalanceanchor",
+          "type": "string"
+        },
+        "rebalanceCadence": {
+          "default": "weekly",
+          "enum": [
+            "daily",
+            "weekly",
+            "monthly"
+          ],
+          "title": "Rebalancecadence",
+          "type": "string"
+        },
         "status": {
           "default": "draft",
           "enum": [
