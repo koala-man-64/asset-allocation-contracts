@@ -291,6 +291,86 @@
       },
       "title": "TradeDataFreshness",
       "type": "object"
+    },
+    "TradePnlSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "dayPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Daypnl"
+        },
+        "grossExposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grossexposure"
+        },
+        "netExposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Netexposure"
+        },
+        "realizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realizedpnl"
+        },
+        "unrealizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unrealizedpnl"
+        }
+      },
+      "title": "TradePnlSnapshot",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -375,6 +455,19 @@
       "default": null,
       "title": "Lastsyncedat"
     },
+    "lastTradeAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasttradeat"
+    },
     "name": {
       "maxLength": 128,
       "minLength": 1,
@@ -386,6 +479,17 @@
       "minimum": 0,
       "title": "Openordercount",
       "type": "integer"
+    },
+    "pnl": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TradePnlSnapshot"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "policyVersion": {
       "anyOf": [

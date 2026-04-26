@@ -61,6 +61,7 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
+export type TradeBlotterEventType = 'fill' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal';
 export type NotificationKind = 'message' | 'trade_approval';
 export type NotificationDeliveryChannel = 'email' | 'sms';
 export type NotificationDeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
@@ -867,7 +868,9 @@ export interface TradeAccountSummary {
   positionCount: number;
   unresolvedAlertCount: number;
   killSwitchActive: boolean;
+  pnl?: TradePnlSnapshot | null;
   lastSyncedAt?: string | null;
+  lastTradeAt?: string | null;
   snapshotAsOf?: string | null;
   freshness: TradeDataFreshness;
   policyVersion?: number | null;
@@ -897,6 +900,15 @@ export interface TradeCapabilityFlags {
   unsupportedReason?: string | null;
 }
 
+export interface TradePnlSnapshot {
+  realizedPnl?: number | null;
+  unrealizedPnl?: number | null;
+  dayPnl?: number | null;
+  grossExposure?: number | null;
+  netExposure?: number | null;
+  asOf?: string | null;
+}
+
 export interface TradeDataFreshness {
   balancesState: TradeDataFreshnessState;
   positionsState: TradeDataFreshnessState;
@@ -913,6 +925,7 @@ export interface TradeAccountDetail {
   restrictions: string[];
   riskLimits: TradeRiskLimit;
   unresolvedAlerts: string[];
+  alerts: TradeDeskAlert[];
   recentAuditEvents: TradeDeskAuditEvent[];
 }
 
@@ -924,6 +937,22 @@ export interface TradeRiskLimit {
   allowedOrderTypes: TradeOrderType[];
   liveTradingAllowed: boolean;
   liveTradingReason?: string | null;
+}
+
+export interface TradeDeskAlert {
+  alertId: string;
+  accountId: string;
+  severity: TradeAuditSeverity;
+  status: BrokerAlertStatus;
+  code: string;
+  title: string;
+  message: string;
+  blocking: boolean;
+  observedAt: string;
+  acknowledgedAt?: string | null;
+  acknowledgedBy?: string | null;
+  resolvedAt?: string | null;
+  asOfDate?: string | null;
 }
 
 export interface TradeDeskAuditEvent {
@@ -1029,6 +1058,34 @@ export interface TradeRiskCheck {
 export interface TradeOrderHistoryResponse {
   accountId: string;
   orders: TradeOrder[];
+  generatedAt?: string | null;
+  nextCursor?: string | null;
+}
+
+export interface TradeBlotterRow {
+  rowId: string;
+  accountId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  eventType: TradeBlotterEventType;
+  occurredAt: string;
+  orderId?: string | null;
+  providerOrderId?: string | null;
+  clientRequestId?: string | null;
+  symbol?: string | null;
+  side?: TradeOrderSide | null;
+  status?: TradeOrderStatus | null;
+  quantity?: number | null;
+  price?: number | null;
+  fees?: number | null;
+  realizedPnl?: number | null;
+  cashImpact?: number | null;
+  note?: string | null;
+}
+
+export interface TradeBlotterResponse {
+  accountId: string;
+  rows: TradeBlotterRow[];
   generatedAt?: string | null;
   nextCursor?: string | null;
 }

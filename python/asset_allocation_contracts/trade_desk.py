@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
-from asset_allocation_contracts.broker_accounts import BrokerTradingPolicy
+from asset_allocation_contracts.broker_accounts import BrokerAlertStatus, BrokerTradingPolicy
 
 TradeProvider = Literal["alpaca", "etrade", "schwab"]
 TradeEnvironment = Literal["paper", "sandbox", "live"]
@@ -41,6 +41,15 @@ TradeAuditEventType = Literal[
 ]
 TradeDataFreshnessState = Literal["fresh", "stale", "unknown"]
 TradeAuditSeverity = Literal["info", "warning", "critical"]
+TradeBlotterEventType = Literal[
+    "fill",
+    "cancel",
+    "fee",
+    "cash_adjustment",
+    "dividend",
+    "interest",
+    "journal",
+]
 
 
 def _normalize_required_text(value: object, field_name: str) -> str:
@@ -158,6 +167,50 @@ class TradeRiskCheck(BaseModel):
         return str(value or "").strip()
 
 
+class TradePnlSnapshot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    realizedPnl: float | None = None
+    unrealizedPnl: float | None = None
+    dayPnl: float | None = None
+    grossExposure: float | None = None
+    netExposure: float | None = None
+    asOf: datetime | None = None
+
+
+class TradeDeskAlert(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    alertId: str = Field(..., min_length=1, max_length=128)
+    accountId: str = Field(..., min_length=1, max_length=128)
+    severity: TradeAuditSeverity = "warning"
+    status: BrokerAlertStatus = "open"
+    code: str = Field(..., min_length=1, max_length=128)
+    title: str = Field(..., min_length=1, max_length=160)
+    message: str = ""
+    blocking: bool = False
+    observedAt: datetime
+    acknowledgedAt: datetime | None = None
+    acknowledgedBy: str | None = Field(default=None, min_length=1, max_length=128)
+    resolvedAt: datetime | None = None
+    asOfDate: datetime | None = None
+
+    @field_validator("alertId", "accountId", "code", "title", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def normalize_message(cls, value: object) -> str:
+        return str(value or "").strip()
+
+    @field_validator("acknowledgedBy", mode="before")
+    @classmethod
+    def normalize_acknowledged_by(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
 class TradeAccountSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -177,7 +230,9 @@ class TradeAccountSummary(BaseModel):
     positionCount: int = Field(default=0, ge=0)
     unresolvedAlertCount: int = Field(default=0, ge=0)
     killSwitchActive: bool = False
+    pnl: TradePnlSnapshot | None = None
     lastSyncedAt: datetime | None = None
+    lastTradeAt: datetime | None = None
     snapshotAsOf: datetime | None = None
     freshness: TradeDataFreshness = Field(default_factory=TradeDataFreshness)
     policyVersion: int | None = Field(default=None, ge=1)
@@ -207,6 +262,7 @@ class TradeAccountDetail(BaseModel):
     restrictions: list[str] = Field(default_factory=list)
     riskLimits: TradeRiskLimit = Field(default_factory=TradeRiskLimit)
     unresolvedAlerts: list[str] = Field(default_factory=list)
+    alerts: list["TradeDeskAlert"] = Field(default_factory=list)
     recentAuditEvents: list["TradeDeskAuditEvent"] = Field(default_factory=list)
 
 
@@ -325,6 +381,65 @@ class TradeOrderHistoryResponse(BaseModel):
 
     accountId: str = Field(..., min_length=1, max_length=128)
     orders: list[TradeOrder] = Field(default_factory=list)
+    generatedAt: datetime | None = None
+    nextCursor: str | None = None
+
+    @field_validator("accountId", mode="before")
+    @classmethod
+    def normalize_account_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "accountId")
+
+    @field_validator("nextCursor", mode="before")
+    @classmethod
+    def normalize_next_cursor(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
+class TradeBlotterRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rowId: str = Field(..., min_length=1, max_length=128)
+    accountId: str = Field(..., min_length=1, max_length=128)
+    provider: TradeProvider
+    environment: TradeEnvironment
+    eventType: TradeBlotterEventType
+    occurredAt: datetime
+    orderId: str | None = Field(default=None, min_length=1, max_length=128)
+    providerOrderId: str | None = Field(default=None, min_length=1, max_length=160)
+    clientRequestId: str | None = Field(default=None, min_length=1, max_length=128)
+    symbol: str | None = Field(default=None, min_length=1, max_length=32)
+    side: TradeOrderSide | None = None
+    status: TradeOrderStatus | None = None
+    quantity: float | None = Field(default=None, gt=0)
+    price: float | None = Field(default=None, ge=0)
+    fees: float | None = None
+    realizedPnl: float | None = None
+    cashImpact: float | None = None
+    note: str | None = None
+
+    @field_validator("rowId", "accountId", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("orderId", "providerOrderId", "clientRequestId", "note", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def normalize_optional_symbol(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        return _normalize_symbol(value)
+
+
+class TradeBlotterResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    rows: list[TradeBlotterRow] = Field(default_factory=list)
     generatedAt: datetime | None = None
     nextCursor: str | None = None
 

@@ -5,7 +5,10 @@ from datetime import datetime, timedelta, timezone
 from asset_allocation_contracts.trade_desk import (
     TradeAccountDetail,
     TradeAccountSummary,
+    TradeBlotterResponse,
+    TradeBlotterRow,
     TradeCapabilityFlags,
+    TradeDeskAlert,
     TradeDeskAuditEvent,
     TradeOrder,
     TradeOrderCancelRequest,
@@ -22,6 +25,7 @@ def _now() -> datetime:
 
 
 def test_trade_account_contracts_capture_readiness_and_capabilities() -> None:
+    now = _now()
     account = TradeAccountSummary(
         accountId=" alpaca-core ",
         name=" Core Long Only ",
@@ -46,21 +50,47 @@ def test_trade_account_contracts_capture_readiness_and_capabilities() -> None:
         ),
         cash=42_000,
         buyingPower=180_000,
+        equity=44_200,
         openOrderCount=2,
         positionCount=12,
+        pnl={
+            "realizedPnl": 1_250.5,
+            "unrealizedPnl": 840.25,
+            "dayPnl": -120.75,
+            "grossExposure": 185_000,
+            "netExposure": 163_500,
+            "asOf": now,
+        },
+        lastTradeAt=now,
     )
     detail = TradeAccountDetail(
         account=account,
         restrictions=["stale_positions"],
         unresolvedAlerts=["Refresh required before trading."],
+        alerts=[
+            TradeDeskAlert(
+                alertId="alert-1",
+                accountId="alpaca-core",
+                severity="critical",
+                status="open",
+                code="freshness_block",
+                title="Snapshot refresh required",
+                message="Position freshness exceeded the trading threshold.",
+                blocking=True,
+                observedAt=now,
+            )
+        ],
     )
 
     assert account.accountId == "alpaca-core"
     assert account.name == "Core Long Only"
     assert account.accountNumberMasked == "****1234"
     assert account.baseCurrency == "USD"
+    assert account.pnl is not None
+    assert account.pnl.realizedPnl == 1_250.5
     assert detail.account.capabilities.canSubmitPaper is True
     assert detail.restrictions == ["stale_positions"]
+    assert detail.alerts[0].blocking is True
 
 
 def test_trade_order_preview_request_validates_manual_intent() -> None:
@@ -278,3 +308,36 @@ def test_trade_order_preview_and_place_support_policy_confirmation_payloads() ->
     assert preview.projectedPolicy.requireOrderConfirmation is True
     assert place.policyVersion == 7
     assert place.confirmationToken == "token-123"
+
+
+def test_trade_blotter_contracts_capture_realized_pnl_and_cash_impact() -> None:
+    now = _now()
+    response = TradeBlotterResponse(
+        accountId="acct-001",
+        generatedAt=now,
+        rows=[
+            TradeBlotterRow(
+                rowId="blotter-001",
+                accountId="acct-001",
+                provider="alpaca",
+                environment="paper",
+                eventType="fill",
+                occurredAt=now,
+                orderId="order-001",
+                clientRequestId="client-001",
+                symbol=" msft ",
+                side="sell",
+                status="filled",
+                quantity=5,
+                price=112.5,
+                fees=1.25,
+                realizedPnl=56.75,
+                cashImpact=561.25,
+                note="Trim after target hit.",
+            )
+        ],
+    )
+
+    assert response.rows[0].symbol == "MSFT"
+    assert response.rows[0].realizedPnl == 56.75
+    assert response.rows[0].cashImpact == 561.25
