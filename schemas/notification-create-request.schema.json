@@ -1,0 +1,387 @@
+{
+  "$defs": {
+    "NotificationRecipient": {
+      "additionalProperties": false,
+      "properties": {
+        "channels": {
+          "items": {
+            "enum": [
+              "email",
+              "sms"
+            ],
+            "type": "string"
+          },
+          "title": "Channels",
+          "type": "array"
+        },
+        "displayName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Displayname"
+        },
+        "email": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Email"
+        },
+        "phoneNumber": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Phonenumber"
+        },
+        "recipientId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipientid"
+        }
+      },
+      "title": "NotificationRecipient",
+      "type": "object"
+    },
+    "TradeApprovalPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/$defs/TradeOrderPreviewRequest"
+        },
+        "orderHash": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Orderhash",
+          "type": "string"
+        },
+        "placeIdempotencyKey": {
+          "maxLength": 160,
+          "minLength": 16,
+          "title": "Placeidempotencykey",
+          "type": "string"
+        },
+        "previewId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Previewid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountId",
+        "previewId",
+        "orderHash",
+        "placeIdempotencyKey",
+        "order"
+      ],
+      "title": "TradeApprovalPayload",
+      "type": "object"
+    },
+    "TradeOrderPreviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "allowExtendedHours": {
+          "default": false,
+          "title": "Allowextendedhours",
+          "type": "boolean"
+        },
+        "assetClass": {
+          "default": "equity",
+          "enum": [
+            "equity",
+            "etf",
+            "option",
+            "crypto",
+            "mutual_fund",
+            "unknown"
+          ],
+          "title": "Assetclass",
+          "type": "string"
+        },
+        "clientRequestId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Clientrequestid",
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "limitPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitprice"
+        },
+        "notional": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notional"
+        },
+        "orderType": {
+          "enum": [
+            "market",
+            "limit",
+            "stop",
+            "stop_limit"
+          ],
+          "title": "Ordertype",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "side": {
+          "enum": [
+            "buy",
+            "sell"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "source": {
+          "default": "manual",
+          "enum": [
+            "manual",
+            "rebalance_preview",
+            "system"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "stopPrice": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stopprice"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timeInForce": {
+          "default": "day",
+          "enum": [
+            "day",
+            "gtc",
+            "opg",
+            "cls",
+            "ioc",
+            "fok"
+          ],
+          "title": "Timeinforce",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accountId",
+        "environment",
+        "clientRequestId",
+        "symbol",
+        "side",
+        "orderType"
+      ],
+      "title": "TradeOrderPreviewRequest",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clientRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Clientrequestid",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "expiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expiresat"
+    },
+    "idempotencyKey": {
+      "maxLength": 160,
+      "minLength": 16,
+      "title": "Idempotencykey",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "message",
+        "trade_approval"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "recipients": {
+      "items": {
+        "$ref": "#/$defs/NotificationRecipient"
+      },
+      "title": "Recipients",
+      "type": "array"
+    },
+    "sourceRepo": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Sourcerepo",
+      "type": "string"
+    },
+    "sourceSystem": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourcesystem"
+    },
+    "targetUrl": {
+      "anyOf": [
+        {
+          "maxLength": 2048,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Targeturl"
+    },
+    "title": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tradeApproval": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TradeApprovalPayload"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "sourceRepo",
+    "clientRequestId",
+    "idempotencyKey",
+    "kind",
+    "title",
+    "description"
+  ],
+  "title": "CreateNotificationRequest",
+  "type": "object"
+}

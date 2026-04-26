@@ -27,12 +27,17 @@ from asset_allocation_contracts.backtest import (
 )
 from asset_allocation_contracts.broker_accounts import (
     AcknowledgeBrokerAlertRequest,
+    BrokerAccountAllocationUpdateRequest,
     BrokerAccountActionResponse,
+    BrokerAccountConfiguration,
     BrokerAccountDetail,
     BrokerAccountListResponse,
     BrokerAccountSummary,
     BrokerCapabilityFlags,
     BrokerConnectionHealth,
+    BrokerStrategyAllocationSummary,
+    BrokerTradingPolicy,
+    BrokerTradingPolicyUpdateRequest,
     BrokerSyncRun,
     PauseBrokerSyncRequest,
     ReconnectBrokerAccountRequest,
@@ -55,6 +60,8 @@ from asset_allocation_contracts.intraday import (
     IntradayMonitorRunSummary,
     IntradaySymbolStatus,
     IntradayWatchlistDetail,
+    IntradayWatchlistSymbolAppendRequest,
+    IntradayWatchlistSymbolAppendResponse,
     IntradayWatchlistUpsertRequest,
 )
 from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
@@ -77,7 +84,6 @@ from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
-    RegimeModelConfig,
     RegimePolicy,
     RegimeSignal,
     RegimeSnapshot,
@@ -345,6 +351,42 @@ def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None
     assert payload.pollIntervalMinutes == 5
     assert payload.refreshCooldownMinutes == 15
     assert payload.marketSession == "us_equities_regular"
+
+
+def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_state() -> None:
+    request = IntradayWatchlistSymbolAppendRequest(
+        symbols=[" aapl ", "MSFT", "AAPL"],
+        reason="  operator add  ",
+    )
+
+    response = IntradayWatchlistSymbolAppendResponse(
+        watchlist=IntradayWatchlistDetail(
+            watchlistId="watch-1",
+            name="Tech Core",
+            enabled=True,
+            symbolCount=3,
+            symbols=["AAPL", "MSFT", "NVDA"],
+        ),
+        addedSymbols=["msft"],
+        alreadyPresentSymbols=[" aapl "],
+        queuedRun=IntradayMonitorRunSummary(
+            runId="run-1",
+            watchlistId="watch-1",
+            triggerKind="manual",
+            status="queued",
+            forceRefresh=False,
+            symbolCount=3,
+        ),
+    )
+
+    assert request.symbols == ["AAPL", "MSFT"]
+    assert request.queueRun is True
+    assert request.reason == "operator add"
+    assert response.addedSymbols == ["MSFT"]
+    assert response.alreadyPresentSymbols == ["AAPL"]
+    assert response.queuedRun is not None
+    assert response.queuedRun.forceRefresh is False
+    assert response.runSkippedReason is None
 
 
 def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() -> None:
@@ -907,6 +949,55 @@ def test_portfolio_revision_requires_enabled_weights_to_sum_to_one() -> None:
         raise AssertionError("Expected revision validation failure when weights do not sum to 1.0.")
 
 
+def test_portfolio_revision_accepts_notional_allocation_mode() -> None:
+    revision = PortfolioRevision(
+        portfolioName="core-balanced-notional",
+        version=1,
+        allocationMode="notional_base_ccy",
+        allocatableCapital=1_000_000.0,
+        allocations=[
+            PortfolioSleeveAllocation(
+                sleeveId="quality-core",
+                sleeveName="Quality Core",
+                strategy={"strategyName": "quality-trend", "strategyVersion": 4},
+                allocationMode="notional_base_ccy",
+                targetNotionalBaseCcy=600_000.0,
+            ),
+            PortfolioSleeveAllocation(
+                sleeveId="defensive",
+                sleeveName="Defensive",
+                strategy={"strategyName": "defensive-value", "strategyVersion": 2},
+                allocationMode="notional_base_ccy",
+                targetNotionalBaseCcy=400_000.0,
+            ),
+        ],
+    )
+    upsert = PortfolioUpsertRequest(
+        name="core-balanced-notional",
+        allocationMode="notional_base_ccy",
+        allocatableCapital=1_000_000.0,
+        allocations=[
+            {
+                "sleeveId": "quality-core",
+                "strategy": {"strategyName": "quality-trend", "strategyVersion": 4},
+                "allocationMode": "notional_base_ccy",
+                "targetNotionalBaseCcy": 600_000.0,
+            },
+            {
+                "sleeveId": "defensive",
+                "strategy": {"strategyName": "defensive-value", "strategyVersion": 2},
+                "allocationMode": "notional_base_ccy",
+                "targetNotionalBaseCcy": 400_000.0,
+            },
+        ],
+    )
+
+    assert revision.allocationMode == "notional_base_ccy"
+    assert revision.allocatableCapital == 1_000_000.0
+    assert revision.allocations[0].targetNotionalBaseCcy == 600_000.0
+    assert upsert.allocations[1].allocationMode == "notional_base_ccy"
+
+
 def test_portfolio_account_defaults_capture_internal_model_managed_scope() -> None:
     account = PortfolioAccount(
         accountId="acct-001",
@@ -1438,3 +1529,110 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     assert action_response.resultingConnectionHealth is not None
     assert action_response.resultingConnectionHealth.syncStatus == "syncing"
     assert listing.accounts[0].tradeReadiness == "blocked"
+
+
+def test_broker_account_configuration_contracts_capture_policy_and_allocation() -> None:
+    configuration = BrokerAccountConfiguration(
+        accountId="alpaca-core",
+        accountName="Core Long Only",
+        baseCurrency="usd",
+        configurationVersion=4,
+        requestedPolicy=BrokerTradingPolicy(
+            maxOpenPositions=12,
+            maxSinglePositionExposure={"mode": "pct_of_allocatable_capital", "value": 8.5},
+            allowedSides=["long"],
+            allowedAssetClasses=["equity", "option"],
+            requireOrderConfirmation=True,
+        ),
+        effectivePolicy=BrokerTradingPolicy(
+            maxOpenPositions=10,
+            maxSinglePositionExposure={"mode": "pct_of_allocatable_capital", "value": 8.0},
+            allowedSides=["long"],
+            allowedAssetClasses=["equity", "option"],
+            requireOrderConfirmation=True,
+        ),
+        capabilities={
+            "canReadBalances": True,
+            "canReadPositions": True,
+            "canReadOrders": True,
+            "canTrade": True,
+            "canReadTradingPolicy": True,
+            "canWriteTradingPolicy": True,
+            "canReadAllocation": True,
+            "canWriteAllocation": True,
+            "canReleaseTradeConfirmation": True,
+        },
+        allocation=BrokerStrategyAllocationSummary(
+            portfolioName="growth-core",
+            portfolioVersion=7,
+            allocationMode="percent",
+            allocatableCapital=250000.0,
+            allocatedPercent=100.0,
+            remainingPercent=0.0,
+            items=[
+                {
+                    "sleeveId": "quality-core",
+                    "sleeveName": "Quality Core",
+                    "strategy": {"strategyName": "quality-trend", "strategyVersion": 4},
+                    "allocationMode": "percent",
+                    "targetWeightPct": 60.0,
+                },
+                {
+                    "sleeveId": "defensive",
+                    "sleeveName": "Defensive",
+                    "strategy": {"strategyName": "defensive-value", "strategyVersion": 2},
+                    "allocationMode": "percent",
+                    "targetWeightPct": 40.0,
+                },
+            ],
+        ),
+        warnings=["Current holdings exceed the tighter max-open-position policy."],
+        updatedAt="2026-04-24T14:00:00Z",
+        updatedBy="desk-op",
+        audit=[
+            {
+                "auditId": "audit-1",
+                "accountId": "alpaca-core",
+                "category": "trading_policy",
+                "outcome": "warning",
+                "requestedAt": "2026-04-24T14:00:00Z",
+                "actor": "desk-op",
+                "requestId": "req-1",
+                "grantedRoles": ["AssetAllocation.AccountPolicy.Write"],
+                "summary": "Saved tighter trading policy with out-of-policy warning.",
+                "before": {"maxOpenPositions": 15},
+                "after": {"maxOpenPositions": 12},
+            }
+        ],
+    )
+    policy_request = BrokerTradingPolicyUpdateRequest(
+        expectedConfigurationVersion=4,
+        requestedPolicy=configuration.requestedPolicy,
+    )
+    allocation_request = BrokerAccountAllocationUpdateRequest(
+        expectedConfigurationVersion=4,
+        allocationMode="notional_base_ccy",
+        allocatableCapital=250000.0,
+        items=[
+            {
+                "sleeveId": "quality-core",
+                "strategy": {"strategyName": "quality-trend", "strategyVersion": 4},
+                "allocationMode": "notional_base_ccy",
+                "targetNotionalBaseCcy": 150000.0,
+            },
+            {
+                "sleeveId": "defensive",
+                "strategy": {"strategyName": "defensive-value", "strategyVersion": 2},
+                "allocationMode": "notional_base_ccy",
+                "targetNotionalBaseCcy": 100000.0,
+            },
+        ],
+    )
+
+    assert configuration.baseCurrency == "USD"
+    assert configuration.requestedPolicy.maxSinglePositionExposure is not None
+    assert configuration.requestedPolicy.maxSinglePositionExposure.value == 8.5
+    assert configuration.allocation.items[0].strategy.strategyName == "quality-trend"
+    assert configuration.audit[0].grantedRoles == ["AssetAllocation.AccountPolicy.Write"]
+    assert policy_request.expectedConfigurationVersion == 4
+    assert allocation_request.items[1].targetNotionalBaseCcy == 100000.0

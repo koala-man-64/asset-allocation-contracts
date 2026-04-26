@@ -1,0 +1,37 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "queueRun": {
+      "default": true,
+      "title": "Queuerun",
+      "type": "boolean"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "symbols": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Symbols",
+      "type": "array"
+    }
+  },
+  "required": [
+    "symbols"
+  ],
+  "title": "IntradayWatchlistSymbolAppendRequest",
+  "type": "object"
+}

@@ -221,3 +221,60 @@ def test_trade_order_and_audit_contracts_capture_reconciliation_state() -> None:
     assert response.riskChecks[0].blocking is True
     assert event.statusAfter == "unknown_reconcile_required"
     assert position.symbol == "MSFT"
+
+
+def test_trade_order_preview_and_place_support_policy_confirmation_payloads() -> None:
+    now = _now()
+    preview = TradeOrderPreviewResponse(
+        previewId="preview-001",
+        accountId="acct-001",
+        provider="alpaca",
+        environment="paper",
+        order={
+            "orderId": "preview-001",
+            "accountId": "acct-001",
+            "provider": "alpaca",
+            "environment": "paper",
+            "status": "previewed",
+            "symbol": "AAPL",
+            "side": "buy",
+            "orderType": "market",
+            "quantity": 5,
+            "createdAt": now,
+            "updatedAt": now,
+        },
+        generatedAt=now,
+        expiresAt=now + timedelta(minutes=5),
+        projectedPolicy={
+            "maxOpenPositions": 12,
+            "maxSinglePositionExposure": {"mode": "pct_of_allocatable_capital", "value": 8.0},
+            "allowedSides": ["long"],
+            "allowedAssetClasses": ["equity", "option"],
+            "requireOrderConfirmation": True,
+        },
+        policyVersion=7,
+        confirmationRequired=True,
+        orderHash="hash-123",
+        confirmationToken="token-123",
+    )
+    place = TradeOrderPlaceRequest(
+        accountId="acct-001",
+        environment="paper",
+        clientRequestId="client-001",
+        idempotencyKey="idem-000000000001",
+        previewId="preview-001",
+        confirmedAt=now,
+        policyVersion=7,
+        orderHash="hash-123",
+        confirmationToken="token-123",
+        symbol="AAPL",
+        side="buy",
+        orderType="market",
+        quantity=5,
+    )
+
+    assert preview.confirmationRequired is True
+    assert preview.projectedPolicy is not None
+    assert preview.projectedPolicy.requireOrderConfirmation is True
+    assert place.policyVersion == 7
+    assert place.confirmationToken == "token-123"

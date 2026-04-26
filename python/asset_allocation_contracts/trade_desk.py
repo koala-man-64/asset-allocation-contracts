@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
+from asset_allocation_contracts.broker_accounts import BrokerTradingPolicy
+
 TradeProvider = Literal["alpaca", "etrade", "schwab"]
 TradeEnvironment = Literal["paper", "sandbox", "live"]
 TradeReadiness = Literal["ready", "review", "blocked"]
@@ -88,6 +90,7 @@ class TradeCapabilityFlags(BaseModel):
     supportsNotionalOrders: bool = False
     supportsEquities: bool = False
     supportsEtfs: bool = False
+    supportsOptions: bool = False
     readOnly: bool = True
     unsupportedReason: str | None = None
 
@@ -177,6 +180,9 @@ class TradeAccountSummary(BaseModel):
     lastSyncedAt: datetime | None = None
     snapshotAsOf: datetime | None = None
     freshness: TradeDataFreshness = Field(default_factory=TradeDataFreshness)
+    policyVersion: int | None = Field(default=None, ge=1)
+    projectedTradingPolicy: BrokerTradingPolicy | None = None
+    confirmationRequired: bool = False
 
     @field_validator("accountId", "name", mode="before")
     @classmethod
@@ -391,13 +397,18 @@ class TradeOrderPreviewResponse(BaseModel):
     blocked: bool = False
     blockReason: str | None = None
     freshness: TradeDataFreshness = Field(default_factory=TradeDataFreshness)
+    projectedPolicy: BrokerTradingPolicy | None = None
+    policyVersion: int | None = Field(default=None, ge=1)
+    confirmationRequired: bool = False
+    orderHash: str | None = Field(default=None, min_length=1, max_length=128)
+    confirmationToken: str | None = Field(default=None, min_length=1, max_length=160)
 
     @field_validator("previewId", "accountId", mode="before")
     @classmethod
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
 
-    @field_validator("blockReason", mode="before")
+    @field_validator("blockReason", "orderHash", "confirmationToken", mode="before")
     @classmethod
     def normalize_block_reason(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
@@ -408,11 +419,19 @@ class TradeOrderPlaceRequest(TradeOrderPreviewRequest):
     previewId: str = Field(..., min_length=1, max_length=128)
     confirmedAt: datetime
     confirmedRiskCheckIds: list[str] = Field(default_factory=list)
+    policyVersion: int | None = Field(default=None, ge=1)
+    orderHash: str | None = Field(default=None, min_length=1, max_length=128)
+    confirmationToken: str | None = Field(default=None, min_length=1, max_length=160)
 
     @field_validator("idempotencyKey", "previewId", mode="before")
     @classmethod
     def normalize_place_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
+
+    @field_validator("orderHash", "confirmationToken", mode="before")
+    @classmethod
+    def normalize_optional_place_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
 
 
 class TradeOrderPlaceResponse(BaseModel):
@@ -424,6 +443,8 @@ class TradeOrderPlaceResponse(BaseModel):
     reconciliationRequired: bool = False
     auditEventId: str | None = Field(default=None, min_length=1, max_length=128)
     message: str | None = None
+    confirmationRequired: bool = False
+    policyVersion: int | None = Field(default=None, ge=1)
 
     @field_validator("auditEventId", "message", mode="before")
     @classmethod
@@ -482,10 +503,15 @@ class TradeDeskAuditEvent(BaseModel):
     providerOrderId: str | None = Field(default=None, min_length=1, max_length=160)
     clientRequestId: str | None = Field(default=None, min_length=1, max_length=128)
     idempotencyKey: str | None = Field(default=None, min_length=1, max_length=160)
+    previewId: str | None = Field(default=None, min_length=1, max_length=128)
+    confirmationTokenId: str | None = Field(default=None, min_length=1, max_length=160)
+    requestId: str | None = Field(default=None, min_length=1, max_length=160)
     statusBefore: TradeOrderStatus | None = None
     statusAfter: TradeOrderStatus | None = None
     summary: str = ""
     sanitizedError: str | None = None
+    denialReason: str | None = None
+    grantedRoles: list[str] = Field(default_factory=list)
     details: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("eventId", "accountId", mode="before")
@@ -499,7 +525,11 @@ class TradeDeskAuditEvent(BaseModel):
         "providerOrderId",
         "clientRequestId",
         "idempotencyKey",
+        "previewId",
+        "confirmationTokenId",
+        "requestId",
         "sanitizedError",
+        "denialReason",
         mode="before",
     )
     @classmethod

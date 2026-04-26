@@ -11,6 +11,11 @@
       "title": "Canpausesync",
       "type": "boolean"
     },
+    "canReadAllocation": {
+      "default": false,
+      "title": "Canreadallocation",
+      "type": "boolean"
+    },
     "canReadBalances": {
       "default": false,
       "title": "Canreadbalances",
@@ -26,6 +31,11 @@
       "title": "Canreadpositions",
       "type": "boolean"
     },
+    "canReadTradingPolicy": {
+      "default": false,
+      "title": "Canreadtradingpolicy",
+      "type": "boolean"
+    },
     "canReconnect": {
       "default": false,
       "title": "Canreconnect",
@@ -36,10 +46,37 @@
       "title": "Canrefresh",
       "type": "boolean"
     },
+    "canReleaseTradeConfirmation": {
+      "default": false,
+      "title": "Canreleasetradeconfirmation",
+      "type": "boolean"
+    },
     "canTrade": {
       "default": false,
       "title": "Cantrade",
       "type": "boolean"
+    },
+    "canWriteAllocation": {
+      "default": false,
+      "title": "Canwriteallocation",
+      "type": "boolean"
+    },
+    "canWriteTradingPolicy": {
+      "default": false,
+      "title": "Canwritetradingpolicy",
+      "type": "boolean"
+    },
+    "readOnlyReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Readonlyreason"
     }
   },
   "title": "BrokerCapabilityFlags",

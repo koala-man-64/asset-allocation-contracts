@@ -149,7 +149,9 @@
         "pause_sync",
         "resume_sync",
         "refresh",
-        "acknowledge_alert"
+        "acknowledge_alert",
+        "update_trading_policy",
+        "update_allocation"
       ],
       "title": "Action",
       "type": "string"

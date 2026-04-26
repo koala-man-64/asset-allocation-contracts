@@ -476,6 +476,11 @@
       "default": null,
       "title": "Auditeventid"
     },
+    "confirmationRequired": {
+      "default": false,
+      "title": "Confirmationrequired",
+      "type": "boolean"
+    },
     "message": {
       "anyOf": [
         {
@@ -490,6 +495,19 @@
     },
     "order": {
       "$ref": "#/$defs/TradeOrder"
+    },
+    "policyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Policyversion"
     },
     "reconciliationRequired": {
       "default": false,
