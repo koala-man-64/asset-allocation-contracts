@@ -1,4 +1,35 @@
 {
+  "$defs": {
+    "StrategyReferenceInput": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyversion"
+        }
+      },
+      "required": [
+        "strategyName"
+      ],
+      "title": "StrategyReferenceInput",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "accountId": {
@@ -184,6 +215,17 @@
       ],
       "default": null,
       "title": "Stopprice"
+    },
+    "strategyRef": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategyReferenceInput"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "symbol": {
       "maxLength": 32,

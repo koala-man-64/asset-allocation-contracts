@@ -105,6 +105,7 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    StrategyPositionPolicy,
     StrategyConfig,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
@@ -113,6 +114,7 @@ from asset_allocation_contracts.strategy import (
     UniverseGroup,
     UniversePreviewResponse,
 )
+from asset_allocation_contracts.trade_desk import TradeOrderPreviewRequest
 from asset_allocation_contracts.ui_config import (
     AuthSessionStatus,
     PasswordAuthSessionRequest,
@@ -135,6 +137,113 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
     assert payload.regimePolicy.mode == "observe_only"
+
+
+def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        positionPolicy=StrategyPositionPolicy(),
+    )
+
+    assert payload.positionPolicy is not None
+    assert payload.positionPolicy.allowedAssetClasses == ["equity"]
+    assert payload.positionPolicy.requireOrderConfirmation is False
+
+
+def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        topN=10,
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
+            "maxOpenPositions": 4,
+            "allowedAssetClasses": ["equity", "option", "equity"],
+            "requireOrderConfirmation": True,
+        },
+    )
+
+    assert payload.positionPolicy is not None
+    assert payload.positionPolicy.targetPositionSize is not None
+    assert payload.positionPolicy.targetPositionSize.value == 5
+    assert payload.positionPolicy.allowedAssetClasses == ["equity", "option"]
+    assert payload.positionPolicy.requireOrderConfirmation is True
+
+
+def test_strategy_position_policy_rejects_invalid_percentage_limit() -> None:
+    try:
+        StrategyPositionPolicy(targetPositionSize={"mode": "pct_of_allocatable_capital", "value": 101})
+    except Exception as exc:
+        assert "cannot exceed 100" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for oversized percentage position limit.")
+
+
+def test_strategy_position_policy_rejects_long_only_overallocation() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            topN=3,
+            positionPolicy={"targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 40}},
+        )
+    except Exception as exc:
+        assert "cannot allocate more than 100%" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for long-only over-allocation.")
+
+
+def test_strategy_config_rejects_short_side_until_supported() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            longOnly=False,
+        )
+    except Exception as exc:
+        assert "only supports longOnly=true" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for longOnly=false.")
+
+
+def test_trade_order_preview_accepts_optional_strategy_reference() -> None:
+    request = TradeOrderPreviewRequest(
+        accountId="acct-1",
+        environment="paper",
+        clientRequestId="preview-1",
+        symbol="aapl",
+        side="buy",
+        orderType="market",
+        quantity=1,
+        strategyRef={"strategyName": "quality-trend", "strategyVersion": 3},
+    )
+
+    assert request.symbol == "AAPL"
+    assert request.strategyRef is not None
+    assert request.strategyRef.strategyName == "quality-trend"
+    assert request.strategyRef.strategyVersion == 3
 
 
 def test_ranking_schema_requires_groups() -> None:

@@ -1,6 +1,6 @@
 {
     "name":  "@asset-allocation/contracts",
-    "version":  "3.8.0",
+    "version":  "3.9.1",
     "type":  "module",
     "sideEffects":  false,
     "files":  [

@@ -13,6 +13,8 @@ export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
 export type ExitRuleReference = 'entry_price' | 'highest_since_entry';
 export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'priority_order';
+export type StrategyPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
+export type StrategyPositionAssetClass = 'equity' | 'option';
 export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
@@ -88,6 +90,7 @@ export interface StrategyConfig {
   costModel: string;
   rankingSchemaName?: string | null;
   regimePolicy?: RegimePolicy | null;
+  positionPolicy?: StrategyPositionPolicy | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
@@ -114,6 +117,19 @@ export interface UniverseCondition {
 export interface RegimePolicy {
   modelName: string;
   mode: RegimePolicyMode;
+}
+
+export interface StrategyPositionPolicy {
+  targetPositionSize?: StrategyPositionSizeLimit | null;
+  maxPositionSize?: StrategyPositionSizeLimit | null;
+  maxOpenPositions?: number | null;
+  allowedAssetClasses: StrategyPositionAssetClass[];
+  requireOrderConfirmation: boolean;
+}
+
+export interface StrategyPositionSizeLimit {
+  mode: StrategyPositionSizeMode;
+  value: number;
 }
 
 export interface ExitRule {
@@ -1105,6 +1121,7 @@ export interface TradeOrderPreviewRequest {
   stopPrice?: number | null;
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
+  strategyRef?: StrategyReferenceInput | null;
 }
 
 export interface TradeOrderPreviewResponse {
@@ -1146,6 +1163,7 @@ export interface TradeOrderPlaceRequest {
   stopPrice?: number | null;
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
+  strategyRef?: StrategyReferenceInput | null;
   idempotencyKey: string;
   previewId: string;
   confirmedAt: string;

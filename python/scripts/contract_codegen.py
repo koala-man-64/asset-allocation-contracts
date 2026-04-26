@@ -208,6 +208,8 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("ExitRulePriceField", strategy.PriceField),
     ("ExitRuleReference", strategy.ExitReference),
     ("IntrabarConflictPolicy", strategy.IntrabarConflictPolicy),
+    ("StrategyPositionSizeMode", strategy.StrategyPositionSizeMode),
+    ("StrategyPositionAssetClass", strategy.StrategyPositionAssetClass),
     ("RegimeCode", regime.RegimeCode),
     ("UniverseSource", strategy.UniverseSource),
     ("UniverseGroupOperator", strategy.UniverseGroupOperator),
@@ -279,6 +281,11 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
 FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RegimeModelSummary", "description"),
     ("RegimeModelRevision", "description"),
+}
+
+FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
+    ("StrategyPositionPolicy", "allowedAssetClasses"): "StrategyPositionAssetClass[]",
+    ("StrategyPositionSizeLimit", "mode"): "StrategyPositionSizeMode",
 }
 
 DEPRECATED_FIELD_NOTES: dict[tuple[str, str], str] = {
@@ -391,7 +398,7 @@ def _render_interface(model: type[BaseModel]) -> list[str]:
     for field_name, field_info in model.model_fields.items():
         property_schema = schema_properties.get(field_name, {})
         annotation = type_hints.get(field_name, field_info.annotation)
-        ts_type = _ts_type(annotation)
+        ts_type = FIELD_TYPE_OVERRIDES.get((model.__name__, field_name), _ts_type(annotation))
         is_optional = _field_is_optional(model.__name__, field_name, field_info)
         note = DEPRECATED_FIELD_NOTES.get((model.__name__, field_name))
 

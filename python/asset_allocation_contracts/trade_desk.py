@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
+from asset_allocation_contracts.backtest import StrategyReferenceInput
 from asset_allocation_contracts.broker_accounts import BrokerAlertStatus, BrokerTradingPolicy
 
 TradeProvider = Literal["alpaca", "etrade", "schwab"]
@@ -471,6 +472,7 @@ class TradeOrderPreviewRequest(BaseModel):
     stopPrice: float | None = Field(default=None, gt=0)
     allowExtendedHours: bool = False
     source: Literal["manual", "rebalance_preview", "system"] = "manual"
+    strategyRef: StrategyReferenceInput | None = None
 
     @field_validator("accountId", "clientRequestId", mode="before")
     @classmethod
