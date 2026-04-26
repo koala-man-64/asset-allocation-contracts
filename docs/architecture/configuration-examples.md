@@ -410,6 +410,7 @@ Source of truth:
 {
   "apiBaseUrl": "/api",
   "authSessionMode": "bearer",
+  "authProvider": "disabled",
   "oidcEnabled": false,
   "authRequired": false,
   "oidcScopes": [],
@@ -425,6 +426,7 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
 {
   "apiBaseUrl": "https://control-plane.example.com/api",
   "authSessionMode": "cookie",
+  "authProvider": "oidc",
   "oidcEnabled": true,
   "authRequired": true,
   "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -436,10 +438,25 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
 }
 ```
 
+### Password-auth UI runtime config
+
+```json
+{
+  "apiBaseUrl": "/api",
+  "authSessionMode": "cookie",
+  "authProvider": "password",
+  "oidcEnabled": false,
+  "authRequired": true,
+  "oidcScopes": [],
+  "oidcAudience": []
+}
+```
+
 Validation notes:
 
 - `apiBaseUrl` must be a non-empty string.
 - `authSessionMode` defaults to `bearer`; deployed browser sessions may set `cookie`.
+- `authProvider` defaults to `disabled`; password auth requires `authSessionMode: "cookie"`.
 - `oidcScopes` and `oidcAudience` normalize `string`, `list`, `tuple`, and `set` inputs into string arrays.
 
 ## Repo Bootstrap Env Configuration

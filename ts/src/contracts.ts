@@ -2,6 +2,7 @@
 // Do not edit by hand.
 
 export type AuthSessionMode = 'bearer' | 'cookie';
+export type AuthProvider = 'disabled' | 'oidc' | 'password';
 export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-support';
 export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
 export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
@@ -272,6 +273,7 @@ export interface RegimeModelDetailResponse {
 export interface UiRuntimeConfig {
   apiBaseUrl: string;
   authSessionMode: AuthSessionMode;
+  authProvider: AuthProvider;
   oidcEnabled: boolean;
   authRequired: boolean;
   oidcAuthority?: string | null;
@@ -289,6 +291,10 @@ export interface AuthSessionStatus {
   username?: string | null;
   requiredRoles: string[];
   grantedRoles: string[];
+}
+
+export interface PasswordAuthSessionRequest {
+  password: string;
 }
 
 export interface RuntimeJobMetadata {

@@ -15,6 +15,7 @@ def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
         {
             "apiBaseUrl": "/api",
             "authSessionMode": "cookie",
+            "authProvider": "oidc",
             "oidcEnabled": True,
             "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -27,6 +28,7 @@ def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
     )
 
     assert payload.authSessionMode == "cookie"
+    assert payload.authProvider == "oidc"
     assert payload.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
         "openid",
@@ -259,6 +261,7 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
     minimal = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "/api",
+            "authProvider": "disabled",
             "oidcEnabled": False,
             "authRequired": False,
             "oidcScopes": [],
@@ -268,6 +271,7 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
     oidc_enabled = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "https://control-plane.example.com/api",
+            "authProvider": "oidc",
             "oidcEnabled": True,
             "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -278,8 +282,20 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
             "oidcAudience": "asset-allocation-api,asset-allocation-jobs",
         }
     )
+    password_enabled = UiRuntimeConfig.model_validate(
+        {
+            "apiBaseUrl": "/api",
+            "authSessionMode": "cookie",
+            "authProvider": "password",
+            "oidcEnabled": False,
+            "authRequired": True,
+            "oidcScopes": [],
+            "oidcAudience": [],
+        }
+    )
 
     assert minimal.apiBaseUrl == "/api"
+    assert minimal.authProvider == "disabled"
     assert oidc_enabled.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
         "openid",
@@ -289,3 +305,5 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
         "asset-allocation-api",
         "asset-allocation-jobs",
     ]
+    assert password_enabled.authProvider == "password"
+    assert password_enabled.authSessionMode == "cookie"
