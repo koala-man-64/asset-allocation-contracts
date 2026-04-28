@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -20,6 +21,7 @@ ExitReference = Literal["entry_price", "highest_since_entry"]
 IntrabarConflictPolicy = Literal["stop_first", "take_profit_first", "priority_order"]
 StrategyPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 StrategyPositionAssetClass = Literal["equity", "option"]
+RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
 UniverseSource = Literal["postgres_gold"]
 UniverseGroupOperator = Literal["and", "or"]
 UniverseConditionOperator = Literal[
@@ -325,6 +327,48 @@ class StrategyPositionPolicy(BaseModel):
         return self
 
 
+class StrategyRiskProfileConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    presetClass: RiskTolerancePreset
+    positionPolicy: StrategyPositionPolicy
+
+    @model_validator(mode="after")
+    def validate_config(self) -> "StrategyRiskProfileConfig":
+        target = self.positionPolicy.targetPositionSize
+        maximum = self.positionPolicy.maxPositionSize
+        max_open_positions = self.positionPolicy.maxOpenPositions
+
+        if target is None:
+            raise ValueError("Strategy risk profiles require targetPositionSize.")
+        if maximum is None:
+            raise ValueError("Strategy risk profiles require maxPositionSize.")
+        if max_open_positions is None:
+            raise ValueError("Strategy risk profiles require maxOpenPositions.")
+        if target.mode != maximum.mode:
+            raise ValueError("Strategy risk profiles require targetPositionSize and maxPositionSize to share a mode.")
+        if maximum.value < target.value:
+            raise ValueError("maxPositionSize must be greater than or equal to targetPositionSize.")
+
+        return self
+
+
+class StrategyRiskProfileSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    presetClass: RiskTolerancePreset
+    version: int = Field(default=1, ge=1)
+    isSystem: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    updatedAt: datetime | None = None
+
+
+class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
+    config: StrategyRiskProfileConfig
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -338,6 +382,7 @@ class StrategyConfig(BaseModel):
     costModel: str = Field(default="default", min_length=1, max_length=64)
     rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
     regimePolicy: RegimePolicy | None = None
+    riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
     positionPolicy: StrategyPositionPolicy | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
@@ -390,12 +435,22 @@ class StrategyConfig(BaseModel):
         normalized = str(value).strip()
         return normalized or None
 
+    @field_validator("riskProfileName", mode="before")
+    @classmethod
+    def normalize_risk_profile_name(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
+
     @model_validator(mode="after")
     def normalize_exits(self) -> "StrategyConfig":
         if not self.universeConfigName and self.universe is None:
             raise ValueError("universeConfigName is required.")
         if not self.longOnly:
             raise ValueError("Strategy position policy v1 only supports longOnly=true.")
+        if self.riskProfileName and self.positionPolicy is None:
+            raise ValueError("riskProfileName requires a positionPolicy snapshot.")
         if self.positionPolicy is not None:
             self._validate_position_policy_exposure()
         seen_ids: set[str] = set()

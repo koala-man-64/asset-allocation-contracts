@@ -15,6 +15,7 @@ export type ExitRuleReference = 'entry_price' | 'highest_since_entry';
 export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'priority_order';
 export type StrategyPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
 export type StrategyPositionAssetClass = 'equity' | 'option';
+export type RiskTolerancePreset = 'conservative' | 'balanced' | 'aggressive';
 export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
@@ -90,6 +91,7 @@ export interface StrategyConfig {
   costModel: string;
   rankingSchemaName?: string | null;
   regimePolicy?: RegimePolicy | null;
+  riskProfileName?: string | null;
   positionPolicy?: StrategyPositionPolicy | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
@@ -143,6 +145,32 @@ export interface ExitRule {
   action: ExitRuleAction;
   minHoldBars: number;
   reference?: ExitRuleReference | null;
+}
+
+export interface StrategyRiskProfileConfig {
+  presetClass: RiskTolerancePreset;
+  positionPolicy: StrategyPositionPolicy;
+}
+
+export interface StrategyRiskProfileSummary {
+  name: string;
+  description: string;
+  presetClass: RiskTolerancePreset;
+  version: number;
+  isSystem: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+}
+
+export interface StrategyRiskProfileDetail {
+  name: string;
+  description: string;
+  presetClass: RiskTolerancePreset;
+  version: number;
+  isSystem: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+  config: StrategyRiskProfileConfig;
 }
 
 export interface UniverseCatalogResponse {

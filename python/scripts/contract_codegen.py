@@ -29,6 +29,11 @@ from asset_allocation_contracts import (
 
 SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("strategy-config.schema.json", strategy.StrategyConfig),
+    ("strategy-position-size-limit.schema.json", strategy.StrategyPositionSizeLimit),
+    ("strategy-position-policy.schema.json", strategy.StrategyPositionPolicy),
+    ("strategy-risk-profile-config.schema.json", strategy.StrategyRiskProfileConfig),
+    ("strategy-risk-profile-summary.schema.json", strategy.StrategyRiskProfileSummary),
+    ("strategy-risk-profile-detail.schema.json", strategy.StrategyRiskProfileDetail),
     ("universe-definition.schema.json", strategy.UniverseDefinition),
     ("universe-catalog.schema.json", strategy.UniverseCatalogResponse),
     ("universe-preview.schema.json", strategy.UniversePreviewResponse),
@@ -210,6 +215,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("IntrabarConflictPolicy", strategy.IntrabarConflictPolicy),
     ("StrategyPositionSizeMode", strategy.StrategyPositionSizeMode),
     ("StrategyPositionAssetClass", strategy.StrategyPositionAssetClass),
+    ("RiskTolerancePreset", strategy.RiskTolerancePreset),
     ("RegimeCode", regime.RegimeCode),
     ("UniverseSource", strategy.UniverseSource),
     ("UniverseGroupOperator", strategy.UniverseGroupOperator),
