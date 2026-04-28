@@ -6,7 +6,7 @@ from asset_allocation_contracts.regime import (
     RegimePolicy,
     validate_canonical_default_regime_config,
 )
-from asset_allocation_contracts.strategy import StrategyConfig, UniverseDefinition
+from asset_allocation_contracts.strategy import StrategyConfig, StrategyRiskProfileDetail, UniverseDefinition
 from asset_allocation_contracts.ui_config import UiRuntimeConfig
 
 
@@ -15,6 +15,7 @@ def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
         {
             "apiBaseUrl": "/api",
             "authSessionMode": "cookie",
+            "authProvider": "oidc",
             "oidcEnabled": True,
             "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -27,6 +28,7 @@ def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
     )
 
     assert payload.authSessionMode == "cookie"
+    assert payload.authProvider == "oidc"
     assert payload.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
         "openid",
@@ -85,9 +87,21 @@ def test_documented_strategy_example_is_valid() -> None:
             "holdingPeriod": 21,
             "costModel": "default",
             "rankingSchemaName": "quality-momentum-v1",
+            "riskProfileName": "balanced",
             "regimePolicy": {
                 "modelName": "default-regime",
                 "mode": "observe_only",
+            },
+            "positionPolicy": {
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 5
+                },
+                "maxPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 8
+                },
+                "maxOpenPositions": 20
             },
             "intrabarConflictPolicy": "priority_order",
             "exits": [
@@ -151,7 +165,38 @@ def test_documented_strategy_example_is_valid() -> None:
     )
 
     assert payload.regimePolicy is not None
+    assert payload.riskProfileName == "balanced"
     assert len(payload.exits) == 5
+
+
+def test_documented_strategy_risk_profile_example_is_valid() -> None:
+    payload = StrategyRiskProfileDetail.model_validate(
+        {
+            "name": "balanced",
+            "description": "Default balanced posture for diversified long-only sleeves.",
+            "presetClass": "balanced",
+            "version": 1,
+            "isSystem": True,
+            "usageCount": 6,
+            "config": {
+                "presetClass": "balanced",
+                "positionPolicy": {
+                    "targetPositionSize": {
+                        "mode": "pct_of_allocatable_capital",
+                        "value": 5
+                    },
+                    "maxPositionSize": {
+                        "mode": "pct_of_allocatable_capital",
+                        "value": 8
+                    },
+                    "maxOpenPositions": 20
+                }
+            }
+        }
+    )
+
+    assert payload.config.positionPolicy.maxOpenPositions == 20
+    assert payload.isSystem is True
 
 
 def test_documented_ranking_examples_are_valid() -> None:
@@ -259,6 +304,7 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
     minimal = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "/api",
+            "authProvider": "disabled",
             "oidcEnabled": False,
             "authRequired": False,
             "oidcScopes": [],
@@ -268,6 +314,7 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
     oidc_enabled = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "https://control-plane.example.com/api",
+            "authProvider": "oidc",
             "oidcEnabled": True,
             "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
@@ -278,8 +325,20 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
             "oidcAudience": "asset-allocation-api,asset-allocation-jobs",
         }
     )
+    password_enabled = UiRuntimeConfig.model_validate(
+        {
+            "apiBaseUrl": "/api",
+            "authSessionMode": "cookie",
+            "authProvider": "password",
+            "oidcEnabled": False,
+            "authRequired": True,
+            "oidcScopes": [],
+            "oidcAudience": [],
+        }
+    )
 
     assert minimal.apiBaseUrl == "/api"
+    assert minimal.authProvider == "disabled"
     assert oidc_enabled.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
         "openid",
@@ -289,3 +348,5 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
         "asset-allocation-api",
         "asset-allocation-jobs",
     ]
+    assert password_enabled.authProvider == "password"
+    assert password_enabled.authSessionMode == "cookie"

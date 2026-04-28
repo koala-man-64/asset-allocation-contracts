@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _normalize_scopes(value: Any) -> list[str]:
@@ -23,6 +23,7 @@ def _normalize_scopes(value: Any) -> list[str]:
 
 
 AuthSessionMode = Literal["bearer", "cookie"]
+AuthProvider = Literal["disabled", "oidc", "password"]
 
 
 class UiRuntimeConfig(BaseModel):
@@ -30,6 +31,7 @@ class UiRuntimeConfig(BaseModel):
 
     apiBaseUrl: str = Field(default="/api", min_length=1)
     authSessionMode: AuthSessionMode = "bearer"
+    authProvider: AuthProvider = "disabled"
     oidcEnabled: bool = False
     authRequired: bool = False
     oidcAuthority: str | None = None
@@ -44,6 +46,12 @@ class UiRuntimeConfig(BaseModel):
     def normalize_scopes(cls, value: Any) -> list[str]:
         return _normalize_scopes(value)
 
+    @model_validator(mode="after")
+    def validate_auth_provider(self) -> UiRuntimeConfig:
+        if self.authProvider == "password" and self.authSessionMode != "cookie":
+            raise ValueError("authSessionMode must be 'cookie' when authProvider is 'password'.")
+        return self
+
 
 class AuthSessionStatus(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -54,3 +62,9 @@ class AuthSessionStatus(BaseModel):
     username: str | None = None
     requiredRoles: list[str] = Field(default_factory=list)
     grantedRoles: list[str] = Field(default_factory=list)
+
+
+class PasswordAuthSessionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=1)

@@ -1,0 +1,284 @@
+{
+  "$defs": {
+    "TradeBlotterRow": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "cashImpact": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cashimpact"
+        },
+        "clientRequestId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clientrequestid"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "eventType": {
+          "enum": [
+            "fill",
+            "cancel",
+            "fee",
+            "cash_adjustment",
+            "dividend",
+            "interest",
+            "journal"
+          ],
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "fees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fees"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "occurredAt": {
+          "format": "date-time",
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "orderId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Orderid"
+        },
+        "price": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Price"
+        },
+        "provider": {
+          "enum": [
+            "alpaca",
+            "etrade",
+            "schwab"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "providerOrderId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerorderid"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "realizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realizedpnl"
+        },
+        "rowId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Rowid",
+          "type": "string"
+        },
+        "side": {
+          "anyOf": [
+            {
+              "enum": [
+                "buy",
+                "sell"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Side"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "draft",
+                "previewed",
+                "submitted",
+                "accepted",
+                "partially_filled",
+                "filled",
+                "cancel_pending",
+                "cancelled",
+                "rejected",
+                "expired",
+                "unknown_reconcile_required"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        }
+      },
+      "required": [
+        "rowId",
+        "accountId",
+        "provider",
+        "environment",
+        "eventType",
+        "occurredAt"
+      ],
+      "title": "TradeBlotterRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "generatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generatedat"
+    },
+    "nextCursor": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nextcursor"
+    },
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/TradeBlotterRow"
+      },
+      "title": "Rows",
+      "type": "array"
+    }
+  },
+  "required": [
+    "accountId"
+  ],
+  "title": "TradeBlotterResponse",
+  "type": "object"
+}

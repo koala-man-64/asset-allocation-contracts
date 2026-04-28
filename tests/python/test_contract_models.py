@@ -70,7 +70,9 @@ from asset_allocation_contracts.portfolio import (
     PortfolioAccountUpsertRequest,
     PortfolioAlert,
     PortfolioAssignment,
+    PortfolioForecastResponse,
     PortfolioLedgerEvent,
+    PortfolioNextRebalanceResponse,
     PortfolioPosition,
     PortfolioRevision,
     PortfolioSleeveAllocation,
@@ -103,6 +105,10 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    StrategyPositionPolicy,
+    StrategyRiskProfileConfig,
+    StrategyRiskProfileDetail,
+    StrategyRiskProfileSummary,
     StrategyConfig,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
@@ -111,7 +117,12 @@ from asset_allocation_contracts.strategy import (
     UniverseGroup,
     UniversePreviewResponse,
 )
-from asset_allocation_contracts.ui_config import AuthSessionStatus, UiRuntimeConfig
+from asset_allocation_contracts.trade_desk import TradeOrderPreviewRequest
+from asset_allocation_contracts.ui_config import (
+    AuthSessionStatus,
+    PasswordAuthSessionRequest,
+    UiRuntimeConfig,
+)
 
 
 def test_strategy_contract_accepts_regime_policy() -> None:
@@ -129,6 +140,224 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
     assert payload.regimePolicy.mode == "observe_only"
+
+
+def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        positionPolicy=StrategyPositionPolicy(),
+    )
+
+    assert payload.positionPolicy is not None
+    assert payload.positionPolicy.allowedAssetClasses == ["equity"]
+    assert payload.positionPolicy.requireOrderConfirmation is False
+
+
+def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        topN=10,
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
+            "maxOpenPositions": 4,
+            "allowedAssetClasses": ["equity", "option", "equity"],
+            "requireOrderConfirmation": True,
+        },
+    )
+
+    assert payload.positionPolicy is not None
+    assert payload.positionPolicy.targetPositionSize is not None
+    assert payload.positionPolicy.targetPositionSize.value == 5
+    assert payload.positionPolicy.allowedAssetClasses == ["equity", "option"]
+    assert payload.positionPolicy.requireOrderConfirmation is True
+
+
+def test_strategy_position_policy_rejects_invalid_percentage_limit() -> None:
+    try:
+        StrategyPositionPolicy(targetPositionSize={"mode": "pct_of_allocatable_capital", "value": 101})
+    except Exception as exc:
+        assert "cannot exceed 100" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for oversized percentage position limit.")
+
+
+def test_strategy_position_policy_rejects_long_only_overallocation() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            topN=3,
+            positionPolicy={"targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 40}},
+        )
+    except Exception as exc:
+        assert "cannot allocate more than 100%" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for long-only over-allocation.")
+
+
+def test_strategy_risk_profile_config_requires_complete_position_policy() -> None:
+    payload = StrategyRiskProfileConfig(
+        presetClass="balanced",
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+            "maxOpenPositions": 20,
+        },
+    )
+
+    assert payload.presetClass == "balanced"
+    assert payload.positionPolicy.maxOpenPositions == 20
+
+    for invalid_payload in (
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 20,
+            },
+        },
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
+                "maxOpenPositions": 20,
+            },
+        },
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxOpenPositions": 20,
+            },
+        },
+    ):
+        try:
+            StrategyRiskProfileConfig.model_validate(invalid_payload)
+        except Exception as exc:
+            assert "Strategy risk profiles require targetPositionSize" in str(exc) or "share a mode" in str(exc) or "greater than or equal" in str(exc)
+        else:
+            raise AssertionError("Expected validation failure for incomplete or invalid risk profile policy.")
+
+
+def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> None:
+    summary = StrategyRiskProfileSummary(
+        name="balanced",
+        description="Default balanced posture.",
+        presetClass="balanced",
+        version=2,
+        isSystem=True,
+        usageCount=14,
+    )
+    detail = StrategyRiskProfileDetail(
+        **summary.model_dump(),
+        config={
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 20,
+            },
+        },
+    )
+
+    assert detail.name == "balanced"
+    assert detail.isSystem is True
+    assert detail.config.positionPolicy.maxOpenPositions == 20
+
+
+def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_name_is_set() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            riskProfileName="balanced",
+        )
+    except Exception as exc:
+        assert "riskProfileName requires a positionPolicy snapshot" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for incomplete risk profile strategy config.")
+
+
+def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        riskProfileName="balanced",
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+            "maxOpenPositions": 20,
+        },
+    )
+
+    assert payload.riskProfileName == "balanced"
+    assert payload.positionPolicy is not None
+
+
+def test_strategy_config_rejects_short_side_until_supported() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            longOnly=False,
+        )
+    except Exception as exc:
+        assert "only supports longOnly=true" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for longOnly=false.")
+
+
+def test_trade_order_preview_accepts_optional_strategy_reference() -> None:
+    request = TradeOrderPreviewRequest(
+        accountId="acct-1",
+        environment="paper",
+        clientRequestId="preview-1",
+        symbol="aapl",
+        side="buy",
+        orderType="market",
+        quantity=1,
+        strategyRef={"strategyName": "quality-trend", "strategyVersion": 3},
+    )
+
+    assert request.symbol == "AAPL"
+    assert request.strategyRef is not None
+    assert request.strategyRef.strategyName == "quality-trend"
+    assert request.strategyRef.strategyVersion == 3
 
 
 def test_ranking_schema_requires_groups() -> None:
@@ -208,6 +437,7 @@ def test_ui_runtime_config_defaults_to_api_root() -> None:
     config = UiRuntimeConfig()
     assert config.apiBaseUrl == "/api"
     assert config.authSessionMode == "bearer"
+    assert config.authProvider == "disabled"
     assert config.oidcScopes == []
     assert config.oidcAudience == []
     assert config.oidcPostLogoutRedirectUri is None
@@ -218,6 +448,14 @@ def test_ui_runtime_config_accepts_cookie_auth_session_mode() -> None:
     assert config.authSessionMode == "cookie"
 
 
+def test_ui_runtime_config_accepts_password_auth_provider_with_cookie_session_mode() -> None:
+    config = UiRuntimeConfig(authProvider="password", authSessionMode="cookie", authRequired=True)
+
+    assert config.authProvider == "password"
+    assert config.authSessionMode == "cookie"
+    assert config.authRequired is True
+
+
 def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
     try:
         UiRuntimeConfig(authSessionMode="local-storage")
@@ -225,6 +463,16 @@ def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
         assert "authSessionMode" in str(exc)
     else:
         raise AssertionError("Expected validation failure for unknown auth session mode.")
+
+
+def test_ui_runtime_config_rejects_password_auth_provider_without_cookie_session_mode() -> None:
+    try:
+        UiRuntimeConfig(authProvider="password", authSessionMode="bearer")
+    except Exception as exc:
+        assert "authSessionMode" in str(exc)
+        assert "authProvider" in str(exc)
+    else:
+        raise AssertionError("Expected password auth provider to require cookie session mode.")
 
 
 def test_ui_runtime_config_normalizes_string_scopes() -> None:
@@ -253,6 +501,22 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert schema["required"] == ["authMode", "subject"]
     assert "requiredRoles" in schema["properties"]
     assert "grantedRoles" in schema["properties"]
+
+
+def test_password_auth_session_request_requires_non_empty_password() -> None:
+    payload = PasswordAuthSessionRequest(password="operator-secret")
+    schema = PasswordAuthSessionRequest.model_json_schema()
+
+    assert payload.password == "operator-secret"
+    assert schema["required"] == ["password"]
+    assert schema["properties"]["password"]["minLength"] == 1
+
+    try:
+        PasswordAuthSessionRequest(password="")
+    except Exception as exc:
+        assert "password" in str(exc)
+    else:
+        raise AssertionError("Expected password auth session request validation to reject blank passwords.")
 
 
 def test_runtime_job_metadata_contract_validates_strategy_compute_fields() -> None:
@@ -1014,8 +1278,23 @@ def test_portfolio_account_defaults_capture_internal_model_managed_scope() -> No
     assert account.mode == "internal_model_managed"
     assert account.accountingDepth == "position_level"
     assert account.cadenceMode == "strategy_native"
+    assert account.rebalanceCadence == "weekly"
+    assert account.rebalanceAnchor == "Strategy native cadence"
     assert account.baseCurrency == "USD"
     assert request.openingCash == 1_000_000
+
+
+def test_portfolio_account_upsert_request_accepts_optional_rebalance_schedule_overrides() -> None:
+    payload = PortfolioAccountUpsertRequest(
+        name="Core Long Only",
+        baseCurrency="usd",
+        inceptionDate="2026-01-02",
+        rebalanceCadence="monthly",
+        rebalanceAnchor="15th close",
+    )
+
+    assert payload.rebalanceCadence == "monthly"
+    assert payload.rebalanceAnchor == "15th close"
 
 
 def test_portfolio_ledger_event_separates_cash_and_trade_shapes() -> None:
@@ -1166,6 +1445,44 @@ def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts(
     assert position.symbol == "MSFT"
     assert alert.status == "open"
     assert upsert.allocations[1].strategy.strategyVersion == 2
+
+
+def test_portfolio_forecast_and_next_rebalance_contracts_capture_authoritative_monitoring_shapes() -> None:
+    forecast = PortfolioForecastResponse(
+        accountId="acct-001",
+        asOf="2026-04-18",
+        modelName="default-regime",
+        modelVersion=3,
+        benchmarkSymbol="spy",
+        horizon="3M",
+        assumption="current",
+        costDragOverrideBps=12,
+        expectedReturnPct=4.2,
+        expectedActiveReturnPct=1.1,
+        downsidePct=-2.3,
+        upsidePct=7.6,
+        confidence="medium",
+        confidenceLabel="Medium confidence",
+        sampleSize=11,
+        sampleMode="regime-conditioned",
+        appliedRegimeCode="trending_up",
+        notes=["Regime sample is moderately deep."],
+    )
+    rebalance = PortfolioNextRebalanceResponse(
+        accountId="acct-001",
+        asOf="2026-04-18",
+        rebalanceCadence="weekly",
+        anchorText="Monday close",
+        nextDate="2026-04-20",
+        inferred=False,
+        basis="anchor",
+        reason="Weekly cadence is anchored to the parsed weekday in the rebalance anchor.",
+    )
+
+    assert forecast.benchmarkSymbol == "SPY"
+    assert forecast.confidence == "medium"
+    assert rebalance.anchorText == "Monday close"
+    assert rebalance.nextDate is not None
 
 
 def test_government_signal_congress_trade_validates_amount_bounds() -> None:

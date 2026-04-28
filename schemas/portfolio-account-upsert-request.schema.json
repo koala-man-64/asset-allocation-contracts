@@ -60,6 +60,37 @@
       ],
       "default": null,
       "title": "Openingcash"
+    },
+    "rebalanceAnchor": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rebalanceanchor"
+    },
+    "rebalanceCadence": {
+      "anyOf": [
+        {
+          "enum": [
+            "daily",
+            "weekly",
+            "monthly"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rebalancecadence"
     }
   },
   "required": [

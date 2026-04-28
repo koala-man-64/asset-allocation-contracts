@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -18,6 +19,9 @@ ExitAction = Literal["exit_full"]
 PriceField = Literal["open", "high", "low", "close"]
 ExitReference = Literal["entry_price", "highest_since_entry"]
 IntrabarConflictPolicy = Literal["stop_first", "take_profit_first", "priority_order"]
+StrategyPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
+StrategyPositionAssetClass = Literal["equity", "option"]
+RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
 UniverseSource = Literal["postgres_gold"]
 UniverseGroupOperator = Literal["and", "or"]
 UniverseConditionOperator = Literal[
@@ -280,6 +284,91 @@ class ExitRule(BaseModel):
             raise ValueError(f"{self.type} does not support reference.")
 
 
+class StrategyPositionSizeLimit(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    mode: StrategyPositionSizeMode = "pct_of_allocatable_capital"
+    value: float = Field(..., gt=0.0)
+
+    @model_validator(mode="after")
+    def validate_limit(self) -> "StrategyPositionSizeLimit":
+        if self.mode == "pct_of_allocatable_capital" and self.value > 100:
+            raise ValueError("Percentage position sizing values cannot exceed 100.")
+        return self
+
+
+class StrategyPositionPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    targetPositionSize: StrategyPositionSizeLimit | None = None
+    maxPositionSize: StrategyPositionSizeLimit | None = None
+    maxOpenPositions: int | None = Field(default=None, ge=1)
+    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(default_factory=lambda: ["equity"])
+    requireOrderConfirmation: bool = False
+
+    @field_validator("allowedAssetClasses", mode="before")
+    @classmethod
+    def normalize_allowed_asset_classes(cls, value: object) -> list[str]:
+        if value is None:
+            return ["equity"]
+        if not isinstance(value, list):
+            raise ValueError("allowedAssetClasses must be a list.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip().lower()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "StrategyPositionPolicy":
+        if not self.allowedAssetClasses:
+            raise ValueError("allowedAssetClasses must include at least one asset class.")
+        return self
+
+
+class StrategyRiskProfileConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    presetClass: RiskTolerancePreset
+    positionPolicy: StrategyPositionPolicy
+
+    @model_validator(mode="after")
+    def validate_config(self) -> "StrategyRiskProfileConfig":
+        target = self.positionPolicy.targetPositionSize
+        maximum = self.positionPolicy.maxPositionSize
+        max_open_positions = self.positionPolicy.maxOpenPositions
+
+        if target is None:
+            raise ValueError("Strategy risk profiles require targetPositionSize.")
+        if maximum is None:
+            raise ValueError("Strategy risk profiles require maxPositionSize.")
+        if max_open_positions is None:
+            raise ValueError("Strategy risk profiles require maxOpenPositions.")
+        if target.mode != maximum.mode:
+            raise ValueError("Strategy risk profiles require targetPositionSize and maxPositionSize to share a mode.")
+        if maximum.value < target.value:
+            raise ValueError("maxPositionSize must be greater than or equal to targetPositionSize.")
+
+        return self
+
+
+class StrategyRiskProfileSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    presetClass: RiskTolerancePreset
+    version: int = Field(default=1, ge=1)
+    isSystem: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    updatedAt: datetime | None = None
+
+
+class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
+    config: StrategyRiskProfileConfig
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -293,6 +382,8 @@ class StrategyConfig(BaseModel):
     costModel: str = Field(default="default", min_length=1, max_length=64)
     rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
     regimePolicy: RegimePolicy | None = None
+    riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
+    positionPolicy: StrategyPositionPolicy | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
@@ -344,10 +435,24 @@ class StrategyConfig(BaseModel):
         normalized = str(value).strip()
         return normalized or None
 
+    @field_validator("riskProfileName", mode="before")
+    @classmethod
+    def normalize_risk_profile_name(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
+
     @model_validator(mode="after")
     def normalize_exits(self) -> "StrategyConfig":
         if not self.universeConfigName and self.universe is None:
             raise ValueError("universeConfigName is required.")
+        if not self.longOnly:
+            raise ValueError("Strategy position policy v1 only supports longOnly=true.")
+        if self.riskProfileName and self.positionPolicy is None:
+            raise ValueError("riskProfileName requires a positionPolicy snapshot.")
+        if self.positionPolicy is not None:
+            self._validate_position_policy_exposure()
         seen_ids: set[str] = set()
         for idx, rule in enumerate(self.exits):
             if rule.id in seen_ids:
@@ -356,3 +461,18 @@ class StrategyConfig(BaseModel):
             if rule.priority is None:
                 rule.priority = idx
         return self
+
+    def _validate_position_policy_exposure(self) -> None:
+        policy = self.positionPolicy
+        if policy is None or policy.targetPositionSize is None:
+            return
+        target = policy.targetPositionSize
+        if target.mode != "pct_of_allocatable_capital":
+            return
+        selected_positions = min(int(self.topN), int(policy.maxOpenPositions or self.topN))
+        total_target_pct = float(target.value) * selected_positions
+        if total_target_pct > 100:
+            raise ValueError(
+                "Long-only targetPositionSize percentage cannot allocate more than 100% "
+                "across selected positions."
+            )

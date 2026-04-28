@@ -165,6 +165,19 @@
           "default": null,
           "title": "Lastsyncedat"
         },
+        "lastTradeAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lasttradeat"
+        },
         "name": {
           "maxLength": 128,
           "minLength": 1,
@@ -176,6 +189,17 @@
           "minimum": 0,
           "title": "Openordercount",
           "type": "integer"
+        },
+        "pnl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TradePnlSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "policyVersion": {
           "anyOf": [
@@ -477,6 +501,132 @@
       "title": "TradeDataFreshness",
       "type": "object"
     },
+    "TradeDeskAlert": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "acknowledgedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedat"
+        },
+        "acknowledgedBy": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acknowledgedby"
+        },
+        "alertId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Alertid",
+          "type": "string"
+        },
+        "asOfDate": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asofdate"
+        },
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "title": "Message",
+          "type": "string"
+        },
+        "observedAt": {
+          "format": "date-time",
+          "title": "Observedat",
+          "type": "string"
+        },
+        "resolvedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolvedat"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "acknowledged",
+            "resolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "alertId",
+        "accountId",
+        "code",
+        "title",
+        "observedAt"
+      ],
+      "title": "TradeDeskAlert",
+      "type": "object"
+    },
     "TradeDeskAuditEvent": {
       "additionalProperties": false,
       "properties": {
@@ -755,6 +905,86 @@
       "title": "TradeDeskAuditEvent",
       "type": "object"
     },
+    "TradePnlSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "dayPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Daypnl"
+        },
+        "grossExposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grossexposure"
+        },
+        "netExposure": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Netexposure"
+        },
+        "realizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realizedpnl"
+        },
+        "unrealizedPnl": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unrealizedpnl"
+        }
+      },
+      "title": "TradePnlSnapshot",
+      "type": "object"
+    },
     "TradeRiskLimit": {
       "additionalProperties": false,
       "properties": {
@@ -851,6 +1081,13 @@
   "properties": {
     "account": {
       "$ref": "#/$defs/TradeAccountSummary"
+    },
+    "alerts": {
+      "items": {
+        "$ref": "#/$defs/TradeDeskAlert"
+      },
+      "title": "Alerts",
+      "type": "array"
     },
     "recentAuditEvents": {
       "items": {

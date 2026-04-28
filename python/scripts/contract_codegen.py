@@ -29,6 +29,11 @@ from asset_allocation_contracts import (
 
 SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("strategy-config.schema.json", strategy.StrategyConfig),
+    ("strategy-position-size-limit.schema.json", strategy.StrategyPositionSizeLimit),
+    ("strategy-position-policy.schema.json", strategy.StrategyPositionPolicy),
+    ("strategy-risk-profile-config.schema.json", strategy.StrategyRiskProfileConfig),
+    ("strategy-risk-profile-summary.schema.json", strategy.StrategyRiskProfileSummary),
+    ("strategy-risk-profile-detail.schema.json", strategy.StrategyRiskProfileDetail),
     ("universe-definition.schema.json", strategy.UniverseDefinition),
     ("universe-catalog.schema.json", strategy.UniverseCatalogResponse),
     ("universe-preview.schema.json", strategy.UniversePreviewResponse),
@@ -43,6 +48,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("regime-model-detail.schema.json", regime.RegimeModelDetailResponse),
     ("ui-runtime-config.schema.json", ui_config.UiRuntimeConfig),
     ("auth-session-status.schema.json", ui_config.AuthSessionStatus),
+    ("password-auth-session-request.schema.json", ui_config.PasswordAuthSessionRequest),
     ("runtime-job-metadata.schema.json", job_metadata.RuntimeJobMetadata),
     (
         "strategy-publication-reconcile-signal-request.schema.json",
@@ -90,10 +96,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("trade-account-detail.schema.json", trade_desk.TradeAccountDetail),
     ("trade-account-list.schema.json", trade_desk.TradeAccountListResponse),
     ("trade-capability-flags.schema.json", trade_desk.TradeCapabilityFlags),
+    ("trade-pnl-snapshot.schema.json", trade_desk.TradePnlSnapshot),
+    ("trade-desk-alert.schema.json", trade_desk.TradeDeskAlert),
     ("trade-position.schema.json", trade_desk.TradePosition),
     ("trade-position-list.schema.json", trade_desk.TradePositionListResponse),
     ("trade-order.schema.json", trade_desk.TradeOrder),
     ("trade-order-history-response.schema.json", trade_desk.TradeOrderHistoryResponse),
+    ("trade-blotter-row.schema.json", trade_desk.TradeBlotterRow),
+    ("trade-blotter-response.schema.json", trade_desk.TradeBlotterResponse),
     ("trade-order-preview-request.schema.json", trade_desk.TradeOrderPreviewRequest),
     ("trade-order-preview-response.schema.json", trade_desk.TradeOrderPreviewResponse),
     ("trade-order-place-request.schema.json", trade_desk.TradeOrderPlaceRequest),
@@ -192,6 +202,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("AuthSessionMode", ui_config.AuthSessionMode),
+    ("AuthProvider", ui_config.AuthProvider),
     ("JobCategory", job_metadata.JobCategory),
     ("JobMetadataSource", job_metadata.JobMetadataSource),
     ("JobMetadataStatus", job_metadata.JobMetadataStatus),
@@ -202,6 +213,9 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("ExitRulePriceField", strategy.PriceField),
     ("ExitRuleReference", strategy.ExitReference),
     ("IntrabarConflictPolicy", strategy.IntrabarConflictPolicy),
+    ("StrategyPositionSizeMode", strategy.StrategyPositionSizeMode),
+    ("StrategyPositionAssetClass", strategy.StrategyPositionAssetClass),
+    ("RiskTolerancePreset", strategy.RiskTolerancePreset),
     ("RegimeCode", regime.RegimeCode),
     ("UniverseSource", strategy.UniverseSource),
     ("UniverseGroupOperator", strategy.UniverseGroupOperator),
@@ -250,6 +264,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("TradeAuditEventType", trade_desk.TradeAuditEventType),
     ("TradeDataFreshnessState", trade_desk.TradeDataFreshnessState),
     ("TradeAuditSeverity", trade_desk.TradeAuditSeverity),
+    ("TradeBlotterEventType", trade_desk.TradeBlotterEventType),
     ("NotificationKind", notifications.NotificationKind),
     ("NotificationDeliveryChannel", notifications.NotificationDeliveryChannel),
     ("NotificationDeliveryStatus", notifications.NotificationDeliveryStatus),
@@ -272,6 +287,11 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
 FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RegimeModelSummary", "description"),
     ("RegimeModelRevision", "description"),
+}
+
+FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
+    ("StrategyPositionPolicy", "allowedAssetClasses"): "StrategyPositionAssetClass[]",
+    ("StrategyPositionSizeLimit", "mode"): "StrategyPositionSizeMode",
 }
 
 DEPRECATED_FIELD_NOTES: dict[tuple[str, str], str] = {
@@ -384,7 +404,7 @@ def _render_interface(model: type[BaseModel]) -> list[str]:
     for field_name, field_info in model.model_fields.items():
         property_schema = schema_properties.get(field_name, {})
         annotation = type_hints.get(field_name, field_info.annotation)
-        ts_type = _ts_type(annotation)
+        ts_type = FIELD_TYPE_OVERRIDES.get((model.__name__, field_name), _ts_type(annotation))
         is_optional = _field_is_optional(model.__name__, field_name, field_info)
         note = DEPRECATED_FIELD_NOTES.get((model.__name__, field_name))
 

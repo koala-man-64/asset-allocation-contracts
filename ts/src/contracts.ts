@@ -2,6 +2,7 @@
 // Do not edit by hand.
 
 export type AuthSessionMode = 'bearer' | 'cookie';
+export type AuthProvider = 'disabled' | 'oidc' | 'password';
 export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-support';
 export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
 export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
@@ -12,6 +13,9 @@ export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
 export type ExitRuleReference = 'entry_price' | 'highest_since_entry';
 export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'priority_order';
+export type StrategyPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
+export type StrategyPositionAssetClass = 'equity' | 'option';
+export type RiskTolerancePreset = 'conservative' | 'balanced' | 'aggressive';
 export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
@@ -60,6 +64,7 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
+export type TradeBlotterEventType = 'fill' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal';
 export type NotificationKind = 'message' | 'trade_approval';
 export type NotificationDeliveryChannel = 'email' | 'sms';
 export type NotificationDeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
@@ -86,6 +91,8 @@ export interface StrategyConfig {
   costModel: string;
   rankingSchemaName?: string | null;
   regimePolicy?: RegimePolicy | null;
+  riskProfileName?: string | null;
+  positionPolicy?: StrategyPositionPolicy | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
@@ -114,6 +121,19 @@ export interface RegimePolicy {
   mode: RegimePolicyMode;
 }
 
+export interface StrategyPositionPolicy {
+  targetPositionSize?: StrategyPositionSizeLimit | null;
+  maxPositionSize?: StrategyPositionSizeLimit | null;
+  maxOpenPositions?: number | null;
+  allowedAssetClasses: StrategyPositionAssetClass[];
+  requireOrderConfirmation: boolean;
+}
+
+export interface StrategyPositionSizeLimit {
+  mode: StrategyPositionSizeMode;
+  value: number;
+}
+
 export interface ExitRule {
   id: string;
   type: ExitRuleType;
@@ -125,6 +145,32 @@ export interface ExitRule {
   action: ExitRuleAction;
   minHoldBars: number;
   reference?: ExitRuleReference | null;
+}
+
+export interface StrategyRiskProfileConfig {
+  presetClass: RiskTolerancePreset;
+  positionPolicy: StrategyPositionPolicy;
+}
+
+export interface StrategyRiskProfileSummary {
+  name: string;
+  description: string;
+  presetClass: RiskTolerancePreset;
+  version: number;
+  isSystem: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+}
+
+export interface StrategyRiskProfileDetail {
+  name: string;
+  description: string;
+  presetClass: RiskTolerancePreset;
+  version: number;
+  isSystem: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+  config: StrategyRiskProfileConfig;
 }
 
 export interface UniverseCatalogResponse {
@@ -272,6 +318,7 @@ export interface RegimeModelDetailResponse {
 export interface UiRuntimeConfig {
   apiBaseUrl: string;
   authSessionMode: AuthSessionMode;
+  authProvider: AuthProvider;
   oidcEnabled: boolean;
   authRequired: boolean;
   oidcAuthority?: string | null;
@@ -289,6 +336,10 @@ export interface AuthSessionStatus {
   username?: string | null;
   requiredRoles: string[];
   grantedRoles: string[];
+}
+
+export interface PasswordAuthSessionRequest {
+  password: string;
 }
 
 export interface RuntimeJobMetadata {
@@ -861,7 +912,9 @@ export interface TradeAccountSummary {
   positionCount: number;
   unresolvedAlertCount: number;
   killSwitchActive: boolean;
+  pnl?: TradePnlSnapshot | null;
   lastSyncedAt?: string | null;
+  lastTradeAt?: string | null;
   snapshotAsOf?: string | null;
   freshness: TradeDataFreshness;
   policyVersion?: number | null;
@@ -891,6 +944,15 @@ export interface TradeCapabilityFlags {
   unsupportedReason?: string | null;
 }
 
+export interface TradePnlSnapshot {
+  realizedPnl?: number | null;
+  unrealizedPnl?: number | null;
+  dayPnl?: number | null;
+  grossExposure?: number | null;
+  netExposure?: number | null;
+  asOf?: string | null;
+}
+
 export interface TradeDataFreshness {
   balancesState: TradeDataFreshnessState;
   positionsState: TradeDataFreshnessState;
@@ -907,6 +969,7 @@ export interface TradeAccountDetail {
   restrictions: string[];
   riskLimits: TradeRiskLimit;
   unresolvedAlerts: string[];
+  alerts: TradeDeskAlert[];
   recentAuditEvents: TradeDeskAuditEvent[];
 }
 
@@ -918,6 +981,22 @@ export interface TradeRiskLimit {
   allowedOrderTypes: TradeOrderType[];
   liveTradingAllowed: boolean;
   liveTradingReason?: string | null;
+}
+
+export interface TradeDeskAlert {
+  alertId: string;
+  accountId: string;
+  severity: TradeAuditSeverity;
+  status: BrokerAlertStatus;
+  code: string;
+  title: string;
+  message: string;
+  blocking: boolean;
+  observedAt: string;
+  acknowledgedAt?: string | null;
+  acknowledgedBy?: string | null;
+  resolvedAt?: string | null;
+  asOfDate?: string | null;
 }
 
 export interface TradeDeskAuditEvent {
@@ -1027,6 +1106,34 @@ export interface TradeOrderHistoryResponse {
   nextCursor?: string | null;
 }
 
+export interface TradeBlotterRow {
+  rowId: string;
+  accountId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  eventType: TradeBlotterEventType;
+  occurredAt: string;
+  orderId?: string | null;
+  providerOrderId?: string | null;
+  clientRequestId?: string | null;
+  symbol?: string | null;
+  side?: TradeOrderSide | null;
+  status?: TradeOrderStatus | null;
+  quantity?: number | null;
+  price?: number | null;
+  fees?: number | null;
+  realizedPnl?: number | null;
+  cashImpact?: number | null;
+  note?: string | null;
+}
+
+export interface TradeBlotterResponse {
+  accountId: string;
+  rows: TradeBlotterRow[];
+  generatedAt?: string | null;
+  nextCursor?: string | null;
+}
+
 export interface TradeOrderPreviewRequest {
   accountId: string;
   environment: TradeEnvironment;
@@ -1042,6 +1149,7 @@ export interface TradeOrderPreviewRequest {
   stopPrice?: number | null;
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
+  strategyRef?: StrategyReferenceInput | null;
 }
 
 export interface TradeOrderPreviewResponse {
@@ -1083,6 +1191,7 @@ export interface TradeOrderPlaceRequest {
   stopPrice?: number | null;
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
+  strategyRef?: StrategyReferenceInput | null;
   idempotencyKey: string;
   previewId: string;
   confirmedAt: string;
@@ -1235,6 +1344,8 @@ export interface PortfolioAccount {
   mode: 'internal_model_managed';
   accountingDepth: 'position_level';
   cadenceMode: 'strategy_native';
+  rebalanceCadence: 'daily' | 'weekly' | 'monthly';
+  rebalanceAnchor: string;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
@@ -1266,6 +1377,8 @@ export interface PortfolioAccountRevision {
   mode: 'internal_model_managed';
   accountingDepth: 'position_level';
   cadenceMode: 'strategy_native';
+  rebalanceCadence: 'daily' | 'weekly' | 'monthly';
+  rebalanceAnchor: string;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
@@ -1310,6 +1423,8 @@ export interface PortfolioAccountUpsertRequest {
   name: string;
   description: string;
   mandate: string;
+  rebalanceCadence?: 'daily' | 'weekly' | 'monthly' | null;
+  rebalanceAnchor?: string | null;
   baseCurrency: string;
   benchmarkSymbol?: string | null;
   inceptionDate: string;
