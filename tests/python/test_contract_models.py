@@ -106,6 +106,9 @@ from asset_allocation_contracts.symbol_enrichment import (
 )
 from asset_allocation_contracts.strategy import (
     StrategyPositionPolicy,
+    StrategyRiskProfileConfig,
+    StrategyRiskProfileDetail,
+    StrategyRiskProfileSummary,
     StrategyConfig,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
@@ -208,6 +211,117 @@ def test_strategy_position_policy_rejects_long_only_overallocation() -> None:
         assert "cannot allocate more than 100%" in str(exc)
     else:
         raise AssertionError("Expected validation failure for long-only over-allocation.")
+
+
+def test_strategy_risk_profile_config_requires_complete_position_policy() -> None:
+    payload = StrategyRiskProfileConfig(
+        presetClass="balanced",
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+            "maxOpenPositions": 20,
+        },
+    )
+
+    assert payload.presetClass == "balanced"
+    assert payload.positionPolicy.maxOpenPositions == 20
+
+    for invalid_payload in (
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 20,
+            },
+        },
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
+                "maxOpenPositions": 20,
+            },
+        },
+        {
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxOpenPositions": 20,
+            },
+        },
+    ):
+        try:
+            StrategyRiskProfileConfig.model_validate(invalid_payload)
+        except Exception as exc:
+            assert "Strategy risk profiles require targetPositionSize" in str(exc) or "share a mode" in str(exc) or "greater than or equal" in str(exc)
+        else:
+            raise AssertionError("Expected validation failure for incomplete or invalid risk profile policy.")
+
+
+def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> None:
+    summary = StrategyRiskProfileSummary(
+        name="balanced",
+        description="Default balanced posture.",
+        presetClass="balanced",
+        version=2,
+        isSystem=True,
+        usageCount=14,
+    )
+    detail = StrategyRiskProfileDetail(
+        **summary.model_dump(),
+        config={
+            "presetClass": "balanced",
+            "positionPolicy": {
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 20,
+            },
+        },
+    )
+
+    assert detail.name == "balanced"
+    assert detail.isSystem is True
+    assert detail.config.positionPolicy.maxOpenPositions == 20
+
+
+def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_name_is_set() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            riskProfileName="balanced",
+        )
+    except Exception as exc:
+        assert "riskProfileName requires a positionPolicy snapshot" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure for incomplete risk profile strategy config.")
+
+
+def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        riskProfileName="balanced",
+        positionPolicy={
+            "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+            "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+            "maxOpenPositions": 20,
+        },
+    )
+
+    assert payload.riskProfileName == "balanced"
+    assert payload.positionPolicy is not None
 
 
 def test_strategy_config_rejects_short_side_until_supported() -> None:

@@ -18,10 +18,12 @@ Source of truth:
 
 - `python/asset_allocation_contracts/strategy.py`
 - `schemas/strategy-config.schema.json`
+- `schemas/strategy-risk-profile-*.schema.json`
 - `schemas/universe-definition.schema.json`
 - `ts/src/contracts.ts`
 
 `StrategyConfig` requires at least one of `universeConfigName` or `universe`.
+When `riskProfileName` is present, `positionPolicy` must also be present as the embedded execution snapshot.
 
 ### Minimal inline universe
 
@@ -121,19 +123,21 @@ This example shows the three supported `UniverseCondition` patterns:
   "holdingPeriod": 21,
   "costModel": "default",
   "rankingSchemaName": "quality-momentum-v1",
+  "riskProfileName": "balanced",
   "regimePolicy": {
     "modelName": "default-regime",
-    "targetGrossExposureByRegime": {
-      "trending_bull": 1.0,
-      "trending_bear": 0.5,
-      "choppy_mean_reversion": 0.75,
-      "high_vol": 0.0,
-      "unclassified": 0.0
+    "mode": "observe_only"
+  },
+  "positionPolicy": {
+    "targetPositionSize": {
+      "mode": "pct_of_allocatable_capital",
+      "value": 5
     },
-    "blockOnTransition": true,
-    "blockOnUnclassified": true,
-    "honorHaltFlag": true,
-    "onBlocked": "skip_entries"
+    "maxPositionSize": {
+      "mode": "pct_of_allocatable_capital",
+      "value": 8
+    },
+    "maxOpenPositions": 20
   },
   "intrabarConflictPolicy": "priority_order",
   "exits": [
@@ -199,9 +203,44 @@ This example shows the three supported `UniverseCondition` patterns:
 Validation notes:
 
 - `ExitRule.id` must be unique within a strategy.
+- `riskProfileName` requires an embedded `positionPolicy` snapshot so runtime and backtests never need a late-bound catalog lookup.
 - `trailing_stop_atr` requires `atrColumn`.
 - `time_stop` requires an integer `value` and only allows `priceField: "close"`.
+- `StrategyPositionPolicy.targetPositionSize` percentage sizing still cannot allocate more than `100%` across the selected long-only basket.
 - The Python model still strips legacy `enabled` toggles from `regimePolicy` and `exits` for compatibility, but the canonical schema does not model those fields.
+
+### Strategy risk profile detail
+
+```json
+{
+  "name": "balanced",
+  "description": "Default balanced posture for diversified long-only sleeves.",
+  "presetClass": "balanced",
+  "version": 1,
+  "isSystem": true,
+  "usageCount": 6,
+  "config": {
+    "presetClass": "balanced",
+    "positionPolicy": {
+      "targetPositionSize": {
+        "mode": "pct_of_allocatable_capital",
+        "value": 5
+      },
+      "maxPositionSize": {
+        "mode": "pct_of_allocatable_capital",
+        "value": 8
+      },
+      "maxOpenPositions": 20
+    }
+  }
+}
+```
+
+Validation notes:
+
+- `presetClass` is a governed posture label: `conservative`, `balanced`, or `aggressive`.
+- Reusable risk profiles require `targetPositionSize`, `maxPositionSize`, and `maxOpenPositions`.
+- `targetPositionSize` and `maxPositionSize` must share the same sizing mode, and `maxPositionSize` cannot be smaller than `targetPositionSize`.
 
 ## Ranking Schema
 

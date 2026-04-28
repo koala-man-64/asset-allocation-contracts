@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "StrategyPositionSizeLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "pct_of_allocatable_capital",
+          "enum": [
+            "pct_of_allocatable_capital",
+            "notional_base_ccy"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "value": {
+          "exclusiveMinimum": 0.0,
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "StrategyPositionSizeLimit",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowedAssetClasses": {
+      "items": {
+        "enum": [
+          "equity",
+          "option"
+        ],
+        "type": "string"
+      },
+      "title": "Allowedassetclasses",
+      "type": "array"
+    },
+    "maxOpenPositions": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxopenpositions"
+    },
+    "maxPositionSize": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategyPositionSizeLimit"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "requireOrderConfirmation": {
+      "default": false,
+      "title": "Requireorderconfirmation",
+      "type": "boolean"
+    },
+    "targetPositionSize": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategyPositionSizeLimit"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "StrategyPositionPolicy",
+  "type": "object"
+}
