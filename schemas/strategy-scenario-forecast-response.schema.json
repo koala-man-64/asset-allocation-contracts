@@ -1,0 +1,187 @@
+{
+  "$defs": {
+    "StrategyForecastRow": {
+      "additionalProperties": false,
+      "properties": {
+        "appliedRegimeCode": {
+          "default": "unclassified",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Appliedregimecode",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "thin"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "downside": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Downside"
+        },
+        "expectedActiveReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expectedactivereturn"
+        },
+        "expectedReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expectedreturn"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "sampleMode": {
+          "enum": [
+            "regime_conditioned",
+            "fallback_history",
+            "insufficient_history"
+          ],
+          "title": "Samplemode",
+          "type": "string"
+        },
+        "sampleSize": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Samplesize",
+          "type": "integer"
+        },
+        "source": {
+          "default": "control_plane",
+          "enum": [
+            "control_plane",
+            "backtest",
+            "portfolio",
+            "trade_desk",
+            "broker"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyversion"
+        },
+        "upside": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upside"
+        }
+      },
+      "required": [
+        "strategyName",
+        "confidence",
+        "sampleMode"
+      ],
+      "title": "StrategyForecastRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOf": {
+      "format": "date-time",
+      "title": "Asof",
+      "type": "string"
+    },
+    "forecasts": {
+      "items": {
+        "$ref": "#/$defs/StrategyForecastRow"
+      },
+      "title": "Forecasts",
+      "type": "array"
+    },
+    "horizon": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Horizon",
+      "type": "string"
+    },
+    "regimeAssumption": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Regimeassumption",
+      "type": "string"
+    },
+    "source": {
+      "default": "control_plane",
+      "enum": [
+        "control_plane",
+        "backtest",
+        "portfolio",
+        "trade_desk",
+        "broker"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "asOf",
+    "horizon",
+    "regimeAssumption"
+  ],
+  "title": "StrategyScenarioForecastResponse",
+  "type": "object"
+}

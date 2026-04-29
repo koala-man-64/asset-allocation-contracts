@@ -32,7 +32,16 @@ import type {
   SymbolEnrichmentSymbolDetailResponse,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
+  StrategyAllocationExposureRequest,
+  StrategyAllocationExposureResponse,
+  StrategyComparisonRequest,
+  StrategyComparisonResponse,
   StrategyConfig,
+  StrategyRiskPolicy,
+  StrategyScenarioForecastRequest,
+  StrategyScenarioForecastResponse,
+  StrategyTradeHistoryRequest,
+  StrategyTradeHistoryResponse,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
   UiRuntimeConfig,
@@ -70,6 +79,195 @@ const strategy: StrategyConfig = {
   costModel: "default",
   intrabarConflictPolicy: "priority_order",
   exits: [],
+};
+
+const strategyRiskPolicy: StrategyRiskPolicy = {
+  grossExposureLimit: 1,
+  netExposureLimit: 1,
+  singleNameMaxWeight: 0.08,
+  sectorMaxWeight: 0.25,
+  turnoverBudget: 0.35,
+  maxDrawdownLimit: 0.2,
+  liquidityParticipationRate: 0.1,
+  maxTradeNotionalBaseCcy: 250000,
+  notes: "Operator risk envelope.",
+};
+
+const comparisonRequest: StrategyComparisonRequest = {
+  strategies: [
+    { strategyName: "quality-trend", strategyVersion: 4, role: "baseline" },
+    { strategyName: "defensive-value", strategyVersion: 2, role: "challenger" },
+  ],
+  startDate: "2026-01-01",
+  endDate: "2026-03-31",
+  benchmarkSymbol: "SPY",
+  costModel: "institutional",
+  barSize: "1d",
+  regimeModelName: "default-regime",
+  scenarioAssumption: "high_volatility",
+  includeForecast: true,
+};
+
+const comparisonResponse: StrategyComparisonResponse = {
+  asOf: "2026-04-29T12:00:00Z",
+  benchmarkSymbol: "SPY",
+  costModel: "institutional",
+  barSize: "1d",
+  strategies: comparisonRequest.strategies,
+  metrics: [
+    {
+      metric: "sharpe_ratio",
+      label: "Sharpe",
+      unit: "score",
+      values: {
+        "quality-trend": 1.2,
+        "defensive-value": 0.9,
+      },
+      winnerStrategyName: "quality-trend",
+      notes: "",
+    },
+  ],
+  runEvidence: [
+    {
+      strategyName: "quality-trend",
+      strategyVersion: 4,
+      runId: "run-123",
+      startDate: "2026-01-01",
+      endDate: "2026-03-31",
+      barSize: "1d",
+      costModel: "institutional",
+      resultSchemaVersion: 4,
+      warnings: [],
+    },
+  ],
+  warnings: [],
+  blockedReasons: [],
+};
+
+const forecastRequest: StrategyScenarioForecastRequest = {
+  strategies: comparisonRequest.strategies,
+  asOfDate: "2026-04-29",
+  horizon: "3M",
+  regimeModelName: "default-regime",
+  regimeAssumption: "high_volatility",
+  costDragOverrideBps: 12,
+  tunableParameters: {
+    topN: 25,
+    longOnly: true,
+  },
+};
+
+const forecastResponse: StrategyScenarioForecastResponse = {
+  asOf: "2026-04-29T12:00:00Z",
+  horizon: "3M",
+  regimeAssumption: "high_volatility",
+  source: "control_plane",
+  forecasts: [
+    {
+      strategyName: "quality-trend",
+      strategyVersion: 4,
+      expectedReturn: 0.03,
+      expectedActiveReturn: 0.01,
+      downside: -0.04,
+      upside: 0.08,
+      confidence: "medium",
+      sampleSize: 12,
+      sampleMode: "regime_conditioned",
+      appliedRegimeCode: "high_volatility",
+      source: "backtest",
+      notes: ["Uses matched historical regime windows."],
+    },
+  ],
+  warnings: [],
+};
+
+const allocationExposureRequest: StrategyAllocationExposureRequest = {
+  strategyName: "quality-trend",
+  strategyVersion: 4,
+  accountIds: ["acct-001"],
+  includePositions: true,
+};
+
+const allocationExposureResponse: StrategyAllocationExposureResponse = {
+  strategyName: "quality-trend",
+  strategyVersion: 4,
+  asOf: "2026-04-29T12:00:00Z",
+  totalMarketValue: 100000,
+  aggregateTargetWeight: 0.6,
+  aggregateActualWeight: 0.58,
+  aggregateGrossExposure: 0.58,
+  aggregateNetExposure: 0.58,
+  exposures: [
+    {
+      accountId: "acct-001",
+      accountName: "Core Long Only",
+      portfolioName: "core-balanced",
+      portfolioVersion: 3,
+      sleeveId: "quality-core",
+      sleeveName: "Quality Core",
+      strategyName: "quality-trend",
+      strategyVersion: 4,
+      asOf: "2026-04-29",
+      targetWeight: 0.6,
+      actualWeight: 0.58,
+      drift: -0.02,
+      marketValue: 58000,
+      grossExposure: 0.58,
+      netExposure: 0.58,
+      status: "active",
+    },
+  ],
+  positions: [
+    {
+      accountId: "acct-001",
+      portfolioName: "core-balanced",
+      sleeveId: "quality-core",
+      symbol: "MSFT",
+      asOf: "2026-04-29",
+      quantity: 10,
+      marketValue: 4200,
+      weight: 0.042,
+    },
+  ],
+  warnings: [],
+};
+
+const tradeHistoryRequest: StrategyTradeHistoryRequest = {
+  strategyName: "quality-trend",
+  strategyVersion: 4,
+  startDate: "2026-01-01",
+  endDate: "2026-04-29",
+  sources: ["backtest", "portfolio_ledger"],
+  limit: 200,
+  offset: 0,
+};
+
+const tradeHistoryResponse: StrategyTradeHistoryResponse = {
+  strategyName: "quality-trend",
+  strategyVersion: 4,
+  trades: [
+    {
+      source: "portfolio_ledger",
+      timestamp: "2026-04-29T14:30:00Z",
+      symbol: "MSFT",
+      side: "buy",
+      quantity: 10,
+      price: 420,
+      notional: 4200,
+      commission: 1,
+      slippageCost: 0.5,
+      realizedPnl: null,
+      accountId: "acct-001",
+      portfolioName: "core-balanced",
+      runId: null,
+      orderId: null,
+      eventId: "evt-001",
+    },
+  ],
+  total: 1,
+  limit: 200,
+  offset: 0,
+  warnings: [],
 };
 
 const runtimeConfig: UiRuntimeConfig = {
@@ -349,6 +547,15 @@ const condition: UniverseCondition = {
 };
 
 void strategy;
+void strategyRiskPolicy;
+void comparisonRequest;
+void comparisonResponse;
+void forecastRequest;
+void forecastResponse;
+void allocationExposureRequest;
+void allocationExposureResponse;
+void tradeHistoryRequest;
+void tradeHistoryResponse;
 void runtimeConfig;
 void authSession;
 void brokerSummary;

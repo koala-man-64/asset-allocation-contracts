@@ -103,7 +103,16 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    StrategyAllocationExposureRequest,
+    StrategyAllocationExposureResponse,
+    StrategyComparisonRequest,
+    StrategyComparisonResponse,
     StrategyConfig,
+    StrategyRiskPolicy,
+    StrategyScenarioForecastRequest,
+    StrategyScenarioForecastResponse,
+    StrategyTradeHistoryRequest,
+    StrategyTradeHistoryResponse,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
     UniverseCondition,
@@ -129,6 +138,172 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
     assert payload.regimePolicy.mode == "observe_only"
+
+
+def test_strategy_risk_policy_is_backward_compatible_and_bounded() -> None:
+    payload = StrategyConfig(
+        universeConfigName="core-us-equities",
+        riskPolicy=StrategyRiskPolicy(
+            grossExposureLimit=1.0,
+            netExposureLimit=1.0,
+            singleNameMaxWeight=0.08,
+            sectorMaxWeight=0.25,
+            turnoverBudget=0.35,
+            maxDrawdownLimit=0.2,
+            liquidityParticipationRate=0.1,
+            maxTradeNotionalBaseCcy=250_000,
+            notes="Operator risk envelope.",
+        ),
+    )
+
+    assert payload.riskPolicy is not None
+    assert payload.riskPolicy.singleNameMaxWeight == 0.08
+
+    try:
+        StrategyRiskPolicy(singleNameMaxWeight=1.2)
+    except Exception as exc:
+        assert "singleNameMaxWeight" in str(exc)
+    else:
+        raise AssertionError("Expected StrategyRiskPolicy to reject weights above 1.0.")
+
+
+def test_strategy_analytics_contracts_capture_comparison_forecast_allocation_and_trades() -> None:
+    comparison_request = StrategyComparisonRequest(
+        strategies=[
+            {"strategyName": "quality-trend", "strategyVersion": 4, "role": "baseline"},
+            {"strategyName": "defensive-value", "strategyVersion": 2, "role": "challenger"},
+        ],
+        startDate="2026-01-01",
+        endDate="2026-03-31",
+        benchmarkSymbol="spy",
+        costModel="institutional",
+        barSize="1d",
+        regimeModelName="default-regime",
+        includeForecast=True,
+    )
+    comparison_response = StrategyComparisonResponse(
+        asOf="2026-04-29T12:00:00Z",
+        benchmarkSymbol="SPY",
+        costModel="institutional",
+        barSize="1d",
+        strategies=comparison_request.strategies,
+        metrics=[
+            {
+                "metric": "sharpe_ratio",
+                "label": "Sharpe",
+                "unit": "score",
+                "values": {"quality-trend": 1.2, "defensive-value": 0.9},
+                "winnerStrategyName": "quality-trend",
+            }
+        ],
+        runEvidence=[
+            {
+                "strategyName": "quality-trend",
+                "strategyVersion": 4,
+                "runId": "run-1",
+                "startDate": "2026-01-01",
+                "endDate": "2026-03-31",
+                "barSize": "1d",
+                "costModel": "institutional",
+            }
+        ],
+    )
+    forecast_request = StrategyScenarioForecastRequest(
+        strategies=comparison_request.strategies,
+        horizon="3M",
+        regimeAssumption="high_volatility",
+        costDragOverrideBps=12,
+        tunableParameters={"topN": 25, "rebalance": "weekly"},
+    )
+    forecast_response = StrategyScenarioForecastResponse(
+        asOf="2026-04-29T12:00:00Z",
+        horizon="3M",
+        regimeAssumption="high_volatility",
+        forecasts=[
+            {
+                "strategyName": "quality-trend",
+                "expectedReturn": 0.03,
+                "confidence": "medium",
+                "sampleSize": 12,
+                "sampleMode": "regime_conditioned",
+                "appliedRegimeCode": "high_volatility",
+            }
+        ],
+    )
+    allocation_request = StrategyAllocationExposureRequest(strategyName="quality-trend")
+    allocation_response = StrategyAllocationExposureResponse(
+        strategyName="quality-trend",
+        asOf="2026-04-29T12:00:00Z",
+        totalMarketValue=100_000,
+        exposures=[
+            {
+                "accountId": "acct-1",
+                "accountName": "Core",
+                "portfolioName": "balanced",
+                "sleeveId": "quality-core",
+                "strategyName": "quality-trend",
+                "strategyVersion": 4,
+                "asOf": "2026-04-29",
+                "targetWeight": 0.6,
+                "actualWeight": 0.58,
+            }
+        ],
+        positions=[
+            {
+                "accountId": "acct-1",
+                "portfolioName": "balanced",
+                "sleeveId": "quality-core",
+                "symbol": "msft",
+                "asOf": "2026-04-29",
+                "quantity": 10,
+                "marketValue": 4200,
+                "weight": 0.042,
+            }
+        ],
+    )
+    trade_request = StrategyTradeHistoryRequest(
+        strategyName="quality-trend",
+        startDate="2026-01-01",
+        endDate="2026-04-29",
+        sources=["backtest", "portfolio_ledger"],
+    )
+    trade_response = StrategyTradeHistoryResponse(
+        strategyName="quality-trend",
+        trades=[
+            {
+                "source": "portfolio_ledger",
+                "timestamp": "2026-04-29T14:30:00Z",
+                "symbol": "msft",
+                "side": "buy",
+                "quantity": 10,
+                "price": 420,
+            }
+        ],
+        total=1,
+    )
+
+    assert comparison_request.benchmarkSymbol == "SPY"
+    assert comparison_response.metrics[0].winnerStrategyName == "quality-trend"
+    assert forecast_request.tunableParameters["topN"] == 25
+    assert forecast_response.forecasts[0].sampleMode == "regime_conditioned"
+    assert allocation_request.strategyName == "quality-trend"
+    assert allocation_response.positions[0].symbol == "MSFT"
+    assert trade_request.sources == ["backtest", "portfolio_ledger"]
+    assert trade_response.trades[0].symbol == "MSFT"
+
+    try:
+        StrategyComparisonRequest(
+            strategies=[
+                {"strategyName": "quality-trend"},
+                {"strategyName": "defensive-value"},
+            ],
+            startDate="2026-03-31",
+            endDate="2026-01-01",
+        )
+    except Exception as exc:
+        assert "endDate" in str(exc)
+    else:
+        raise AssertionError("Expected strategy comparison to reject inverted windows.")
 
 
 def test_ranking_schema_requires_groups() -> None:

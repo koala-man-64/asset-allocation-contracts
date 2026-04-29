@@ -139,6 +139,126 @@
       "title": "RegimePolicy",
       "type": "object"
     },
+    "StrategyRiskPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "grossExposureLimit": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grossexposurelimit"
+        },
+        "liquidityParticipationRate": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Liquidityparticipationrate"
+        },
+        "maxDrawdownLimit": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxdrawdownlimit"
+        },
+        "maxTradeNotionalBaseCcy": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxtradenotionalbaseccy"
+        },
+        "netExposureLimit": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Netexposurelimit"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "sectorMaxWeight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sectormaxweight"
+        },
+        "singleNameMaxWeight": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Singlenamemaxweight"
+        },
+        "turnoverBudget": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turnoverbudget"
+        }
+      },
+      "title": "StrategyRiskPolicy",
+      "type": "object"
+    },
     "UniverseCondition": {
       "additionalProperties": false,
       "properties": {
@@ -365,6 +485,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/RegimePolicy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "riskPolicy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategyRiskPolicy"
         },
         {
           "type": "null"

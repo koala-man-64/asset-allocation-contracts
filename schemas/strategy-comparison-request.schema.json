@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "StrategyAnalyticsReference": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "role": {
+          "default": "candidate",
+          "enum": [
+            "baseline",
+            "challenger",
+            "candidate"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyversion"
+        }
+      },
+      "required": [
+        "strategyName"
+      ],
+      "title": "StrategyAnalyticsReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "barSize": {
+      "default": "1d",
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Barsize",
+      "type": "string"
+    },
+    "benchmarkSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Benchmarksymbol"
+    },
+    "costModel": {
+      "default": "default",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Costmodel",
+      "type": "string"
+    },
+    "endDate": {
+      "format": "date",
+      "title": "Enddate",
+      "type": "string"
+    },
+    "includeForecast": {
+      "default": false,
+      "title": "Includeforecast",
+      "type": "boolean"
+    },
+    "regimeModelName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Regimemodelname"
+    },
+    "scenarioAssumption": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scenarioassumption"
+    },
+    "startDate": {
+      "format": "date",
+      "title": "Startdate",
+      "type": "string"
+    },
+    "strategies": {
+      "items": {
+        "$ref": "#/$defs/StrategyAnalyticsReference"
+      },
+      "minItems": 2,
+      "title": "Strategies",
+      "type": "array"
+    }
+  },
+  "required": [
+    "strategies",
+    "startDate",
+    "endDate"
+  ],
+  "title": "StrategyComparisonRequest",
+  "type": "object"
+}

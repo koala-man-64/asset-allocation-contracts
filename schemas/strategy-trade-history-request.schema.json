@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "endDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Enddate"
+    },
+    "limit": {
+      "default": 200,
+      "maximum": 5000,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "sources": {
+      "items": {
+        "enum": [
+          "backtest",
+          "portfolio_ledger",
+          "trade_order",
+          "broker_fill"
+        ],
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "startDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Startdate"
+    },
+    "strategyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Strategyname",
+      "type": "string"
+    },
+    "strategyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategyversion"
+    }
+  },
+  "required": [
+    "strategyName"
+  ],
+  "title": "StrategyTradeHistoryRequest",
+  "type": "object"
+}

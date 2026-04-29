@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "StrategyAnalyticsReference": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "role": {
+          "default": "candidate",
+          "enum": [
+            "baseline",
+            "challenger",
+            "candidate"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyversion"
+        }
+      },
+      "required": [
+        "strategyName"
+      ],
+      "title": "StrategyAnalyticsReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asofdate"
+    },
+    "costDragOverrideBps": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Costdragoverridebps"
+    },
+    "horizon": {
+      "default": "3M",
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Horizon",
+      "type": "string"
+    },
+    "regimeAssumption": {
+      "default": "current",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Regimeassumption",
+      "type": "string"
+    },
+    "regimeModelName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Regimemodelname"
+    },
+    "strategies": {
+      "items": {
+        "$ref": "#/$defs/StrategyAnalyticsReference"
+      },
+      "minItems": 1,
+      "title": "Strategies",
+      "type": "array"
+    },
+    "tunableParameters": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Tunableparameters",
+      "type": "object"
+    }
+  },
+  "required": [
+    "strategies"
+  ],
+  "title": "StrategyScenarioForecastRequest",
+  "type": "object"
+}

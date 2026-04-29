@@ -1,0 +1,41 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Accountids",
+      "type": "array"
+    },
+    "includePositions": {
+      "default": true,
+      "title": "Includepositions",
+      "type": "boolean"
+    },
+    "strategyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Strategyname",
+      "type": "string"
+    },
+    "strategyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategyversion"
+    }
+  },
+  "required": [
+    "strategyName"
+  ],
+  "title": "StrategyAllocationExposureRequest",
+  "type": "object"
+}

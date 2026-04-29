@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -46,6 +47,28 @@ UniverseFieldId = Literal[
 ]
 UniverseValueKind = Literal["string", "number", "boolean", "date", "datetime"]
 UniverseValue: TypeAlias = str | int | float | bool
+StrategyAnalyticsSource = Literal["control_plane", "backtest", "portfolio", "trade_desk", "broker"]
+StrategyComparisonRole = Literal["baseline", "challenger", "candidate"]
+StrategyMetricUnit = Literal["ratio", "currency", "count", "bps", "days", "score"]
+StrategyForecastConfidence = Literal["high", "medium", "low", "thin"]
+StrategyForecastSampleMode = Literal["regime_conditioned", "fallback_history", "insufficient_history"]
+StrategyTradeHistorySource = Literal["backtest", "portfolio_ledger", "trade_order", "broker_fill"]
+StrategyTradeSide = Literal["buy", "sell"]
+StrategyAllocationExposureStatus = Literal["active", "staged", "paused", "missing"]
+
+
+def _normalize_required_text(value: object, field_name: str) -> str:
+    normalized = str(value or "").strip()
+    if not normalized:
+        raise ValueError(f"{field_name} is required.")
+    return normalized
+
+
+def _normalize_optional_text(value: object) -> str | None:
+    if value is None:
+        return None
+    normalized = str(value).strip()
+    return normalized or None
 
 
 class UniverseFieldDefinition(BaseModel):
@@ -280,6 +303,399 @@ class ExitRule(BaseModel):
             raise ValueError(f"{self.type} does not support reference.")
 
 
+class StrategyRiskPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    grossExposureLimit: float | None = Field(default=None, ge=0.0)
+    netExposureLimit: float | None = Field(default=None, ge=0.0)
+    singleNameMaxWeight: float | None = Field(default=None, ge=0.0, le=1.0)
+    sectorMaxWeight: float | None = Field(default=None, ge=0.0, le=1.0)
+    turnoverBudget: float | None = Field(default=None, ge=0.0)
+    maxDrawdownLimit: float | None = Field(default=None, ge=0.0, le=1.0)
+    liquidityParticipationRate: float | None = Field(default=None, ge=0.0, le=1.0)
+    maxTradeNotionalBaseCcy: float | None = Field(default=None, gt=0.0)
+    notes: str = ""
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
+class StrategyAnalyticsReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    runId: str | None = Field(default=None, min_length=1, max_length=128)
+    role: StrategyComparisonRole = "candidate"
+    label: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> str:
+        return _normalize_required_text(value, "strategyName")
+
+    @field_validator("runId", "label", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
+class StrategyComparisonRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategies: list[StrategyAnalyticsReference] = Field(..., min_length=2)
+    startDate: date
+    endDate: date
+    benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    costModel: str = Field(default="default", min_length=1, max_length=64)
+    barSize: str = Field(default="1d", min_length=1, max_length=32)
+    regimeModelName: str | None = Field(default=None, min_length=1, max_length=128)
+    scenarioAssumption: str | None = Field(default=None, min_length=1, max_length=128)
+    includeForecast: bool = False
+
+    @field_validator("benchmarkSymbol", mode="before")
+    @classmethod
+    def normalize_benchmark_symbol(cls, value: object) -> str | None:
+        normalized = _normalize_optional_text(value)
+        return normalized.upper() if normalized else None
+
+    @field_validator("costModel", "barSize", "regimeModelName", "scenarioAssumption", mode="before")
+    @classmethod
+    def normalize_text_fields(cls, value: object) -> object:
+        return _normalize_optional_text(value) if value is not None else value
+
+    @model_validator(mode="after")
+    def validate_window(self) -> "StrategyComparisonRequest":
+        if self.endDate < self.startDate:
+            raise ValueError("endDate cannot be before startDate.")
+        return self
+
+
+class StrategyComparisonMetricRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metric: str = Field(..., min_length=1, max_length=128)
+    label: str = Field(..., min_length=1, max_length=160)
+    unit: StrategyMetricUnit
+    values: dict[str, float | None] = Field(default_factory=dict)
+    winnerStrategyName: str | None = Field(default=None, min_length=1, max_length=128)
+    notes: str = ""
+
+    @field_validator("metric", "label", mode="before")
+    @classmethod
+    def normalize_required_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("winnerStrategyName", mode="before")
+    @classmethod
+    def normalize_winner(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
+class StrategyComparisonRunEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    runId: str | None = Field(default=None, min_length=1, max_length=128)
+    startDate: date
+    endDate: date
+    barSize: str = Field(..., min_length=1, max_length=32)
+    costModel: str = Field(default="default", min_length=1, max_length=64)
+    resultSchemaVersion: int | None = Field(default=None, ge=1)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("strategyName", "barSize", "costModel", mode="before")
+    @classmethod
+    def normalize_required_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("runId", mode="before")
+    @classmethod
+    def normalize_run_id(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    @model_validator(mode="after")
+    def validate_window(self) -> "StrategyComparisonRunEvidence":
+        if self.endDate < self.startDate:
+            raise ValueError("endDate cannot be before startDate.")
+        return self
+
+
+class StrategyComparisonResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    asOf: datetime
+    benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    costModel: str = Field(..., min_length=1, max_length=64)
+    barSize: str = Field(..., min_length=1, max_length=32)
+    strategies: list[StrategyAnalyticsReference] = Field(..., min_length=2)
+    metrics: list[StrategyComparisonMetricRow] = Field(default_factory=list)
+    runEvidence: list[StrategyComparisonRunEvidence] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    blockedReasons: list[str] = Field(default_factory=list)
+
+    @field_validator("warnings", "blockedReasons", mode="before")
+    @classmethod
+    def normalize_text_lists(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class StrategyScenarioForecastRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategies: list[StrategyAnalyticsReference] = Field(..., min_length=1)
+    asOfDate: date | None = None
+    horizon: str = Field(default="3M", min_length=1, max_length=32)
+    regimeModelName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimeAssumption: str = Field(default="current", min_length=1, max_length=128)
+    costDragOverrideBps: float | None = None
+    tunableParameters: dict[str, str | int | float | bool | None] = Field(default_factory=dict)
+
+
+class StrategyForecastRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    expectedReturn: float | None = None
+    expectedActiveReturn: float | None = None
+    downside: float | None = None
+    upside: float | None = None
+    confidence: StrategyForecastConfidence
+    sampleSize: int = Field(default=0, ge=0)
+    sampleMode: StrategyForecastSampleMode
+    appliedRegimeCode: str = Field(default="unclassified", min_length=1, max_length=128)
+    source: StrategyAnalyticsSource = "control_plane"
+    notes: list[str] = Field(default_factory=list)
+
+    @field_validator("strategyName", "appliedRegimeCode", mode="before")
+    @classmethod
+    def normalize_required_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class StrategyScenarioForecastResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    asOf: datetime
+    horizon: str = Field(..., min_length=1, max_length=32)
+    regimeAssumption: str = Field(..., min_length=1, max_length=128)
+    source: StrategyAnalyticsSource = "control_plane"
+    forecasts: list[StrategyForecastRow] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class StrategyAllocationExposureRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    accountIds: list[str] = Field(default_factory=list)
+    includePositions: bool = True
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> str:
+        return _normalize_required_text(value, "strategyName")
+
+    @field_validator("accountIds", mode="before")
+    @classmethod
+    def normalize_account_ids(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class StrategyAllocationExposureRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    accountName: str = Field(..., min_length=1, max_length=128)
+    portfolioName: str = Field(..., min_length=1, max_length=128)
+    portfolioVersion: int | None = Field(default=None, ge=1)
+    sleeveId: str = Field(..., min_length=1, max_length=128)
+    sleeveName: str = ""
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int = Field(..., ge=1)
+    asOf: date
+    targetWeight: float | None = Field(default=None, ge=0.0, le=1.0)
+    actualWeight: float | None = Field(default=None, ge=0.0, le=1.0)
+    drift: float | None = None
+    marketValue: float | None = None
+    grossExposure: float | None = None
+    netExposure: float | None = None
+    status: StrategyAllocationExposureStatus = "active"
+
+    @field_validator("accountId", "accountName", "portfolioName", "sleeveId", "strategyName", mode="before")
+    @classmethod
+    def normalize_required_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("sleeveName", mode="before")
+    @classmethod
+    def normalize_sleeve_name(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
+class StrategyAllocationPositionRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    portfolioName: str = Field(..., min_length=1, max_length=128)
+    sleeveId: str = Field(..., min_length=1, max_length=128)
+    symbol: str = Field(..., min_length=1, max_length=32)
+    asOf: date
+    quantity: float
+    marketValue: float
+    weight: float = Field(..., ge=0.0, le=1.0)
+
+    @field_validator("accountId", "portfolioName", "sleeveId", mode="before")
+    @classmethod
+    def normalize_required_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def normalize_symbol(cls, value: object) -> str:
+        return _normalize_required_text(value, "symbol").upper()
+
+
+class StrategyAllocationExposureResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    asOf: datetime
+    totalMarketValue: float | None = None
+    aggregateTargetWeight: float | None = Field(default=None, ge=0.0)
+    aggregateActualWeight: float | None = Field(default=None, ge=0.0)
+    aggregateGrossExposure: float | None = None
+    aggregateNetExposure: float | None = None
+    exposures: list[StrategyAllocationExposureRow] = Field(default_factory=list)
+    positions: list[StrategyAllocationPositionRow] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> str:
+        return _normalize_required_text(value, "strategyName")
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
+class StrategyTradeHistoryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    startDate: date | None = None
+    endDate: date | None = None
+    sources: list[StrategyTradeHistorySource] = Field(default_factory=list)
+    limit: int = Field(default=200, ge=1, le=5000)
+    offset: int = Field(default=0, ge=0)
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> str:
+        return _normalize_required_text(value, "strategyName")
+
+    @model_validator(mode="after")
+    def validate_window(self) -> "StrategyTradeHistoryRequest":
+        if self.startDate and self.endDate and self.endDate < self.startDate:
+            raise ValueError("endDate cannot be before startDate.")
+        return self
+
+
+class StrategyTradeHistoryRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: StrategyTradeHistorySource
+    timestamp: datetime
+    symbol: str = Field(..., min_length=1, max_length=32)
+    side: StrategyTradeSide | None = None
+    quantity: float
+    price: float | None = Field(default=None, ge=0.0)
+    notional: float | None = None
+    commission: float = Field(default=0.0, ge=0.0)
+    slippageCost: float = Field(default=0.0, ge=0.0)
+    realizedPnl: float | None = None
+    accountId: str | None = Field(default=None, min_length=1, max_length=128)
+    portfolioName: str | None = Field(default=None, min_length=1, max_length=128)
+    runId: str | None = Field(default=None, min_length=1, max_length=128)
+    orderId: str | None = Field(default=None, min_length=1, max_length=128)
+    eventId: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def normalize_symbol(cls, value: object) -> str:
+        return _normalize_required_text(value, "symbol").upper()
+
+    @field_validator("accountId", "portfolioName", "runId", "orderId", "eventId", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
+class StrategyTradeHistoryResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    trades: list[StrategyTradeHistoryRow] = Field(default_factory=list)
+    total: int = Field(default=0, ge=0)
+    limit: int = Field(default=200, ge=1)
+    offset: int = Field(default=0, ge=0)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> str:
+        return _normalize_required_text(value, "strategyName")
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -293,6 +709,7 @@ class StrategyConfig(BaseModel):
     costModel: str = Field(default="default", min_length=1, max_length=64)
     rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
     regimePolicy: RegimePolicy | None = None
+    riskPolicy: StrategyRiskPolicy | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
