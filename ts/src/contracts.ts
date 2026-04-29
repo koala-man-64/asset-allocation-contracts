@@ -16,6 +16,13 @@ export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'prior
 export type StrategyPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
 export type StrategyPositionAssetClass = 'equity' | 'option';
 export type RiskTolerancePreset = 'conservative' | 'balanced' | 'aggressive';
+export type RebalanceFrequency = 'every_bar' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'every_n_bars' | 'manual';
+export type RebalanceExecutionTiming = 'next_bar_open';
+export type StrategyRiskPolicyScope = 'strategy' | 'sleeve';
+export type StrategyRiskStopLossBasis = 'strategy_nav_drawdown' | 'sleeve_nav_drawdown';
+export type StrategyRiskTakeProfitBasis = 'strategy_nav_gain' | 'sleeve_nav_gain';
+export type StrategyRiskStopLossAction = 'reduce_exposure' | 'liquidate' | 'freeze_buys';
+export type StrategyRiskTakeProfitAction = 'reduce_exposure' | 'rebalance_to_target';
 export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
@@ -77,6 +84,9 @@ export type PortfolioAllocationMode = 'percent' | 'notional_base_ccy';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
+export type BacktestPolicyEventScope = 'strategy' | 'sleeve' | 'position' | 'symbol' | 'portfolio';
+export type BacktestPolicyEventType = 'rebalance' | 'strategy_risk' | 'position_exit' | 'reentry';
+export type BacktestPolicyDecision = 'applied' | 'skipped' | 'blocked';
 export type AiChatStreamEvent = AiChatStartedEvent | AiChatStatusEvent | AiChatReasoningSummaryDeltaEvent | AiChatOutputTextDeltaEvent | AiChatCompletedEvent | AiChatErrorEvent;
 export type UniverseNode = UniverseGroup | UniverseCondition;
 
@@ -93,6 +103,8 @@ export interface StrategyConfig {
   regimePolicy?: RegimePolicy | null;
   riskProfileName?: string | null;
   positionPolicy?: StrategyPositionPolicy | null;
+  rebalancePolicy?: RebalancePolicy | null;
+  strategyRiskPolicy?: StrategyRiskPolicy | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
@@ -132,6 +144,49 @@ export interface StrategyPositionPolicy {
 export interface StrategyPositionSizeLimit {
   mode: StrategyPositionSizeMode;
   value: number;
+}
+
+export interface RebalancePolicy {
+  frequency: RebalanceFrequency;
+  executionTiming: RebalanceExecutionTiming;
+  intervalBars?: number | null;
+  driftThresholdPct?: number | null;
+  minTradeNotional: number;
+  cashBufferPct: number;
+  maxTurnoverPct?: number | null;
+  allowPartialRebalance: boolean;
+  closeRemovedPositions: boolean;
+}
+
+export interface StrategyRiskPolicy {
+  enabled: boolean;
+  scope: StrategyRiskPolicyScope;
+  stopLoss?: StrategyRiskStopLossPolicy | null;
+  takeProfit?: StrategyRiskTakeProfitPolicy | null;
+  reentry: StrategyRiskReentryPolicy;
+}
+
+export interface StrategyRiskStopLossPolicy {
+  id: string;
+  enabled: boolean;
+  basis: StrategyRiskStopLossBasis;
+  thresholdPct: number;
+  action: StrategyRiskStopLossAction;
+  reductionPct?: number | null;
+}
+
+export interface StrategyRiskTakeProfitPolicy {
+  id: string;
+  enabled: boolean;
+  basis: StrategyRiskTakeProfitBasis;
+  thresholdPct: number;
+  action: StrategyRiskTakeProfitAction;
+  reductionPct?: number | null;
+}
+
+export interface StrategyRiskReentryPolicy {
+  cooldownBars: number;
+  requireApproval: boolean;
 }
 
 export interface ExitRule {
@@ -628,6 +683,30 @@ export interface ClosedPositionResponse {
   total_transaction_cost: number;
   exit_reason?: string | null;
   exit_rule_id?: string | null;
+}
+
+export interface BacktestPolicyEventListResponse {
+  events: BacktestPolicyEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface BacktestPolicyEvent {
+  run_id: string;
+  event_seq: number;
+  bar_ts: string;
+  scope: BacktestPolicyEventScope;
+  policy_type: BacktestPolicyEventType;
+  decision: BacktestPolicyDecision;
+  reason_code: string;
+  symbol?: string | null;
+  position_id?: string | null;
+  policy_id?: string | null;
+  observed_value?: number | null;
+  threshold_value?: number | null;
+  action?: string | null;
+  details: Record<string, unknown>;
 }
 
 export interface BacktestClaimRequest {

@@ -8,6 +8,8 @@ from asset_allocation_contracts.backtest import (
     BacktestCompleteRequest,
     BacktestLookupRequest,
     BacktestLookupResponse,
+    BacktestPolicyEvent,
+    BacktestPolicyEventListResponse,
     BacktestResultLinks,
     BacktestRunRequest,
     BacktestRunResponse,
@@ -105,6 +107,8 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    RebalancePolicy,
+    StrategyRiskPolicy,
     StrategyPositionPolicy,
     StrategyRiskProfileConfig,
     StrategyRiskProfileDetail,
@@ -324,6 +328,96 @@ def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
     assert payload.positionPolicy is not None
 
 
+def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        rebalancePolicy={
+            "frequency": "every_n_bars",
+            "intervalBars": 3,
+            "executionTiming": "next_bar_open",
+            "driftThresholdPct": 1.5,
+            "minTradeNotional": 25,
+            "cashBufferPct": 1,
+            "maxTurnoverPct": 35,
+            "allowPartialRebalance": True,
+            "closeRemovedPositions": True,
+        },
+        strategyRiskPolicy={
+            "scope": "strategy",
+            "stopLoss": {
+                "thresholdPct": 8,
+                "action": "reduce_exposure",
+                "reductionPct": 50,
+            },
+            "takeProfit": {
+                "thresholdPct": 15,
+                "action": "rebalance_to_target",
+            },
+            "reentry": {
+                "cooldownBars": 12,
+                "requireApproval": False,
+            },
+        },
+    )
+
+    assert payload.rebalancePolicy is not None
+    assert payload.rebalancePolicy.intervalBars == 3
+    assert payload.strategyRiskPolicy is not None
+    assert payload.strategyRiskPolicy.stopLoss is not None
+    assert payload.strategyRiskPolicy.stopLoss.thresholdPct == 8
+    assert payload.strategyRiskPolicy.reentry.cooldownBars == 12
+
+
+def test_rebalance_policy_requires_interval_only_for_every_n_bars() -> None:
+    try:
+        RebalancePolicy(frequency="every_n_bars")
+    except Exception as exc:
+        assert "requires intervalBars" in str(exc)
+    else:
+        raise AssertionError("Expected every_n_bars policy to require intervalBars.")
+
+    try:
+        RebalancePolicy(frequency="daily", intervalBars=3)
+    except Exception as exc:
+        assert "only supported" in str(exc)
+    else:
+        raise AssertionError("Expected non every_n_bars policy to reject intervalBars.")
+
+
+def test_strategy_risk_policy_rejects_ambiguous_enabled_empty_policy() -> None:
+    try:
+        StrategyRiskPolicy()
+    except Exception as exc:
+        assert "stopLoss, takeProfit, or reentry control" in str(exc)
+    else:
+        raise AssertionError("Expected enabled empty strategy risk policy to fail validation.")
+
+
+def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
+    policy = StrategyRiskPolicy(reentry={"cooldownBars": 3, "requireApproval": True})
+
+    assert policy.stopLoss is None
+    assert policy.takeProfit is None
+    assert policy.reentry.cooldownBars == 3
+    assert policy.reentry.requireApproval is True
+
+
+def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> None:
+    try:
+        StrategyRiskPolicy(stopLoss={"thresholdPct": 8, "action": "reduce_exposure"})
+    except Exception as exc:
+        assert "reduce_exposure" in str(exc)
+        assert "reductionPct" in str(exc)
+    else:
+        raise AssertionError("Expected reduce_exposure stop-loss policy to require reductionPct.")
+
+
 def test_strategy_config_rejects_short_side_until_supported() -> None:
     try:
         StrategyConfig(
@@ -340,6 +434,29 @@ def test_strategy_config_rejects_short_side_until_supported() -> None:
         assert "only supports longOnly=true" in str(exc)
     else:
         raise AssertionError("Expected validation failure for longOnly=false.")
+
+
+def test_backtest_policy_event_contract_captures_policy_diagnostics() -> None:
+    event = BacktestPolicyEvent(
+        run_id="run-123",
+        event_seq=1,
+        bar_ts="2026-03-08T14:31:00Z",
+        scope="position",
+        policy_type="reentry",
+        decision="blocked",
+        reason_code="cooldown_active",
+        symbol="AAPL",
+        position_id="run-123:AAPL:1",
+        policy_id="stop-8",
+        observed_value=1,
+        threshold_value=12,
+        action="block_reentry",
+        details={"cooldownBarsRemaining": 11},
+    )
+    response = BacktestPolicyEventListResponse(events=[event], total=1, limit=50, offset=0)
+
+    assert response.events[0].reason_code == "cooldown_active"
+    assert response.events[0].details["cooldownBarsRemaining"] == 11
 
 
 def test_trade_order_preview_accepts_optional_strategy_reference() -> None:

@@ -22,6 +22,13 @@ IntrabarConflictPolicy = Literal["stop_first", "take_profit_first", "priority_or
 StrategyPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 StrategyPositionAssetClass = Literal["equity", "option"]
 RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
+RebalanceFrequency = Literal["every_bar", "daily", "weekly", "monthly", "quarterly", "every_n_bars", "manual"]
+RebalanceExecutionTiming = Literal["next_bar_open"]
+StrategyRiskPolicyScope = Literal["strategy", "sleeve"]
+StrategyRiskStopLossBasis = Literal["strategy_nav_drawdown", "sleeve_nav_drawdown"]
+StrategyRiskTakeProfitBasis = Literal["strategy_nav_gain", "sleeve_nav_gain"]
+StrategyRiskStopLossAction = Literal["reduce_exposure", "liquidate", "freeze_buys"]
+StrategyRiskTakeProfitAction = Literal["reduce_exposure", "rebalance_to_target"]
 UniverseSource = Literal["postgres_gold"]
 UniverseGroupOperator = Literal["and", "or"]
 UniverseConditionOperator = Literal[
@@ -369,6 +376,96 @@ class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
     config: StrategyRiskProfileConfig
 
 
+class RebalancePolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    frequency: RebalanceFrequency = "every_bar"
+    executionTiming: RebalanceExecutionTiming = "next_bar_open"
+    intervalBars: int | None = Field(default=None, ge=1)
+    driftThresholdPct: float | None = Field(default=None, ge=0.0, le=100.0)
+    minTradeNotional: float = Field(default=0.0, ge=0.0)
+    cashBufferPct: float = Field(default=0.0, ge=0.0, lt=100.0)
+    maxTurnoverPct: float | None = Field(default=None, ge=0.0, le=100.0)
+    allowPartialRebalance: bool = True
+    closeRemovedPositions: bool = True
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "RebalancePolicy":
+        if self.frequency == "every_n_bars":
+            if self.intervalBars is None:
+                raise ValueError("every_n_bars rebalance frequency requires intervalBars.")
+        elif self.intervalBars is not None:
+            raise ValueError("intervalBars is only supported when frequency='every_n_bars'.")
+        return self
+
+
+class StrategyRiskReentryPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    cooldownBars: int = Field(default=0, ge=0)
+    requireApproval: bool = False
+
+
+class StrategyRiskStopLossPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(default="strategy-stop-loss", min_length=1, max_length=128)
+    enabled: bool = True
+    basis: StrategyRiskStopLossBasis = "strategy_nav_drawdown"
+    thresholdPct: float = Field(..., gt=0.0, le=100.0)
+    action: StrategyRiskStopLossAction = "reduce_exposure"
+    reductionPct: float | None = Field(default=None, gt=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "StrategyRiskStopLossPolicy":
+        if self.enabled and self.action == "reduce_exposure" and self.reductionPct is None:
+            raise ValueError("reduce_exposure stop-loss policies require reductionPct.")
+        if self.action != "reduce_exposure" and self.reductionPct is not None:
+            raise ValueError("reductionPct is only supported for reduce_exposure stop-loss policies.")
+        return self
+
+
+class StrategyRiskTakeProfitPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(default="strategy-take-profit", min_length=1, max_length=128)
+    enabled: bool = True
+    basis: StrategyRiskTakeProfitBasis = "strategy_nav_gain"
+    thresholdPct: float = Field(..., gt=0.0, le=100.0)
+    action: StrategyRiskTakeProfitAction = "rebalance_to_target"
+    reductionPct: float | None = Field(default=None, gt=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "StrategyRiskTakeProfitPolicy":
+        if self.enabled and self.action == "reduce_exposure" and self.reductionPct is None:
+            raise ValueError("reduce_exposure take-profit policies require reductionPct.")
+        if self.action != "reduce_exposure" and self.reductionPct is not None:
+            raise ValueError("reductionPct is only supported for reduce_exposure take-profit policies.")
+        return self
+
+
+class StrategyRiskPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = True
+    scope: StrategyRiskPolicyScope = "strategy"
+    stopLoss: StrategyRiskStopLossPolicy | None = None
+    takeProfit: StrategyRiskTakeProfitPolicy | None = None
+    reentry: StrategyRiskReentryPolicy = Field(default_factory=StrategyRiskReentryPolicy)
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "StrategyRiskPolicy":
+        if self.enabled:
+            enabled_stop = self.stopLoss is not None and self.stopLoss.enabled
+            enabled_take = self.takeProfit is not None and self.takeProfit.enabled
+            reentry_control = self.reentry.cooldownBars > 0 or self.reentry.requireApproval
+            if not enabled_stop and not enabled_take and not reentry_control:
+                raise ValueError(
+                    "Enabled strategyRiskPolicy requires an enabled stopLoss, takeProfit, or reentry control."
+                )
+        return self
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -384,6 +481,8 @@ class StrategyConfig(BaseModel):
     regimePolicy: RegimePolicy | None = None
     riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
     positionPolicy: StrategyPositionPolicy | None = None
+    rebalancePolicy: RebalancePolicy | None = None
+    strategyRiskPolicy: StrategyRiskPolicy | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 

@@ -1,0 +1,91 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "allowPartialRebalance": {
+      "default": true,
+      "title": "Allowpartialrebalance",
+      "type": "boolean"
+    },
+    "cashBufferPct": {
+      "default": 0.0,
+      "exclusiveMaximum": 100.0,
+      "minimum": 0.0,
+      "title": "Cashbufferpct",
+      "type": "number"
+    },
+    "closeRemovedPositions": {
+      "default": true,
+      "title": "Closeremovedpositions",
+      "type": "boolean"
+    },
+    "driftThresholdPct": {
+      "anyOf": [
+        {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Driftthresholdpct"
+    },
+    "executionTiming": {
+      "const": "next_bar_open",
+      "default": "next_bar_open",
+      "title": "Executiontiming",
+      "type": "string"
+    },
+    "frequency": {
+      "default": "every_bar",
+      "enum": [
+        "every_bar",
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly",
+        "every_n_bars",
+        "manual"
+      ],
+      "title": "Frequency",
+      "type": "string"
+    },
+    "intervalBars": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Intervalbars"
+    },
+    "maxTurnoverPct": {
+      "anyOf": [
+        {
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxturnoverpct"
+    },
+    "minTradeNotional": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Mintradenotional",
+      "type": "number"
+    }
+  },
+  "title": "RebalancePolicy",
+  "type": "object"
+}

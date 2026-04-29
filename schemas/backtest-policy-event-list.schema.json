@@ -1,0 +1,185 @@
+{
+  "$defs": {
+    "BacktestPolicyEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action"
+        },
+        "bar_ts": {
+          "format": "date-time",
+          "title": "Bar Ts",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "applied",
+            "skipped",
+            "blocked"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "event_seq": {
+          "minimum": 0,
+          "title": "Event Seq",
+          "type": "integer"
+        },
+        "observed_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Value"
+        },
+        "policy_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policy Id"
+        },
+        "policy_type": {
+          "enum": [
+            "rebalance",
+            "strategy_risk",
+            "position_exit",
+            "reentry"
+          ],
+          "title": "Policy Type",
+          "type": "string"
+        },
+        "position_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position Id"
+        },
+        "reason_code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "strategy",
+            "sleeve",
+            "position",
+            "symbol",
+            "portfolio"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        },
+        "threshold_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold Value"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_seq",
+        "bar_ts",
+        "scope",
+        "policy_type",
+        "decision",
+        "reason_code"
+      ],
+      "title": "BacktestPolicyEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "events": {
+      "items": {
+        "$ref": "#/$defs/BacktestPolicyEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer"
+    },
+    "total": {
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "events",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "BacktestPolicyEventListResponse",
+  "type": "object"
+}
