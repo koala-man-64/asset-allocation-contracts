@@ -225,6 +225,19 @@
           "minLength": 1,
           "title": "Modelname",
           "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
         }
       },
       "title": "RegimePolicy",
@@ -239,6 +252,33 @@
           "minLength": 1,
           "title": "Costmodel",
           "type": "string"
+        },
+        "exitRuleSetName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitrulesetname"
+        },
+        "exitRuleSetVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitrulesetversion"
         },
         "exits": {
           "items": {
@@ -299,6 +339,19 @@
           "default": null,
           "title": "Rankingschemaname"
         },
+        "rankingSchemaVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingschemaversion"
+        },
         "rebalance": {
           "default": "monthly",
           "maxLength": 64,
@@ -327,6 +380,60 @@
             }
           ],
           "default": null
+        },
+        "regimePolicyConfigName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyconfigname"
+        },
+        "regimePolicyConfigVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyconfigversion"
+        },
+        "riskPolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyname"
+        },
+        "riskPolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyversion"
         },
         "riskProfileName": {
           "anyOf": [
@@ -383,6 +490,19 @@
           ],
           "default": null,
           "title": "Universeconfigname"
+        },
+        "universeConfigVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universeconfigversion"
         }
       },
       "title": "StrategyConfig",

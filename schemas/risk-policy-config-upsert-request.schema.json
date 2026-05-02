@@ -1,0 +1,226 @@
+{
+  "$defs": {
+    "RiskPolicyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "policy": {
+          "$ref": "#/$defs/StrategyRiskPolicy"
+        }
+      },
+      "required": [
+        "policy"
+      ],
+      "title": "RiskPolicyConfig",
+      "type": "object"
+    },
+    "StrategyRiskPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "reentry": {
+          "$ref": "#/$defs/StrategyRiskReentryPolicy"
+        },
+        "scope": {
+          "default": "strategy",
+          "enum": [
+            "strategy",
+            "sleeve"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "stopLoss": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskStopLossPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "takeProfit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskTakeProfitPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyRiskPolicy",
+      "type": "object"
+    },
+    "StrategyRiskReentryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "cooldownBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
+        "requireApproval": {
+          "default": false,
+          "title": "Requireapproval",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskReentryPolicy",
+      "type": "object"
+    },
+    "StrategyRiskStopLossPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "default": "reduce_exposure",
+          "enum": [
+            "reduce_exposure",
+            "liquidate",
+            "freeze_buys"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "basis": {
+          "default": "strategy_nav_drawdown",
+          "enum": [
+            "strategy_nav_drawdown",
+            "sleeve_nav_drawdown"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "id": {
+          "default": "strategy-stop-loss",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "reductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reductionpct"
+        },
+        "thresholdPct": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "title": "Thresholdpct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "thresholdPct"
+      ],
+      "title": "StrategyRiskStopLossPolicy",
+      "type": "object"
+    },
+    "StrategyRiskTakeProfitPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "default": "rebalance_to_target",
+          "enum": [
+            "reduce_exposure",
+            "rebalance_to_target"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "basis": {
+          "default": "strategy_nav_gain",
+          "enum": [
+            "strategy_nav_gain",
+            "sleeve_nav_gain"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "id": {
+          "default": "strategy-take-profit",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "reductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reductionpct"
+        },
+        "thresholdPct": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "title": "Thresholdpct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "thresholdPct"
+      ],
+      "title": "StrategyRiskTakeProfitPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/RiskPolicyConfig"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "config"
+  ],
+  "title": "RiskPolicyConfigUpsertRequest",
+  "type": "object"
+}

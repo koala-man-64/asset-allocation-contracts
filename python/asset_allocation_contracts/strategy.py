@@ -214,6 +214,19 @@ UniverseGroup.model_rebuild()
 UniverseDefinition.model_rebuild()
 
 
+class ConfigRevisionReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    version: int = Field(..., ge=1)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def normalize_name(cls, value: object) -> object:
+        normalized = str(value or "").strip()
+        return normalized or value
+
+
 class ExitRule(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -466,10 +479,114 @@ class StrategyRiskPolicy(BaseModel):
         return self
 
 
+class RiskPolicyConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    policy: StrategyRiskPolicy
+
+
+class RiskPolicyConfigSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    version: int = Field(default=1, ge=1)
+    archived: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    updatedAt: datetime | None = None
+
+
+class RiskPolicyConfigRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    version: int = Field(..., ge=1)
+    description: str = Field(default="", max_length=2048)
+    config: RiskPolicyConfig
+    configHash: str | None = None
+    createdAt: datetime | None = None
+    createdBy: str | None = None
+
+
+class RiskPolicyConfigDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    policy: RiskPolicyConfigSummary
+    activeRevision: RiskPolicyConfigRevision | None = None
+    revisions: list[RiskPolicyConfigRevision] = Field(default_factory=list)
+
+
+class RiskPolicyConfigUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    config: RiskPolicyConfig
+
+
+class ExitRuleSetConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
+    exits: list[ExitRule] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def normalize_exits(self) -> "ExitRuleSetConfig":
+        seen_ids: set[str] = set()
+        for idx, rule in enumerate(self.exits):
+            if rule.id in seen_ids:
+                raise ValueError(f"Duplicate exit rule id '{rule.id}'.")
+            seen_ids.add(rule.id)
+            if rule.priority is None:
+                rule.priority = idx
+        return self
+
+
+class ExitRuleSetSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    version: int = Field(default=1, ge=1)
+    archived: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    ruleCount: int = Field(default=0, ge=0)
+    updatedAt: datetime | None = None
+
+
+class ExitRuleSetRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    version: int = Field(..., ge=1)
+    description: str = Field(default="", max_length=2048)
+    config: ExitRuleSetConfig
+    configHash: str | None = None
+    createdAt: datetime | None = None
+    createdBy: str | None = None
+
+
+class ExitRuleSetDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ruleSet: ExitRuleSetSummary
+    activeRevision: ExitRuleSetRevision | None = None
+    revisions: list[ExitRuleSetRevision] = Field(default_factory=list)
+
+
+class ExitRuleSetUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    config: ExitRuleSetConfig
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
+    universeConfigVersion: int | None = Field(default=None, ge=1)
     universe: UniverseDefinition | None = None
     rebalance: str = Field(default="monthly", min_length=1, max_length=64)
     longOnly: bool = True
@@ -478,11 +595,18 @@ class StrategyConfig(BaseModel):
     holdingPeriod: int = Field(default=21, ge=1)
     costModel: str = Field(default="default", min_length=1, max_length=64)
     rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
+    rankingSchemaVersion: int | None = Field(default=None, ge=1)
+    regimePolicyConfigName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimePolicyConfigVersion: int | None = Field(default=None, ge=1)
     regimePolicy: RegimePolicy | None = None
     riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
+    riskPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    riskPolicyVersion: int | None = Field(default=None, ge=1)
     positionPolicy: StrategyPositionPolicy | None = None
     rebalancePolicy: RebalancePolicy | None = None
     strategyRiskPolicy: StrategyRiskPolicy | None = None
+    exitRuleSetName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitRuleSetVersion: int | None = Field(default=None, ge=1)
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
@@ -534,9 +658,15 @@ class StrategyConfig(BaseModel):
         normalized = str(value).strip()
         return normalized or None
 
-    @field_validator("riskProfileName", mode="before")
+    @field_validator(
+        "regimePolicyConfigName",
+        "riskPolicyName",
+        "exitRuleSetName",
+        "riskProfileName",
+        mode="before",
+    )
     @classmethod
-    def normalize_risk_profile_name(cls, value: object) -> object:
+    def normalize_optional_config_name(cls, value: object) -> object:
         if value is None:
             return None
         normalized = str(value).strip()
@@ -546,6 +676,15 @@ class StrategyConfig(BaseModel):
     def normalize_exits(self) -> "StrategyConfig":
         if not self.universeConfigName and self.universe is None:
             raise ValueError("universeConfigName is required.")
+        self._validate_pin_pair("universeConfigVersion", self.universeConfigName, self.universeConfigVersion)
+        self._validate_pin_pair("rankingSchemaVersion", self.rankingSchemaName, self.rankingSchemaVersion)
+        self._validate_pin_pair(
+            "regimePolicyConfigVersion",
+            self.regimePolicyConfigName,
+            self.regimePolicyConfigVersion,
+        )
+        self._validate_pin_pair("riskPolicyVersion", self.riskPolicyName, self.riskPolicyVersion)
+        self._validate_pin_pair("exitRuleSetVersion", self.exitRuleSetName, self.exitRuleSetVersion)
         if not self.longOnly:
             raise ValueError("Strategy position policy v1 only supports longOnly=true.")
         if self.riskProfileName and self.positionPolicy is None:
@@ -575,3 +714,8 @@ class StrategyConfig(BaseModel):
                 "Long-only targetPositionSize percentage cannot allocate more than 100% "
                 "across selected positions."
             )
+
+    @staticmethod
+    def _validate_pin_pair(field_name: str, name: str | None, version: int | None) -> None:
+        if version is not None and not name:
+            raise ValueError(f"{field_name} requires the matching config name.")

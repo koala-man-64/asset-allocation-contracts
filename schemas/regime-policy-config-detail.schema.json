@@ -1,0 +1,213 @@
+{
+  "$defs": {
+    "RegimePolicyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "observe_only",
+          "default": "observe_only",
+          "title": "Mode",
+          "type": "string"
+        },
+        "modelName": {
+          "default": "default-regime",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        }
+      },
+      "title": "RegimePolicyConfig",
+      "type": "object"
+    },
+    "RegimePolicyConfigRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/RegimePolicyConfig"
+        },
+        "configHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confighash"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdby"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "config"
+      ],
+      "title": "RegimePolicyConfigRevision",
+      "type": "object"
+    },
+    "RegimePolicyConfigSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "archived": {
+          "default": false,
+          "title": "Archived",
+          "type": "boolean"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "mode": {
+          "const": "observe_only",
+          "default": "observe_only",
+          "title": "Mode",
+          "type": "string"
+        },
+        "modelName": {
+          "default": "default-regime",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "usageCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Usagecount",
+          "type": "integer"
+        },
+        "version": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "RegimePolicyConfigSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RegimePolicyConfigRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "policy": {
+      "$ref": "#/$defs/RegimePolicyConfigSummary"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/RegimePolicyConfigRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "policy"
+  ],
+  "title": "RegimePolicyConfigDetailResponse",
+  "type": "object"
+}

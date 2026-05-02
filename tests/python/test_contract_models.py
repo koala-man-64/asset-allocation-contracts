@@ -87,6 +87,10 @@ from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
     RegimePolicy,
+    RegimePolicyConfig,
+    RegimePolicyConfigDetailResponse,
+    RegimePolicyConfigSummary,
+    RegimePolicyConfigRevision,
     RegimeSignal,
     RegimeSnapshot,
     canonical_default_regime_config_errors,
@@ -107,7 +111,16 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    ConfigRevisionReference,
+    ExitRuleSetConfig,
+    ExitRuleSetDetailResponse,
+    ExitRuleSetRevision,
+    ExitRuleSetSummary,
     RebalancePolicy,
+    RiskPolicyConfig,
+    RiskPolicyConfigDetailResponse,
+    RiskPolicyConfigRevision,
+    RiskPolicyConfigSummary,
     StrategyRiskPolicy,
     StrategyPositionPolicy,
     StrategyRiskProfileConfig,
@@ -144,6 +157,58 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
     assert payload.regimePolicy.mode == "observe_only"
+
+
+def test_strategy_config_accepts_pinned_configuration_references_with_resolved_snapshots() -> None:
+    payload = StrategyConfig(
+        universeConfigName="large-cap-quality",
+        universeConfigVersion=4,
+        rankingSchemaName="quality-momentum",
+        rankingSchemaVersion=7,
+        regimePolicyConfigName="observe-default",
+        regimePolicyConfigVersion=2,
+        regimePolicy={"modelName": "default-regime", "modelVersion": 3, "mode": "observe_only"},
+        riskPolicyName="balanced-risk",
+        riskPolicyVersion=5,
+        strategyRiskPolicy={
+            "scope": "strategy",
+            "stopLoss": {
+                "thresholdPct": 8,
+                "action": "reduce_exposure",
+                "reductionPct": 50,
+            },
+        },
+        exitRuleSetName="standard-exits",
+        exitRuleSetVersion=6,
+        exits=[{"id": "stop-8", "type": "stop_loss_fixed", "value": 0.08}],
+    )
+
+    assert payload.universeConfigVersion == 4
+    assert payload.rankingSchemaVersion == 7
+    assert payload.regimePolicyConfigName == "observe-default"
+    assert payload.regimePolicy is not None
+    assert payload.regimePolicy.modelVersion == 3
+    assert payload.riskPolicyName == "balanced-risk"
+    assert payload.strategyRiskPolicy is not None
+    assert payload.exitRuleSetName == "standard-exits"
+    assert payload.exits[0].priority == 0
+
+
+def test_strategy_config_rejects_version_without_matching_name() -> None:
+    try:
+        StrategyConfig(universeConfigName="core", riskPolicyVersion=2)
+    except Exception as exc:
+        assert "riskPolicyVersion" in str(exc)
+        assert "matching config name" in str(exc)
+    else:
+        raise AssertionError("Expected pinned version without config name to fail validation.")
+
+
+def test_config_revision_reference_normalizes_name() -> None:
+    ref = ConfigRevisionReference(name="  core-risk  ", version=3)
+
+    assert ref.name == "core-risk"
+    assert ref.version == 3
 
 
 def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> None:
@@ -408,6 +473,27 @@ def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
     assert policy.reentry.requireApproval is True
 
 
+def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
+    summary = RiskPolicyConfigSummary(name="balanced-risk", description="Desk balanced risk.", version=2, usageCount=4)
+    revision = RiskPolicyConfigRevision(
+        name="balanced-risk",
+        version=2,
+        description="Desk balanced risk.",
+        config={
+            "policy": {
+                "scope": "strategy",
+                "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+            }
+        },
+        configHash="hash-1",
+    )
+    detail = RiskPolicyConfigDetailResponse(policy=summary, activeRevision=revision, revisions=[revision])
+
+    assert detail.policy.version == 2
+    assert detail.activeRevision is not None
+    assert detail.activeRevision.config.policy.stopLoss is not None
+
+
 def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> None:
     try:
         StrategyRiskPolicy(stopLoss={"thresholdPct": 8, "action": "reduce_exposure"})
@@ -416,6 +502,38 @@ def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure(
         assert "reductionPct" in str(exc)
     else:
         raise AssertionError("Expected reduce_exposure stop-loss policy to require reductionPct.")
+
+
+def test_exit_rule_set_contracts_normalize_priorities_and_metadata() -> None:
+    config = ExitRuleSetConfig(
+        intrabarConflictPolicy="priority_order",
+        exits=[
+            {"id": "profit-10", "type": "take_profit_fixed", "value": 0.10},
+            {"id": "stop-5", "type": "stop_loss_fixed", "value": 0.05},
+        ],
+    )
+    summary = ExitRuleSetSummary(name="standard-exits", version=3, ruleCount=len(config.exits))
+    revision = ExitRuleSetRevision(name="standard-exits", version=3, config=config)
+    detail = ExitRuleSetDetailResponse(ruleSet=summary, activeRevision=revision, revisions=[revision])
+
+    assert detail.ruleSet.ruleCount == 2
+    assert detail.activeRevision is not None
+    assert detail.activeRevision.config.exits[0].priority == 0
+    assert detail.activeRevision.config.exits[1].priority == 1
+
+
+def test_exit_rule_set_rejects_duplicate_rule_ids() -> None:
+    try:
+        ExitRuleSetConfig(
+            exits=[
+                {"id": "stop", "type": "stop_loss_fixed", "value": 0.05},
+                {"id": "stop", "type": "take_profit_fixed", "value": 0.10},
+            ]
+        )
+    except Exception as exc:
+        assert "Duplicate exit rule id" in str(exc)
+    else:
+        raise AssertionError("Expected duplicate exit ids to fail validation.")
 
 
 def test_strategy_config_rejects_short_side_until_supported() -> None:
@@ -897,6 +1015,34 @@ def test_default_regime_policy_rejects_legacy_fields() -> None:
         assert "observe_only" in str(exc)
     else:
         raise AssertionError("Expected legacy default-regime policy fields to be rejected.")
+
+
+def test_regime_policy_library_contracts_reference_model_revision() -> None:
+    config = RegimePolicyConfig(modelName="default-regime", modelVersion=3, mode="observe_only")
+    summary = RegimePolicyConfigSummary(
+        name="observe-default",
+        description="Observe default regime model.",
+        version=2,
+        usageCount=5,
+        modelName=config.modelName,
+        modelVersion=config.modelVersion,
+        mode=config.mode,
+    )
+    revision = RegimePolicyConfigRevision(
+        name="observe-default",
+        version=2,
+        description="Observe default regime model.",
+        config=config,
+        configHash="hash-1",
+    )
+    detail = RegimePolicyConfigDetailResponse(policy=summary, activeRevision=revision, revisions=[revision])
+    resolved = config.resolved_policy()
+
+    assert detail.policy.modelVersion == 3
+    assert detail.activeRevision is not None
+    assert detail.activeRevision.config.mode == "observe_only"
+    assert resolved.modelName == "default-regime"
+    assert resolved.modelVersion == 3
 
 
 def test_backtest_claim_request_accepts_optional_execution_name() -> None:

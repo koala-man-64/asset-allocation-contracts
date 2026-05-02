@@ -1,0 +1,52 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "archived": {
+      "default": false,
+      "title": "Archived",
+      "type": "boolean"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    },
+    "usageCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Usagecount",
+      "type": "integer"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "title": "RiskPolicyConfigSummary",
+  "type": "object"
+}

@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "RegimePolicyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "observe_only",
+          "default": "observe_only",
+          "title": "Mode",
+          "type": "string"
+        },
+        "modelName": {
+          "default": "default-regime",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        }
+      },
+      "title": "RegimePolicyConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/RegimePolicyConfig"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "config"
+  ],
+  "title": "RegimePolicyConfigUpsertRequest",
+  "type": "object"
+}

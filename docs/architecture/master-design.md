@@ -152,8 +152,11 @@ This section lists the public contract families this repo owns and why each exis
 Owned by:
 
 - `python/asset_allocation_contracts/strategy.py`
+- `python/asset_allocation_contracts/regime.py`
 - `schemas/strategy-config.schema.json`
 - `schemas/universe-definition.schema.json`
+- `schemas/*-config.schema.json`
+- `schemas/*-revision.schema.json`
 - `ts/src/contracts.ts`
 
 Purpose:
@@ -161,11 +164,15 @@ Purpose:
 - Define strategy runtime configuration
 - Define universe selection structure
 - Define exit-rule configuration semantics
+- Define reusable versioned configuration library contracts for regime policies, risk policies, and exit rule sets
+- Define exact revision pin fields that let strategy assembly reference reusable library objects by name and version
 - Preserve temporary compatibility behavior such as legacy toggle stripping at the API boundary
 
 Key design note:
 
 `StrategyConfig` currently strips legacy `enabled` toggles from `regimePolicy` and `exits` before final validation. That is compatibility behavior, not a new canonical modeling direction, and it should remain explicit if retained.
+
+Reusable strategy configuration libraries are database-backed and revisioned outside the strategy document. Strategy assembly pins exact revisions with `universeConfigVersion`, `rankingSchemaVersion`, `regimePolicyConfigVersion`, `riskPolicyVersion`, and `exitRuleSetVersion`; execution continues to read resolved snapshots such as `regimePolicy`, `strategyRiskPolicy`, `intrabarConflictPolicy`, and `exits` from immutable strategy revisions. No runtime should resolve "latest by name" during execution.
 
 ### 4.2 Ranking Contracts
 
