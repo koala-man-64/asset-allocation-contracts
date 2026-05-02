@@ -41,6 +41,21 @@ import type {
   UniverseCondition,
   UniversePreviewResponse,
 } from "../src/contracts";
+import {
+  GOLD_MARKET_SILVER_SOURCE_COLUMNS,
+  LEGACY_SILVER_MARKET_COLUMNS,
+  SILVER_MARKET_COLUMNS,
+  SILVER_MARKET_CORPORATE_ACTION_COLUMNS,
+} from "../src";
+import type { SilverMarketColumn } from "../src";
+
+const silverMarketColumns: readonly SilverMarketColumn[] = SILVER_MARKET_COLUMNS;
+const silverCorporateActionColumns = SILVER_MARKET_CORPORATE_ACTION_COLUMNS satisfies readonly SilverMarketColumn[];
+const goldMarketSourceColumns = GOLD_MARKET_SILVER_SOURCE_COLUMNS satisfies readonly SilverMarketColumn[];
+const legacySilverMarketColumnCount: 9 = LEGACY_SILVER_MARKET_COLUMNS.length;
+const silverMarketColumnCount: 11 = SILVER_MARKET_COLUMNS.length;
+const silverCorporateActionColumnCount: 2 = silverCorporateActionColumns.length;
+const goldMarketSourceColumnCount: 9 = goldMarketSourceColumns.length;
 
 const catalog: UniverseCatalogResponse = {
   source: "postgres_gold",
