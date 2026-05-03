@@ -42,7 +42,8 @@
         "category": {
           "enum": [
             "trading_policy",
-            "allocation"
+            "allocation",
+            "onboarding"
           ],
           "title": "Category",
           "type": "string"

@@ -1,6 +1,6 @@
 {
   "$defs": {
-    "BrokerAccountActivity": {
+    "BrokerAccountActionResponse": {
       "additionalProperties": false,
       "properties": {
         "accountId": {
@@ -9,13 +9,7 @@
           "title": "Accountid",
           "type": "string"
         },
-        "activityId": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Activityid",
-          "type": "string"
-        },
-        "activityType": {
+        "action": {
           "enum": [
             "reconnect",
             "pause_sync",
@@ -25,37 +19,16 @@
             "update_trading_policy",
             "update_allocation"
           ],
-          "title": "Activitytype",
+          "title": "Action",
           "type": "string"
         },
-        "actor": {
-          "anyOf": [
-            {
-              "maxLength": 128,
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Actor"
+        "actionId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Actionid",
+          "type": "string"
         },
-        "completedAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Completedat"
-        },
-        "note": {
+        "message": {
           "anyOf": [
             {
               "type": "string"
@@ -65,26 +38,23 @@
             }
           ],
           "default": null,
-          "title": "Note"
-        },
-        "relatedAlertId": {
-          "anyOf": [
-            {
-              "maxLength": 128,
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Relatedalertid"
+          "title": "Message"
         },
         "requestedAt": {
           "format": "date-time",
           "title": "Requestedat",
           "type": "string"
+        },
+        "resultingConnectionHealth": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BrokerConnectionHealth"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "status": {
           "default": "accepted",
@@ -97,140 +67,43 @@
           "title": "Status",
           "type": "string"
         },
-        "summary": {
-          "default": "",
-          "title": "Summary",
-          "type": "string"
+        "syncPaused": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Syncpaused"
+        },
+        "tradeReadiness": {
+          "anyOf": [
+            {
+              "enum": [
+                "ready",
+                "review",
+                "blocked"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradereadiness"
         }
       },
       "required": [
-        "activityId",
+        "actionId",
         "accountId",
-        "activityType",
+        "action",
         "requestedAt"
       ],
-      "title": "BrokerAccountActivity",
-      "type": "object"
-    },
-    "BrokerAccountAlert": {
-      "additionalProperties": false,
-      "properties": {
-        "accountId": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Accountid",
-          "type": "string"
-        },
-        "acknowledgedAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Acknowledgedat"
-        },
-        "acknowledgedBy": {
-          "anyOf": [
-            {
-              "maxLength": 128,
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Acknowledgedby"
-        },
-        "alertId": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Alertid",
-          "type": "string"
-        },
-        "asOfDate": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Asofdate"
-        },
-        "code": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Code",
-          "type": "string"
-        },
-        "message": {
-          "default": "",
-          "title": "Message",
-          "type": "string"
-        },
-        "observedAt": {
-          "format": "date-time",
-          "title": "Observedat",
-          "type": "string"
-        },
-        "resolvedAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Resolvedat"
-        },
-        "severity": {
-          "default": "warning",
-          "enum": [
-            "info",
-            "warning",
-            "critical"
-          ],
-          "title": "Severity",
-          "type": "string"
-        },
-        "status": {
-          "default": "open",
-          "enum": [
-            "open",
-            "acknowledged",
-            "resolved"
-          ],
-          "title": "Status",
-          "type": "string"
-        },
-        "title": {
-          "maxLength": 160,
-          "minLength": 1,
-          "title": "Title",
-          "type": "string"
-        }
-      },
-      "required": [
-        "alertId",
-        "accountId",
-        "code",
-        "title",
-        "observedAt"
-      ],
-      "title": "BrokerAccountAlert",
+      "title": "BrokerAccountActionResponse",
       "type": "object"
     },
     "BrokerAccountConfiguration": {
@@ -1141,137 +1014,6 @@
       "title": "BrokerStrategyReference",
       "type": "object"
     },
-    "BrokerSyncRun": {
-      "additionalProperties": false,
-      "properties": {
-        "accountId": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Accountid",
-          "type": "string"
-        },
-        "completedAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Completedat"
-        },
-        "errorMessage": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Errormessage"
-        },
-        "requestedAt": {
-          "format": "date-time",
-          "title": "Requestedat",
-          "type": "string"
-        },
-        "rowsSynced": {
-          "anyOf": [
-            {
-              "minimum": 0,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Rowssynced"
-        },
-        "runId": {
-          "maxLength": 128,
-          "minLength": 1,
-          "title": "Runid",
-          "type": "string"
-        },
-        "scope": {
-          "default": "full",
-          "enum": [
-            "balances",
-            "positions",
-            "orders",
-            "full"
-          ],
-          "title": "Scope",
-          "type": "string"
-        },
-        "startedAt": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Startedat"
-        },
-        "status": {
-          "default": "queued",
-          "enum": [
-            "queued",
-            "running",
-            "completed",
-            "failed"
-          ],
-          "title": "Status",
-          "type": "string"
-        },
-        "summary": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Summary"
-        },
-        "trigger": {
-          "default": "scheduled",
-          "enum": [
-            "scheduled",
-            "manual",
-            "reconnect",
-            "backfill"
-          ],
-          "title": "Trigger",
-          "type": "string"
-        },
-        "warningCount": {
-          "default": 0,
-          "minimum": 0,
-          "title": "Warningcount",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "runId",
-        "accountId",
-        "requestedAt"
-      ],
-      "title": "BrokerSyncRun",
-      "type": "object"
-    },
     "BrokerTradingPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -1336,27 +1078,16 @@
     "account": {
       "$ref": "#/$defs/BrokerAccountSummary"
     },
-    "accountType": {
-      "default": "other",
-      "enum": [
-        "cash",
-        "margin",
-        "retirement",
-        "paper",
-        "other"
+    "audit": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BrokerAccountConfigurationAuditRecord"
+        },
+        {
+          "type": "null"
+        }
       ],
-      "title": "Accounttype",
-      "type": "string"
-    },
-    "alerts": {
-      "items": {
-        "$ref": "#/$defs/BrokerAccountAlert"
-      },
-      "title": "Alerts",
-      "type": "array"
-    },
-    "capabilities": {
-      "$ref": "#/$defs/BrokerCapabilityFlags"
+      "default": null
     },
     "configuration": {
       "anyOf": [
@@ -1369,52 +1100,15 @@
       ],
       "default": null
     },
-    "dayTradeBuyingPower": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Daytradebuyingpower"
-    },
-    "maintenanceExcess": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Maintenanceexcess"
-    },
-    "recentActivity": {
-      "items": {
-        "$ref": "#/$defs/BrokerAccountActivity"
-      },
-      "title": "Recentactivity",
-      "type": "array"
-    },
-    "syncRuns": {
-      "items": {
-        "$ref": "#/$defs/BrokerSyncRun"
-      },
-      "title": "Syncruns",
-      "type": "array"
-    },
-    "tradingBlocked": {
-      "default": false,
-      "title": "Tradingblocked",
+    "created": {
+      "default": true,
+      "title": "Created",
       "type": "boolean"
     },
-    "tradingBlockedReason": {
+    "generatedAt": {
       "anyOf": [
         {
+          "format": "date-time",
           "type": "string"
         },
         {
@@ -1422,24 +1116,33 @@
         }
       ],
       "default": null,
-      "title": "Tradingblockedreason"
+      "title": "Generatedat"
     },
-    "unsettledFunds": {
+    "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+    },
+    "reenabled": {
+      "default": false,
+      "title": "Reenabled",
+      "type": "boolean"
+    },
+    "refreshAction": {
       "anyOf": [
         {
-          "type": "number"
+          "$ref": "#/$defs/BrokerAccountActionResponse"
         },
         {
           "type": "null"
         }
       ],
-      "default": null,
-      "title": "Unsettledfunds"
+      "default": null
     }
   },
   "required": [
     "account"
   ],
-  "title": "BrokerAccountDetail",
+  "title": "BrokerAccountOnboardingResponse",
   "type": "object"
 }

@@ -1,0 +1,134 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountNumberMasked": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Accountnumbermasked"
+    },
+    "allowedExecutionPostures": {
+      "items": {
+        "enum": [
+          "monitor_only",
+          "paper",
+          "sandbox",
+          "live"
+        ],
+        "type": "string"
+      },
+      "title": "Allowedexecutionpostures",
+      "type": "array"
+    },
+    "baseCurrency": {
+      "default": "USD",
+      "maxLength": 3,
+      "minLength": 3,
+      "title": "Basecurrency",
+      "type": "string"
+    },
+    "blockedExecutionPostureReasons": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Blockedexecutionposturereasons",
+      "type": "object"
+    },
+    "canOnboard": {
+      "default": true,
+      "title": "Canonboard",
+      "type": "boolean"
+    },
+    "candidateId": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Candidateid",
+      "type": "string"
+    },
+    "displayName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Displayname",
+      "type": "string"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "existingAccountId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Existingaccountid"
+    },
+    "provider": {
+      "enum": [
+        "alpaca",
+        "schwab",
+        "etrade"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "state": {
+      "default": "available",
+      "enum": [
+        "available",
+        "already_configured",
+        "disabled",
+        "blocked",
+        "unavailable"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "stateReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Statereason"
+    },
+    "suggestedAccountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Suggestedaccountid",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidateId",
+    "provider",
+    "environment",
+    "suggestedAccountId",
+    "displayName"
+  ],
+  "title": "BrokerAccountOnboardingCandidate",
+  "type": "object"
+}

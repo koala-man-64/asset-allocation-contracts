@@ -60,8 +60,11 @@ export type BrokerPolicySide = 'long' | 'short';
 export type BrokerPolicyAssetClass = 'equity' | 'option';
 export type BrokerPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
 export type BrokerAllocationMode = 'percent' | 'notional_base_ccy';
-export type BrokerConfigurationAuditCategory = 'trading_policy' | 'allocation';
+export type BrokerConfigurationAuditCategory = 'trading_policy' | 'allocation' | 'onboarding';
 export type BrokerConfigurationAuditOutcome = 'saved' | 'denied' | 'warning';
+export type BrokerAccountExecutionPosture = 'monitor_only' | 'paper' | 'sandbox' | 'live';
+export type BrokerAccountOnboardingCandidateState = 'available' | 'already_configured' | 'disabled' | 'blocked' | 'unavailable';
+export type BrokerAccountOnboardingDiscoveryStatus = 'completed' | 'provider_unavailable' | 'not_connected' | 'failed';
 export type BrokerAccountActionType = 'reconnect' | 'pause_sync' | 'resume_sync' | 'refresh' | 'acknowledge_alert' | 'update_trading_policy' | 'update_allocation';
 export type BrokerAccountActionStatus = 'accepted' | 'in_progress' | 'completed' | 'failed';
 export type TradeProvider = 'alpaca' | 'etrade' | 'schwab';
@@ -1180,6 +1183,51 @@ export interface BrokerAccountActionResponse {
   resultingConnectionHealth?: BrokerConnectionHealth | null;
   tradeReadiness?: TradeReadiness | null;
   syncPaused?: boolean | null;
+}
+
+export interface BrokerAccountOnboardingCandidate {
+  candidateId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  suggestedAccountId: string;
+  displayName: string;
+  accountNumberMasked?: string | null;
+  baseCurrency: string;
+  state: BrokerAccountOnboardingCandidateState;
+  stateReason?: string | null;
+  existingAccountId?: string | null;
+  allowedExecutionPostures: BrokerAccountExecutionPosture[];
+  blockedExecutionPostureReasons: Record<string, string>;
+  canOnboard: boolean;
+}
+
+export interface BrokerAccountOnboardingCandidateListResponse {
+  candidates: BrokerAccountOnboardingCandidate[];
+  discoveryStatus: BrokerAccountOnboardingDiscoveryStatus;
+  message: string;
+  generatedAt?: string | null;
+}
+
+export interface BrokerAccountOnboardingRequest {
+  candidateId: string;
+  provider: TradeProvider;
+  environment: TradeEnvironment;
+  displayName: string;
+  readiness: TradeReadiness;
+  executionPosture: BrokerAccountExecutionPosture;
+  initialRefresh: boolean;
+  reason: string;
+}
+
+export interface BrokerAccountOnboardingResponse {
+  account: BrokerAccountSummary;
+  configuration?: BrokerAccountConfiguration | null;
+  created: boolean;
+  reenabled: boolean;
+  refreshAction?: BrokerAccountActionResponse | null;
+  audit?: BrokerAccountConfigurationAuditRecord | null;
+  message: string;
+  generatedAt?: string | null;
 }
 
 export interface BrokerAccountAllocationUpdateRequest {

@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "candidateId": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Candidateid",
+      "type": "string"
+    },
+    "displayName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Displayname",
+      "type": "string"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "executionPosture": {
+      "default": "monitor_only",
+      "enum": [
+        "monitor_only",
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Executionposture",
+      "type": "string"
+    },
+    "initialRefresh": {
+      "default": true,
+      "title": "Initialrefresh",
+      "type": "boolean"
+    },
+    "provider": {
+      "enum": [
+        "alpaca",
+        "schwab",
+        "etrade"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "readiness": {
+      "default": "review",
+      "enum": [
+        "ready",
+        "review",
+        "blocked"
+      ],
+      "title": "Readiness",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidateId",
+    "provider",
+    "environment",
+    "displayName",
+    "reason"
+  ],
+  "title": "BrokerAccountOnboardingRequest",
+  "type": "object"
+}

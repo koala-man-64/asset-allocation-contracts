@@ -113,6 +113,22 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("broker-account-alert.schema.json", broker_accounts.BrokerAccountAlert),
     ("broker-account-summary.schema.json", broker_accounts.BrokerAccountSummary),
     ("broker-account-configuration.schema.json", broker_accounts.BrokerAccountConfiguration),
+    (
+        "broker-account-onboarding-candidate.schema.json",
+        broker_accounts.BrokerAccountOnboardingCandidate,
+    ),
+    (
+        "broker-account-onboarding-candidate-list.schema.json",
+        broker_accounts.BrokerAccountOnboardingCandidateListResponse,
+    ),
+    (
+        "broker-account-onboarding-request.schema.json",
+        broker_accounts.BrokerAccountOnboardingRequest,
+    ),
+    (
+        "broker-account-onboarding-response.schema.json",
+        broker_accounts.BrokerAccountOnboardingResponse,
+    ),
     ("broker-trading-policy.schema.json", broker_accounts.BrokerTradingPolicy),
     ("broker-position-size-limit.schema.json", broker_accounts.BrokerPositionSizeLimit),
     ("broker-allocation-update-request.schema.json", broker_accounts.BrokerAccountAllocationUpdateRequest),
@@ -294,6 +310,9 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("BrokerAllocationMode", broker_accounts.BrokerAllocationMode),
     ("BrokerConfigurationAuditCategory", broker_accounts.BrokerConfigurationAuditCategory),
     ("BrokerConfigurationAuditOutcome", broker_accounts.BrokerConfigurationAuditOutcome),
+    ("BrokerAccountExecutionPosture", broker_accounts.BrokerAccountExecutionPosture),
+    ("BrokerAccountOnboardingCandidateState", broker_accounts.BrokerAccountOnboardingCandidateState),
+    ("BrokerAccountOnboardingDiscoveryStatus", broker_accounts.BrokerAccountOnboardingDiscoveryStatus),
     ("BrokerAccountActionType", broker_accounts.BrokerAccountActionType),
     ("BrokerAccountActionStatus", broker_accounts.BrokerAccountActionStatus),
     ("TradeProvider", trade_desk.TradeProvider),

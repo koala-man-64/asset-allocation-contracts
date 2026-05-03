@@ -36,7 +36,12 @@ from asset_allocation_contracts.broker_accounts import (
     BrokerAccountConfiguration,
     BrokerAccountDetail,
     BrokerAccountListResponse,
+    BrokerAccountOnboardingCandidate,
+    BrokerAccountOnboardingCandidateListResponse,
+    BrokerAccountOnboardingRequest,
+    BrokerAccountOnboardingResponse,
     BrokerAccountSummary,
+    BrokerAccountConfigurationAuditRecord,
     BrokerCapabilityFlags,
     BrokerConnectionHealth,
     BrokerStrategyAllocationSummary,
@@ -2379,6 +2384,74 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     assert action_response.resultingConnectionHealth is not None
     assert action_response.resultingConnectionHealth.syncStatus == "syncing"
     assert listing.accounts[0].tradeReadiness == "blocked"
+
+
+def test_broker_account_onboarding_contracts_capture_discovery_and_create_response() -> None:
+    candidate = BrokerAccountOnboardingCandidate(
+        candidateId="alpaca:paper:acct-paper",
+        provider="alpaca",
+        environment="paper",
+        suggestedAccountId="alpaca-paper-acct-paper",
+        displayName="Alpaca Paper",
+        accountNumberMasked="****1234",
+        baseCurrency="usd",
+        state="available",
+        allowedExecutionPostures=["monitor_only", "paper"],
+        blockedExecutionPostureReasons={
+            "sandbox": "Sandbox execution is only available for sandbox accounts.",
+            "live": "Live execution requires live account approval.",
+        },
+        canOnboard=True,
+    )
+    candidate_list = BrokerAccountOnboardingCandidateListResponse(
+        candidates=[candidate],
+        discoveryStatus="completed",
+        message="Broker account discovery completed.",
+        generatedAt="2026-05-03T20:00:00Z",
+    )
+    request = BrokerAccountOnboardingRequest(
+        candidateId=candidate.candidateId,
+        provider="alpaca",
+        environment="paper",
+        displayName="Alpaca Paper",
+        readiness="review",
+        executionPosture="paper",
+        initialRefresh=True,
+        reason="Initial account onboarding for paper trading.",
+    )
+    account = BrokerAccountSummary(
+        accountId=candidate.suggestedAccountId,
+        broker="alpaca",
+        name="Alpaca Paper",
+        baseCurrency="USD",
+        tradeReadiness="review",
+    )
+    audit = BrokerAccountConfigurationAuditRecord(
+        auditId="audit-1",
+        accountId=account.accountId,
+        category="onboarding",
+        outcome="saved",
+        requestedAt="2026-05-03T20:00:01Z",
+        actor="ops@example.com",
+        summary="Onboarded broker account.",
+        after={"executionPosture": request.executionPosture},
+    )
+    response = BrokerAccountOnboardingResponse(
+        account=account,
+        created=True,
+        reenabled=False,
+        audit=audit,
+        message="Broker account onboarded.",
+        generatedAt="2026-05-03T20:00:02Z",
+    )
+
+    assert candidate.baseCurrency == "USD"
+    assert candidate_list.candidates[0].allowedExecutionPostures == ["monitor_only", "paper"]
+    assert candidate_list.discoveryStatus == "completed"
+    assert request.reason == "Initial account onboarding for paper trading."
+    assert response.audit is not None
+    assert response.audit.category == "onboarding"
+    assert response.account.accountId == "alpaca-paper-acct-paper"
 
 
 def test_broker_account_configuration_contracts_capture_policy_and_allocation() -> None:

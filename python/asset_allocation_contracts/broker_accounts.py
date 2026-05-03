@@ -21,8 +21,22 @@ BrokerPolicySide = Literal["long", "short"]
 BrokerPolicyAssetClass = Literal["equity", "option"]
 BrokerPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 BrokerAllocationMode = Literal["percent", "notional_base_ccy"]
-BrokerConfigurationAuditCategory = Literal["trading_policy", "allocation"]
+BrokerConfigurationAuditCategory = Literal["trading_policy", "allocation", "onboarding"]
 BrokerConfigurationAuditOutcome = Literal["saved", "denied", "warning"]
+BrokerAccountExecutionPosture = Literal["monitor_only", "paper", "sandbox", "live"]
+BrokerAccountOnboardingCandidateState = Literal[
+    "available",
+    "already_configured",
+    "disabled",
+    "blocked",
+    "unavailable",
+]
+BrokerAccountOnboardingDiscoveryStatus = Literal[
+    "completed",
+    "provider_unavailable",
+    "not_connected",
+    "failed",
+]
 BrokerAccountActionType = Literal[
     "reconnect",
     "pause_sync",
@@ -457,6 +471,103 @@ class BrokerAccountListResponse(BaseModel):
     generatedAt: datetime | None = None
 
 
+class BrokerAccountOnboardingCandidate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    candidateId: str = Field(..., min_length=1, max_length=160)
+    provider: BrokerVendor
+    environment: Literal["paper", "sandbox", "live"]
+    suggestedAccountId: str = Field(..., min_length=1, max_length=128)
+    displayName: str = Field(..., min_length=1, max_length=128)
+    accountNumberMasked: str | None = Field(default=None, min_length=1, max_length=32)
+    baseCurrency: str = Field(default="USD", min_length=3, max_length=3)
+    state: BrokerAccountOnboardingCandidateState = "available"
+    stateReason: str | None = None
+    existingAccountId: str | None = Field(default=None, min_length=1, max_length=128)
+    allowedExecutionPostures: list[BrokerAccountExecutionPosture] = Field(default_factory=lambda: ["monitor_only"])
+    blockedExecutionPostureReasons: dict[str, str] = Field(default_factory=dict)
+    canOnboard: bool = True
+
+    @field_validator("candidateId", "suggestedAccountId", "displayName", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("accountNumberMasked", "stateReason", "existingAccountId", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("baseCurrency", mode="before")
+    @classmethod
+    def normalize_base_currency(cls, value: object) -> str:
+        return _normalize_currency(value)
+
+    @field_validator("allowedExecutionPostures", mode="before")
+    @classmethod
+    def normalize_allowed_postures(cls, value: object) -> list[str]:
+        if value is None:
+            return ["monitor_only"]
+        if not isinstance(value, list):
+            raise ValueError("allowedExecutionPostures must be a list.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip().lower()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized or ["monitor_only"]
+
+    @field_validator("blockedExecutionPostureReasons", mode="before")
+    @classmethod
+    def normalize_blocked_posture_reasons(cls, value: object) -> dict[str, str]:
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            raise ValueError("blockedExecutionPostureReasons must be an object.")
+        return {
+            str(key).strip(): str(reason).strip()
+            for key, reason in value.items()
+            if str(key).strip() and str(reason).strip()
+        }
+
+
+class BrokerAccountOnboardingCandidateListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    candidates: list[BrokerAccountOnboardingCandidate] = Field(default_factory=list)
+    discoveryStatus: BrokerAccountOnboardingDiscoveryStatus = "completed"
+    message: str = ""
+    generatedAt: datetime | None = None
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def normalize_message(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
+class BrokerAccountOnboardingRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    candidateId: str = Field(..., min_length=1, max_length=160)
+    provider: BrokerVendor
+    environment: Literal["paper", "sandbox", "live"]
+    displayName: str = Field(..., min_length=1, max_length=128)
+    readiness: BrokerTradeReadiness = "review"
+    executionPosture: BrokerAccountExecutionPosture = "monitor_only"
+    initialRefresh: bool = True
+    reason: str = Field(..., min_length=1, max_length=500)
+
+    @field_validator("candidateId", "displayName", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def normalize_reason(cls, value: object) -> str:
+        return _normalize_required_text(value, "reason")
+
+
 class ReconnectBrokerAccountRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -579,3 +690,21 @@ class BrokerAccountActionResponse(BaseModel):
     @classmethod
     def normalize_message(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
+
+
+class BrokerAccountOnboardingResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    account: BrokerAccountSummary
+    configuration: BrokerAccountConfiguration | None = None
+    created: bool = True
+    reenabled: bool = False
+    refreshAction: BrokerAccountActionResponse | None = None
+    audit: BrokerAccountConfigurationAuditRecord | None = None
+    message: str = ""
+    generatedAt: datetime | None = None
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def normalize_message(cls, value: object) -> str:
+        return str(value or "").strip()

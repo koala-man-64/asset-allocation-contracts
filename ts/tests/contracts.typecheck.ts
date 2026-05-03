@@ -18,6 +18,10 @@ import type {
   BrokerAccountActionResponse,
   BrokerAccountDetail,
   BrokerAccountListResponse,
+  BrokerAccountOnboardingCandidate,
+  BrokerAccountOnboardingCandidateListResponse,
+  BrokerAccountOnboardingRequest,
+  BrokerAccountOnboardingResponse,
   BrokerAccountSummary,
   CongressTradeEventListResponse,
   GovernmentSignalMappingOverrideRequest,
@@ -418,6 +422,41 @@ const acknowledgeRequest: AcknowledgeBrokerAlertRequest = {
   note: "Queued for desk follow-up.",
 };
 
+const onboardingCandidate: BrokerAccountOnboardingCandidate = {
+  candidateId: "alpaca:paper:acct-paper",
+  provider: "alpaca",
+  environment: "paper",
+  suggestedAccountId: "alpaca-paper-acct-paper",
+  displayName: "Alpaca Paper",
+  accountNumberMasked: "****1234",
+  baseCurrency: "USD",
+  state: "available",
+  allowedExecutionPostures: ["monitor_only", "paper"],
+  blockedExecutionPostureReasons: {
+    sandbox: "Sandbox execution is only available for sandbox accounts.",
+    live: "Live execution requires live account approval.",
+  },
+  canOnboard: true,
+};
+
+const onboardingCandidates: BrokerAccountOnboardingCandidateListResponse = {
+  candidates: [onboardingCandidate],
+  discoveryStatus: "completed",
+  message: "Broker account discovery completed.",
+  generatedAt: "2026-05-03T20:00:00Z",
+};
+
+const onboardingRequest: BrokerAccountOnboardingRequest = {
+  candidateId: onboardingCandidate.candidateId,
+  provider: "alpaca",
+  environment: "paper",
+  displayName: "Alpaca Paper",
+  readiness: "review",
+  executionPosture: "paper",
+  initialRefresh: true,
+  reason: "Initial account onboarding for paper trading.",
+};
+
 const actionResponse: BrokerAccountActionResponse = {
   actionId: "action-1",
   accountId: "alpaca-core",
@@ -434,6 +473,26 @@ const actionResponse: BrokerAccountActionResponse = {
   },
   tradeReadiness: "review",
   syncPaused: false,
+};
+
+const onboardingResponse: BrokerAccountOnboardingResponse = {
+  account: brokerSummary,
+  created: true,
+  reenabled: false,
+  refreshAction: actionResponse,
+  audit: {
+    auditId: "audit-1",
+    accountId: brokerSummary.accountId,
+    category: "onboarding",
+    outcome: "saved",
+    requestedAt: "2026-05-03T20:00:01Z",
+    grantedRoles: ["AssetAllocation.AccountPolicy.Write"],
+    summary: "Onboarded broker account.",
+    before: {},
+    after: { executionPosture: onboardingRequest.executionPosture },
+  },
+  message: "Broker account onboarded.",
+  generatedAt: "2026-05-03T20:00:02Z",
 };
 
 const claimRequest: BacktestClaimRequest = {
@@ -593,7 +652,11 @@ void reconnectRequest;
 void pauseRequest;
 void refreshRequest;
 void acknowledgeRequest;
+void onboardingCandidate;
+void onboardingCandidates;
+void onboardingRequest;
 void actionResponse;
+void onboardingResponse;
 void claimRequest;
 void startRequest;
 void completeRequest;
