@@ -1,0 +1,303 @@
+{
+  "$defs": {
+    "ExitRule": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "exit_full",
+          "default": "exit_full",
+          "title": "Action",
+          "type": "string"
+        },
+        "atrColumn": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Atrcolumn"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "minHoldBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Minholdbars",
+          "type": "integer"
+        },
+        "priceField": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pricefield"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "enum": [
+                "entry_price",
+                "highest_since_entry"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference"
+        },
+        "scope": {
+          "const": "position",
+          "default": "position",
+          "title": "Scope",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "stop_loss_fixed",
+            "take_profit_fixed",
+            "trailing_stop_pct",
+            "trailing_stop_atr",
+            "time_stop"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "ExitRule",
+      "type": "object"
+    },
+    "ExitRuleSetConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "exits": {
+          "items": {
+            "$ref": "#/$defs/ExitRule"
+          },
+          "title": "Exits",
+          "type": "array"
+        },
+        "intrabarConflictPolicy": {
+          "default": "stop_first",
+          "enum": [
+            "stop_first",
+            "take_profit_first",
+            "priority_order"
+          ],
+          "title": "Intrabarconflictpolicy",
+          "type": "string"
+        }
+      },
+      "title": "ExitRuleSetConfig",
+      "type": "object"
+    },
+    "ExitRuleSetRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/ExitRuleSetConfig"
+        },
+        "configHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confighash"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdby"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "config"
+      ],
+      "title": "ExitRuleSetRevision",
+      "type": "object"
+    },
+    "ExitRuleSetSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "archived": {
+          "default": false,
+          "title": "Archived",
+          "type": "boolean"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "ruleCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rulecount",
+          "type": "integer"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "usageCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Usagecount",
+          "type": "integer"
+        },
+        "version": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ExitRuleSetSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExitRuleSetRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/ExitRuleSetRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    },
+    "ruleSet": {
+      "$ref": "#/$defs/ExitRuleSetSummary"
+    }
+  },
+  "required": [
+    "ruleSet"
+  ],
+  "title": "ExitRuleSetDetailResponse",
+  "type": "object"
+}

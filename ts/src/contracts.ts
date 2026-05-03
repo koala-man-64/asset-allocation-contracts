@@ -92,6 +92,7 @@ export type UniverseNode = UniverseGroup | UniverseCondition;
 
 export interface StrategyConfig {
   universeConfigName?: string | null;
+  universeConfigVersion?: number | null;
   universe?: UniverseDefinition | null;
   rebalance: string;
   longOnly: boolean;
@@ -100,11 +101,18 @@ export interface StrategyConfig {
   holdingPeriod: number;
   costModel: string;
   rankingSchemaName?: string | null;
+  rankingSchemaVersion?: number | null;
+  regimePolicyConfigName?: string | null;
+  regimePolicyConfigVersion?: number | null;
   regimePolicy?: RegimePolicy | null;
   riskProfileName?: string | null;
+  riskPolicyName?: string | null;
+  riskPolicyVersion?: number | null;
   positionPolicy?: StrategyPositionPolicy | null;
   rebalancePolicy?: RebalancePolicy | null;
   strategyRiskPolicy?: StrategyRiskPolicy | null;
+  exitRuleSetName?: string | null;
+  exitRuleSetVersion?: number | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
@@ -130,6 +138,7 @@ export interface UniverseCondition {
 
 export interface RegimePolicy {
   modelName: string;
+  modelVersion?: number | null;
   mode: RegimePolicyMode;
 }
 
@@ -200,6 +209,83 @@ export interface ExitRule {
   action: ExitRuleAction;
   minHoldBars: number;
   reference?: ExitRuleReference | null;
+}
+
+export interface ConfigRevisionReference {
+  name: string;
+  version: number;
+}
+
+export interface RiskPolicyConfig {
+  policy: StrategyRiskPolicy;
+}
+
+export interface RiskPolicyConfigSummary {
+  name: string;
+  description: string;
+  version: number;
+  archived: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+}
+
+export interface RiskPolicyConfigRevision {
+  name: string;
+  version: number;
+  description: string;
+  config: RiskPolicyConfig;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface RiskPolicyConfigDetailResponse {
+  policy: RiskPolicyConfigSummary;
+  activeRevision?: RiskPolicyConfigRevision | null;
+  revisions: RiskPolicyConfigRevision[];
+}
+
+export interface RiskPolicyConfigUpsertRequest {
+  name: string;
+  description: string;
+  config: RiskPolicyConfig;
+}
+
+export interface ExitRuleSetConfig {
+  intrabarConflictPolicy: IntrabarConflictPolicy;
+  exits: ExitRule[];
+}
+
+export interface ExitRuleSetSummary {
+  name: string;
+  description: string;
+  version: number;
+  archived: boolean;
+  usageCount: number;
+  ruleCount: number;
+  updatedAt?: string | null;
+}
+
+export interface ExitRuleSetRevision {
+  name: string;
+  version: number;
+  description: string;
+  config: ExitRuleSetConfig;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface ExitRuleSetDetailResponse {
+  ruleSet: ExitRuleSetSummary;
+  activeRevision?: ExitRuleSetRevision | null;
+  revisions: ExitRuleSetRevision[];
+}
+
+export interface ExitRuleSetUpsertRequest {
+  name: string;
+  description: string;
+  config: ExitRuleSetConfig;
 }
 
 export interface StrategyRiskProfileConfig {
@@ -274,6 +360,46 @@ export interface RankingFactor {
 export interface RankingTransform {
   type: RankingTransformType;
   params: Record<string, string | number | boolean | null>;
+}
+
+export interface RegimePolicyConfig {
+  modelName: string;
+  modelVersion?: number | null;
+  mode: RegimePolicyMode;
+}
+
+export interface RegimePolicyConfigSummary {
+  name: string;
+  description: string;
+  version: number;
+  archived: boolean;
+  usageCount: number;
+  modelName: string;
+  modelVersion?: number | null;
+  mode: RegimePolicyMode;
+  updatedAt?: string | null;
+}
+
+export interface RegimePolicyConfigRevision {
+  name: string;
+  version: number;
+  description: string;
+  config: RegimePolicyConfig;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface RegimePolicyConfigDetailResponse {
+  policy: RegimePolicyConfigSummary;
+  activeRevision?: RegimePolicyConfigRevision | null;
+  revisions: RegimePolicyConfigRevision[];
+}
+
+export interface RegimePolicyConfigUpsertRequest {
+  name: string;
+  description: string;
+  config: RegimePolicyConfig;
 }
 
 export interface RegimeModelConfig {

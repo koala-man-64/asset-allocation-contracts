@@ -28,6 +28,6 @@
       "title": "Modelversion"
     }
   },
-  "title": "RegimePolicy",
+  "title": "RegimePolicyConfig",
   "type": "object"
 }

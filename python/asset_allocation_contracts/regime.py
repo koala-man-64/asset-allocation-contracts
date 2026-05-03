@@ -83,6 +83,7 @@ class RegimePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
     mode: RegimePolicyMode = "observe_only"
 
     @model_validator(mode="before")
@@ -107,6 +108,64 @@ class RegimePolicy(BaseModel):
     def normalize_model_name(self) -> "RegimePolicy":
         self.modelName = str(self.modelName or "").strip() or DEFAULT_REGIME_MODEL_NAME
         return self
+
+
+class RegimePolicyConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
+    mode: RegimePolicyMode = "observe_only"
+
+    @model_validator(mode="after")
+    def normalize_model_name(self) -> "RegimePolicyConfig":
+        self.modelName = str(self.modelName or "").strip() or DEFAULT_REGIME_MODEL_NAME
+        return self
+
+    def resolved_policy(self) -> RegimePolicy:
+        return RegimePolicy(modelName=self.modelName, modelVersion=self.modelVersion, mode=self.mode)
+
+
+class RegimePolicyConfigSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    version: int = Field(default=1, ge=1)
+    archived: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
+    mode: RegimePolicyMode = "observe_only"
+    updatedAt: datetime | None = None
+
+
+class RegimePolicyConfigRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    version: int = Field(..., ge=1)
+    description: str = Field(default="", max_length=2048)
+    config: RegimePolicyConfig
+    configHash: str | None = None
+    createdAt: datetime | None = None
+    createdBy: str | None = None
+
+
+class RegimePolicyConfigDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    policy: RegimePolicyConfigSummary
+    activeRevision: RegimePolicyConfigRevision | None = None
+    revisions: list[RegimePolicyConfigRevision] = Field(default_factory=list)
+
+
+class RegimePolicyConfigUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    config: RegimePolicyConfig
 
 
 class RegimeModelConfig(BaseModel):
