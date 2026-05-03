@@ -12,6 +12,7 @@ from asset_allocation_contracts.quiver_signals import *
 from asset_allocation_contracts.paths import *
 from asset_allocation_contracts.ranking import *
 from asset_allocation_contracts.regime import *
+from asset_allocation_contracts.results import *
 from asset_allocation_contracts.strategy_publication import *
 from asset_allocation_contracts.symbol_enrichment import *
 from asset_allocation_contracts.strategy import *

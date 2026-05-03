@@ -1,0 +1,70 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "canonicalEnqueuedCount": {
+      "minimum": 0,
+      "title": "Canonicalenqueuedcount",
+      "type": "integer"
+    },
+    "canonicalSkippedCount": {
+      "minimum": 0,
+      "title": "Canonicalskippedcount",
+      "type": "integer"
+    },
+    "canonicalUpToDateCount": {
+      "minimum": 0,
+      "title": "Canonicaluptodatecount",
+      "type": "integer"
+    },
+    "dryRun": {
+      "title": "Dryrun",
+      "type": "boolean"
+    },
+    "errorCount": {
+      "minimum": 0,
+      "title": "Errorcount",
+      "type": "integer"
+    },
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "publicationSignalsErrorCount": {
+      "minimum": 0,
+      "title": "Publicationsignalserrorcount",
+      "type": "integer"
+    },
+    "publicationSignalsProcessedCount": {
+      "minimum": 0,
+      "title": "Publicationsignalsprocessedcount",
+      "type": "integer"
+    },
+    "rankingDirtyCount": {
+      "minimum": 0,
+      "title": "Rankingdirtycount",
+      "type": "integer"
+    },
+    "rankingNoopCount": {
+      "minimum": 0,
+      "title": "Rankingnoopcount",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "dryRun",
+    "rankingDirtyCount",
+    "rankingNoopCount",
+    "canonicalEnqueuedCount",
+    "canonicalUpToDateCount",
+    "canonicalSkippedCount",
+    "publicationSignalsProcessedCount",
+    "publicationSignalsErrorCount",
+    "errorCount",
+    "errors"
+  ],
+  "title": "ResultsReconcileResponse",
+  "type": "object"
+}

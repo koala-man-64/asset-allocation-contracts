@@ -604,6 +604,23 @@ export interface RuntimeJobMetadata {
   metadataStatus: JobMetadataStatus;
 }
 
+export interface ResultsReconcileRequest {
+  dryRun: boolean;
+}
+
+export interface ResultsReconcileResponse {
+  dryRun: boolean;
+  rankingDirtyCount: number;
+  rankingNoopCount: number;
+  canonicalEnqueuedCount: number;
+  canonicalUpToDateCount: number;
+  canonicalSkippedCount: number;
+  publicationSignalsProcessedCount: number;
+  publicationSignalsErrorCount: number;
+  errorCount: number;
+  errors: string[];
+}
+
 export interface StrategyPublicationReconcileSignalRequest {
   jobKey: string;
   sourceFingerprint: string;
