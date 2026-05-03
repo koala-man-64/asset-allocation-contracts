@@ -19,6 +19,7 @@ from asset_allocation_contracts import (
     portfolio,
     ranking,
     regime,
+    results,
     strategy,
     strategy_publication,
     symbol_enrichment,
@@ -68,6 +69,8 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("auth-session-status.schema.json", ui_config.AuthSessionStatus),
     ("password-auth-session-request.schema.json", ui_config.PasswordAuthSessionRequest),
     ("runtime-job-metadata.schema.json", job_metadata.RuntimeJobMetadata),
+    ("results-reconcile-request.schema.json", results.ResultsReconcileRequest),
+    ("results-reconcile-response.schema.json", results.ResultsReconcileResponse),
     (
         "strategy-publication-reconcile-signal-request.schema.json",
         strategy_publication.StrategyPublicationReconcileSignalRequest,

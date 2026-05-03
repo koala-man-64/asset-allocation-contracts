@@ -99,6 +99,7 @@ from asset_allocation_contracts.regime import (
     canonical_default_regime_model_config,
     validate_canonical_default_regime_config,
 )
+from asset_allocation_contracts.results import ResultsReconcileRequest, ResultsReconcileResponse
 from asset_allocation_contracts.strategy_publication import (
     RegimePublicationReconcileMetadata,
     StrategyPublicationReconcileSignalRequest,
@@ -856,6 +857,54 @@ def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerp
         assert "unexpected" in str(exc)
     else:
         raise AssertionError("Expected strategy publication signal request validation to reject bad inputs.")
+
+
+def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
+    request = ResultsReconcileRequest(dryRun=True)
+    response = ResultsReconcileResponse(
+        dryRun=True,
+        rankingDirtyCount=1,
+        rankingNoopCount=2,
+        canonicalEnqueuedCount=3,
+        canonicalUpToDateCount=4,
+        canonicalSkippedCount=5,
+        publicationSignalsProcessedCount=6,
+        publicationSignalsErrorCount=0,
+        errorCount=0,
+        errors=[],
+    )
+
+    assert request.dryRun is True
+    assert response.publicationSignalsProcessedCount == 6
+
+    try:
+        ResultsReconcileRequest.model_validate({"dryRun": "true"})
+    except Exception:
+        pass
+    else:
+        raise AssertionError("Expected results reconcile request validation to reject non-boolean dryRun.")
+
+    bad_payloads = (
+        {},
+        {
+            "dryRun": True,
+            "rankingDirtyCount": "1",
+            "rankingNoopCount": 0,
+            "canonicalEnqueuedCount": 0,
+            "canonicalUpToDateCount": 0,
+            "canonicalSkippedCount": 0,
+            "publicationSignalsProcessedCount": 0,
+            "publicationSignalsErrorCount": 0,
+            "errorCount": 0,
+            "errors": [],
+        },
+    )
+    for payload in bad_payloads:
+        try:
+            ResultsReconcileResponse.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(f"Expected results reconcile response validation to reject {payload!r}.")
 
 
 def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:

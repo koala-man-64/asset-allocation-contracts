@@ -1,0 +1,14 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "dryRun": {
+      "title": "Dryrun",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "dryRun"
+  ],
+  "title": "ResultsReconcileRequest",
+  "type": "object"
+}

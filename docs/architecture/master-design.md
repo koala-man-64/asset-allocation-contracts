@@ -277,8 +277,11 @@ Trade approval payloads carry an existing `TradeOrderPreviewRequest` plus releas
 Owned by:
 
 - `python/asset_allocation_contracts/job_metadata.py`
+- `python/asset_allocation_contracts/results.py`
 - `python/asset_allocation_contracts/strategy_publication.py`
 - `schemas/runtime-job-metadata.schema.json`
+- `schemas/results-reconcile-request.schema.json`
+- `schemas/results-reconcile-response.schema.json`
 - `schemas/strategy-publication-reconcile-signal-request.schema.json`
 - `schemas/strategy-publication-reconcile-signal-response.schema.json`
 - `ts/src/contracts.ts`
@@ -287,6 +290,7 @@ Purpose:
 
 - Define the additive system-health taxonomy fields `jobCategory`, `jobKey`, `jobRole`, `triggerOwner`, `metadataSource`, and `metadataStatus`
 - Keep strategy-compute jobs, medallion data-pipeline jobs, and operational-support jobs distinct without relying on job-name substring inference
+- Define the strict results reconcile request and response shared by `results-reconcile-job`, runtime-common, and the control-plane internal API
 - Define the durable regime publication reconcile signal request and response shared between jobs and the control-plane internal API
 - Preserve server ownership of reconcile signal state: producers send typed publication metadata, while the control plane assigns `pending`, `processed`, or `error`
 
