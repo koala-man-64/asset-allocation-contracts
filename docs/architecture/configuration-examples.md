@@ -5,6 +5,8 @@ This reference documents valid configuration objects owned by `asset-allocation-
 It is intentionally limited to configuration surfaces that control behavior:
 
 - `StrategyConfig`, `UniverseDefinition`, and `ExitRule`
+- `ConfigReference`, `ConfigIdentity`, and reusable strategy component presets
+- `RebalancePolicy`, `StrategyRiskPolicy`, and reusable exit policy bundles
 - `RankingSchemaConfig`, `RankingGroup`, `RankingFactor`, and `RankingTransform`
 - `RegimePolicy` and `RegimeModelConfig`
 - `UiRuntimeConfig`
@@ -18,11 +20,19 @@ Source of truth:
 
 - `python/asset_allocation_contracts/strategy.py`
 - `schemas/strategy-config.schema.json`
+- `schemas/config-reference.schema.json`
+- `schemas/config-identity.schema.json`
+- `schemas/strategy-component-refs.schema.json`
+- `schemas/*-preset.schema.json`
 - `schemas/strategy-risk-profile-*.schema.json`
+- `schemas/strategy-rebalance-policy.schema.json`
+- `schemas/strategy-risk-policy.schema.json`
+- `schemas/exit-rule-set-config.schema.json`
 - `schemas/universe-definition.schema.json`
 - `ts/src/contracts.ts`
 
-`StrategyConfig` requires at least one of `universeConfigName` or `universe`.
+`StrategyConfig` requires at least one of `componentRefs.universe`, `universeConfigName`, or `universe`.
+For reusable backtests, `componentRefs` is the canonical pinning surface. Inline `universe`, `rebalancePolicy`, `regimePolicy`, `strategyRiskPolicy`, and `exits` remain supported for compatibility and scratch research, but reusable validation or production-candidate runs should pin immutable reusable presets by `name + version`.
 When `riskProfileName` is present, `positionPolicy` must also be present as the embedded execution snapshot.
 
 ### Minimal inline universe
@@ -75,6 +85,11 @@ This example shows the three supported `UniverseCondition` patterns:
 - `returns.return_126d`
 - `quality.piotroski_f_score`
 - `earnings.surprise_pct`
+- `security.market_cap`
+- `market.dollar_volume_20d`
+- `security.primary_listing`
+- `security.country`
+- `security.is_price_liquidity_eligible`
 
 ```json
 {
@@ -195,6 +210,15 @@ This example shows the three supported `UniverseCondition` patterns:
       "priority": 4,
       "action": "exit_full",
       "minHoldBars": 0
+    },
+    {
+      "id": "rank-decay-40",
+      "type": "rank_decay",
+      "scope": "position",
+      "rankThreshold": 40,
+      "priority": 5,
+      "action": "exit_full",
+      "minHoldBars": 0
     }
   ]
 }
@@ -206,8 +230,173 @@ Validation notes:
 - `riskProfileName` requires an embedded `positionPolicy` snapshot so runtime and backtests never need a late-bound catalog lookup.
 - `trailing_stop_atr` requires `atrColumn`.
 - `time_stop` requires an integer `value` and only allows `priceField: "close"`.
+- `rank_decay` requires `rankThreshold` and does not accept `value`, `reference`, `atrColumn`, or `priceField`.
 - `StrategyPositionPolicy.targetPositionSize` percentage sizing still cannot allocate more than `100%` across the selected long-only basket.
 - The Python model still strips legacy `enabled` toggles from `regimePolicy` and `exits` for compatibility, but the canonical schema does not model those fields.
+
+### Reusable strategy component refs
+
+Reusable backtests should pin all six component families with `StrategyConfig.componentRefs`. A config publisher may still include resolved inline snapshots beside those refs for auditability, but the immutable identity is the `name + version` pair in `componentRefs`.
+
+```json
+{
+  "componentRefs": {
+    "universe": { "name": "us_large_liquid", "version": 1 },
+    "ranking": { "name": "quality_momentum", "version": 1 },
+    "rebalance": { "name": "monthly_last_trading_day", "version": 1 },
+    "regimePolicy": { "name": "observe_only_default", "version": 1 },
+    "riskPolicy": { "name": "balanced_long_only", "version": 1 },
+    "exitPolicy": { "name": "rank_decay_exit", "version": 1 }
+  },
+  "rebalance": "monthly",
+  "longOnly": true,
+  "topN": 20,
+  "lookbackWindow": 252,
+  "holdingPeriod": 21,
+  "costModel": "default",
+  "intrabarConflictPolicy": "priority_order",
+  "exits": []
+}
+```
+
+Inline scratch configs remain valid for research notes, one-off experiments, and migration compatibility:
+
+```json
+{
+  "universe": {
+    "source": "postgres_gold",
+    "root": {
+      "kind": "group",
+      "operator": "and",
+      "clauses": [
+        { "kind": "condition", "field": "security.country", "operator": "eq", "value": "US" },
+        { "kind": "condition", "field": "market.close", "operator": "gt", "value": 5 },
+        { "kind": "condition", "field": "market.dollar_volume_20d", "operator": "gte", "value": 25000000 }
+      ]
+    }
+  },
+  "rankingSchemaName": "scratch-quality-momentum",
+  "rebalancePolicy": {
+    "frequency": "monthly",
+    "executionTiming": "next_bar_open"
+  },
+  "regimePolicy": {
+    "modelName": "default-regime",
+    "mode": "observe_only"
+  },
+  "strategyRiskPolicy": {
+    "scope": "strategy",
+    "stopLoss": {
+      "thresholdPct": 8,
+      "action": "reduce_exposure",
+      "reductionPct": 50
+    }
+  },
+  "exits": [
+    { "id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40 }
+  ]
+}
+```
+
+Validation notes:
+
+- `ConfigReference.version` and `ConfigIdentity.version` are positive integers.
+- `ConfigIdentity.status` is `draft`, `active`, or `deprecated`.
+- `ConfigIdentity.intendedUse` is `research`, `validation`, or `production_candidate`.
+- Reusable preset wrappers use `extra: forbid`; unknown fields should fail validation instead of being silently ignored.
+- Published reusable configs are immutable by `name + version`; changes require a new version.
+
+### Starter reusable preset library
+
+The starter library is scoped to US liquid long-only equity backtests. It deliberately excludes long/short, ETF allocation, execution-policy, cost-model, data-quality, compliance, and surveillance expansion.
+
+Universes:
+
+| name | version | first grid | definition |
+| --- | ---: | --- | --- |
+| `us_large_liquid` | 1 | yes | US primary-listed names, `security.market_cap >= 10000000000`, `market.dollar_volume_20d >= 50000000`, `market.close > 5`, `security.is_price_liquidity_eligible = true` |
+| `us_mid_large_liquid` | 1 | yes | Same controls with `security.market_cap >= 2000000000` and `market.dollar_volume_20d >= 25000000` |
+| `sector_balanced_large` | 1 | no | `us_large_liquid` base plus sector balancing constraints resolved by the backtest runner, not by the universe contract itself |
+
+Rankings:
+
+| name | version | groups |
+| --- | ---: | --- |
+| `momentum_12_1` | 1 | 12-1 momentum using `return_252d` excluding the most recent month where available; first implementation may approximate with governed return fields until a dedicated column is published |
+| `quality_momentum` | 1 | quality score plus medium-term momentum |
+| `value_quality_momentum` | 1 | value, quality, and momentum with percentile/minmax transforms |
+
+Rebalance:
+
+| name | version | `RebalancePolicy` |
+| --- | ---: | --- |
+| `monthly_last_trading_day` | 1 | `cadence: monthly`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
+| `quarterly_last_trading_day` | 1 | `cadence: quarterly`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
+
+Regime:
+
+| name | version | policy |
+| --- | ---: | --- |
+| `observe_only_default` | 1 | `RegimePolicy(modelName: default-regime, mode: observe_only)` |
+
+Risk:
+
+| name | version | first grid | policy |
+| --- | ---: | --- | --- |
+| `balanced_long_only` | 1 | yes | baseline position sizing and strategy-level drawdown controls for diversified long-only baskets |
+| `conservative_long_only` | 1 | no | lower position size, tighter drawdown stop, higher cash buffer |
+| `aggressive_long_only` | 1 | no | larger position size and looser drawdown stop for later sensitivity tests |
+
+Exits:
+
+| name | version | policy |
+| --- | ---: | --- |
+| `rebalance_only` | 1 | no position-level exits; removed names are closed by rebalance policy |
+| `rank_decay_exit` | 1 | `ExitRule(type: rank_decay, rankThreshold: 40)` plus rebalance exits |
+
+First matrix:
+
+| component | values |
+| --- | --- |
+| universe | `us_large_liquid`, `us_mid_large_liquid` |
+| ranking | `momentum_12_1`, `quality_momentum`, `value_quality_momentum` |
+| rebalance | `monthly_last_trading_day`, `quarterly_last_trading_day` |
+| risk | `balanced_long_only` |
+| exits | `rebalance_only`, `rank_decay_exit` |
+| regime | `observe_only_default` |
+
+This produces `2 universes x 3 rankings x 2 rebalances x 1 risk x 2 exits x 1 regime = 24` first-pass runs.
+
+### Reusable preset wrapper example
+
+```json
+{
+  "identity": {
+    "name": "us_large_liquid",
+    "version": 1,
+    "status": "active",
+    "description": "US large-cap, primary-listed, liquid common-equity universe.",
+    "intendedUse": "validation",
+    "thesis": "A stable large-liquid universe reduces capacity and stale-price artifacts in first-pass long-only ranking tests.",
+    "whatToMonitor": ["constituent count", "daily turnover", "spread and slippage drift"]
+  },
+  "config": {
+    "source": "postgres_gold",
+    "root": {
+      "kind": "group",
+      "operator": "and",
+      "clauses": [
+        { "kind": "condition", "field": "security.country", "operator": "eq", "value": "US" },
+        { "kind": "condition", "field": "security.primary_listing", "operator": "eq", "value": true },
+        { "kind": "condition", "field": "security.market_cap", "operator": "gte", "value": 10000000000 },
+        { "kind": "condition", "field": "market.dollar_volume_20d", "operator": "gte", "value": 50000000 },
+        { "kind": "condition", "field": "market.close", "operator": "gt", "value": 5 },
+        { "kind": "condition", "field": "security.is_price_liquidity_eligible", "operator": "eq", "value": true }
+      ]
+    }
+  }
+}
+```
 
 ### Strategy risk profile detail
 
@@ -380,17 +569,8 @@ Source of truth:
 ```json
 {
   "modelName": "default-regime",
-  "targetGrossExposureByRegime": {
-    "trending_bull": 1.0,
-    "trending_bear": 0.5,
-    "choppy_mean_reversion": 0.75,
-    "high_vol": 0.0,
-    "unclassified": 0.0
-  },
-  "blockOnTransition": true,
-  "blockOnUnclassified": true,
-  "honorHaltFlag": true,
-  "onBlocked": "skip_entries"
+  "modelVersion": 3,
+  "mode": "observe_only"
 }
 ```
 
@@ -398,42 +578,24 @@ Source of truth:
 
 ```json
 {
-  "trendPositiveThreshold": 0.02,
-  "trendNegativeThreshold": -0.02,
-  "curveContangoThreshold": 0.5,
-  "curveInvertedThreshold": -0.5,
-  "highVolEnterThreshold": 28.0,
-  "highVolExitThreshold": 28.0,
-  "bearVolMin": 15.0,
-  "bearVolMaxExclusive": 25.0,
-  "bullVolMaxExclusive": 15.0,
-  "choppyVolMin": 10.0,
-  "choppyVolMaxExclusive": 18.0,
+  "activationThreshold": 0.6,
   "haltVixThreshold": 32.0,
-  "haltVixStreakDays": 2,
-  "precedence": [
-    "high_vol",
-    "trending_bear",
-    "trending_bull",
-    "choppy_mean_reversion",
-    "unclassified"
-  ]
+  "haltVixStreakDays": 2
 }
 ```
 
 Validation notes:
 
 - `haltVixStreakDays` must be at least `1`.
-- `precedence` must contain valid regime codes.
 - `RegimePolicy.modelName` is trimmed and falls back to `default-regime` when blank.
-- `highVolExitThreshold` remains for one compatibility release, but canonical `default-regime` v2 sets it equal to `highVolEnterThreshold` so the `25-28` transition band is disabled.
+- `RegimePolicy.mode` is `observe_only` in this first-pass reusable strategy config layer.
+- The current `default-regime` policy rejects legacy actioning fields such as `targetGrossExposureByRegime`, `blockOnTransition`, and `onBlocked`.
 
-Canonical `default-regime` v2 rule matrix:
+Canonical `default-regime` v3 notes:
 
-- Trend state: `positive` when `return_20d > 0.02`, `negative` when `return_20d < -0.02`, otherwise `near_zero`.
-- Curve state: `contango` when `vix_slope >= 0.5`, `inverted` when `vix_slope <= -0.5`, otherwise `flat`.
-- High-vol entry: requires `rvol_10d_ann > 28.0` and an `inverted` curve. Exact `28.0` does not trigger `high_vol`; `28.01` does.
-- Halt overlay: requires `vix_spot_close > 32.0` for `2+` consecutive sessions. Exact `32.0` does not halt; `32.01` does.
+- The canonical taxonomy is `trending_up`, `trending_down`, `mean_reverting`, `low_volatility`, `high_volatility`, `liquidity_stress`, `macro_alignment`, and `unclassified`.
+- `signalConfigs` defaults to the canonical v3 rule set when omitted.
+- `validate_canonical_default_regime_config` enforces the canonical activation threshold, halt controls, and signal configuration.
 
 ## UI Runtime Configuration
 

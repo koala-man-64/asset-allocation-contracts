@@ -113,21 +113,30 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileOverride,
 )
 from asset_allocation_contracts.strategy import (
+    ConfigIdentity,
+    ConfigReference,
     ConfigRevisionReference,
+    ExitPolicyPreset,
     ExitRuleSetConfig,
     ExitRuleSetDetailResponse,
     ExitRuleSetRevision,
     ExitRuleSetSummary,
+    RankingSchemaPreset,
     RebalancePolicy,
+    RebalancePolicyPreset,
+    RegimePolicyPreset,
     RiskPolicyConfigDetailResponse,
     RiskPolicyConfigRevision,
     RiskPolicyConfigSummary,
+    StrategyComponentRefs,
     StrategyRiskPolicy,
+    StrategyRiskPolicyPreset,
     StrategyPositionPolicy,
     StrategyRiskProfileConfig,
     StrategyRiskProfileDetail,
     StrategyRiskProfileSummary,
     StrategyConfig,
+    UniverseConfigPreset,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
     UniverseCondition,
@@ -210,6 +219,108 @@ def test_config_revision_reference_normalizes_name() -> None:
 
     assert ref.name == "core-risk"
     assert ref.version == 3
+
+
+def test_strategy_config_accepts_component_refs_as_canonical_pins() -> None:
+    payload = StrategyConfig(
+        componentRefs={
+            "universe": {"name": "us-large-liquid", "version": 1},
+            "ranking": {"name": "quality-momentum", "version": 2},
+            "rebalance": {"name": "monthly-last-trading-day", "version": 1},
+            "regimePolicy": {"name": "observe-only-default", "version": 1},
+            "riskPolicy": {"name": "balanced-long-only", "version": 1},
+            "exitPolicy": {"name": "rank-decay-exit", "version": 1},
+        }
+    )
+
+    assert isinstance(payload.componentRefs, StrategyComponentRefs)
+    assert payload.componentRefs.universe is not None
+    assert payload.componentRefs.universe.name == "us-large-liquid"
+    assert payload.componentRefs.ranking is not None
+    assert payload.componentRefs.ranking.version == 2
+
+
+def test_config_reference_requires_integer_version() -> None:
+    try:
+        ConfigReference(name="us-large-liquid", version="v1")
+    except Exception as exc:
+        assert "version" in str(exc)
+    else:
+        raise AssertionError("Expected non-integer config version to fail validation.")
+
+
+def test_config_reference_rejects_blank_name() -> None:
+    try:
+        ConfigReference(name="   ", version=1)
+    except Exception as exc:
+        assert "name" in str(exc)
+    else:
+        raise AssertionError("Expected blank config reference name to fail validation.")
+
+
+def test_reusable_preset_wrappers_forbid_unknown_fields() -> None:
+    identity = {
+        "name": "starter",
+        "version": 1,
+        "status": "draft",
+        "description": "Starter preset.",
+        "intendedUse": "research",
+    }
+    universe = {
+        "root": {
+            "clauses": [
+                {"field": "market.close", "operator": "gt", "value": 0},
+            ]
+        }
+    }
+    ranking = {
+        "groups": [
+            {
+                "name": "momentum",
+                "factors": [{"name": "return_126d", "table": "market_data", "column": "return_126d"}],
+            }
+        ]
+    }
+    reusable_rebalance = {"cadence": "monthly", "dayRule": "last_trading_day", "anchor": "next_open"}
+    regime_policy = {"modelName": "default-regime", "mode": "observe_only"}
+    risk_policy = {
+        "scope": "strategy",
+        "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+    }
+    exit_policy = {"exits": [{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}]}
+    cases = [
+        (UniverseConfigPreset, {"identity": identity, "config": universe}),
+        (RankingSchemaPreset, {"identity": identity, "config": ranking}),
+        (RebalancePolicyPreset, {"identity": identity, "config": reusable_rebalance}),
+        (RegimePolicyPreset, {"identity": identity, "config": regime_policy}),
+        (StrategyRiskPolicyPreset, {"identity": identity, "config": risk_policy}),
+        (ExitPolicyPreset, {"identity": identity, "config": exit_policy}),
+    ]
+
+    for model, payload in cases:
+        try:
+            model.model_validate({**payload, "unexpected": True})
+        except Exception as exc:
+            assert "unexpected" in str(exc)
+        else:
+            raise AssertionError(f"Expected {model.__name__} to reject unknown fields.")
+
+
+def test_config_identity_normalizes_metadata() -> None:
+    identity = ConfigIdentity(
+        name="  us-large-liquid  ",
+        version=1,
+        status="active",
+        description="  Large liquid US equities.  ",
+        intendedUse="validation",
+        thesis="  Baseline liquidity screen.  ",
+        whatToMonitor=[" turnover ", "", " slippage "],
+    )
+
+    assert identity.name == "us-large-liquid"
+    assert identity.description == "Large liquid US equities."
+    assert identity.thesis == "Baseline liquidity screen."
+    assert identity.whatToMonitor == ["turnover", "slippage"]
 
 
 def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> None:
@@ -456,6 +567,66 @@ def test_rebalance_policy_requires_interval_only_for_every_n_bars() -> None:
         raise AssertionError("Expected non every_n_bars policy to reject intervalBars.")
 
 
+def test_reusable_rebalance_policy_requires_complete_calendar_fields() -> None:
+    policy = RebalancePolicy(
+        cadence="monthly",
+        dayRule="last_trading_day",
+        anchor="next_open",
+        tradeDelayBars=1,
+        driftThresholdBps=50,
+        maxTurnoverPerRebalance=0.35,
+    )
+
+    assert policy.cadence == "monthly"
+    assert policy.dayRule == "last_trading_day"
+    assert policy.anchor == "next_open"
+
+    try:
+        RebalancePolicy(cadence="monthly")
+    except Exception as exc:
+        assert "cadence, dayRule, and anchor together" in str(exc)
+    else:
+        raise AssertionError("Expected partial reusable rebalance fields to fail validation.")
+
+
+def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_calendar_fields() -> None:
+    try:
+        RebalancePolicy(cadence="weekly", dayRule="last_trading_day", anchor="next_open")
+    except Exception as exc:
+        assert "cadence" in str(exc)
+    else:
+        raise AssertionError("Expected unsupported reusable rebalance cadence to fail validation.")
+
+    try:
+        RebalancePolicy(cadence="monthly", dayRule="middle_trading_day", anchor="next_open")
+    except Exception as exc:
+        assert "dayRule" in str(exc)
+    else:
+        raise AssertionError("Expected unsupported reusable rebalance dayRule to fail validation.")
+
+    try:
+        RebalancePolicy(
+            cadence="quarterly",
+            dayRule="last_trading_day",
+            anchor="next_open",
+            maxTurnoverPerRebalance=1.25,
+        )
+    except Exception as exc:
+        assert "maxTurnoverPerRebalance" in str(exc)
+    else:
+        raise AssertionError("Expected maxTurnoverPerRebalance above 1.0 to fail validation.")
+
+    try:
+        RebalancePolicyPreset(
+            identity={"name": "monthly-last-trading-day", "version": 1},
+            config={"frequency": "monthly"},
+        )
+    except Exception as exc:
+        assert "cadence, dayRule, and anchor" in str(exc)
+    else:
+        raise AssertionError("Expected reusable rebalance preset to require calendar fields.")
+
+
 def test_strategy_risk_policy_rejects_ambiguous_enabled_empty_policy() -> None:
     try:
         StrategyRiskPolicy()
@@ -535,6 +706,47 @@ def test_exit_rule_set_rejects_duplicate_rule_ids() -> None:
         assert "Duplicate exit rule id" in str(exc)
     else:
         raise AssertionError("Expected duplicate exit ids to fail validation.")
+
+
+def test_rank_decay_exit_requires_rank_threshold_and_rejects_price_stop_fields() -> None:
+    config = ExitRuleSetConfig(exits=[{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}])
+
+    assert config.exits[0].rankThreshold == 40
+    assert config.exits[0].value is None
+
+    invalid_payloads = [
+        {"id": "missing-threshold", "type": "rank_decay"},
+        {"id": "value-not-supported", "type": "rank_decay", "rankThreshold": 40, "value": 0.1},
+        {"id": "reference-not-supported", "type": "rank_decay", "rankThreshold": 40, "reference": "entry_price"},
+        {"id": "atr-not-supported", "type": "rank_decay", "rankThreshold": 40, "atrColumn": "atr_14"},
+        {"id": "price-not-supported", "type": "rank_decay", "rankThreshold": 40, "priceField": "close"},
+    ]
+
+    for payload in invalid_payloads:
+        try:
+            ExitRuleSetConfig(exits=[payload])
+        except Exception as exc:
+            assert "rank_decay" in str(exc)
+        else:
+            raise AssertionError(f"Expected invalid rank_decay payload to fail validation: {payload['id']}")
+
+
+def test_price_based_exit_rules_reject_rank_threshold() -> None:
+    try:
+        ExitRuleSetConfig(
+            exits=[
+                {
+                    "id": "stop-8",
+                    "type": "stop_loss_fixed",
+                    "value": 0.08,
+                    "rankThreshold": 40,
+                }
+            ]
+        )
+    except Exception as exc:
+        assert "rankThreshold" in str(exc)
+    else:
+        raise AssertionError("Expected price-based exit rule to reject rankThreshold.")
 
 
 def test_strategy_config_rejects_short_side_until_supported() -> None:
@@ -650,6 +862,30 @@ def test_universe_condition_uses_governed_field_catalog() -> None:
 
     assert condition.field == "security.sector"
     assert any(field.id == "security.sector" for field in UNIVERSE_FIELD_DEFINITIONS)
+
+
+def test_universe_condition_accepts_us_liquid_equity_filter_fields() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "and",
+            "clauses": [
+                {"field": "security.country", "operator": "eq", "value": "US"},
+                {"field": "security.primary_listing", "operator": "eq", "value": True},
+                {"field": "security.market_cap", "operator": "gte", "value": 10_000_000_000},
+                {"field": "market.dollar_volume_20d", "operator": "gte", "value": 50_000_000},
+                {"field": "security.is_price_liquidity_eligible", "operator": "eq", "value": True},
+            ],
+        }
+    )
+
+    used_fields = [clause.field for clause in definition.root.clauses if isinstance(clause, UniverseCondition)]
+    assert used_fields == [
+        "security.country",
+        "security.primary_listing",
+        "security.market_cap",
+        "market.dollar_volume_20d",
+        "security.is_price_liquidity_eligible",
+    ]
 
 
 def test_universe_condition_rejects_unknown_field() -> None:

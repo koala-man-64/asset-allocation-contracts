@@ -7,7 +7,7 @@ export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-su
 export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
 export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
-export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop';
+export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleScope = 'position';
 export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
@@ -18,6 +18,11 @@ export type StrategyPositionAssetClass = 'equity' | 'option';
 export type RiskTolerancePreset = 'conservative' | 'balanced' | 'aggressive';
 export type RebalanceFrequency = 'every_bar' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'every_n_bars' | 'manual';
 export type RebalanceExecutionTiming = 'next_bar_open';
+export type ReusableConfigStatus = 'draft' | 'active' | 'deprecated';
+export type ReusableConfigIntendedUse = 'research' | 'validation' | 'production_candidate';
+export type ReusableRebalanceCadence = 'monthly' | 'quarterly';
+export type ReusableRebalanceDayRule = 'first_trading_day' | 'last_trading_day';
+export type ReusableRebalanceAnchor = 'close' | 'next_open';
 export type StrategyRiskPolicyScope = 'strategy' | 'sleeve';
 export type StrategyRiskStopLossBasis = 'strategy_nav_drawdown' | 'sleeve_nav_drawdown';
 export type StrategyRiskTakeProfitBasis = 'strategy_nav_gain' | 'sleeve_nav_gain';
@@ -27,7 +32,7 @@ export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'l
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
 export type UniverseConditionOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'is_null' | 'is_not_null';
-export type UniverseFieldId = 'market.close' | 'security.is_active' | 'security.sector' | 'security.delisted_at' | 'market.trade_date' | 'market.timestamp' | 'returns.return_20d' | 'returns.return_126d' | 'quality.piotroski_f_score' | 'earnings.surprise_pct';
+export type UniverseFieldId = 'market.close' | 'security.is_active' | 'security.sector' | 'security.delisted_at' | 'market.trade_date' | 'market.timestamp' | 'returns.return_20d' | 'returns.return_126d' | 'quality.piotroski_f_score' | 'earnings.surprise_pct' | 'security.market_cap' | 'market.dollar_volume_20d' | 'security.primary_listing' | 'security.country' | 'security.is_price_liquidity_eligible';
 export type UniverseValue = string | number | boolean;
 export type UniverseValueKind = 'string' | 'number' | 'boolean' | 'date' | 'datetime';
 export type RankingTransformType = 'percentile_rank' | 'zscore' | 'minmax' | 'clip' | 'winsorize' | 'coalesce' | 'log1p' | 'negate' | 'abs';
@@ -96,6 +101,7 @@ export type AiChatStreamEvent = AiChatStartedEvent | AiChatStatusEvent | AiChatR
 export type UniverseNode = UniverseGroup | UniverseCondition;
 
 export interface StrategyConfig {
+  componentRefs?: StrategyComponentRefs | null;
   universeConfigName?: string | null;
   universeConfigVersion?: number | null;
   universe?: UniverseDefinition | null;
@@ -120,6 +126,20 @@ export interface StrategyConfig {
   exitRuleSetVersion?: number | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
+}
+
+export interface StrategyComponentRefs {
+  universe?: ConfigReference | null;
+  ranking?: ConfigReference | null;
+  rebalance?: ConfigReference | null;
+  regimePolicy?: ConfigReference | null;
+  riskPolicy?: ConfigReference | null;
+  exitPolicy?: ConfigReference | null;
+}
+
+export interface ConfigReference {
+  name: string;
+  version: number;
 }
 
 export interface UniverseDefinition {
@@ -163,6 +183,12 @@ export interface StrategyPositionSizeLimit {
 export interface RebalancePolicy {
   frequency: RebalanceFrequency;
   executionTiming: RebalanceExecutionTiming;
+  cadence?: ReusableRebalanceCadence | null;
+  dayRule?: ReusableRebalanceDayRule | null;
+  anchor?: ReusableRebalanceAnchor | null;
+  tradeDelayBars: number;
+  driftThresholdBps?: number | null;
+  maxTurnoverPerRebalance?: number | null;
   intervalBars?: number | null;
   driftThresholdPct?: number | null;
   minTradeNotional: number;
@@ -214,11 +240,85 @@ export interface ExitRule {
   action: ExitRuleAction;
   minHoldBars: number;
   reference?: ExitRuleReference | null;
+  rankThreshold?: number | null;
+}
+
+export interface ConfigIdentity {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
 }
 
 export interface ConfigRevisionReference {
   name: string;
   version: number;
+}
+
+export interface UniverseConfigPreset {
+  identity: ConfigIdentity;
+  config: UniverseDefinition;
+}
+
+export interface RankingSchemaPreset {
+  identity: ConfigIdentity;
+  config: RankingSchemaConfig;
+}
+
+export interface RankingSchemaConfig {
+  universeConfigName?: string | null;
+  groups: RankingGroup[];
+  overallTransforms: RankingTransform[];
+}
+
+export interface RankingGroup {
+  name: string;
+  weight: number;
+  factors: RankingFactor[];
+  transforms: RankingTransform[];
+}
+
+export interface RankingFactor {
+  name: string;
+  table: string;
+  column: string;
+  weight: number;
+  direction: RankingDirection;
+  missingValuePolicy: RankingMissingValuePolicy;
+  transforms: RankingTransform[];
+}
+
+export interface RankingTransform {
+  type: RankingTransformType;
+  params: Record<string, string | number | boolean | null>;
+}
+
+export interface RebalancePolicyPreset {
+  identity: ConfigIdentity;
+  config: RebalancePolicy;
+}
+
+export interface RegimePolicyPreset {
+  identity: ConfigIdentity;
+  config: RegimePolicy;
+}
+
+export interface StrategyRiskPolicyPreset {
+  identity: ConfigIdentity;
+  config: StrategyRiskPolicy;
+}
+
+export interface ExitPolicyPreset {
+  identity: ConfigIdentity;
+  config: ExitRuleSetConfig;
+}
+
+export interface ExitRuleSetConfig {
+  intrabarConflictPolicy: IntrabarConflictPolicy;
+  exits: ExitRule[];
 }
 
 export interface RiskPolicyConfig {
@@ -254,11 +354,6 @@ export interface RiskPolicyConfigUpsertRequest {
   name: string;
   description: string;
   config: RiskPolicyConfig;
-}
-
-export interface ExitRuleSetConfig {
-  intrabarConflictPolicy: IntrabarConflictPolicy;
-  exits: ExitRule[];
 }
 
 export interface ExitRuleSetSummary {
@@ -337,34 +432,6 @@ export interface UniversePreviewResponse {
   sampleSymbols: string[];
   fieldsUsed: UniverseFieldId[];
   warnings: string[];
-}
-
-export interface RankingSchemaConfig {
-  universeConfigName?: string | null;
-  groups: RankingGroup[];
-  overallTransforms: RankingTransform[];
-}
-
-export interface RankingGroup {
-  name: string;
-  weight: number;
-  factors: RankingFactor[];
-  transforms: RankingTransform[];
-}
-
-export interface RankingFactor {
-  name: string;
-  table: string;
-  column: string;
-  weight: number;
-  direction: RankingDirection;
-  missingValuePolicy: RankingMissingValuePolicy;
-  transforms: RankingTransform[];
-}
-
-export interface RankingTransform {
-  type: RankingTransformType;
-  params: Record<string, string | number | boolean | null>;
 }
 
 export interface RegimePolicyConfig {

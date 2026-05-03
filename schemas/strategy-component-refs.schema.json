@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "ConfigReference": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "exitPolicy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ranking": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rebalance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "regimePolicy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "riskPolicy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "universe": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "StrategyComponentRefs",
+  "type": "object"
+}

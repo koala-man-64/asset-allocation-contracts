@@ -6,7 +6,16 @@ from asset_allocation_contracts.regime import (
     RegimePolicy,
     validate_canonical_default_regime_config,
 )
-from asset_allocation_contracts.strategy import StrategyConfig, StrategyRiskProfileDetail, UniverseDefinition
+from asset_allocation_contracts.strategy import (
+    ExitPolicyPreset,
+    RebalancePolicyPreset,
+    RegimePolicyPreset,
+    StrategyConfig,
+    StrategyRiskPolicyPreset,
+    StrategyRiskProfileDetail,
+    UniverseConfigPreset,
+    UniverseDefinition,
+)
 from asset_allocation_contracts.ui_config import UiRuntimeConfig
 
 
@@ -160,13 +169,168 @@ def test_documented_strategy_example_is_valid() -> None:
                     "action": "exit_full",
                     "minHoldBars": 0,
                 },
+                {
+                    "id": "rank-decay-40",
+                    "type": "rank_decay",
+                    "scope": "position",
+                    "rankThreshold": 40,
+                    "priority": 5,
+                    "action": "exit_full",
+                    "minHoldBars": 0,
+                },
             ],
         }
     )
 
     assert payload.regimePolicy is not None
     assert payload.riskProfileName == "balanced"
-    assert len(payload.exits) == 5
+    assert len(payload.exits) == 6
+
+
+def test_documented_reusable_strategy_examples_are_valid() -> None:
+    reusable_strategy = StrategyConfig.model_validate(
+        {
+            "componentRefs": {
+                "universe": {"name": "us_large_liquid", "version": 1},
+                "ranking": {"name": "quality_momentum", "version": 1},
+                "rebalance": {"name": "monthly_last_trading_day", "version": 1},
+                "regimePolicy": {"name": "observe_only_default", "version": 1},
+                "riskPolicy": {"name": "balanced_long_only", "version": 1},
+                "exitPolicy": {"name": "rank_decay_exit", "version": 1},
+            },
+            "rebalance": "monthly",
+            "longOnly": True,
+            "topN": 20,
+            "lookbackWindow": 252,
+            "holdingPeriod": 21,
+            "costModel": "default",
+            "intrabarConflictPolicy": "priority_order",
+            "exits": [],
+        }
+    )
+    inline_scratch = StrategyConfig.model_validate(
+        {
+            "universe": {
+                "source": "postgres_gold",
+                "root": {
+                    "kind": "group",
+                    "operator": "and",
+                    "clauses": [
+                        {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
+                        {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                        {
+                            "kind": "condition",
+                            "field": "market.dollar_volume_20d",
+                            "operator": "gte",
+                            "value": 25000000,
+                        },
+                    ],
+                },
+            },
+            "rankingSchemaName": "scratch-quality-momentum",
+            "rebalancePolicy": {
+                "frequency": "monthly",
+                "executionTiming": "next_bar_open",
+            },
+            "regimePolicy": {
+                "modelName": "default-regime",
+                "mode": "observe_only",
+            },
+            "strategyRiskPolicy": {
+                "scope": "strategy",
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
+            },
+            "exits": [
+                {"id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40},
+            ],
+        }
+    )
+
+    assert reusable_strategy.componentRefs is not None
+    assert reusable_strategy.componentRefs.exitPolicy is not None
+    assert reusable_strategy.componentRefs.exitPolicy.name == "rank_decay_exit"
+    assert inline_scratch.universe is not None
+    assert inline_scratch.exits[0].rankThreshold == 40
+
+
+def test_documented_reusable_preset_examples_are_valid() -> None:
+    identity = {
+        "name": "us_large_liquid",
+        "version": 1,
+        "status": "active",
+        "description": "US large-cap, primary-listed, liquid common-equity universe.",
+        "intendedUse": "validation",
+        "thesis": "A stable large-liquid universe reduces capacity and stale-price artifacts.",
+        "whatToMonitor": ["constituent count", "daily turnover", "spread and slippage drift"],
+    }
+    universe = {
+        "source": "postgres_gold",
+        "root": {
+            "kind": "group",
+            "operator": "and",
+            "clauses": [
+                {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
+                {"kind": "condition", "field": "security.primary_listing", "operator": "eq", "value": True},
+                {"kind": "condition", "field": "security.market_cap", "operator": "gte", "value": 10000000000},
+                {"kind": "condition", "field": "market.dollar_volume_20d", "operator": "gte", "value": 50000000},
+                {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                {
+                    "kind": "condition",
+                    "field": "security.is_price_liquidity_eligible",
+                    "operator": "eq",
+                    "value": True,
+                },
+            ],
+        },
+    }
+
+    universe_preset = UniverseConfigPreset.model_validate({"identity": identity, "config": universe})
+    rebalance_preset = RebalancePolicyPreset.model_validate(
+        {
+            "identity": {**identity, "name": "monthly_last_trading_day"},
+            "config": {
+                "frequency": "monthly",
+                "executionTiming": "next_bar_open",
+                "cadence": "monthly",
+                "dayRule": "last_trading_day",
+                "anchor": "next_open",
+            },
+        }
+    )
+    regime_preset = RegimePolicyPreset.model_validate(
+        {
+            "identity": {**identity, "name": "observe_only_default"},
+            "config": {"modelName": "default-regime", "mode": "observe_only"},
+        }
+    )
+    risk_preset = StrategyRiskPolicyPreset.model_validate(
+        {
+            "identity": {**identity, "name": "balanced_long_only"},
+            "config": {
+                "scope": "strategy",
+                "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+            },
+        }
+    )
+    exit_preset = ExitPolicyPreset.model_validate(
+        {
+            "identity": {**identity, "name": "rank_decay_exit"},
+            "config": {
+                "intrabarConflictPolicy": "priority_order",
+                "exits": [{"id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40}],
+            },
+        }
+    )
+
+    assert universe_preset.identity.name == "us_large_liquid"
+    assert rebalance_preset.config.cadence == "monthly"
+    assert regime_preset.config.mode == "observe_only"
+    assert risk_preset.config.stopLoss is not None
+    assert exit_preset.config.exits[0].rankThreshold == 40
 
 
 def test_documented_strategy_risk_profile_example_is_valid() -> None:

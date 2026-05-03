@@ -6,6 +6,38 @@
       "title": "Allowpartialrebalance",
       "type": "boolean"
     },
+    "anchor": {
+      "anyOf": [
+        {
+          "enum": [
+            "close",
+            "next_open"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Anchor"
+    },
+    "cadence": {
+      "anyOf": [
+        {
+          "enum": [
+            "monthly",
+            "quarterly"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cadence"
+    },
     "cashBufferPct": {
       "default": 0.0,
       "exclusiveMaximum": 100.0,
@@ -17,6 +49,35 @@
       "default": true,
       "title": "Closeremovedpositions",
       "type": "boolean"
+    },
+    "dayRule": {
+      "anyOf": [
+        {
+          "enum": [
+            "first_trading_day",
+            "last_trading_day"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dayrule"
+    },
+    "driftThresholdBps": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Driftthresholdbps"
     },
     "driftThresholdPct": {
       "anyOf": [
@@ -79,11 +140,31 @@
       "default": null,
       "title": "Maxturnoverpct"
     },
+    "maxTurnoverPerRebalance": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxturnoverperrebalance"
+    },
     "minTradeNotional": {
       "default": 0.0,
       "minimum": 0.0,
       "title": "Mintradenotional",
       "type": "number"
+    },
+    "tradeDelayBars": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Tradedelaybars",
+      "type": "integer"
     }
   },
   "title": "RebalancePolicy",

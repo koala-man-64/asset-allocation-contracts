@@ -35,7 +35,16 @@ import type {
   SymbolEnrichmentSymbolDetailResponse,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
+  ConfigIdentity,
+  ConfigReference,
+  ExitPolicyPreset,
+  RankingSchemaPreset,
+  RebalancePolicyPreset,
+  RegimePolicyPreset,
   StrategyConfig,
+  StrategyComponentRefs,
+  StrategyRiskPolicyPreset,
+  UniverseConfigPreset,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
   UiRuntimeConfig,
@@ -79,6 +88,32 @@ const preview: UniversePreviewResponse = {
 };
 
 const strategy: StrategyConfig = {
+  componentRefs: {
+    universe: {
+      name: "us_large_liquid",
+      version: 1,
+    },
+    ranking: {
+      name: "quality_momentum",
+      version: 1,
+    },
+    rebalance: {
+      name: "monthly_last_trading_day",
+      version: 1,
+    },
+    regimePolicy: {
+      name: "observe_only_default",
+      version: 1,
+    },
+    riskPolicy: {
+      name: "balanced_long_only",
+      version: 1,
+    },
+    exitPolicy: {
+      name: "rank_decay_exit",
+      version: 1,
+    },
+  },
   universeConfigName: "core-us-equities",
   rebalance: "monthly",
   longOnly: true,
@@ -88,6 +123,157 @@ const strategy: StrategyConfig = {
   costModel: "default",
   intrabarConflictPolicy: "priority_order",
   exits: [],
+};
+
+const configReference: ConfigReference = {
+  name: "us_large_liquid",
+  version: 1,
+};
+
+const configIdentity: ConfigIdentity = {
+  name: "us_large_liquid",
+  version: 1,
+  status: "active",
+  description: "US large-cap liquid common equities.",
+  intendedUse: "validation",
+  thesis: "Stable baseline universe for long-only ranking research.",
+  whatToMonitor: ["constituent count", "turnover", "liquidity drift"],
+};
+
+const reusableComponentRefs: StrategyComponentRefs = {
+  universe: configReference,
+  ranking: { name: "momentum_12_1", version: 1 },
+  rebalance: { name: "quarterly_last_trading_day", version: 1 },
+  regimePolicy: { name: "observe_only_default", version: 1 },
+  riskPolicy: { name: "balanced_long_only", version: 1 },
+  exitPolicy: { name: "rebalance_only", version: 1 },
+};
+
+const universePreset: UniverseConfigPreset = {
+  identity: configIdentity,
+  config: {
+    source: "postgres_gold",
+    root: {
+      kind: "group",
+      operator: "and",
+      clauses: [
+        { kind: "condition", field: "security.country", operator: "eq", value: "US" },
+        { kind: "condition", field: "security.primary_listing", operator: "eq", value: true },
+        { kind: "condition", field: "security.market_cap", operator: "gte", value: 10000000000 },
+        { kind: "condition", field: "market.dollar_volume_20d", operator: "gte", value: 50000000 },
+        { kind: "condition", field: "security.is_price_liquidity_eligible", operator: "eq", value: true },
+      ],
+    },
+  },
+};
+
+const rankingPreset: RankingSchemaPreset = {
+  identity: {
+    ...configIdentity,
+    name: "quality_momentum",
+    thesis: "Pair durable quality with medium-term price strength.",
+  },
+  config: {
+    universeConfigName: "us_large_liquid",
+    groups: [
+      {
+        name: "momentum",
+        weight: 1,
+        factors: [
+          {
+            name: "return_126d",
+            table: "market_data",
+            column: "return_126d",
+            weight: 1,
+            direction: "desc",
+            missingValuePolicy: "zero",
+            transforms: [{ type: "percentile_rank", params: {} }],
+          },
+        ],
+        transforms: [],
+      },
+    ],
+    overallTransforms: [],
+  },
+};
+
+const rebalancePreset: RebalancePolicyPreset = {
+  identity: {
+    ...configIdentity,
+    name: "monthly_last_trading_day",
+    thesis: "Monthly close signal with next-open execution.",
+  },
+  config: {
+    frequency: "monthly",
+    executionTiming: "next_bar_open",
+    cadence: "monthly",
+    dayRule: "last_trading_day",
+    anchor: "next_open",
+    tradeDelayBars: 0,
+    driftThresholdBps: 0,
+    maxTurnoverPerRebalance: 0.35,
+    minTradeNotional: 0,
+    cashBufferPct: 1,
+    allowPartialRebalance: true,
+    closeRemovedPositions: true,
+  },
+};
+
+const regimePreset: RegimePolicyPreset = {
+  identity: {
+    ...configIdentity,
+    name: "observe_only_default",
+    thesis: "Tag market state without changing exposures.",
+  },
+  config: {
+    modelName: "default-regime",
+    mode: "observe_only",
+  },
+};
+
+const riskPreset: StrategyRiskPolicyPreset = {
+  identity: {
+    ...configIdentity,
+    name: "balanced_long_only",
+    thesis: "Limit strategy drawdowns while keeping the first grid simple.",
+  },
+  config: {
+    enabled: true,
+    scope: "strategy",
+    stopLoss: {
+      id: "strategy-stop-loss",
+      enabled: true,
+      basis: "strategy_nav_drawdown",
+      thresholdPct: 8,
+      action: "reduce_exposure",
+      reductionPct: 50,
+    },
+    reentry: {
+      cooldownBars: 0,
+      requireApproval: false,
+    },
+  },
+};
+
+const exitPreset: ExitPolicyPreset = {
+  identity: {
+    ...configIdentity,
+    name: "rank_decay_exit",
+    thesis: "Exit names that fall below the retained-rank cutoff.",
+  },
+  config: {
+    intrabarConflictPolicy: "priority_order",
+    exits: [
+      {
+        id: "rank-decay-40",
+        type: "rank_decay",
+        scope: "position",
+        action: "exit_full",
+        minHoldBars: 0,
+        rankThreshold: 40,
+      },
+    ],
+  },
 };
 
 const runtimeConfig: UiRuntimeConfig = {
@@ -423,6 +609,15 @@ void runResponse;
 void streamEvent;
 void dataQualityEvents;
 void point;
+void configReference;
+void configIdentity;
+void reusableComponentRefs;
+void universePreset;
+void rankingPreset;
+void rebalancePreset;
+void regimePreset;
+void riskPreset;
+void exitPreset;
 const portfolioAccount: PortfolioAccount = {
   accountId: "acct-001",
   name: "Core Long Only",

@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "ConfigIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigIdentity",
+      "type": "object"
+    },
+    "RegimePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "observe_only",
+          "default": "observe_only",
+          "title": "Mode",
+          "type": "string"
+        },
+        "modelName": {
+          "default": "default-regime",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        }
+      },
+      "title": "RegimePolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/RegimePolicy"
+    },
+    "identity": {
+      "$ref": "#/$defs/ConfigIdentity"
+    }
+  },
+  "required": [
+    "identity",
+    "config"
+  ],
+  "title": "RegimePolicyPreset",
+  "type": "object"
+}

@@ -66,6 +66,19 @@
           "default": null,
           "title": "Priority"
         },
+        "rankThreshold": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankthreshold"
+        },
         "reference": {
           "anyOf": [
             {
@@ -94,7 +107,8 @@
             "take_profit_fixed",
             "trailing_stop_pct",
             "trailing_stop_atr",
-            "time_stop"
+            "time_stop",
+            "rank_decay"
           ],
           "title": "Type",
           "type": "string"

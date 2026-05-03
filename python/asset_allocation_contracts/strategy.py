@@ -5,6 +5,7 @@ from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from asset_allocation_contracts.ranking import RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimePolicy
 
 ExitRuleType = Literal[
@@ -13,6 +14,7 @@ ExitRuleType = Literal[
     "trailing_stop_pct",
     "trailing_stop_atr",
     "time_stop",
+    "rank_decay",
 ]
 ExitScope = Literal["position"]
 ExitAction = Literal["exit_full"]
@@ -24,6 +26,11 @@ StrategyPositionAssetClass = Literal["equity", "option"]
 RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
 RebalanceFrequency = Literal["every_bar", "daily", "weekly", "monthly", "quarterly", "every_n_bars", "manual"]
 RebalanceExecutionTiming = Literal["next_bar_open"]
+ReusableConfigStatus = Literal["draft", "active", "deprecated"]
+ReusableConfigIntendedUse = Literal["research", "validation", "production_candidate"]
+ReusableRebalanceCadence = Literal["monthly", "quarterly"]
+ReusableRebalanceDayRule = Literal["first_trading_day", "last_trading_day"]
+ReusableRebalanceAnchor = Literal["close", "next_open"]
 StrategyRiskPolicyScope = Literal["strategy", "sleeve"]
 StrategyRiskStopLossBasis = Literal["strategy_nav_drawdown", "sleeve_nav_drawdown"]
 StrategyRiskTakeProfitBasis = Literal["strategy_nav_gain", "sleeve_nav_gain"]
@@ -54,6 +61,11 @@ UniverseFieldId = Literal[
     "returns.return_126d",
     "quality.piotroski_f_score",
     "earnings.surprise_pct",
+    "security.market_cap",
+    "market.dollar_volume_20d",
+    "security.primary_listing",
+    "security.country",
+    "security.is_price_liquidity_eligible",
 ]
 UniverseValueKind = Literal["string", "number", "boolean", "date", "datetime"]
 UniverseValue: TypeAlias = str | int | float | bool
@@ -128,6 +140,36 @@ UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
         label="Earnings Surprise Percent",
         valueKind="number",
         operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.market_cap",
+        label="Market Capitalization",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="market.dollar_volume_20d",
+        label="20 Day Dollar Volume",
+        valueKind="number",
+        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.primary_listing",
+        label="Primary Listing Flag",
+        valueKind="boolean",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.country",
+        label="Security Country",
+        valueKind="string",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.is_price_liquidity_eligible",
+        label="Price And Liquidity Eligibility Flag",
+        valueKind="boolean",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
     ),
 )
 UNIVERSE_FIELD_DEFINITION_BY_ID: dict[UniverseFieldId, UniverseFieldDefinition] = {
@@ -214,7 +256,7 @@ UniverseGroup.model_rebuild()
 UniverseDefinition.model_rebuild()
 
 
-class ConfigRevisionReference(BaseModel):
+class ConfigReference(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(..., min_length=1, max_length=128)
@@ -223,8 +265,37 @@ class ConfigRevisionReference(BaseModel):
     @field_validator("name", mode="before")
     @classmethod
     def normalize_name(cls, value: object) -> object:
-        normalized = str(value or "").strip()
-        return normalized or value
+        if value is None:
+            return value
+        return str(value).strip()
+
+
+class ConfigRevisionReference(ConfigReference):
+    pass
+
+
+class ConfigIdentity(ConfigReference):
+    model_config = ConfigDict(extra="forbid")
+
+    status: ReusableConfigStatus = "draft"
+    description: str = Field(default="", max_length=2048)
+    intendedUse: ReusableConfigIntendedUse = "research"
+    thesis: str = Field(default="", max_length=4096)
+    whatToMonitor: list[str] = Field(default_factory=list)
+
+    @field_validator("description", "thesis", mode="before")
+    @classmethod
+    def normalize_text(cls, value: object) -> str:
+        return str(value or "").strip()
+
+    @field_validator("whatToMonitor", mode="before")
+    @classmethod
+    def normalize_monitoring_notes(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("whatToMonitor must be a list.")
+        return [str(item).strip() for item in value if str(item).strip()]
 
 
 class ExitRule(BaseModel):
@@ -240,6 +311,7 @@ class ExitRule(BaseModel):
     action: ExitAction = "exit_full"
     minHoldBars: int = Field(default=0, ge=0)
     reference: ExitReference | None = None
+    rankThreshold: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
     def validate_rule(self) -> "ExitRule":
@@ -248,30 +320,43 @@ class ExitRule(BaseModel):
             self._default_reference("entry_price")
             self._default_price_field("low")
             self._reject_atr_column()
+            self._reject_rank_threshold()
         elif self.type == "take_profit_fixed":
             self._require_positive_value()
             self._default_reference("entry_price")
             self._default_price_field("high")
             self._reject_atr_column()
+            self._reject_rank_threshold()
         elif self.type == "trailing_stop_pct":
             self._require_positive_value()
             self._default_reference("highest_since_entry")
             self._default_price_field("low")
             self._reject_atr_column()
+            self._reject_rank_threshold()
         elif self.type == "trailing_stop_atr":
             self._require_positive_value()
             self._default_reference("highest_since_entry")
             self._default_price_field("low")
             if not self.atrColumn:
                 raise ValueError("trailing_stop_atr requires atrColumn.")
+            self._reject_rank_threshold()
         elif self.type == "time_stop":
             self._require_positive_value(integer_only=True)
             self._reject_reference()
             self._reject_atr_column()
+            self._reject_rank_threshold()
             if self.priceField is None:
                 self.priceField = "close"
             elif self.priceField != "close":
                 raise ValueError("time_stop only supports priceField='close'.")
+        elif self.type == "rank_decay":
+            if self.rankThreshold is None:
+                raise ValueError("rank_decay requires rankThreshold.")
+            self._reject_value()
+            self._reject_reference()
+            self._reject_atr_column()
+            if self.priceField is not None:
+                raise ValueError("rank_decay does not support priceField.")
 
         return self
 
@@ -302,6 +387,14 @@ class ExitRule(BaseModel):
     def _reject_reference(self) -> None:
         if self.reference is not None:
             raise ValueError(f"{self.type} does not support reference.")
+
+    def _reject_rank_threshold(self) -> None:
+        if self.rankThreshold is not None:
+            raise ValueError(f"{self.type} does not support rankThreshold.")
+
+    def _reject_value(self) -> None:
+        if self.value is not None:
+            raise ValueError(f"{self.type} does not support value.")
 
 
 class StrategyPositionSizeLimit(BaseModel):
@@ -394,6 +487,12 @@ class RebalancePolicy(BaseModel):
 
     frequency: RebalanceFrequency = "every_bar"
     executionTiming: RebalanceExecutionTiming = "next_bar_open"
+    cadence: ReusableRebalanceCadence | None = None
+    dayRule: ReusableRebalanceDayRule | None = None
+    anchor: ReusableRebalanceAnchor | None = None
+    tradeDelayBars: int = Field(default=0, ge=0)
+    driftThresholdBps: int | None = Field(default=None, ge=0)
+    maxTurnoverPerRebalance: float | None = Field(default=None, ge=0.0, le=1.0)
     intervalBars: int | None = Field(default=None, ge=1)
     driftThresholdPct: float | None = Field(default=None, ge=0.0, le=100.0)
     minTradeNotional: float = Field(default=0.0, ge=0.0)
@@ -409,6 +508,9 @@ class RebalancePolicy(BaseModel):
                 raise ValueError("every_n_bars rebalance frequency requires intervalBars.")
         elif self.intervalBars is not None:
             raise ValueError("intervalBars is only supported when frequency='every_n_bars'.")
+        reusable_fields = [self.cadence is not None, self.dayRule is not None, self.anchor is not None]
+        if any(reusable_fields) and not all(reusable_fields):
+            raise ValueError("Reusable rebalance policies require cadence, dayRule, and anchor together.")
         return self
 
 
@@ -582,9 +684,69 @@ class ExitRuleSetUpsertRequest(BaseModel):
     config: ExitRuleSetConfig
 
 
+class UniverseConfigPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: UniverseDefinition
+
+
+class RankingSchemaPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: RankingSchemaConfig
+
+
+class RebalancePolicyPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: RebalancePolicy
+
+    @model_validator(mode="after")
+    def validate_reusable_rebalance_policy(self) -> "RebalancePolicyPreset":
+        if self.config.cadence is None or self.config.dayRule is None or self.config.anchor is None:
+            raise ValueError("RebalancePolicyPreset requires cadence, dayRule, and anchor.")
+        return self
+
+
+class RegimePolicyPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: RegimePolicy
+
+
+class StrategyRiskPolicyPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: StrategyRiskPolicy
+
+
+class ExitPolicyPreset(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    identity: ConfigIdentity
+    config: ExitRuleSetConfig
+
+
+class StrategyComponentRefs(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    universe: ConfigReference | None = None
+    ranking: ConfigReference | None = None
+    rebalance: ConfigReference | None = None
+    regimePolicy: ConfigReference | None = None
+    riskPolicy: ConfigReference | None = None
+    exitPolicy: ConfigReference | None = None
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    componentRefs: StrategyComponentRefs | None = None
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
     universeConfigVersion: int | None = Field(default=None, ge=1)
     universe: UniverseDefinition | None = None
@@ -674,8 +836,8 @@ class StrategyConfig(BaseModel):
 
     @model_validator(mode="after")
     def normalize_exits(self) -> "StrategyConfig":
-        if not self.universeConfigName and self.universe is None:
-            raise ValueError("universeConfigName is required.")
+        if not self.universeConfigName and self.universe is None and not self._component_ref("universe"):
+            raise ValueError("componentRefs.universe, universeConfigName, or universe is required.")
         self._validate_pin_pair("universeConfigVersion", self.universeConfigName, self.universeConfigVersion)
         self._validate_pin_pair("rankingSchemaVersion", self.rankingSchemaName, self.rankingSchemaVersion)
         self._validate_pin_pair(
@@ -719,3 +881,8 @@ class StrategyConfig(BaseModel):
     def _validate_pin_pair(field_name: str, name: str | None, version: int | None) -> None:
         if version is not None and not name:
             raise ValueError(f"{field_name} requires the matching config name.")
+
+    def _component_ref(self, field_name: str) -> ConfigReference | None:
+        if self.componentRefs is None:
+            return None
+        return getattr(self.componentRefs, field_name)

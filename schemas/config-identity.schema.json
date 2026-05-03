@@ -1,0 +1,61 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "intendedUse": {
+      "default": "research",
+      "enum": [
+        "research",
+        "validation",
+        "production_candidate"
+      ],
+      "title": "Intendeduse",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "thesis": {
+      "default": "",
+      "maxLength": 4096,
+      "title": "Thesis",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "whatToMonitor": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Whattomonitor",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "version"
+  ],
+  "title": "ConfigIdentity",
+  "type": "object"
+}

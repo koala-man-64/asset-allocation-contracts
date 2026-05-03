@@ -1,0 +1,242 @@
+{
+  "$defs": {
+    "ConfigIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigIdentity",
+      "type": "object"
+    },
+    "UniverseCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "market.close",
+            "security.is_active",
+            "security.sector",
+            "security.delisted_at",
+            "market.trade_date",
+            "market.timestamp",
+            "returns.return_20d",
+            "returns.return_126d",
+            "quality.piotroski_f_score",
+            "earnings.surprise_pct",
+            "security.market_cap",
+            "market.dollar_volume_20d",
+            "security.primary_listing",
+            "security.country",
+            "security.is_price_liquidity_eligible"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "kind": {
+          "const": "condition",
+          "default": "condition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values"
+        }
+      },
+      "required": [
+        "field",
+        "operator"
+      ],
+      "title": "UniverseCondition",
+      "type": "object"
+    },
+    "UniverseDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/UniverseGroup"
+        },
+        "source": {
+          "const": "postgres_gold",
+          "default": "postgres_gold",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root"
+      ],
+      "title": "UniverseDefinition",
+      "type": "object"
+    },
+    "UniverseGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "clauses": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UniverseGroup"
+              },
+              {
+                "$ref": "#/$defs/UniverseCondition"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Clauses",
+          "type": "array"
+        },
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Operator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clauses"
+      ],
+      "title": "UniverseGroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/UniverseDefinition"
+    },
+    "identity": {
+      "$ref": "#/$defs/ConfigIdentity"
+    }
+  },
+  "required": [
+    "identity",
+    "config"
+  ],
+  "title": "UniverseConfigPreset",
+  "type": "object"
+}

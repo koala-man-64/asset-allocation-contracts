@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "ConfigIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigIdentity",
+      "type": "object"
+    },
+    "RebalancePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowPartialRebalance": {
+          "default": true,
+          "title": "Allowpartialrebalance",
+          "type": "boolean"
+        },
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "close",
+                "next_open"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "cadence": {
+          "anyOf": [
+            {
+              "enum": [
+                "monthly",
+                "quarterly"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cadence"
+        },
+        "cashBufferPct": {
+          "default": 0.0,
+          "exclusiveMaximum": 100.0,
+          "minimum": 0.0,
+          "title": "Cashbufferpct",
+          "type": "number"
+        },
+        "closeRemovedPositions": {
+          "default": true,
+          "title": "Closeremovedpositions",
+          "type": "boolean"
+        },
+        "dayRule": {
+          "anyOf": [
+            {
+              "enum": [
+                "first_trading_day",
+                "last_trading_day"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dayrule"
+        },
+        "driftThresholdBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdbps"
+        },
+        "driftThresholdPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdpct"
+        },
+        "executionTiming": {
+          "const": "next_bar_open",
+          "default": "next_bar_open",
+          "title": "Executiontiming",
+          "type": "string"
+        },
+        "frequency": {
+          "default": "every_bar",
+          "enum": [
+            "every_bar",
+            "daily",
+            "weekly",
+            "monthly",
+            "quarterly",
+            "every_n_bars",
+            "manual"
+          ],
+          "title": "Frequency",
+          "type": "string"
+        },
+        "intervalBars": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intervalbars"
+        },
+        "maxTurnoverPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverpct"
+        },
+        "maxTurnoverPerRebalance": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverperrebalance"
+        },
+        "minTradeNotional": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Mintradenotional",
+          "type": "number"
+        },
+        "tradeDelayBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tradedelaybars",
+          "type": "integer"
+        }
+      },
+      "title": "RebalancePolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/RebalancePolicy"
+    },
+    "identity": {
+      "$ref": "#/$defs/ConfigIdentity"
+    }
+  },
+  "required": [
+    "identity",
+    "config"
+  ],
+  "title": "RebalancePolicyPreset",
+  "type": "object"
+}

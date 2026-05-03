@@ -13,7 +13,12 @@
           "returns.return_20d",
           "returns.return_126d",
           "quality.piotroski_f_score",
-          "earnings.surprise_pct"
+          "earnings.surprise_pct",
+          "security.market_cap",
+          "market.dollar_volume_20d",
+          "security.primary_listing",
+          "security.country",
+          "security.is_price_liquidity_eligible"
         ],
         "type": "string"
       },

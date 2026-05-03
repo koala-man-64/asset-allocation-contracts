@@ -1,5 +1,27 @@
 {
   "$defs": {
+    "ConfigReference": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigReference",
+      "type": "object"
+    },
     "ExitRule": {
       "additionalProperties": false,
       "properties": {
@@ -66,6 +88,19 @@
           "default": null,
           "title": "Priority"
         },
+        "rankThreshold": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankthreshold"
+        },
         "reference": {
           "anyOf": [
             {
@@ -94,7 +129,8 @@
             "take_profit_fixed",
             "trailing_stop_pct",
             "trailing_stop_atr",
-            "time_stop"
+            "time_stop",
+            "rank_decay"
           ],
           "title": "Type",
           "type": "string"
@@ -127,6 +163,38 @@
           "title": "Allowpartialrebalance",
           "type": "boolean"
         },
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "close",
+                "next_open"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "cadence": {
+          "anyOf": [
+            {
+              "enum": [
+                "monthly",
+                "quarterly"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cadence"
+        },
         "cashBufferPct": {
           "default": 0.0,
           "exclusiveMaximum": 100.0,
@@ -138,6 +206,35 @@
           "default": true,
           "title": "Closeremovedpositions",
           "type": "boolean"
+        },
+        "dayRule": {
+          "anyOf": [
+            {
+              "enum": [
+                "first_trading_day",
+                "last_trading_day"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dayrule"
+        },
+        "driftThresholdBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdbps"
         },
         "driftThresholdPct": {
           "anyOf": [
@@ -200,11 +297,31 @@
           "default": null,
           "title": "Maxturnoverpct"
         },
+        "maxTurnoverPerRebalance": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverperrebalance"
+        },
         "minTradeNotional": {
           "default": 0.0,
           "minimum": 0.0,
           "title": "Mintradenotional",
           "type": "number"
+        },
+        "tradeDelayBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tradedelaybars",
+          "type": "integer"
         }
       },
       "title": "RebalancePolicy",
@@ -241,6 +358,79 @@
         }
       },
       "title": "RegimePolicy",
+      "type": "object"
+    },
+    "StrategyComponentRefs": {
+      "additionalProperties": false,
+      "properties": {
+        "exitPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rebalance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimePolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "riskPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "universe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyComponentRefs",
       "type": "object"
     },
     "StrategyPositionPolicy": {
@@ -524,7 +714,12 @@
             "returns.return_20d",
             "returns.return_126d",
             "quality.piotroski_f_score",
-            "earnings.surprise_pct"
+            "earnings.surprise_pct",
+            "security.market_cap",
+            "market.dollar_volume_20d",
+            "security.primary_listing",
+            "security.country",
+            "security.is_price_liquidity_eligible"
           ],
           "title": "Field",
           "type": "string"
@@ -670,6 +865,17 @@
   },
   "additionalProperties": false,
   "properties": {
+    "componentRefs": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StrategyComponentRefs"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "costModel": {
       "default": "default",
       "maxLength": 64,
