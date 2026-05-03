@@ -13,6 +13,11 @@ TradeRole = Literal["entry", "rebalance_increase", "rebalance_decrease", "exit"]
 BacktestPolicyEventScope = Literal["strategy", "sleeve", "position", "symbol", "portfolio"]
 BacktestPolicyEventType = Literal["rebalance", "strategy_risk", "position_exit", "reentry"]
 BacktestPolicyDecision = Literal["applied", "skipped", "blocked"]
+BacktestResearchIntegrityStatus = Literal["strict_passed", "strict_failed", "legacy_uncontrolled"]
+BacktestExecutionModel = Literal["simple_bps"]
+BacktestExecutionModelQuality = Literal["not_tca_grade"]
+BacktestApprovalReadiness = Literal["research_only"]
+BacktestDataQualityEventSeverity = Literal["warning", "error", "fatal"]
 
 
 class RunRecordResponse(BaseModel):
@@ -170,12 +175,18 @@ class BacktestSummary(BaseModel):
     profit_factor: float | None = None
     expectancy_pnl: float | None = None
     expectancy_return: float | None = None
+    research_integrity_status: BacktestResearchIntegrityStatus | None = None
+    execution_model: BacktestExecutionModel | None = None
+    execution_model_quality: BacktestExecutionModelQuality | None = None
+    approval_readiness: BacktestApprovalReadiness | None = None
+    data_quality_event_count: int | None = Field(default=None, ge=0)
+    policy_event_count: int | None = Field(default=None, ge=0)
 
 
 class BacktestResultMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    results_schema_version: int = Field(default=4, ge=1)
+    results_schema_version: int = Field(default=7, ge=1)
     bar_size: str = Field(..., min_length=1, max_length=32)
     periods_per_year: int = Field(..., ge=1)
     strategy_scope: str = Field(..., min_length=1, max_length=128)
@@ -354,6 +365,30 @@ class BacktestPolicyEventListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     events: list[BacktestPolicyEvent]
+    total: int
+    limit: int
+    offset: int
+
+
+class BacktestDataQualityEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    event_seq: int = Field(..., ge=0)
+    bar_ts: datetime
+    severity: BacktestDataQualityEventSeverity
+    table_name: str = Field(..., min_length=1, max_length=128)
+    symbol: str | None = Field(default=None, min_length=1, max_length=32)
+    field_name: str | None = Field(default=None, min_length=1, max_length=128)
+    reason_code: str = Field(..., min_length=1, max_length=128)
+    action: str = Field(..., min_length=1, max_length=128)
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class BacktestDataQualityEventListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    events: list[BacktestDataQualityEvent]
     total: int
     limit: int
     offset: int

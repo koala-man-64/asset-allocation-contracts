@@ -25,6 +25,19 @@
       "default": null,
       "title": "Annualized Volatility"
     },
+    "approval_readiness": {
+      "anyOf": [
+        {
+          "const": "research_only",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approval Readiness"
+    },
     "avg_gross_exposure": {
       "anyOf": [
         {
@@ -133,6 +146,19 @@
       "default": null,
       "title": "Cost Drag Bps"
     },
+    "data_quality_event_count": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data Quality Event Count"
+    },
     "end_date": {
       "anyOf": [
         {
@@ -144,6 +170,32 @@
       ],
       "default": null,
       "title": "End Date"
+    },
+    "execution_model": {
+      "anyOf": [
+        {
+          "const": "simple_bps",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Execution Model"
+    },
+    "execution_model_quality": {
+      "anyOf": [
+        {
+          "const": "not_tca_grade",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Execution Model Quality"
     },
     "expectancy_pnl": {
       "anyOf": [
@@ -265,6 +317,19 @@
       "default": null,
       "title": "Payoff Ratio"
     },
+    "policy_event_count": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Policy Event Count"
+    },
     "profit_factor": {
       "anyOf": [
         {
@@ -276,6 +341,23 @@
       ],
       "default": null,
       "title": "Profit Factor"
+    },
+    "research_integrity_status": {
+      "anyOf": [
+        {
+          "enum": [
+            "strict_passed",
+            "strict_failed",
+            "legacy_uncontrolled"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Research Integrity Status"
     },
     "run_id": {
       "anyOf": [

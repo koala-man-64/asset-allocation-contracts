@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "BacktestDataQualityEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "bar_ts": {
+          "format": "date-time",
+          "title": "Bar Ts",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": true,
+          "title": "Details",
+          "type": "object"
+        },
+        "event_seq": {
+          "minimum": 0,
+          "title": "Event Seq",
+          "type": "integer"
+        },
+        "field_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Name"
+        },
+        "reason_code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "warning",
+            "error",
+            "fatal"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        },
+        "table_name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Table Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "event_seq",
+        "bar_ts",
+        "severity",
+        "table_name",
+        "reason_code",
+        "action"
+      ],
+      "title": "BacktestDataQualityEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "events": {
+      "items": {
+        "$ref": "#/$defs/BacktestDataQualityEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "limit": {
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "title": "Offset",
+      "type": "integer"
+    },
+    "total": {
+      "title": "Total",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "events",
+    "total",
+    "limit",
+    "offset"
+  ],
+  "title": "BacktestDataQualityEventListResponse",
+  "type": "object"
+}

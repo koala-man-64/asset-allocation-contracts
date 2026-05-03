@@ -87,6 +87,11 @@ export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 
 export type BacktestPolicyEventScope = 'strategy' | 'sleeve' | 'position' | 'symbol' | 'portfolio';
 export type BacktestPolicyEventType = 'rebalance' | 'strategy_risk' | 'position_exit' | 'reentry';
 export type BacktestPolicyDecision = 'applied' | 'skipped' | 'blocked';
+export type BacktestResearchIntegrityStatus = 'strict_passed' | 'strict_failed' | 'legacy_uncontrolled';
+export type BacktestExecutionModel = 'simple_bps';
+export type BacktestExecutionModelQuality = 'not_tca_grade';
+export type BacktestApprovalReadiness = 'research_only';
+export type BacktestDataQualityEventSeverity = 'warning' | 'error' | 'fatal';
 export type AiChatStreamEvent = AiChatStartedEvent | AiChatStatusEvent | AiChatReasoningSummaryDeltaEvent | AiChatOutputTextDeltaEvent | AiChatCompletedEvent | AiChatErrorEvent;
 export type UniverseNode = UniverseGroup | UniverseCondition;
 
@@ -675,6 +680,12 @@ export interface BacktestSummary {
   profit_factor?: number | null;
   expectancy_pnl?: number | null;
   expectancy_return?: number | null;
+  research_integrity_status?: BacktestResearchIntegrityStatus | null;
+  execution_model?: BacktestExecutionModel | null;
+  execution_model_quality?: BacktestExecutionModelQuality | null;
+  approval_readiness?: BacktestApprovalReadiness | null;
+  data_quality_event_count?: number | null;
+  policy_event_count?: number | null;
   [key: string]: unknown;
 }
 
@@ -832,6 +843,26 @@ export interface BacktestPolicyEvent {
   observed_value?: number | null;
   threshold_value?: number | null;
   action?: string | null;
+  details: Record<string, unknown>;
+}
+
+export interface BacktestDataQualityEventListResponse {
+  events: BacktestDataQualityEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface BacktestDataQualityEvent {
+  run_id: string;
+  event_seq: number;
+  bar_ts: string;
+  severity: BacktestDataQualityEventSeverity;
+  table_name: string;
+  symbol?: string | null;
+  field_name?: string | null;
+  reason_code: string;
+  action: string;
   details: Record<string, unknown>;
 }
 

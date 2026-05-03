@@ -6,6 +6,7 @@ import type {
   AcknowledgeBrokerAlertRequest,
   BacktestClaimRequest,
   BacktestCompleteRequest,
+  BacktestDataQualityEventListResponse,
   BacktestLookupRequest,
   BacktestLookupResponse,
   BacktestFailRequest,
@@ -357,6 +358,28 @@ const streamEvent: BacktestStreamEvent = {
   links,
 };
 
+const dataQualityEvents: BacktestDataQualityEventListResponse = {
+  events: [
+    {
+      run_id: "run-123",
+      event_seq: 1,
+      bar_ts: "2026-03-08T14:35:00Z",
+      severity: "error",
+      table_name: "fundamental_signal_daily",
+      symbol: "AAPL",
+      field_name: "quality_score",
+      reason_code: "available_after_bar",
+      action: "exclude_value",
+      details: {
+        availableAt: "2026-03-08T14:37:00Z",
+      },
+    },
+  ],
+  total: 1,
+  limit: 50,
+  offset: 0,
+};
+
 const point: TimeseriesPointResponse = {
   date: "2026-03-09",
   portfolio_value: 102.0,
@@ -398,6 +421,7 @@ void links;
 void lookupResponse;
 void runResponse;
 void streamEvent;
+void dataQualityEvents;
 void point;
 const portfolioAccount: PortfolioAccount = {
   accountId: "acct-001",

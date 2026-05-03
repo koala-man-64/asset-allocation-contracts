@@ -6,6 +6,8 @@ from asset_allocation_contracts.ai_chat import AiChatRequest, AiChatStreamEvent
 from asset_allocation_contracts.backtest import (
     BacktestClaimRequest,
     BacktestCompleteRequest,
+    BacktestDataQualityEvent,
+    BacktestDataQualityEventListResponse,
     BacktestLookupRequest,
     BacktestLookupResponse,
     BacktestPolicyEvent,
@@ -117,7 +119,6 @@ from asset_allocation_contracts.strategy import (
     ExitRuleSetRevision,
     ExitRuleSetSummary,
     RebalancePolicy,
-    RiskPolicyConfig,
     RiskPolicyConfigDetailResponse,
     RiskPolicyConfigRevision,
     RiskPolicyConfigSummary,
@@ -575,6 +576,26 @@ def test_backtest_policy_event_contract_captures_policy_diagnostics() -> None:
 
     assert response.events[0].reason_code == "cooldown_active"
     assert response.events[0].details["cooldownBarsRemaining"] == 11
+
+
+def test_backtest_data_quality_event_contract_captures_strict_mode_diagnostics() -> None:
+    event = BacktestDataQualityEvent(
+        run_id="run-123",
+        event_seq=1,
+        bar_ts="2026-03-08T14:35:00Z",
+        severity="error",
+        table_name="fundamental_signal_daily",
+        symbol="AAPL",
+        field_name="quality_score",
+        reason_code="available_after_bar",
+        action="exclude_value",
+        details={"availableAt": "2026-03-08T14:37:00Z"},
+    )
+    response = BacktestDataQualityEventListResponse(events=[event], total=1, limit=50, offset=0)
+
+    assert response.events[0].severity == "error"
+    assert response.events[0].reason_code == "available_after_bar"
+    assert response.events[0].details["availableAt"] == "2026-03-08T14:37:00Z"
 
 
 def test_trade_order_preview_accepts_optional_strategy_reference() -> None:
@@ -1235,17 +1256,17 @@ def test_backtest_reconcile_response_defaults_and_payload() -> None:
 
 def test_backtest_result_metadata_and_response_schema() -> None:
     metadata = BacktestResultMetadata(
-        results_schema_version=4,
+        results_schema_version=7,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="portfolio",
     )
     schema = TimeseriesResponse.model_json_schema()
 
-    assert metadata.results_schema_version == 4
+    assert metadata.results_schema_version == 7
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
-    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 4
+    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 7
 
 
 def test_backtest_stream_event_supports_terminal_payload() -> None:
@@ -1382,6 +1403,25 @@ def test_backtest_summary_supports_additive_v3_and_v4_fields() -> None:
     assert payload.total_transaction_cost == 35.0
     assert payload.closed_positions == 12
     assert payload.expectancy_return == 0.021
+
+
+def test_backtest_summary_supports_research_safe_v7_metadata() -> None:
+    payload = BacktestSummary.model_validate(
+        {
+            "research_integrity_status": "strict_passed",
+            "execution_model": "simple_bps",
+            "execution_model_quality": "not_tca_grade",
+            "approval_readiness": "research_only",
+            "data_quality_event_count": 2,
+            "policy_event_count": 3,
+        }
+    )
+
+    assert payload.research_integrity_status == "strict_passed"
+    assert payload.execution_model_quality == "not_tca_grade"
+    assert payload.approval_readiness == "research_only"
+    assert payload.data_quality_event_count == 2
+    assert payload.policy_event_count == 3
 
 
 def test_trade_and_closed_position_contracts_support_position_lifecycle_fields() -> None:
