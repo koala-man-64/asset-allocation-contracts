@@ -37,6 +37,7 @@ import type {
   SymbolCleanupRunSummary,
   SymbolEnrichmentResolveRequest,
   SymbolEnrichmentSymbolDetailResponse,
+  SymbolResolutionResult,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
   ConfigIdentity,
@@ -60,6 +61,8 @@ import {
   LEGACY_SILVER_MARKET_COLUMNS,
   SILVER_MARKET_COLUMNS,
   SILVER_MARKET_CORPORATE_ACTION_COLUMNS,
+  SYMBOL_ALIAS_RULES,
+  SYMBOL_ALIAS_RULESET_VERSION,
 } from "../src";
 import type { SilverMarketColumn } from "../src";
 
@@ -70,6 +73,20 @@ const legacySilverMarketColumnCount: 9 = LEGACY_SILVER_MARKET_COLUMNS.length;
 const silverMarketColumnCount: 11 = SILVER_MARKET_COLUMNS.length;
 const silverCorporateActionColumnCount: 2 = silverCorporateActionColumns.length;
 const goldMarketSourceColumnCount: 9 = goldMarketSourceColumns.length;
+const symbolAliasRules = SYMBOL_ALIAS_RULES;
+const symbolAliasRulesetVersion: 'symbol-alias-v1' = SYMBOL_ALIAS_RULESET_VERSION;
+const massiveVixRule = symbolAliasRules.find((rule) => rule.providerSymbol === 'I:VIX');
+const massiveVixCanonical: '^VIX' | undefined = massiveVixRule?.canonicalSymbol;
+
+const symbolResolution: SymbolResolutionResult = {
+  status: "resolved",
+  provider: "massive",
+  domain: "market",
+  inputSymbol: "I:VIX",
+  canonicalSymbol: "^VIX",
+  providerSymbol: "I:VIX",
+  mappingVersion: "symbol-alias-v1",
+};
 
 const catalog: UniverseCatalogResponse = {
   source: "postgres_gold",

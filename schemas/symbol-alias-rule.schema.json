@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "canonicalSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Canonicalsymbol",
+      "type": "string"
+    },
+    "domain": {
+      "enum": [
+        "market",
+        "finance",
+        "earnings",
+        "price-target"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "massive",
+        "alpha_vantage",
+        "nasdaq"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Providersymbol",
+      "type": "string"
+    }
+  },
+  "required": [
+    "provider",
+    "domain",
+    "providerSymbol",
+    "canonicalSymbol"
+  ],
+  "title": "SymbolAliasRule",
+  "type": "object"
+}

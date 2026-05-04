@@ -88,6 +88,10 @@ export type NotificationDecisionStatus = 'not_required' | 'pending' | 'approved'
 export type NotificationExecutionStatus = 'not_applicable' | 'pending_approval' | 'submitted' | 'blocked' | 'release_failed';
 export type NotificationRequestStatus = 'pending' | 'delivered' | 'delivery_failed' | 'decided' | 'expired';
 export type IntradayWatchlistSymbolAppendRunSkippedReason = 'watchlist_disabled' | 'no_new_symbols' | 'queue_run_disabled';
+export type SymbolIdentityProvider = 'massive' | 'alpha_vantage' | 'nasdaq';
+export type SymbolIdentityDomain = 'market' | 'finance' | 'earnings' | 'price-target';
+export type SymbolResolutionStatus = 'resolved' | 'unsupported' | 'ambiguous' | 'invalid';
+export type SymbolResolutionErrorCode = 'unsupported' | 'ambiguous' | 'invalid';
 export type PortfolioAllocationMode = 'percent' | 'notional_base_ccy';
 export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed' | 'failed';
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
@@ -2444,6 +2448,32 @@ export interface SymbolEnrichmentEnqueueRequest {
   fullScan: boolean;
   overwriteMode: 'fill_missing' | 'full_reconcile';
   maxSymbols?: number | null;
+}
+
+export interface SymbolAliasRule {
+  provider: SymbolIdentityProvider;
+  domain: SymbolIdentityDomain;
+  providerSymbol: string;
+  canonicalSymbol: string;
+}
+
+export interface SymbolResolutionResult {
+  status: SymbolResolutionStatus;
+  provider: SymbolIdentityProvider;
+  domain: SymbolIdentityDomain;
+  inputSymbol: string;
+  canonicalSymbol?: string | null;
+  providerSymbol?: string | null;
+  mappingVersion: string;
+  error?: SymbolResolutionError | null;
+}
+
+export interface SymbolResolutionError {
+  code: SymbolResolutionErrorCode;
+  message: string;
+  provider?: SymbolIdentityProvider | null;
+  domain?: SymbolIdentityDomain | null;
+  inputSymbol?: string | null;
 }
 
 export interface IntradayWatchlistSummary {

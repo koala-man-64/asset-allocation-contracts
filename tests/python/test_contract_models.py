@@ -118,6 +118,11 @@ from asset_allocation_contracts.symbol_enrichment import (
     SymbolProfileCurrent,
     SymbolProfileOverride,
 )
+from asset_allocation_contracts.symbol_identity import (
+    SYMBOL_ALIAS_RULESET_VERSION,
+    SYMBOL_ALIAS_RULES,
+    SymbolResolutionResult,
+)
 from asset_allocation_contracts.strategy import (
     ConfigIdentity,
     ConfigReference,
@@ -2260,6 +2265,62 @@ def test_symbol_enrichment_operator_contracts_default_lists() -> None:
     assert summary.backlogCount == 0
     assert override.isLocked is True
     assert run.mode == "fill_missing"
+
+
+def test_symbol_identity_contracts_expose_v1_massive_market_aliases() -> None:
+    alias_by_provider_symbol = {
+        (rule.provider, rule.domain, rule.providerSymbol): rule.canonicalSymbol
+        for rule in SYMBOL_ALIAS_RULES
+    }
+
+    assert SYMBOL_ALIAS_RULESET_VERSION == "symbol-alias-v1"
+    assert alias_by_provider_symbol[("massive", "market", "I:VIX")] == "^VIX"
+    assert alias_by_provider_symbol[("massive", "market", "I:VIX3M")] == "^VIX3M"
+    assert ("massive", "finance", "I:VIX") not in alias_by_provider_symbol
+    assert ("massive", "market", "VIX") not in alias_by_provider_symbol
+
+
+def test_symbol_identity_resolution_result_supports_strict_error_states() -> None:
+    resolved = SymbolResolutionResult(
+        status="resolved",
+        provider="massive",
+        domain="market",
+        inputSymbol="I:VIX",
+        canonicalSymbol="^VIX",
+        providerSymbol="I:VIX",
+    )
+    unsupported = SymbolResolutionResult(
+        status="unsupported",
+        provider="massive",
+        domain="market",
+        inputSymbol="VIX",
+        error={
+            "code": "unsupported",
+            "message": "Bare VIX is not a supported Massive market alias.",
+            "provider": "massive",
+            "domain": "market",
+            "inputSymbol": "VIX",
+        },
+    )
+    ambiguous = SymbolResolutionResult(
+        status="ambiguous",
+        provider="massive",
+        domain="market",
+        inputSymbol="VIX",
+        error={"code": "ambiguous", "message": "Multiple canonical symbols matched."},
+    )
+    invalid = SymbolResolutionResult(
+        status="invalid",
+        provider="massive",
+        domain="market",
+        inputSymbol="-",
+        error={"code": "invalid", "message": "Symbol is blank or placeholder."},
+    )
+
+    assert resolved.mappingVersion == SYMBOL_ALIAS_RULESET_VERSION
+    assert unsupported.error is not None and unsupported.error.code == "unsupported"
+    assert ambiguous.status == "ambiguous"
+    assert invalid.status == "invalid"
 
 
 def test_broker_account_contracts_capture_normalized_operations_surface() -> None:

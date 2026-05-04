@@ -1,0 +1,169 @@
+{
+  "$defs": {
+    "SymbolResolutionError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "unsupported",
+            "ambiguous",
+            "invalid"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "enum": [
+                "market",
+                "finance",
+                "earnings",
+                "price-target"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "inputSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inputsymbol"
+        },
+        "message": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "enum": [
+                "massive",
+                "alpha_vantage",
+                "nasdaq"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "SymbolResolutionError",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "canonicalSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Canonicalsymbol"
+    },
+    "domain": {
+      "enum": [
+        "market",
+        "finance",
+        "earnings",
+        "price-target"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SymbolResolutionError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "inputSymbol": {
+      "maxLength": 32,
+      "title": "Inputsymbol",
+      "type": "string"
+    },
+    "mappingVersion": {
+      "default": "symbol-alias-v1",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Mappingversion",
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "massive",
+        "alpha_vantage",
+        "nasdaq"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providersymbol"
+    },
+    "status": {
+      "enum": [
+        "resolved",
+        "unsupported",
+        "ambiguous",
+        "invalid"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "provider",
+    "domain",
+    "inputSymbol"
+  ],
+  "title": "SymbolResolutionResult",
+  "type": "object"
+}
