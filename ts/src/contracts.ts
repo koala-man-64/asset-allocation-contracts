@@ -44,6 +44,8 @@ export type RegimePolicyMode = 'observe_only';
 export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
+export type StockScreenerSortKey = 'symbol' | 'close' | 'volume' | 'return_1d' | 'return_5d' | 'vol_20d' | 'drawdown_1y' | 'atr_14d' | 'gap_atr' | 'sma_50d' | 'sma_200d' | 'trend_50_200' | 'above_sma_50' | 'bb_width_20d' | 'compression_score' | 'volume_z_20d' | 'volume_pct_rank_252d';
+export type StockScreenerSortDirection = 'asc' | 'desc';
 export type BrokerVendor = 'alpaca' | 'schwab' | 'etrade' | 'kalshi';
 export type BrokerHealthTone = 'healthy' | 'warning' | 'critical';
 export type BrokerConnectionState = 'connected' | 'degraded' | 'disconnected' | 'reconnect_required';
@@ -293,7 +295,7 @@ export interface RankingFactor {
   table: string;
   column: string;
   weight: number;
-  direction: RankingDirection;
+  direction: StockScreenerSortDirection;
   missingValuePolicy: RankingMissingValuePolicy;
   transforms: RankingTransform[];
 }
@@ -982,6 +984,120 @@ export interface BacktestReconcileResponse {
   dispatchedRunIds: string[];
   dispatchFailedRunIds: string[];
   failedRunIds: string[];
+}
+
+export interface StockScreenerRequest {
+  q?: string | null;
+  as_of?: string | null;
+  limit: number;
+  offset: number;
+  sort: StockScreenerSortKey;
+  direction: StockScreenerSortDirection;
+  sectors?: string[] | null;
+  industries?: string[] | null;
+  countries?: string[] | null;
+  is_optionable?: boolean | null;
+  has_silver?: boolean | null;
+  has_gold?: boolean | null;
+  above_sma_50?: boolean | null;
+  min_close?: number | null;
+  max_close?: number | null;
+  min_volume?: number | null;
+  max_volume?: number | null;
+  min_return_1d?: number | null;
+  max_return_1d?: number | null;
+  min_return_5d?: number | null;
+  max_return_5d?: number | null;
+  min_vol_20d?: number | null;
+  max_vol_20d?: number | null;
+  min_drawdown_1y?: number | null;
+  max_drawdown_1y?: number | null;
+  min_atr_14d?: number | null;
+  max_atr_14d?: number | null;
+  min_gap_atr?: number | null;
+  max_gap_atr?: number | null;
+  min_sma_50d?: number | null;
+  max_sma_50d?: number | null;
+  min_sma_200d?: number | null;
+  max_sma_200d?: number | null;
+  min_trend_50_200?: number | null;
+  max_trend_50_200?: number | null;
+  min_bb_width_20d?: number | null;
+  max_bb_width_20d?: number | null;
+  min_compression_score?: number | null;
+  max_compression_score?: number | null;
+  min_volume_z_20d?: number | null;
+  max_volume_z_20d?: number | null;
+  min_volume_pct_rank_252d?: number | null;
+  max_volume_pct_rank_252d?: number | null;
+}
+
+export interface StockScreenerRow {
+  symbol: string;
+  name?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  country?: string | null;
+  isOptionable?: boolean | null;
+  open?: number | null;
+  high?: number | null;
+  low?: number | null;
+  close?: number | null;
+  volume?: number | null;
+  return1d?: number | null;
+  return5d?: number | null;
+  vol20d?: number | null;
+  drawdown1y?: number | null;
+  atr14d?: number | null;
+  gapAtr?: number | null;
+  sma50d?: number | null;
+  sma200d?: number | null;
+  trend50_200?: number | null;
+  aboveSma50?: number | null;
+  bbWidth20d?: number | null;
+  compressionScore?: number | null;
+  volumeZ20d?: number | null;
+  volumePctRank252d?: number | null;
+  hasSilver?: boolean | number | null;
+  hasGold?: boolean | number | null;
+}
+
+export interface StockScreenerResponse {
+  asOf: string;
+  total: number;
+  limit: number;
+  offset: number;
+  rows: StockScreenerRow[];
+  summary?: StockScreenerSummary | null;
+  facets?: StockScreenerFacets | null;
+  filters?: StockScreenerRequest | null;
+}
+
+export interface StockScreenerSummary {
+  universeCount: number;
+  totalResultCount: number;
+  returnedCount: number;
+  coverage: StockScreenerCoverageSummary;
+  generatedAt?: string | null;
+}
+
+export interface StockScreenerCoverageSummary {
+  total: number;
+  withSilver: number;
+  withGold: number;
+  missingSilver: number;
+  missingGold: number;
+}
+
+export interface StockScreenerFacets {
+  sectors: StockScreenerFacetBucket[];
+  industries: StockScreenerFacetBucket[];
+  countries: StockScreenerFacetBucket[];
+}
+
+export interface StockScreenerFacetBucket {
+  value: string;
+  count: number;
 }
 
 export interface BrokerAccountDetail {

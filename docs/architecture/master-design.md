@@ -340,7 +340,21 @@ Purpose:
 
 These are still contract surfaces even though they are constants rather than large object models.
 
-### 4.11 Release and Env/Config Surfaces
+### 4.11 Stock Screener Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/stock_screener.py`
+- `schemas/stock-screener-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define the shared request and response payload for the control-plane stock screener API consumed by the UI
+- Keep server-side filtering, sort keys, coverage flags, facets, and active filter echo aligned across control-plane and browser consumers
+- Preserve the read-only research boundary: these contracts describe screening data and metadata, not trading actions or watchlist mutation commands
+
+### 4.12 Release and Env/Config Surfaces
 
 Owned by:
 
@@ -371,6 +385,7 @@ Purpose:
 - `python/asset_allocation_contracts/strategy_publication.py`
 - `python/asset_allocation_contracts/trade_desk.py`
 - `python/asset_allocation_contracts/ui_config.py`
+- `python/asset_allocation_contracts/stock_screener.py`
 - `python/asset_allocation_contracts/finance.py`
 - `python/asset_allocation_contracts/paths.py`
 - `python/asset_allocation_contracts/market_history.py`
@@ -774,6 +789,7 @@ Primary files used to verify this document:
 - `python/asset_allocation_contracts/paths.py`
 - `python/asset_allocation_contracts/ranking.py`
 - `python/asset_allocation_contracts/regime.py`
+- `python/asset_allocation_contracts/stock_screener.py`
 - `python/asset_allocation_contracts/strategy.py`
 - `python/asset_allocation_contracts/ui_config.py`
 - `python/scripts/export_schemas.py`

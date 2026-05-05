@@ -16,6 +16,7 @@ from asset_allocation_contracts.results import *
 from asset_allocation_contracts.strategy_publication import *
 from asset_allocation_contracts.symbol_identity import *
 from asset_allocation_contracts.symbol_enrichment import *
+from asset_allocation_contracts.stock_screener import *
 from asset_allocation_contracts.strategy import *
 from asset_allocation_contracts.trade_desk import *
 from asset_allocation_contracts.ui_config import *
