@@ -2447,6 +2447,29 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     assert listing.accounts[0].tradeReadiness == "blocked"
 
 
+def test_broker_account_contracts_accept_kalshi_vendor() -> None:
+    summary = BrokerAccountSummary(
+        accountId="kalshi-live-subaccount-0",
+        broker="kalshi",
+        name="Kalshi Live Subaccount 0",
+        accountNumberMasked="GEN-0001",
+        baseCurrency="USD",
+        overallStatus="warning",
+        tradeReadiness="ready",
+        connectionHealth={
+            "overallStatus": "warning",
+            "authStatus": "authenticated",
+            "connectionState": "degraded",
+            "syncStatus": "never_synced",
+            "staleReason": "Seeded account; provider refresh has not completed.",
+            "syncPaused": False,
+        },
+    )
+
+    assert summary.broker == "kalshi"
+    assert summary.tradeReadiness == "ready"
+
+
 def test_broker_account_onboarding_contracts_capture_discovery_and_create_response() -> None:
     candidate = BrokerAccountOnboardingCandidate(
         candidateId="alpaca:paper:acct-paper",

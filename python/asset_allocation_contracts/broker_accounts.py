@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-BrokerVendor = Literal["alpaca", "schwab", "etrade"]
+BrokerVendor = Literal["alpaca", "schwab", "etrade", "kalshi"]
 BrokerHealthTone = Literal["healthy", "warning", "critical"]
 BrokerConnectionState = Literal["connected", "degraded", "disconnected", "reconnect_required"]
 BrokerAuthStatus = Literal["authenticated", "expires_soon", "expired", "reauth_required", "not_connected"]

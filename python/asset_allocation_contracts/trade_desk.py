@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator, field_valida
 from asset_allocation_contracts.backtest import StrategyReferenceInput
 from asset_allocation_contracts.broker_accounts import BrokerAlertStatus, BrokerTradingPolicy
 
-TradeProvider = Literal["alpaca", "etrade", "schwab"]
+TradeProvider = Literal["alpaca", "etrade", "schwab", "kalshi"]
 TradeEnvironment = Literal["paper", "sandbox", "live"]
 TradeReadiness = Literal["ready", "review", "blocked"]
 TradeAssetClass = Literal["equity", "etf", "option", "crypto", "mutual_fund", "unknown"]

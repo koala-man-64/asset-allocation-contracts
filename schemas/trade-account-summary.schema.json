@@ -525,7 +525,8 @@
       "enum": [
         "alpaca",
         "etrade",
-        "schwab"
+        "schwab",
+        "kalshi"
       ],
       "title": "Provider",
       "type": "string"

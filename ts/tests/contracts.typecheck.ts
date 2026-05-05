@@ -52,6 +52,7 @@ import type {
   UniverseConfigPreset,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
+  TradeAccountSummary,
   UiRuntimeConfig,
   UniverseCondition,
   UniversePreviewResponse,
@@ -353,6 +354,30 @@ const brokerSummary: BrokerAccountSummary = {
   alertCount: 2,
 };
 
+const kalshiBrokerSummary: BrokerAccountSummary = {
+  accountId: "kalshi-live-subaccount-0",
+  broker: "kalshi",
+  name: "Kalshi Live Subaccount 0",
+  accountNumberMasked: "GEN-0001",
+  baseCurrency: "USD",
+  overallStatus: "warning",
+  tradeReadiness: "ready",
+  connectionHealth: {
+    overallStatus: "warning",
+    authStatus: "authenticated",
+    connectionState: "degraded",
+    syncStatus: "never_synced",
+    staleReason: "Seeded account; provider refresh has not completed.",
+    syncPaused: false,
+  },
+  equity: 0,
+  cash: 0,
+  buyingPower: 0,
+  openPositionCount: 0,
+  openOrderCount: 0,
+  alertCount: 0,
+};
+
 const brokerList: BrokerAccountListResponse = {
   accounts: [brokerSummary],
   generatedAt: "2026-04-20T13:45:00Z",
@@ -490,6 +515,51 @@ const actionResponse: BrokerAccountActionResponse = {
   },
   tradeReadiness: "review",
   syncPaused: false,
+};
+
+const kalshiTradeAccount: TradeAccountSummary = {
+  accountId: "kalshi-live-subaccount-0",
+  name: "Kalshi Live Subaccount 0",
+  provider: "kalshi",
+  environment: "live",
+  accountNumberMasked: "GEN-0001",
+  baseCurrency: "USD",
+  readiness: "ready",
+  capabilities: {
+    canReadAccount: true,
+    canReadPositions: true,
+    canReadOrders: true,
+    canReadHistory: true,
+    canPreview: false,
+    canSubmitPaper: false,
+    canSubmitSandbox: false,
+    canSubmitLive: false,
+    canCancel: false,
+    supportsMarketOrders: false,
+    supportsLimitOrders: false,
+    supportsStopOrders: false,
+    supportsFractionalQuantity: false,
+    supportsNotionalOrders: false,
+    supportsEquities: false,
+    supportsEtfs: false,
+    supportsOptions: false,
+    readOnly: true,
+    unsupportedReason: "Kalshi trade desk execution is not supported in v1.",
+  },
+  cash: 0,
+  buyingPower: 0,
+  equity: 0,
+  openOrderCount: 0,
+  positionCount: 0,
+  unresolvedAlertCount: 0,
+  killSwitchActive: false,
+  freshness: {
+    balancesState: "unknown",
+    positionsState: "unknown",
+    ordersState: "unknown",
+    staleReason: "Seeded account; provider refresh has not completed.",
+  },
+  confirmationRequired: false,
 };
 
 const onboardingResponse: BrokerAccountOnboardingResponse = {

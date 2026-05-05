@@ -88,7 +88,8 @@
           "enum": [
             "alpaca",
             "schwab",
-            "etrade"
+            "etrade",
+            "kalshi"
           ],
           "title": "Provider",
           "type": "string"

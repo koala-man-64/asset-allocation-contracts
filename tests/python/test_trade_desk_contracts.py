@@ -93,6 +93,38 @@ def test_trade_account_contracts_capture_readiness_and_capabilities() -> None:
     assert detail.alerts[0].blocking is True
 
 
+def test_trade_account_contracts_accept_kalshi_provider() -> None:
+    account = TradeAccountSummary(
+        accountId="kalshi-live-subaccount-0",
+        name="Kalshi Live Subaccount 0",
+        provider="kalshi",
+        environment="live",
+        accountNumberMasked="GEN-0001",
+        readiness="ready",
+        capabilities=TradeCapabilityFlags(
+            canReadAccount=True,
+            canReadPositions=True,
+            canReadOrders=True,
+            canReadHistory=True,
+            readOnly=True,
+            unsupportedReason="Kalshi trade desk execution is not supported in v1.",
+        ),
+        cash=0,
+        buyingPower=0,
+        equity=0,
+        freshness={
+            "balancesState": "unknown",
+            "positionsState": "unknown",
+            "ordersState": "unknown",
+            "staleReason": "Seeded account; provider refresh has not completed.",
+        },
+    )
+
+    assert account.provider == "kalshi"
+    assert account.environment == "live"
+    assert account.freshness.balancesState == "unknown"
+
+
 def test_trade_order_preview_request_validates_manual_intent() -> None:
     request = TradeOrderPreviewRequest(
         accountId="acct-001",
