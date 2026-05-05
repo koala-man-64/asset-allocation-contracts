@@ -38,6 +38,8 @@ import type {
   SymbolEnrichmentResolveRequest,
   SymbolEnrichmentSymbolDetailResponse,
   SymbolResolutionResult,
+  StockScreenerRequest,
+  StockScreenerResponse,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
   ConfigIdentity,
@@ -87,6 +89,54 @@ const symbolResolution: SymbolResolutionResult = {
   canonicalSymbol: "^VIX",
   providerSymbol: "I:VIX",
   mappingVersion: "symbol-alias-v1",
+};
+
+const stockScreenerRequest: StockScreenerRequest = {
+  q: "MS",
+  as_of: "2026-05-04",
+  limit: 250,
+  offset: 0,
+  sort: "return_5d",
+  direction: "desc",
+  sectors: ["Technology"],
+  has_silver: true,
+  min_volume_pct_rank_252d: 0.6,
+};
+
+const stockScreenerResponse: StockScreenerResponse = {
+  asOf: "2026-05-04",
+  total: 1,
+  limit: 250,
+  offset: 0,
+  filters: stockScreenerRequest,
+  summary: {
+    universeCount: 2,
+    totalResultCount: 1,
+    returnedCount: 1,
+    coverage: {
+      total: 2,
+      withSilver: 2,
+      withGold: 1,
+      missingSilver: 0,
+      missingGold: 1,
+    },
+  },
+  facets: {
+    sectors: [{ value: "Technology", count: 1 }],
+    industries: [],
+    countries: [{ value: "US", count: 1 }],
+  },
+  rows: [
+    {
+      symbol: "MSFT",
+      sector: "Technology",
+      close: 421.03,
+      return5d: 0.012,
+      volumePctRank252d: 0.8,
+      hasSilver: true,
+      hasGold: 1,
+    },
+  ],
 };
 
 const catalog: UniverseCatalogResponse = {

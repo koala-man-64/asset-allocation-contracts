@@ -123,6 +123,11 @@ from asset_allocation_contracts.symbol_identity import (
     SYMBOL_ALIAS_RULES,
     SymbolResolutionResult,
 )
+from asset_allocation_contracts.stock_screener import (
+    StockScreenerRequest,
+    StockScreenerResponse,
+    StockScreenerRow,
+)
 from asset_allocation_contracts.strategy import (
     ConfigIdentity,
     ConfigReference,
@@ -258,6 +263,81 @@ def test_config_reference_requires_integer_version() -> None:
         assert "version" in str(exc)
     else:
         raise AssertionError("Expected non-integer config version to fail validation.")
+
+
+def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None:
+    request = StockScreenerRequest(
+        q="  ms ",
+        as_of="2026-05-04",
+        sectors="Technology, Healthcare, technology",
+        countries=[" US ", "CA", "US"],
+        has_silver=True,
+        has_gold=False,
+        min_return_5d=0.01,
+        max_return_5d=0.08,
+        sort="return_5d",
+    )
+    response = StockScreenerResponse(
+        asOf="2026-05-04",
+        total=1,
+        limit=250,
+        offset=0,
+        filters=request,
+        summary={
+            "universeCount": 3,
+            "totalResultCount": 1,
+            "returnedCount": 1,
+            "coverage": {
+                "total": 3,
+                "withSilver": 2,
+                "withGold": 1,
+                "missingSilver": 1,
+                "missingGold": 2,
+            },
+        },
+        facets={
+            "sectors": [{"value": "Technology", "count": 1}],
+            "industries": [{"value": "Software", "count": 1}],
+            "countries": [{"value": "US", "count": 1}],
+        },
+        rows=[
+            StockScreenerRow(
+                symbol=" msft ",
+                name="Microsoft Corp.",
+                sector="Technology",
+                industry="Software",
+                close=421.03,
+                return1d=-0.004,
+                return5d=0.012,
+                vol20d=0.18,
+                drawdown1y=-0.05,
+                atr14d=5.3,
+                compressionScore=0.35,
+                volumePctRank252d=0.8,
+                hasSilver=True,
+                hasGold=1,
+            )
+        ],
+    )
+
+    assert request.q == "ms"
+    assert request.sectors == ["Technology", "Healthcare"]
+    assert request.countries == ["US", "CA"]
+    assert response.rows[0].symbol == "MSFT"
+    assert response.summary is not None
+    assert response.summary.coverage.missingGold == 2
+    assert response.facets is not None
+    assert response.facets.sectors[0].value == "Technology"
+
+
+def test_stock_screener_contract_rejects_inverted_numeric_ranges() -> None:
+    try:
+        StockScreenerRequest(min_volume_pct_rank_252d=0.9, max_volume_pct_rank_252d=0.2)
+    except Exception as exc:
+        assert "min_volume_pct_rank_252d" in str(exc)
+        assert "max_volume_pct_rank_252d" in str(exc)
+    else:
+        raise AssertionError("Expected inverted screener numeric range to fail validation.")
 
 
 def test_config_reference_rejects_blank_name() -> None:
