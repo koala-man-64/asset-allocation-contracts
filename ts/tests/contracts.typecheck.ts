@@ -95,8 +95,10 @@ const stockScreenerRequest: StockScreenerRequest = {
   as_of: "2026-05-04",
   limit: 250,
   offset: 0,
-  sort: "return_5d",
+  sort: "ranking_score",
   direction: "desc",
+  ranking_schema_name: "quality_momentum",
+  ranking_schema_version: 2,
   sectors: ["Technology"],
   has_silver: true,
   min_volume_pct_rank_252d: 0.6,
@@ -125,6 +127,11 @@ const stockScreenerResponse: StockScreenerResponse = {
     industries: [],
     countries: [{ value: "US", count: 1 }],
   },
+  ranking: {
+    schemaName: "quality_momentum",
+    schemaVersion: 2,
+    componentNames: ["Momentum", "Quality"],
+  },
   rows: [
     {
       symbol: "MSFT",
@@ -134,6 +141,12 @@ const stockScreenerResponse: StockScreenerResponse = {
       volumePctRank252d: 0.8,
       hasSilver: true,
       hasGold: 1,
+      rankingRank: 3,
+      rankingOverallScore: 0.91,
+      rankingComponents: [
+        { name: "Momentum", score: 0.87 },
+        { name: "Quality", score: null },
+      ],
     },
   ],
 };

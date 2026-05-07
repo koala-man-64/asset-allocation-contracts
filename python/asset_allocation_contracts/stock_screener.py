@@ -24,6 +24,8 @@ StockScreenerSortKey = Literal[
     "compression_score",
     "volume_z_20d",
     "volume_pct_rank_252d",
+    "ranking_rank",
+    "ranking_score",
 ]
 StockScreenerSortDirection = Literal["asc", "desc"]
 
@@ -68,6 +70,8 @@ class StockScreenerRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
     sort: StockScreenerSortKey = "volume"
     direction: StockScreenerSortDirection = "desc"
+    ranking_schema_name: str | None = Field(default=None, max_length=128)
+    ranking_schema_version: int | None = Field(default=None, ge=1)
     sectors: list[str] | None = None
     industries: list[str] | None = None
     countries: list[str] | None = None
@@ -107,12 +111,16 @@ class StockScreenerRequest(BaseModel):
     max_volume_pct_rank_252d: float | None = None
 
     _normalize_query = field_validator("q", mode="before")(_normalize_optional_text)
+    _normalize_ranking_schema_name = field_validator("ranking_schema_name", mode="before")(_normalize_optional_text)
     _normalize_sectors = field_validator("sectors", mode="before")(_normalize_filter_values)
     _normalize_industries = field_validator("industries", mode="before")(_normalize_filter_values)
     _normalize_countries = field_validator("countries", mode="before")(_normalize_filter_values)
 
     @model_validator(mode="after")
     def _validate_numeric_ranges(self) -> StockScreenerRequest:
+        if self.ranking_schema_version is not None and self.ranking_schema_name is None:
+            raise ValueError("ranking_schema_version requires ranking_schema_name.")
+
         for minimum_name, maximum_name in (
             ("min_close", "max_close"),
             ("min_volume", "max_volume"),
@@ -135,6 +143,13 @@ class StockScreenerRequest(BaseModel):
             if minimum is not None and maximum is not None and minimum > maximum:
                 raise ValueError(f"{minimum_name} must be less than or equal to {maximum_name}.")
         return self
+
+
+class StockScreenerRankingComponent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=128)
+    score: float | None = None
 
 
 class StockScreenerRow(BaseModel):
@@ -167,6 +182,9 @@ class StockScreenerRow(BaseModel):
     volumePctRank252d: float | None = None
     hasSilver: bool | int | None = None
     hasGold: bool | int | None = None
+    rankingRank: int | None = None
+    rankingOverallScore: float | None = None
+    rankingComponents: list[StockScreenerRankingComponent] | None = None
 
     @field_validator("symbol", mode="before")
     @classmethod
@@ -212,6 +230,14 @@ class StockScreenerFacets(BaseModel):
     countries: list[StockScreenerFacetBucket] = Field(default_factory=list)
 
 
+class StockScreenerRankingMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schemaName: str | None = Field(default=None, max_length=128)
+    schemaVersion: int | None = Field(default=None, ge=1)
+    componentNames: list[str] = Field(default_factory=list)
+
+
 class StockScreenerResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -222,4 +248,5 @@ class StockScreenerResponse(BaseModel):
     rows: list[StockScreenerRow] = Field(default_factory=list)
     summary: StockScreenerSummary | None = None
     facets: StockScreenerFacets | None = None
+    ranking: StockScreenerRankingMetadata | None = None
     filters: StockScreenerRequest | None = None

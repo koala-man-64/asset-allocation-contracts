@@ -1,4 +1,34 @@
 {
+  "$defs": {
+    "StockScreenerRankingComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "StockScreenerRankingComponent",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "aboveSma50": {
@@ -201,6 +231,45 @@
       ],
       "default": null,
       "title": "Open"
+    },
+    "rankingComponents": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/StockScreenerRankingComponent"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rankingcomponents"
+    },
+    "rankingOverallScore": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rankingoverallscore"
+    },
+    "rankingRank": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rankingrank"
     },
     "return1d": {
       "anyOf": [

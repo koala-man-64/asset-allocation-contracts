@@ -89,6 +89,74 @@
       "title": "StockScreenerFacets",
       "type": "object"
     },
+    "StockScreenerRankingComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "StockScreenerRankingComponent",
+      "type": "object"
+    },
+    "StockScreenerRankingMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "componentNames": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Componentnames",
+          "type": "array"
+        },
+        "schemaName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schemaname"
+        },
+        "schemaVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schemaversion"
+        }
+      },
+      "title": "StockScreenerRankingMetadata",
+      "type": "object"
+    },
     "StockScreenerRequest": {
       "additionalProperties": false,
       "properties": {
@@ -578,6 +646,32 @@
           "default": null,
           "title": "Q"
         },
+        "ranking_schema_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ranking Schema Name"
+        },
+        "ranking_schema_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ranking Schema Version"
+        },
         "sectors": {
           "anyOf": [
             {
@@ -612,7 +706,9 @@
             "bb_width_20d",
             "compression_score",
             "volume_z_20d",
-            "volume_pct_rank_252d"
+            "volume_pct_rank_252d",
+            "ranking_rank",
+            "ranking_score"
           ],
           "title": "Sort",
           "type": "string"
@@ -824,6 +920,45 @@
           ],
           "default": null,
           "title": "Open"
+        },
+        "rankingComponents": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/StockScreenerRankingComponent"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingcomponents"
+        },
+        "rankingOverallScore": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingoverallscore"
+        },
+        "rankingRank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingrank"
         },
         "return1d": {
           "anyOf": [
@@ -1043,6 +1178,17 @@
       "minimum": 0,
       "title": "Offset",
       "type": "integer"
+    },
+    "ranking": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StockScreenerRankingMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "rows": {
       "items": {

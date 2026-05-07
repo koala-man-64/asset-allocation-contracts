@@ -56,3 +56,9 @@ class AuthSessionStatus(BaseModel):
     username: str | None = None
     requiredRoles: list[str] = Field(default_factory=list)
     grantedRoles: list[str] = Field(default_factory=list)
+
+
+class PasswordAuthSessionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(min_length=1)

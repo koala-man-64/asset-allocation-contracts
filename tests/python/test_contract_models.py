@@ -274,7 +274,9 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
         has_gold=False,
         min_return_5d=0.01,
         max_return_5d=0.08,
-        sort="return_5d",
+        sort="ranking_score",
+        ranking_schema_name="  quality-momentum  ",
+        ranking_schema_version=2,
     )
     response = StockScreenerResponse(
         asOf="2026-05-04",
@@ -299,6 +301,11 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
             "industries": [{"value": "Software", "count": 1}],
             "countries": [{"value": "US", "count": 1}],
         },
+        ranking={
+            "schemaName": "quality-momentum",
+            "schemaVersion": 2,
+            "componentNames": ["Momentum", "Quality"],
+        },
         rows=[
             StockScreenerRow(
                 symbol=" msft ",
@@ -315,14 +322,27 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
                 volumePctRank252d=0.8,
                 hasSilver=True,
                 hasGold=1,
+                rankingRank=3,
+                rankingOverallScore=0.91,
+                rankingComponents=[
+                    {"name": "Momentum", "score": 0.87},
+                    {"name": "Quality", "score": None},
+                ],
             )
         ],
     )
 
     assert request.q == "ms"
+    assert request.ranking_schema_name == "quality-momentum"
+    assert request.ranking_schema_version == 2
     assert request.sectors == ["Technology", "Healthcare"]
     assert request.countries == ["US", "CA"]
     assert response.rows[0].symbol == "MSFT"
+    assert response.rows[0].rankingRank == 3
+    assert response.rows[0].rankingComponents is not None
+    assert response.rows[0].rankingComponents[0].name == "Momentum"
+    assert response.ranking is not None
+    assert response.ranking.componentNames == ["Momentum", "Quality"]
     assert response.summary is not None
     assert response.summary.coverage.missingGold == 2
     assert response.facets is not None
@@ -337,6 +357,16 @@ def test_stock_screener_contract_rejects_inverted_numeric_ranges() -> None:
         assert "max_volume_pct_rank_252d" in str(exc)
     else:
         raise AssertionError("Expected inverted screener numeric range to fail validation.")
+
+
+def test_stock_screener_contract_rejects_ranking_version_without_name() -> None:
+    try:
+        StockScreenerRequest(ranking_schema_version=2)
+    except Exception as exc:
+        assert "ranking_schema_version" in str(exc)
+        assert "ranking_schema_name" in str(exc)
+    else:
+        raise AssertionError("Expected ranking schema version without name to fail validation.")
 
 
 def test_config_reference_rejects_blank_name() -> None:
