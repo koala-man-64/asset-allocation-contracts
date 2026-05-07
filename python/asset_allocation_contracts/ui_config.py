@@ -22,8 +22,8 @@ def _normalize_scopes(value: Any) -> list[str]:
     return [text] if text else []
 
 
-AuthSessionMode = Literal["bearer"]
-AuthProvider = Literal["disabled", "oidc"]
+AuthSessionMode = Literal["bearer", "cookie"]
+AuthProvider = Literal["disabled", "oidc", "password"]
 
 
 class UiRuntimeConfig(BaseModel):

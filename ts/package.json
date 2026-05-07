@@ -1,6 +1,6 @@
 {
     "name":  "@asset-allocation/contracts",
-    "version":  "3.20.2",
+    "version":  "3.20.3",
     "packageManager":  "pnpm@10.28.1",
     "type":  "module",
     "sideEffects":  false,

@@ -1055,13 +1055,10 @@ def test_ui_runtime_config_defaults_to_api_root() -> None:
     assert config.oidcPostLogoutRedirectUri is None
 
 
-def test_ui_runtime_config_rejects_cookie_auth_session_mode() -> None:
-    try:
-        UiRuntimeConfig(authSessionMode="cookie")
-    except Exception as exc:
-        assert "authSessionMode" in str(exc)
-    else:
-        raise AssertionError("Expected cookie auth session mode to be rejected.")
+def test_ui_runtime_config_accepts_cookie_auth_session_mode() -> None:
+    config = UiRuntimeConfig(authSessionMode="cookie")
+
+    assert config.authSessionMode == "cookie"
 
 
 def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
@@ -1073,13 +1070,10 @@ def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
         raise AssertionError("Expected validation failure for unknown auth session mode.")
 
 
-def test_ui_runtime_config_rejects_password_auth_provider() -> None:
-    try:
-        UiRuntimeConfig(authProvider="password")
-    except Exception as exc:
-        assert "authProvider" in str(exc)
-    else:
-        raise AssertionError("Expected password auth provider to be rejected.")
+def test_ui_runtime_config_accepts_password_auth_provider() -> None:
+    config = UiRuntimeConfig(authProvider="password")
+
+    assert config.authProvider == "password"
 
 
 def test_ui_runtime_config_normalizes_string_scopes() -> None:
