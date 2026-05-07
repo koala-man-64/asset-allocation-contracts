@@ -22,10 +22,8 @@
       "type": "boolean"
     },
     "authSessionMode": {
+      "const": "bearer",
       "default": "bearer",
-      "enum": [
-        "bearer"
-      ],
       "title": "Authsessionmode",
       "type": "string"
     },
