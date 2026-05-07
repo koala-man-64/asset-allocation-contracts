@@ -48,7 +48,6 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("regime-model-detail.schema.json", regime.RegimeModelDetailResponse),
     ("ui-runtime-config.schema.json", ui_config.UiRuntimeConfig),
     ("auth-session-status.schema.json", ui_config.AuthSessionStatus),
-    ("password-auth-session-request.schema.json", ui_config.PasswordAuthSessionRequest),
     ("runtime-job-metadata.schema.json", job_metadata.RuntimeJobMetadata),
     (
         "strategy-publication-reconcile-signal-request.schema.json",

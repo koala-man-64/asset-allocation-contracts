@@ -11,8 +11,7 @@
       "default": "disabled",
       "enum": [
         "disabled",
-        "oidc",
-        "password"
+        "oidc"
       ],
       "title": "Authprovider",
       "type": "string"
@@ -25,8 +24,7 @@
     "authSessionMode": {
       "default": "bearer",
       "enum": [
-        "bearer",
-        "cookie"
+        "bearer"
       ],
       "title": "Authsessionmode",
       "type": "string"

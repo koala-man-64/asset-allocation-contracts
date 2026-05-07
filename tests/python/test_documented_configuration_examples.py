@@ -10,11 +10,11 @@ from asset_allocation_contracts.strategy import StrategyConfig, StrategyRiskProf
 from asset_allocation_contracts.ui_config import UiRuntimeConfig
 
 
-def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
+def test_documented_oidc_auth_runtime_config_example_is_valid() -> None:
     payload = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "/api",
-            "authSessionMode": "cookie",
+            "authSessionMode": "bearer",
             "authProvider": "oidc",
             "oidcEnabled": True,
             "authRequired": True,
@@ -27,7 +27,7 @@ def test_documented_cookie_auth_runtime_config_example_is_valid() -> None:
         }
     )
 
-    assert payload.authSessionMode == "cookie"
+    assert payload.authSessionMode == "bearer"
     assert payload.authProvider == "oidc"
     assert payload.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
@@ -325,18 +325,6 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
             "oidcAudience": "asset-allocation-api,asset-allocation-jobs",
         }
     )
-    password_enabled = UiRuntimeConfig.model_validate(
-        {
-            "apiBaseUrl": "/api",
-            "authSessionMode": "cookie",
-            "authProvider": "password",
-            "oidcEnabled": False,
-            "authRequired": True,
-            "oidcScopes": [],
-            "oidcAudience": [],
-        }
-    )
-
     assert minimal.apiBaseUrl == "/api"
     assert minimal.authProvider == "disabled"
     assert oidc_enabled.oidcScopes == [
@@ -348,5 +336,3 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
         "asset-allocation-api",
         "asset-allocation-jobs",
     ]
-    assert password_enabled.authProvider == "password"
-    assert password_enabled.authSessionMode == "cookie"

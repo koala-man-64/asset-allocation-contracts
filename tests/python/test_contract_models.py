@@ -120,7 +120,6 @@ from asset_allocation_contracts.strategy import (
 from asset_allocation_contracts.trade_desk import TradeOrderPreviewRequest
 from asset_allocation_contracts.ui_config import (
     AuthSessionStatus,
-    PasswordAuthSessionRequest,
     UiRuntimeConfig,
 )
 
@@ -443,17 +442,13 @@ def test_ui_runtime_config_defaults_to_api_root() -> None:
     assert config.oidcPostLogoutRedirectUri is None
 
 
-def test_ui_runtime_config_accepts_cookie_auth_session_mode() -> None:
-    config = UiRuntimeConfig(authSessionMode="cookie")
-    assert config.authSessionMode == "cookie"
-
-
-def test_ui_runtime_config_accepts_password_auth_provider_with_cookie_session_mode() -> None:
-    config = UiRuntimeConfig(authProvider="password", authSessionMode="cookie", authRequired=True)
-
-    assert config.authProvider == "password"
-    assert config.authSessionMode == "cookie"
-    assert config.authRequired is True
+def test_ui_runtime_config_rejects_cookie_auth_session_mode() -> None:
+    try:
+        UiRuntimeConfig(authSessionMode="cookie")
+    except Exception as exc:
+        assert "authSessionMode" in str(exc)
+    else:
+        raise AssertionError("Expected cookie auth session mode to be rejected.")
 
 
 def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
@@ -465,14 +460,13 @@ def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
         raise AssertionError("Expected validation failure for unknown auth session mode.")
 
 
-def test_ui_runtime_config_rejects_password_auth_provider_without_cookie_session_mode() -> None:
+def test_ui_runtime_config_rejects_password_auth_provider() -> None:
     try:
-        UiRuntimeConfig(authProvider="password", authSessionMode="bearer")
+        UiRuntimeConfig(authProvider="password")
     except Exception as exc:
-        assert "authSessionMode" in str(exc)
         assert "authProvider" in str(exc)
     else:
-        raise AssertionError("Expected password auth provider to require cookie session mode.")
+        raise AssertionError("Expected password auth provider to be rejected.")
 
 
 def test_ui_runtime_config_normalizes_string_scopes() -> None:
@@ -501,22 +495,6 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert schema["required"] == ["authMode", "subject"]
     assert "requiredRoles" in schema["properties"]
     assert "grantedRoles" in schema["properties"]
-
-
-def test_password_auth_session_request_requires_non_empty_password() -> None:
-    payload = PasswordAuthSessionRequest(password="operator-secret")
-    schema = PasswordAuthSessionRequest.model_json_schema()
-
-    assert payload.password == "operator-secret"
-    assert schema["required"] == ["password"]
-    assert schema["properties"]["password"]["minLength"] == 1
-
-    try:
-        PasswordAuthSessionRequest(password="")
-    except Exception as exc:
-        assert "password" in str(exc)
-    else:
-        raise AssertionError("Expected password auth session request validation to reject blank passwords.")
 
 
 def test_runtime_job_metadata_contract_validates_strategy_compute_fields() -> None:
