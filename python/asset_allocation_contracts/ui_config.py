@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 def _normalize_scopes(value: Any) -> list[str]:
@@ -22,8 +22,8 @@ def _normalize_scopes(value: Any) -> list[str]:
     return [text] if text else []
 
 
-AuthSessionMode = Literal["bearer", "cookie"]
-AuthProvider = Literal["disabled", "oidc", "password"]
+AuthSessionMode = Literal["bearer"]
+AuthProvider = Literal["disabled", "oidc"]
 
 
 class UiRuntimeConfig(BaseModel):
@@ -46,12 +46,6 @@ class UiRuntimeConfig(BaseModel):
     def normalize_scopes(cls, value: Any) -> list[str]:
         return _normalize_scopes(value)
 
-    @model_validator(mode="after")
-    def validate_auth_provider(self) -> UiRuntimeConfig:
-        if self.authProvider == "password" and self.authSessionMode != "cookie":
-            raise ValueError("authSessionMode must be 'cookie' when authProvider is 'password'.")
-        return self
-
 
 class AuthSessionStatus(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -62,9 +56,3 @@ class AuthSessionStatus(BaseModel):
     username: str | None = None
     requiredRoles: list[str] = Field(default_factory=list)
     grantedRoles: list[str] = Field(default_factory=list)
-
-
-class PasswordAuthSessionRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    password: str = Field(min_length=1)
