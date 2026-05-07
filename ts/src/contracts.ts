@@ -44,7 +44,7 @@ export type RegimePolicyMode = 'observe_only';
 export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
-export type StockScreenerSortKey = 'symbol' | 'close' | 'volume' | 'return_1d' | 'return_5d' | 'vol_20d' | 'drawdown_1y' | 'atr_14d' | 'gap_atr' | 'sma_50d' | 'sma_200d' | 'trend_50_200' | 'above_sma_50' | 'bb_width_20d' | 'compression_score' | 'volume_z_20d' | 'volume_pct_rank_252d';
+export type StockScreenerSortKey = 'symbol' | 'close' | 'volume' | 'return_1d' | 'return_5d' | 'vol_20d' | 'drawdown_1y' | 'atr_14d' | 'gap_atr' | 'sma_50d' | 'sma_200d' | 'trend_50_200' | 'above_sma_50' | 'bb_width_20d' | 'compression_score' | 'volume_z_20d' | 'volume_pct_rank_252d' | 'ranking_rank' | 'ranking_score';
 export type StockScreenerSortDirection = 'asc' | 'desc';
 export type BrokerVendor = 'alpaca' | 'schwab' | 'etrade' | 'kalshi';
 export type BrokerHealthTone = 'healthy' | 'warning' | 'critical';
@@ -989,6 +989,8 @@ export interface StockScreenerRequest {
   offset: number;
   sort: StockScreenerSortKey;
   direction: StockScreenerSortDirection;
+  ranking_schema_name?: string | null;
+  ranking_schema_version?: number | null;
   sectors?: string[] | null;
   industries?: string[] | null;
   countries?: string[] | null;
@@ -1056,6 +1058,14 @@ export interface StockScreenerRow {
   volumePctRank252d?: number | null;
   hasSilver?: boolean | number | null;
   hasGold?: boolean | number | null;
+  rankingRank?: number | null;
+  rankingOverallScore?: number | null;
+  rankingComponents?: StockScreenerRankingComponent[] | null;
+}
+
+export interface StockScreenerRankingComponent {
+  name: string;
+  score?: number | null;
 }
 
 export interface StockScreenerResponse {
@@ -1066,6 +1076,7 @@ export interface StockScreenerResponse {
   rows: StockScreenerRow[];
   summary?: StockScreenerSummary | null;
   facets?: StockScreenerFacets | null;
+  ranking?: StockScreenerRankingMetadata | null;
   filters?: StockScreenerRequest | null;
 }
 
@@ -1094,6 +1105,12 @@ export interface StockScreenerFacets {
 export interface StockScreenerFacetBucket {
   value: string;
   count: number;
+}
+
+export interface StockScreenerRankingMetadata {
+  schemaName?: string | null;
+  schemaVersion?: number | null;
+  componentNames: string[];
 }
 
 export interface BrokerAccountDetail {

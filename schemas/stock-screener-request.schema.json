@@ -487,6 +487,32 @@
       "default": null,
       "title": "Q"
     },
+    "ranking_schema_name": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ranking Schema Name"
+    },
+    "ranking_schema_version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ranking Schema Version"
+    },
     "sectors": {
       "anyOf": [
         {
@@ -521,7 +547,9 @@
         "bb_width_20d",
         "compression_score",
         "volume_z_20d",
-        "volume_pct_rank_252d"
+        "volume_pct_rank_252d",
+        "ranking_rank",
+        "ranking_score"
       ],
       "title": "Sort",
       "type": "string"
