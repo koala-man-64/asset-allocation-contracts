@@ -21,7 +21,7 @@ description: Mandatory git safety workflow for any task that changes code in one
 - Infer `REPO_SLUG` from the repository directory name or the `origin` remote URL.
 - Default `BASE_BRANCH` to the remote default branch from `origin/HEAD` unless explicitly provided.
 - Accept `LINKED_REPOS` for multi-repo work.
-- Use the repo merge policy when known. Otherwise default `MERGE_STRATEGY` to squash merge through PR.
+- Use the repo merge policy when known. Otherwise default `MERGE_STRATEGY` to squash merge through an Azure Repos PR.
 
 ## Treat These Branches as Protected or Shared
 
@@ -95,9 +95,9 @@ Declare `MERGE-READY` only when all conditions are true:
 5. No unresolved conflicts remain.
 6. The PR targets the correct `BASE_BRANCH`.
 7. Any linked multi-repo branches or PRs are referenced.
-8. The merge method matches repo policy. Default to squash merge through PR when policy is unknown.
-9. Branch protection and required reviews or checks are satisfied.
-10. The merge queue is used when the repo requires it.
+8. The merge method matches repo policy. Default to squash merge through an Azure Repos PR when policy is unknown.
+9. Azure Repos branch policies, required reviewers, and required build validations are satisfied.
+10. Any required Azure DevOps completion policy is used.
 
 ## Forbid These Actions
 
@@ -136,4 +136,4 @@ Coordination record:
 - Use explicit `git rebase origin/<BASE_BRANCH>` on the current agent's private branch when syncing.
 - Use `git worktree add ...` for parallel same-repo work.
 - Use `git push --force-with-lease` only after rebasing the current agent's own private branch and only when a non-fast-forward update is unavoidable.
-- Use the repo's PR, branch protection, and merge queue flow for final integration.
+- Use the repo's Azure Repos PR, branch-policy, and completion flow for final integration.

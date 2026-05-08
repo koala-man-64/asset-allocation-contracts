@@ -53,7 +53,7 @@ Produce PR-ready documentation and enablement assets that are accurate, runnable
 ### Step 1: Discovery
 
 - Identify audience(s): end users, integrators, internal devs.
-- Detect doc stack and conventions (MkDocs, Docusaurus, Sphinx, GitHub Pages, internal wiki). If unknown, default to plain Markdown in the existing docs structure.
+- Detect doc stack and conventions (MkDocs, Docusaurus, Sphinx, Azure DevOps Wiki, Azure Static Web Apps docs site, internal wiki). If unknown, default to plain Markdown in the existing docs structure.
 - Inventory existing docs and gaps; produce a “docs map” of entry points, primary workflows, critical APIs, and error handling.
 
 ### Step 2: Evidence gathering

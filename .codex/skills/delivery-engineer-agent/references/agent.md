@@ -86,7 +86,7 @@ When assigned work, follow this deterministic process:
   - Backend: **Python/FastAPI** or **Node/Express**
   - Frontend: **React**
   - IaC: **Bicep/Terraform**
-  - CI: **GitHub Actions**
+  - CI: **Azure DevOps Pipelines**
 
 ---
 

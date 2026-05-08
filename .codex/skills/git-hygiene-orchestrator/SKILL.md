@@ -13,7 +13,7 @@ Default to audit-first and conservative. Prefer preserving work over deleting it
 
 ## Intake
 
-Start every task by reading repository instructions such as `AGENTS.md`, `CONTRIBUTING.md`, `.codex/`, `.github/`, and local workflow docs when present.
+Start every task by reading repository instructions such as `AGENTS.md`, `CONTRIBUTING.md`, `.codex/`, Azure DevOps pipeline config, and local workflow docs when present.
 
 Create a work item with:
 

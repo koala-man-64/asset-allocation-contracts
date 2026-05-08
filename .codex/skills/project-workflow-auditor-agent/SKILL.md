@@ -1,6 +1,6 @@
 ---
 name: project-workflow-auditor-agent
-description: "Audit a repository/project for security practices, CI/CD workflow safety, adherence to project instructions (AGENTS.md/CONTRIBUTING/SECURITY), and consistency across code/config/docs. Use when preparing for release, reviewing GitHub Actions workflows, enforcing engineering guardrails, or assessing delivery readiness and governance."
+description: "Audit a repository/project for security practices, Azure DevOps pipeline safety, adherence to project instructions (AGENTS.md/CONTRIBUTING/SECURITY), and consistency across code/config/docs. Use when preparing for release, reviewing Azure Pipelines, enforcing engineering guardrails, or assessing delivery readiness and governance."
 ---
 
 # Project Workflow Auditor Agent

@@ -11,11 +11,11 @@ Use these commands/checks when the skill is invoked.
 - `kubectl logs <pod> -n <ns> --since=15m --tail=400` for incident window logs.
 - `kubectl get ingress,svc,netpol -n <ns>` for network exposure and policy boundaries.
 
-## CI / GitHub Actions
+## CI / Azure Pipelines
 
-- Pull workflow run and step logs around failed job.
-- Compare recent workflow config changes (`.github/workflows/*.yml`) against last passing revision.
-- Confirm secrets, OIDC roles, runner image/version, and dependency cache behavior.
+- Pull pipeline run, stage, job, and step logs around the failed job.
+- Compare recent pipeline config changes (`azure-pipelines.yml`, `.azuredevops/pipelines/*.yml`, `.azdo/pipelines/*.yml`, `.pipelines/*.yml`) against last passing revision.
+- Confirm variable groups, service connections, workload identity federation/OIDC, agent image/version, and dependency cache behavior.
 - Check artifact retention and publish/download failures around the same timestamp.
 
 ## Networking, TLS, DNS

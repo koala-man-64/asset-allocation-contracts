@@ -13,22 +13,21 @@ Use these checklists to drive evidence collection. Prefer **safe commands** that
 
 **Evidence commands (safe):**
 - `rg --files -g 'AGENTS.md'`
-- `ls -la .github || true`
-- `ls -la .github/workflows || true`
+- `rg --files -g 'azure-pipelines*.yml' -g 'azure-pipelines*.yaml' -g '.azuredevops/**' -g '.azdo/**' -g '.pipelines/**'`
 
-## 2) CI/CD Workflow Safety (GitHub Actions)
-Check each workflow under `.github/workflows/` for:
-- **Least privilege**: explicit `permissions:` and avoidance of `write-all`
-- **Trigger safety**: `pull_request_target` usage and untrusted code execution risks
-- **Supply chain**: `uses:` actions pinned (prefer commit SHAs for sensitive paths)
-- **Secrets handling**: secrets only where needed; avoid printing secrets; avoid running untrusted PR code with secrets
-- **Deploy protections**: environments/approvals for production; branch restrictions; concurrency controls
-- **Artifacts**: retention limits, sensitive artifact handling
+## 2) CI/CD Workflow Safety (Azure Pipelines)
+Check each pipeline under `azure-pipelines.yml`, `azure-pipelines.yaml`, `.azuredevops/pipelines/`, `.azdo/pipelines/`, and `.pipelines/` for:
+- **Least privilege**: scoped service connections, constrained pipeline permissions, and no broad project collection tokens.
+- **Trigger safety**: branch/path filters, PR validation behavior, protected resource checks, and no untrusted PR code with privileged credentials.
+- **Supply chain**: first-party tasks with explicit major versions, reviewed third-party tasks/extensions, and pinned container images.
+- **Secrets handling**: variable groups and Key Vault-backed secrets only where needed; avoid printing secrets; avoid passing secrets through artifacts or logs.
+- **Deploy protections**: Azure DevOps environments, checks/approvals for production, branch policies, concurrency or exclusive locks, and rollback paths.
+- **Artifacts**: retention limits, sensitive artifact handling, provenance/SBOM expectations when release-critical.
 
 **Evidence commands:**
-- `rg -n \"^\\s*permissions\\s*:\" .github/workflows || true`
-- `rg -n \"pull_request_target\" .github/workflows || true`
-- `rg -n \"\\|\\s*(bash|sh)\\b\" .github/workflows || true`
+- `rg -n \"^\\s*(trigger|pr|schedules|resources|extends|stages|jobs|deployment|environment|variables|task|script|checkout):\" azure-pipelines*.yml azure-pipelines*.yaml .azuredevops .azdo .pipelines || true`
+- `rg -n \"(serviceConnection|azureSubscription|connectedServiceName|System\\.AccessToken|persistCredentials|allowScriptsAuthAccessToken)\" azure-pipelines*.yml azure-pipelines*.yaml .azuredevops .azdo .pipelines || true`
+- `rg -n \"\\|\\s*(bash|sh|pwsh|powershell)\\b|curl[^\\n]*\\|\\s*(bash|sh|pwsh|powershell)\\b|wget[^\\n]*\\|\\s*(bash|sh|pwsh|powershell)\\b\" azure-pipelines*.yml azure-pipelines*.yaml .azuredevops .azdo .pipelines || true`
 
 ## 3) Secrets & Credential Hygiene
 Look for committed secrets and risky files. Prefer **file-name-only** searches:
@@ -49,12 +48,12 @@ If any hits appear, treat them as **Critical** until verified and remediated (ro
 - Verify dependency pinning / lockfiles:
   - Python: `requirements.txt`, `requirements-dev.txt`, `poetry.lock`, `uv.lock`
   - Node: `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`
-- Confirm dependency update automation (optional): Dependabot config (`.github/dependabot.yml`)
+- Confirm dependency update automation (optional): Renovate or Azure DevOps-compatible dependency scanning.
 - Confirm vulnerability scanning expectations and gaps (e.g., `pip-audit`, SCA in CI)
 
 **Evidence commands:**
 - `ls -la | rg -n \"requirements|poetry|uv\\.lock|package(-lock)?\\.json|pnpm-lock\\.yaml|yarn\\.lock\" || true`
-- `ls -la .github | rg -n \"dependabot\\.yml\" || true`
+- `rg --files -g 'renovate.json' -g '.renovaterc*' -g 'azure-pipelines*.yml' -g 'azure-pipelines*.yaml' -g '.azuredevops/**' -g '.azdo/**' -g '.pipelines/**'`
 
 ## 5) Consistency & Conventions
 - Identify format/lint/test tools and confirm they are used consistently:

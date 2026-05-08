@@ -2,12 +2,24 @@
 
 ## Mission
 
-Drive the repository to a state where the latest pushed commit has all GitHub Actions workflows green. Treat required checks as part of the success criteria when the repository defines them.
+Drive the repository to a state where the latest pushed commit has all Azure DevOps Pipeline runs green. Treat required Azure Repos branch-policy checks as part of the success criteria when the repository defines them.
+
+## Azure DevOps Policy
+
+Azure DevOps is the authoritative service for repository, pull request, CI, artifact, and release operations.
+
+- Use Azure Repos remotes for push and pull request work.
+- Use Azure Pipelines run evidence for CI diagnosis.
+- Use `az devops`, `az repos`, `az pipelines`, or Azure DevOps REST API for live service data.
+- Do not use non-Azure DevOps repository APIs, connectors, hosted repository URLs, or legacy source-control CLI commands unless the user explicitly asks for a legacy source-control check.
+- Treat old Actions workflow files only as migration evidence, not as authoritative CI.
 
 Resolve user-provided placeholders before acting:
 
-- `Repository`: infer from the current git checkout or `origin` remote when omitted.
-- `Target branch or PR`: infer from the current branch or PR context when omitted.
+- `Organization`: infer from the Azure Repos `origin` URL or `az devops configure --list` when omitted.
+- `Project`: infer from the Azure Repos `origin` URL or configured Azure DevOps defaults when omitted.
+- `Repository`: infer from the current git checkout or Azure Repos `origin` remote when omitted.
+- `Target branch, PR, or pipeline run`: infer from the current branch, PR context, or latest run for the pushed SHA when omitted.
 - `Max repair attempts`: default to `10`.
 - `Poll interval seconds`: default to `30`.
 - `Per-run timeout minutes`: default to `90`.
@@ -41,7 +53,10 @@ Resolve user-provided placeholders before acting:
   - `docs/*`
   - package manifests and lockfiles
   - test configuration
-  - `.github/workflows/*`
+  - `azure-pipelines.yml` / `azure-pipelines.yaml`
+  - `.azuredevops/pipelines/*`
+  - `.azdo/pipelines/*`
+  - `.pipelines/*`
 
 ### 2. Collect Evidence for Each Failure
 
@@ -61,8 +76,8 @@ Capture the following for each failing workflow or job:
 
 Classify each failure into the most likely bucket:
 
-- workflow misconfiguration
-- action version or pinning issue
+- pipeline YAML or template misconfiguration
+- task version, extension, or template issue
 - dependency, install, or cache issue
 - runtime or environment mismatch
 - permissions or token scope issue
@@ -97,7 +112,7 @@ Run the smallest convincing validation set, such as:
 - the affected package or module suite
 - lint, typecheck, or build for touched areas
 - repository-provided CI simulation or validation commands
-- workflow-specific validation already used by the repository
+- pipeline-specific validation already used by the repository
 
 If validation is impossible in the current environment, state exactly why and proceed only when the remaining evidence is still strong.
 
@@ -106,8 +121,8 @@ If validation is impossible in the current environment, state exactly why and pr
 - Commit only the files required for the fix.
 - Use a focused commit message:
   - `fix(ci): <root cause summary>`
-  - `fix(actions): <root cause summary>`
-- Push to the target branch or PR branch.
+  - `fix(pipelines): <root cause summary>`
+- Push to the target Azure Repos branch or PR branch.
 
 ### 8. Monitor the New Runs
 
@@ -152,7 +167,7 @@ Declare blocked only when:
 
 - permissions are insufficient for the required fix
 - a required secret, environment approval, or infrastructure dependency is unavailable
-- GitHub or an external dependency has an outage that cannot be mitigated in-repo
+- Azure DevOps, an agent pool, or an external dependency has an outage that cannot be mitigated in-repo
 - the max attempt count is reached
 
 When blocked, report:
@@ -177,14 +192,15 @@ For each cycle, report briefly and concretely:
 
 ## Useful Commands
 
-Prefer `gh` when available:
+Prefer Azure DevOps-native commands when available:
 
-- `gh run list --limit 20`
-- `gh run view <run-id> --log-failed`
-- `gh run watch <run-id>`
-- `gh workflow list`
-- `gh pr checks <pr-number>`
+- `az devops configure --defaults organization=<org-url> project=<project>`
+- `az pipelines runs list --branch <branch> --top 20`
+- `az pipelines runs show --id <run-id>`
+- `az pipelines runs artifact list --run-id <run-id>`
+- `az repos pr list --repository <repo> --status active`
+- `az repos pr show --id <pr-id>`
 - `git status`
 - `git diff --stat`
 
-When `gh` is unavailable, use GitHub APIs or `gh api` equivalents to fetch run and check data.
+When Azure CLI coverage is insufficient, use Azure DevOps REST API calls scoped to the organization, project, repository, build, and pull request involved.

@@ -53,11 +53,11 @@ Use this framework to avoid blind spots; depth varies by scope.
    - AGENTS.md and other repo rules: existence, scope, consistency, and enforcement
    - CONTRIBUTING/SECURITY/OWNERSHIP (CODEOWNERS), review expectations
 2. **CI/CD Workflows**
-   - GitHub Actions (or equivalent): triggers, permissions, secrets usage, environment protections, artifact handling
+   - Azure Pipelines: triggers, branch policies, pipeline permissions, service connections, variable groups, environment checks, artifact handling
    - Supply-chain controls (pinning actions, provenance/SBOM if applicable)
 3. **Secrets & Credentials Hygiene**
    - Secret storage patterns, `.env` usage, key files, accidental commits
-   - CI secret exposure risks (fork PRs, `pull_request_target`, logs)
+   - CI secret exposure risks (fork PR validation, script logging, variable expansion, artifact publication)
 4. **Dependencies & Supply Chain**
    - Version pinning / lockfiles, dependency update automation, vuln scanning posture
 5. **Consistency & Maintainability**

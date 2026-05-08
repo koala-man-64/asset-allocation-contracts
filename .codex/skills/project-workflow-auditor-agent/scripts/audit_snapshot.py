@@ -36,7 +36,9 @@ IGNORED_DIRS = {
 
 def _run(cmd: List[str], cwd: Path) -> Optional[str]:
     try:
-        out = subprocess.check_output(cmd, cwd=str(cwd), stderr=subprocess.STDOUT, text=True)
+        out = subprocess.check_output(
+            cmd, cwd=str(cwd), stderr=subprocess.STDOUT, text=True
+        )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
     return out.strip()
@@ -58,34 +60,46 @@ def _check_presence(repo: Path, candidates: List[str]) -> Dict[str, bool]:
     return out
 
 
-def _workflow_signals(text: str) -> Dict[str, Any]:
-    uses = re.findall(r"(?m)^\\s*uses:\\s*([^\\s#]+)", text)
-    uses = [u.strip() for u in uses if u.strip()]
-    unpinned: List[str] = []
-    pinned: List[str] = []
-    for u in uses:
-        if u.startswith("./") or u.startswith("../"):
-            pinned.append(u)
+def _pipeline_signals(text: str) -> Dict[str, Any]:
+    tasks = re.findall(r"(?m)^\s*task:\s*([^\s#]+)", text)
+    tasks = [task.strip() for task in tasks if task.strip()]
+    unversioned_tasks: List[str] = []
+    versioned_tasks: List[str] = []
+    for task in tasks:
+        if "@" not in task:
+            unversioned_tasks.append(task)
             continue
-        if "@" not in u:
-            unpinned.append(u)
-            continue
-        _, ref = u.rsplit("@", 1)
-        if re.fullmatch(r"[0-9a-fA-F]{40}", ref):
-            pinned.append(u)
+        _, version = task.rsplit("@", 1)
+        if re.fullmatch(r"\d+(?:\.\d+)?", version):
+            versioned_tasks.append(task)
         else:
-            unpinned.append(u)
+            unversioned_tasks.append(task)
 
     return {
-        "has_permissions": bool(re.search(r"(?m)^\\s*permissions\\s*:", text)),
-        "has_write_all": bool(re.search(r"(?m)^\\s*permissions\\s*:\\s*write-all\\s*$", text)),
-        "has_pull_request_target": "pull_request_target" in text,
-        "has_curl_pipe_shell": bool(re.search(r"curl[^\\n]*\\|\\s*(bash|sh)\\b", text)),
-        "has_wget_pipe_shell": bool(re.search(r"wget[^\\n]*\\|\\s*(bash|sh)\\b", text)),
-        "uses_count": len(uses),
-        "uses_unpinned_count": len(unpinned),
-        "uses_unpinned_sample": sorted(set(unpinned))[:25],
-        "uses_pinned_count": len(pinned),
+        "has_trigger": bool(re.search(r"(?m)^\s*trigger\s*:", text)),
+        "has_pr": bool(re.search(r"(?m)^\s*pr\s*:", text)),
+        "has_schedules": bool(re.search(r"(?m)^\s*schedules\s*:", text)),
+        "has_extends": bool(re.search(r"(?m)^\s*extends\s*:", text)),
+        "has_environment": bool(re.search(r"(?m)^\s*environment\s*:", text)),
+        "has_persist_credentials": bool(
+            re.search(r"(?im)^\s*persistCredentials\s*:\s*true\s*$", text)
+        ),
+        "references_system_access_token": "System.AccessToken" in text,
+        "references_service_connection": bool(
+            re.search(
+                r"(?i)(serviceConnection|azureSubscription|connectedServiceName)",
+                text,
+            )
+        ),
+        "has_curl_pipe_shell": bool(re.search(r"curl[^\n]*\|\s*(bash|sh)\b", text)),
+        "has_wget_pipe_shell": bool(re.search(r"wget[^\n]*\|\s*(bash|sh)\b", text)),
+        "inline_script_count": len(
+            re.findall(r"(?m)^\s*(script|bash|pwsh|powershell)\s*:", text)
+        ),
+        "task_count": len(tasks),
+        "task_unversioned_count": len(unversioned_tasks),
+        "task_unversioned_sample": sorted(set(unversioned_tasks))[:25],
+        "task_versioned_count": len(versioned_tasks),
     }
 
 
@@ -97,9 +111,9 @@ def build_snapshot(repo: Path) -> Dict[str, Any]:
         "repo_root": str(repo),
         "git": {},
         "instruction_files": {},
-        "workflows": {"path": None, "files": []},
+        "pipelines": {"paths": [], "files": []},
         "project_files": {},
-        "github": {},
+        "azure_devops": {},
     }
 
     # Git context (best-effort)
@@ -131,47 +145,77 @@ def build_snapshot(repo: Path) -> Dict[str, Any]:
             "Dockerfile",
             "docker-compose.yml",
             "Makefile",
-            ".github/dependabot.yml",
-            ".github/CODEOWNERS",
+            "azure-pipelines.yml",
+            "azure-pipelines.yaml",
+            ".azuredevops",
+            ".azdo",
+            ".pipelines",
             "CODEOWNERS",
         ],
     )
 
-    # GitHub directory quick checks
-    snapshot["github"] = _check_presence(
+    # Azure DevOps and Azure Pipelines quick checks
+    snapshot["azure_devops"] = _check_presence(
         repo,
         [
-            ".github/workflows",
-            ".github/workflows/deploy.yml",
-            ".github/workflows/run_tests.yml",
+            "azure-pipelines.yml",
+            "azure-pipelines.yaml",
+            ".azuredevops",
+            ".azuredevops/pipelines",
+            ".azdo",
+            ".azdo/pipelines",
+            ".pipelines",
         ],
     )
 
-    workflows_dir = repo / ".github" / "workflows"
-    if workflows_dir.exists() and workflows_dir.is_dir():
-        workflow_files = sorted(
-            [p for p in workflows_dir.glob("*.yml")] + [p for p in workflows_dir.glob("*.yaml")]
+    pipeline_patterns = [
+        "azure-pipelines.yml",
+        "azure-pipelines.yaml",
+        ".azuredevops/**/*.yml",
+        ".azuredevops/**/*.yaml",
+        ".azdo/**/*.yml",
+        ".azdo/**/*.yaml",
+        ".pipelines/**/*.yml",
+        ".pipelines/**/*.yaml",
+    ]
+    pipeline_files = sorted(
+        {
+            path
+            for pattern in pipeline_patterns
+            for path in repo.glob(pattern)
+            if path.is_file()
+        }
+    )
+    snapshot["pipelines"]["paths"] = sorted(
+        {
+            str(path.parent.relative_to(repo))
+            for path in pipeline_files
+            if path.parent != repo
+        }
+    )
+    for pipeline in pipeline_files:
+        try:
+            text = pipeline.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            text = ""
+        snapshot["pipelines"]["files"].append(
+            {
+                "path": str(pipeline.relative_to(repo)),
+                "signals": _pipeline_signals(text),
+            }
         )
-        snapshot["workflows"]["path"] = str(workflows_dir.relative_to(repo))
-        for wf in workflow_files:
-            try:
-                text = wf.read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                text = ""
-            snapshot["workflows"]["files"].append(
-                {
-                    "path": str(wf.relative_to(repo)),
-                    "signals": _workflow_signals(text),
-                }
-            )
 
     return snapshot
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a repo audit snapshot (sanitized).")
+    parser = argparse.ArgumentParser(
+        description="Generate a repo audit snapshot (sanitized)."
+    )
     parser.add_argument("--repo", default=".", help="Path to repo root (default: .)")
-    parser.add_argument("--out", default=None, help="Write JSON output to this path (default: stdout)")
+    parser.add_argument(
+        "--out", default=None, help="Write JSON output to this path (default: stdout)"
+    )
     args = parser.parse_args()
 
     snapshot = build_snapshot(Path(args.repo))

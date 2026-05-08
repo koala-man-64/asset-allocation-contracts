@@ -23,7 +23,7 @@ description: "Use for evidence-first technical investigations of system failures
 Use this skill for:
 - incident triage and root-cause analysis
 - distributed-system communication failures
-- CI/CD/GitHub workflow failures
+- CI/CD/Azure Pipelines failures
 - Kubernetes/DNS/TLS/routing/cloud networking issues
 - database locking, SSL, connection exhaustion, or queue/backpressure issues
 - suspected retry logic flaws, race conditions, or concurrency defects
