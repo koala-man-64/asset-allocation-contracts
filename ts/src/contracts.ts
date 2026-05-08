@@ -272,6 +272,31 @@ export interface UniverseConfigPreset {
   config: UniverseDefinition;
 }
 
+export interface UniverseConfigDraftGenerationRequest {
+  plaintext: string;
+  nameHint?: string | null;
+  descriptionHint?: string | null;
+  intendedUse?: ReusableConfigIntendedUse | null;
+  previewSampleLimit?: number;
+}
+
+export interface UniverseConfigDraftGenerationResponse {
+  draft: UniverseConfigPreset;
+  explanation: string;
+  assumptions: string[];
+  warnings: string[];
+  fieldsUsed: UniverseFieldId[];
+  preview?: UniversePreviewResponse | null;
+}
+
+export interface UniversePreviewResponse {
+  source: UniverseSource;
+  symbolCount: number;
+  sampleSymbols: string[];
+  fieldsUsed: UniverseFieldId[];
+  warnings: string[];
+}
+
 export interface RankingSchemaPreset {
   identity: ConfigIdentity;
   config: RankingSchemaConfig;
@@ -433,14 +458,6 @@ export interface UniverseFieldDefinition {
   label: string;
   valueKind: UniverseValueKind;
   operators: UniverseConditionOperator[];
-}
-
-export interface UniversePreviewResponse {
-  source: UniverseSource;
-  symbolCount: number;
-  sampleSymbols: string[];
-  fieldsUsed: UniverseFieldId[];
-  warnings: string[];
 }
 
 export interface RegimePolicyConfig {

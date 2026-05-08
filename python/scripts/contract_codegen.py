@@ -37,6 +37,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("config-revision-reference.schema.json", strategy.ConfigRevisionReference),
     ("strategy-component-refs.schema.json", strategy.StrategyComponentRefs),
     ("universe-config-preset.schema.json", strategy.UniverseConfigPreset),
+    (
+        "universe-config-draft-generation-request.schema.json",
+        strategy.UniverseConfigDraftGenerationRequest,
+    ),
+    (
+        "universe-config-draft-generation-response.schema.json",
+        strategy.UniverseConfigDraftGenerationResponse,
+    ),
     ("ranking-schema-preset.schema.json", strategy.RankingSchemaPreset),
     ("rebalance-policy-preset.schema.json", strategy.RebalancePolicyPreset),
     ("regime-policy-preset.schema.json", strategy.RegimePolicyPreset),
@@ -370,6 +378,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
 FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RegimeModelSummary", "description"),
     ("RegimeModelRevision", "description"),
+    ("UniverseConfigDraftGenerationRequest", "previewSampleLimit"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {

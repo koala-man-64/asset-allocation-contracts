@@ -152,6 +152,8 @@ from asset_allocation_contracts.strategy import (
     StrategyRiskProfileDetail,
     StrategyRiskProfileSummary,
     StrategyConfig,
+    UniverseConfigDraftGenerationRequest,
+    UniverseConfigDraftGenerationResponse,
     UniverseConfigPreset,
     UniverseCatalogResponse,
     UNIVERSE_FIELD_DEFINITIONS,
@@ -1043,6 +1045,116 @@ def test_universe_preview_response_rejects_unknown_field_ids() -> None:
         assert "fieldsUsed" in str(exc)
     else:
         raise AssertionError("Expected validation failure for unknown preview field id.")
+
+
+def test_universe_config_draft_generation_request_normalizes_prompt_and_hints() -> None:
+    payload = UniverseConfigDraftGenerationRequest(
+        plaintext="  US primary listings with strong liquidity  ",
+        nameHint="  us-liquid  ",
+        descriptionHint="  Liquid US equities.  ",
+        intendedUse="validation",
+    )
+
+    assert payload.plaintext == "US primary listings with strong liquidity"
+    assert payload.nameHint == "us-liquid"
+    assert payload.descriptionHint == "Liquid US equities."
+    assert payload.intendedUse == "validation"
+    assert payload.previewSampleLimit == 25
+
+
+def test_universe_config_draft_generation_request_rejects_blank_and_oversized_prompt() -> None:
+    for invalid_prompt in ("   ", "x" * 4001):
+        try:
+            UniverseConfigDraftGenerationRequest(plaintext=invalid_prompt)
+        except Exception as exc:
+            assert "plaintext" in str(exc)
+        else:
+            raise AssertionError("Expected invalid universe draft generation prompt to fail validation.")
+
+
+def test_universe_config_draft_generation_response_wraps_valid_draft_and_preview() -> None:
+    payload = UniverseConfigDraftGenerationResponse(
+        draft={
+            "identity": {
+                "name": "generated-us-liquid",
+                "version": 1,
+                "status": "draft",
+                "description": "Generated candidate universe.",
+                "intendedUse": "research",
+            },
+            "config": {
+                "source": "postgres_gold",
+                "root": {
+                    "kind": "group",
+                    "operator": "and",
+                    "clauses": [
+                        {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
+                        {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                    ],
+                },
+            },
+        },
+        explanation="  Converted the request into country and price filters.  ",
+        assumptions=["  Common stocks are represented by the governed catalog.  ", ""],
+        warnings=["Review liquidity threshold before production use."],
+        fieldsUsed=["security.country", "market.close"],
+        preview={
+            "source": "postgres_gold",
+            "symbolCount": 2,
+            "sampleSymbols": ["AAPL", "MSFT"],
+            "fieldsUsed": ["security.country", "market.close"],
+            "warnings": [],
+        },
+    )
+
+    assert payload.draft.identity.status == "draft"
+    assert payload.draft.identity.version == 1
+    assert payload.explanation == "Converted the request into country and price filters."
+    assert payload.assumptions == ["Common stocks are represented by the governed catalog."]
+    assert payload.fieldsUsed == ["security.country", "market.close"]
+    assert payload.preview is not None
+    assert payload.preview.symbolCount == 2
+
+
+def test_universe_config_draft_generation_response_rejects_non_draft_identity() -> None:
+    base_payload = {
+        "draft": {
+            "identity": {
+                "name": "generated-us-liquid",
+                "version": 1,
+                "status": "active",
+                "description": "Generated candidate universe.",
+                "intendedUse": "research",
+            },
+            "config": {
+                "root": {
+                    "clauses": [
+                        {"field": "security.country", "operator": "eq", "value": "US"},
+                    ],
+                },
+            },
+        },
+        "explanation": "Generated a candidate draft.",
+        "fieldsUsed": ["security.country"],
+    }
+
+    try:
+        UniverseConfigDraftGenerationResponse.model_validate(base_payload)
+    except Exception as exc:
+        assert "draft status" in str(exc)
+    else:
+        raise AssertionError("Expected generation response to reject active identity status.")
+
+    version_payload = dict(base_payload)
+    version_payload["draft"] = dict(base_payload["draft"])
+    version_payload["draft"]["identity"] = {**base_payload["draft"]["identity"], "status": "draft", "version": 2}
+
+    try:
+        UniverseConfigDraftGenerationResponse.model_validate(version_payload)
+    except Exception as exc:
+        assert "version 1" in str(exc)
+    else:
+        raise AssertionError("Expected generation response to reject non-v1 drafts.")
 
 
 def test_ui_runtime_config_defaults_to_api_root() -> None:
