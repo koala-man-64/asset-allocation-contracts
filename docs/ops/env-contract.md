@@ -7,7 +7,7 @@ Flow:
 1. Review `docs/ops/env-contract.csv`.
 2. Run `powershell -ExecutionPolicy Bypass -File scripts/setup-env.ps1 -DispatchAppPrivateKeyPath C:\path\to\dispatch-app.pem`.
 3. Inspect the preview or generated `.env.web`.
-4. Run `powershell -ExecutionPolicy Bypass -File scripts/sync-all-to-github.ps1`.
+4. Run `powershell -ExecutionPolicy Bypass -File scripts/sync-all-to-azure-devops.ps1`.
 
 Rules:
 

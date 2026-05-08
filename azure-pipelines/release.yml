@@ -1,0 +1,158 @@
+name: contracts-release-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  AZURE_ARTIFACTS_FEED: asset-allocation-packages
+  AZURE_ARTIFACTS_PROJECT_FEED: AdaptiveAssetAllocation/asset-allocation-packages
+  NPM_FEED_REGISTRY_URL: https://pkgs.dev.azure.com/rdprokes/AdaptiveAssetAllocation/_packaging/asset-allocation-packages/npm/registry/
+  NODE_VERSION: "20.x"
+  PYTHON_VERSION: "3.14"
+
+stages:
+  - stage: Release
+    displayName: Publish contracts packages
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    jobs:
+      - deployment: PublishContracts
+        displayName: Publish contracts to Azure Artifacts
+        environment: prod-package-release
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  fetchDepth: 0
+
+                - task: UsePythonVersion@0
+                  inputs:
+                    versionSpec: "$(PYTHON_VERSION)"
+
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: "$(NODE_VERSION)"
+
+                - task: npmAuthenticate@0
+                  inputs:
+                    workingFile: ts/.npmrc
+
+                - script: |
+                    set -euo pipefail
+                    python -m pip install --upgrade pip
+                    python -m pip install build twine pytest
+                    python -m pip install -e python
+                    corepack enable
+                  displayName: Install release toolchain
+
+                - script: |
+                    set -euo pipefail
+                    python - <<'PY' > artifacts-version.env
+                    import json
+                    import re
+                    import tomllib
+                    from pathlib import Path
+
+                    stable_semver = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+                    pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+                    package_json = json.loads(Path("ts/package.json").read_text(encoding="utf-8"))
+                    py_version = pyproject["project"]["version"]
+                    ts_version = package_json["version"]
+                    if py_version != ts_version:
+                        raise SystemExit(f"Version mismatch: python={py_version} ts={ts_version}")
+                    if not stable_semver.fullmatch(py_version):
+                        raise SystemExit(f"Contracts release version must be stable semver, got {py_version}.")
+                    print(f"CONTRACTS_VERSION={py_version}")
+                    PY
+                    cat artifacts-version.env
+                    version="$(cut -d= -f2 artifacts-version.env)"
+                    echo "##vso[task.setvariable variable=CONTRACTS_VERSION]${version}"
+                  displayName: Resolve committed release version
+
+                - script: |
+                    set -euo pipefail
+                    python python/scripts/export_schemas.py
+                    git diff --exit-code -- schemas ts/src/contracts.ts
+                    python -m pytest tests/python -q
+                  displayName: Re-run release validation
+
+                - script: |
+                    set -euo pipefail
+                    mkdir -p artifacts/python artifacts/ts
+                    python -m build python --sdist --wheel --outdir artifacts/python
+                    cd ts
+                    pnpm install --frozen-lockfile
+                    pnpm typecheck
+                    pnpm pack --pack-destination ../artifacts/ts
+                  displayName: Build packages
+
+                - task: TwineAuthenticate@1
+                  inputs:
+                    artifactFeed: "$(AZURE_ARTIFACTS_PROJECT_FEED)"
+
+                - script: |
+                    set -euo pipefail
+                    python -m twine upload -r "$(AZURE_ARTIFACTS_FEED)" --config-file "$(PYPIRC_PATH)" artifacts/python/*
+                  displayName: Publish Python package to Azure Artifacts
+
+                - script: |
+                    set -euo pipefail
+                    shopt -s nullglob
+                    tarballs=(artifacts/ts/*.tgz)
+                    if [ "${#tarballs[@]}" -ne 1 ]; then
+                      printf 'Expected exactly one TypeScript tarball, found %s.\n' "${#tarballs[@]}" >&2
+                      exit 1
+                    fi
+                    npm publish "${tarballs[0]}" --registry "$(NPM_FEED_REGISTRY_URL)"
+                  displayName: Publish TypeScript package to Azure Artifacts
+
+                - script: |
+                    set -euo pipefail
+                    python - <<'PY'
+                    import hashlib
+                    import json
+                    import os
+                    from pathlib import Path
+
+                    artifact_paths = sorted(
+                        [p for p in Path("artifacts/python").glob("*") if p.is_file()]
+                        + [p for p in Path("artifacts/ts").glob("*") if p.is_file()]
+                    )
+                    hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in artifact_paths}
+                    artifact_uri = (
+                        f"{os.environ['SYSTEM_COLLECTIONURI']}{os.environ['SYSTEM_TEAMPROJECT']}"
+                        f"/_build/results?buildId={os.environ['BUILD_BUILDID']}&view=artifacts&type=publishedArtifacts"
+                    )
+                    manifest = {
+                        "schema_version": 1,
+                        "ci_provider": "azure-devops",
+                        "repo": "asset-allocation-contracts",
+                        "source_repo": os.environ["BUILD_REPOSITORY_NAME"],
+                        "source_sha": os.environ["BUILD_SOURCEVERSION"],
+                        "build_id": os.environ["BUILD_BUILDID"],
+                        "pipeline_definition_id": os.environ["BUILD_DEFINITIONID"],
+                        "run_id": os.environ["BUILD_BUILDID"],
+                        "run_attempt": os.environ["BUILD_BUILDNUMBER"],
+                        "artifact_uri": artifact_uri,
+                        "artifact_kind": "contracts",
+                        "artifact_ref": [str(p) for p in artifact_paths],
+                        "artifact_hashes": hashes,
+                        "package_version": os.environ["CONTRACTS_VERSION"],
+                        "version_matrix": {
+                            "contracts": os.environ["CONTRACTS_VERSION"],
+                            "runtime_common": None,
+                            "control_plane": None,
+                            "jobs": None,
+                            "ui": None,
+                        },
+                    }
+                    Path("artifacts/release-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                    PY
+                  displayName: Write release manifest
+
+                - publish: artifacts
+                  artifact: contracts-release
+                  displayName: Publish retained release manifest and packages

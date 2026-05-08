@@ -1,0 +1,85 @@
+name: contracts-security-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+schedules:
+  - cron: "0 8 * * 1"
+    displayName: Weekly contracts security scan
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  NODE_VERSION: "20.x"
+  PYTHON_VERSION: "3.14"
+
+stages:
+  - stage: Security
+    displayName: Security scans
+    jobs:
+      - job: PythonAudit
+        displayName: Python dependency audit
+        steps:
+          - checkout: self
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+
+          - script: |
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              python -m pip install pip-audit
+              mkdir -p artifacts
+              python - <<'PY' > artifacts/python-audit-requirements.txt
+              import tomllib
+              from pathlib import Path
+              pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+              print("\n".join(pyproject["project"]["dependencies"]))
+              PY
+              pip-audit --format json -r artifacts/python-audit-requirements.txt -o artifacts/pip-audit.json || audit_status=$?
+              pip-audit --strict -r artifacts/python-audit-requirements.txt
+            displayName: Run pip-audit
+
+          - publish: artifacts
+            artifact: contracts-security-python
+            condition: always()
+
+      - job: TypeScriptAudit
+        displayName: TypeScript dependency audit
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "$(NODE_VERSION)"
+
+          - task: npmAuthenticate@0
+            inputs:
+              workingFile: ts/.npmrc
+
+          - script: |
+              set -euo pipefail
+              corepack enable
+              mkdir -p ../artifacts/ts
+              pnpm install --frozen-lockfile
+              pnpm audit --json > ../artifacts/ts/pnpm-audit.json || true
+              pnpm audit --audit-level=high
+            workingDirectory: ts
+            displayName: Run pnpm audit
+
+          - publish: artifacts/ts
+            artifact: contracts-security-ts
+            condition: always()

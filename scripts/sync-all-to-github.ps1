@@ -43,10 +43,10 @@ $expectedVars = New-Object System.Collections.Generic.List[string]
 $expectedSecrets = New-Object System.Collections.Generic.List[string]
 foreach ($key in ($contractMap.Keys | Sort-Object)) {
     $entry = $contractMap[$key]
-    $storage = (($entry.github_storage | Out-String).Trim()).ToLowerInvariant()
-    if ($storage -notin @("var", "secret")) { continue }
+    $storage = (($entry.ado_storage | Out-String).Trim()).ToLowerInvariant()
+    if ($storage -notin @("variable", "keyvault", "secret")) { continue }
     $value = if ($envMap.ContainsKey($key)) { $envMap[$key] } else { "" }
-    if ($storage -eq "var") { $expectedVars.Add($key) } else { $expectedSecrets.Add($key) }
+    if ($storage -eq "variable") { $expectedVars.Add($key) } else { $expectedSecrets.Add($key) }
     if ([string]::IsNullOrWhiteSpace($value)) {
         Write-Host "Skipping empty ${storage}: $key" -ForegroundColor Yellow
         continue
@@ -55,7 +55,7 @@ foreach ($key in ($contractMap.Keys | Sort-Object)) {
         Write-Host "[DRY RUN] Would set ${storage}: $key"
         continue
     }
-    if ($storage -eq "var") { $value | gh variable set $key } else { $value | gh secret set $key }
+    if ($storage -eq "variable") { $value | gh variable set $key } else { $value | gh secret set $key }
     Write-Host "Synced ${storage}: $key" -ForegroundColor Green
 }
 

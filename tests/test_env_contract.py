@@ -59,17 +59,17 @@ def test_workflow_refs_are_documented() -> None:
     contract = contract_map()
     for name in workflow_refs(WORKFLOW_VAR_PATTERN):
         assert name in contract
-        assert contract[name]["github_storage"] == "var"
+        assert contract[name]["ado_storage"] in {"variable", "feed"}
 
     for name in workflow_refs(WORKFLOW_SECRET_PATTERN):
         assert name in contract
-        assert contract[name]["github_storage"] == "secret"
+        assert contract[name]["ado_storage"] in {"secret", "keyvault", "feed"}
 
 
 def test_contracts_repo_has_bootstrap_scripts_and_no_azure_provisioner() -> None:
     scripts_dir = repo_root() / "scripts"
     assert (scripts_dir / "setup-env.ps1").exists()
-    assert (scripts_dir / "sync-all-to-github.ps1").exists()
+    assert (scripts_dir / "sync-all-to-azure-devops.ps1").exists()
     assert not (scripts_dir / "provision_azure.ps1").exists()
 
 

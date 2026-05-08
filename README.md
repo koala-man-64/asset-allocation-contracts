@@ -25,7 +25,7 @@ Canonical workflows live under `.github/workflows/`.
 - `security.yml` runs dependency and supply-chain checks.
 - `release.yml` is a manual workflow that publishes the committed stable semver from `python/pyproject.toml` and `ts/package.json`, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
 - `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
-- `scripts/sync-all-to-github.ps1` syncs the `.env.web` surface into repo vars and secrets.
+- `scripts/sync-all-to-azure-devops.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.
 
 ## Versioning

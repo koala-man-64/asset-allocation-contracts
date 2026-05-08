@@ -1,0 +1,107 @@
+name: contracts-ci-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  NODE_VERSION: "20.x"
+  PYTHON_VERSION: "3.14"
+
+stages:
+  - stage: Validate
+    displayName: Validate contracts
+    jobs:
+      - job: PythonContracts
+        displayName: Python contracts
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+
+          - script: |
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              python -m pip install build pytest
+              python -m pip install -e python
+            displayName: Install Python toolchain
+
+          - script: |
+              set -euo pipefail
+              python - <<'PY'
+              import json
+              import re
+              import tomllib
+              from pathlib import Path
+
+              pyproject = tomllib.loads(Path("python/pyproject.toml").read_text(encoding="utf-8"))
+              package_json = json.loads(Path("ts/package.json").read_text(encoding="utf-8"))
+              py_version = pyproject["project"]["version"]
+              ts_version = package_json["version"]
+              if py_version != ts_version:
+                  raise SystemExit(f"Version mismatch: python={py_version} ts={ts_version}")
+              if not re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)", py_version):
+                  raise SystemExit(f"Contracts version must be stable semver, got {py_version}.")
+              print(f"Contracts version: {py_version}")
+              PY
+            displayName: Validate package versions
+
+          - script: |
+              set -euo pipefail
+              python python/scripts/export_schemas.py
+              git diff --exit-code -- schemas ts/src/contracts.ts
+            displayName: Export schemas and fail on drift
+
+          - script: |
+              set -euo pipefail
+              python -m pytest tests/python tests/test_env_contract.py -q
+            displayName: Run Python contract tests
+
+          - script: |
+              set -euo pipefail
+              mkdir -p artifacts/python
+              python -m build python --sdist --wheel --outdir artifacts/python
+            displayName: Build Python distributions
+
+          - publish: artifacts/python
+            artifact: contracts-python-dist
+            displayName: Publish Python build artifact
+
+      - job: TypeScriptContracts
+        displayName: TypeScript contracts
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "$(NODE_VERSION)"
+
+          - task: npmAuthenticate@0
+            inputs:
+              workingFile: ts/.npmrc
+
+          - script: |
+              set -euo pipefail
+              corepack enable
+              pnpm install --frozen-lockfile
+              pnpm typecheck
+              mkdir -p ../artifacts/ts
+              pnpm pack --pack-destination ../artifacts/ts
+            workingDirectory: ts
+            displayName: Typecheck and pack TypeScript contracts
+
+          - publish: artifacts/ts
+            artifact: contracts-ts-dist
+            displayName: Publish TypeScript build artifact

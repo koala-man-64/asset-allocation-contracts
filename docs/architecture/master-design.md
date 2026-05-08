@@ -118,7 +118,7 @@ This repo also has operational interfaces that are part of its architecture:
 
 - GitHub workflow inputs and behavior under `.github/workflows/`
 - Repo env/config contract under `docs/ops/env-contract.csv`
-- Bootstrap and sync scripts under `scripts/setup-env.ps1` and `scripts/sync-all-to-github.ps1`
+- Bootstrap and sync scripts under `scripts/setup-env.ps1` and `scripts/sync-all-to-azure-devops.ps1`
 - Local release-prep script under `scripts/prepare-release.ps1`
 - Release artifact and downstream dispatch payload shapes
 
@@ -368,7 +368,7 @@ Owned by:
 - `docs/ops/env-contract.csv`
 - `docs/ops/env-contract.md`
 - `scripts/setup-env.ps1`
-- `scripts/sync-all-to-github.ps1`
+- `scripts/sync-all-to-azure-devops.ps1`
 
 Purpose:
 
@@ -545,7 +545,7 @@ The following rules are mandatory design invariants.
 ### 6.5 Env/Config Invariants
 
 - Workflow variable and secret references must be documented in `docs/ops/env-contract.csv`.
-- `.env.template`, `docs/ops/env-contract.csv`, `scripts/setup-env.ps1`, `scripts/sync-all-to-github.ps1`, and workflow references must stay synchronized.
+- `.env.template`, `docs/ops/env-contract.csv`, `scripts/setup-env.ps1`, `scripts/sync-all-to-azure-devops.ps1`, and workflow references must stay synchronized.
 - `.env.web` carries Python registry and dispatch credentials only; TypeScript publish auth is not stored there.
 - `DISPATCH_APP_PRIVATE_KEY` is expected to be loaded from a PEM file path and stored in `.env.web` with literal `\n` escapes.
 
@@ -636,7 +636,7 @@ Future agents must treat the following files as one governance unit:
 - `docs/ops/env-contract.csv`
 - `docs/ops/env-contract.md`
 - `scripts/setup-env.ps1`
-- `scripts/sync-all-to-github.ps1`
+- `scripts/sync-all-to-azure-devops.ps1`
 - `tests/test_env_contract.py`
 - this document
 
@@ -681,7 +681,7 @@ When changing payload shape, removing fields, changing validation rules, or alte
 - `.github/workflows/release.yml`
 - `docs/ops/env-contract.csv`
 - `scripts/setup-env.ps1`
-- `scripts/sync-all-to-github.ps1`
+- `scripts/sync-all-to-azure-devops.ps1`
 
 ## 9. Known Current Drift
 
@@ -804,7 +804,7 @@ Primary files used to verify this document:
 - `.github/workflows/release.yml`
 - `scripts/compatibility_gate.ps1`
 - `scripts/setup-env.ps1`
-- `scripts/sync-all-to-github.ps1`
+- `scripts/sync-all-to-azure-devops.ps1`
 - `docs/ops/env-contract.csv`
 - `docs/ops/env-contract.md`
 - `tests/python/test_contract_models.py`

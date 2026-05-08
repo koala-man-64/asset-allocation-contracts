@@ -31,7 +31,7 @@ function Parse-EnvFile {
 function Load-ContractRows {
     param([string]$Path)
     if (-not (Test-Path $Path)) { throw "Env contract not found at $Path" }
-    return @(Import-Csv -Path $Path | Where-Object { $_.template -eq "true" -and $_.github_storage -in @("var", "secret") })
+    return @(Import-Csv -Path $Path | Where-Object { $_.template -eq "true" -and $_.ado_storage -in @("variable", "keyvault", "secret") })
 }
 
 function ConvertFrom-SecureStringPlain {
@@ -146,7 +146,7 @@ if (-not [string]::IsNullOrWhiteSpace($DispatchAppPrivateKeyPath)) {
 foreach ($row in $contractRows) {
     $name = $row.name
     $description = (($row.notes | Out-String).Trim())
-    $isSecret = $row.github_storage -eq "secret"
+    $isSecret = $row.ado_storage -in @("keyvault", "secret")
     $defaultValue = if ($templateMap.ContainsKey($name)) { Normalize-EnvValue -Value $templateMap[$name] } else { "" }
 
     if ($name -eq "DISPATCH_APP_PRIVATE_KEY" -and $null -ne $dispatchPrivateKeyResolution) {
