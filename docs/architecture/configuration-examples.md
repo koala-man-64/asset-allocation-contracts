@@ -24,6 +24,8 @@ Source of truth:
 - `schemas/config-identity.schema.json`
 - `schemas/strategy-component-refs.schema.json`
 - `schemas/*-preset.schema.json`
+- `schemas/universe-config-draft-generation-request.schema.json`
+- `schemas/universe-config-draft-generation-response.schema.json`
 - `schemas/strategy-risk-profile-*.schema.json`
 - `schemas/strategy-rebalance-policy.schema.json`
 - `schemas/strategy-risk-policy.schema.json`
@@ -34,6 +36,8 @@ Source of truth:
 `StrategyConfig` requires at least one of `componentRefs.universe`, `universeConfigName`, or `universe`.
 For reusable backtests, `componentRefs` is the canonical pinning surface. Inline `universe`, `rebalancePolicy`, `regimePolicy`, `strategyRiskPolicy`, and `exits` remain supported for compatibility and scratch research, but reusable validation or production-candidate runs should pin immutable reusable presets by `name + version`.
 When `riskProfileName` is present, `positionPolicy` must also be present as the embedded execution snapshot.
+
+Plaintext-to-universe generation returns a candidate draft only. The response wraps a `UniverseConfigPreset` with `identity.status = "draft"` and `identity.version = 1`; saving remains outside this contract and must go through the control-plane universe save path.
 
 ### Minimal inline universe
 

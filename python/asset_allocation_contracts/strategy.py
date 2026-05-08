@@ -691,6 +691,66 @@ class UniverseConfigPreset(BaseModel):
     config: UniverseDefinition
 
 
+class UniverseConfigDraftGenerationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plaintext: str = Field(..., min_length=1, max_length=4000)
+    nameHint: str | None = Field(default=None, min_length=1, max_length=128)
+    descriptionHint: str | None = Field(default=None, min_length=1, max_length=2048)
+    intendedUse: ReusableConfigIntendedUse | None = None
+    previewSampleLimit: int = Field(default=25, ge=1, le=100)
+
+    @field_validator("plaintext", mode="before")
+    @classmethod
+    def normalize_plaintext(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+    @field_validator("nameHint", "descriptionHint", mode="before")
+    @classmethod
+    def normalize_optional_hint(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
+
+
+class UniverseConfigDraftGenerationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    draft: UniverseConfigPreset
+    explanation: str = Field(..., min_length=1, max_length=4096)
+    assumptions: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    fieldsUsed: list[UniverseFieldId] = Field(default_factory=list)
+    preview: UniversePreviewResponse | None = None
+
+    @field_validator("explanation", mode="before")
+    @classmethod
+    def normalize_explanation(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+    @field_validator("assumptions", "warnings", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("generation response notes must be a list.")
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    @model_validator(mode="after")
+    def validate_draft_identity(self) -> "UniverseConfigDraftGenerationResponse":
+        if self.draft.identity.status != "draft":
+            raise ValueError("Generated universe config must be returned with draft status.")
+        if self.draft.identity.version != 1:
+            raise ValueError("Generated universe config drafts must use version 1.")
+        return self
+
+
 class RankingSchemaPreset(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

@@ -51,6 +51,8 @@ import type {
   StrategyComponentRefs,
   StrategyRiskPolicyPreset,
   UniverseConfigPreset,
+  UniverseConfigDraftGenerationRequest,
+  UniverseConfigDraftGenerationResponse,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
   TradeAccountSummary,
@@ -249,6 +251,30 @@ const universePreset: UniverseConfigPreset = {
       ],
     },
   },
+};
+
+const universeDraftGenerationRequest: UniverseConfigDraftGenerationRequest = {
+  plaintext: "US primary listings with market cap above 10 billion and strong dollar volume.",
+  nameHint: "us-large-liquid",
+  descriptionHint: "Generated US liquid equity draft.",
+  intendedUse: "research",
+};
+
+const universeDraftGenerationResponse: UniverseConfigDraftGenerationResponse = {
+  draft: {
+    identity: {
+      ...configIdentity,
+      name: "generated-us-large-liquid",
+      version: 1,
+      status: "draft",
+    },
+    config: universePreset.config,
+  },
+  explanation: "Mapped the request to governed country, listing, market-cap, and liquidity filters.",
+  assumptions: ["Dollar volume is represented by market.dollar_volume_20d."],
+  warnings: ["Review thresholds before saving."],
+  fieldsUsed: ["security.country", "security.market_cap", "market.dollar_volume_20d"],
+  preview,
 };
 
 const rankingPreset: RankingSchemaPreset = {
@@ -820,6 +846,8 @@ void configReference;
 void configIdentity;
 void reusableComponentRefs;
 void universePreset;
+void universeDraftGenerationRequest;
+void universeDraftGenerationResponse;
 void rankingPreset;
 void rebalancePreset;
 void regimePreset;

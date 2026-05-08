@@ -1,0 +1,68 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "descriptionHint": {
+      "anyOf": [
+        {
+          "maxLength": 2048,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Descriptionhint"
+    },
+    "intendedUse": {
+      "anyOf": [
+        {
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Intendeduse"
+    },
+    "nameHint": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Namehint"
+    },
+    "plaintext": {
+      "maxLength": 4000,
+      "minLength": 1,
+      "title": "Plaintext",
+      "type": "string"
+    },
+    "previewSampleLimit": {
+      "default": 25,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Previewsamplelimit",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "plaintext"
+  ],
+  "title": "UniverseConfigDraftGenerationRequest",
+  "type": "object"
+}
