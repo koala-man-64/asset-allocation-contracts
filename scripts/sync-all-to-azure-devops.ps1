@@ -54,8 +54,16 @@ function Set-AdoVariable {
         return
     }
     $common = @("--organization", $OrganizationUrl, "--project", $Project, "--group-id", $GroupId, "--name", $Name)
-    $updateOutput = az pipelines variable-group variable update @common --value $Value --output none 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $updateOutput = az pipelines variable-group variable update @common --value $Value --output none 2>&1
+        $updateExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($updateExitCode -eq 0) {
         Write-Host "Updated Azure DevOps variable: $Name" -ForegroundColor Green
         return
     }
