@@ -97,7 +97,56 @@ stages:
 
                 - script: |
                     set -euo pipefail
-                    python -m twine upload --skip-existing -r "$(AZURE_ARTIFACTS_FEED)" --config-file "$(PYPIRC_PATH)" artifacts/python/*
+                    python - <<'PY'
+                    from pathlib import Path
+                    import subprocess
+                    import sys
+
+                    repository = "$(AZURE_ARTIFACTS_FEED)"
+                    config_file = "$(PYPIRC_PATH)"
+                    artifacts = sorted(path for path in Path("artifacts/python").glob("*") if path.is_file())
+                    if not artifacts:
+                        raise SystemExit("No Python artifacts were found under artifacts/python.")
+
+                    duplicate_markers = (
+                        "already been taken",
+                        "already exists",
+                        "feed already contains",
+                        "file already exists",
+                        "has already been uploaded",
+                        "package already exists",
+                    )
+                    for artifact in artifacts:
+                        completed = subprocess.run(
+                            [
+                                sys.executable,
+                                "-m",
+                                "twine",
+                                "upload",
+                                "-r",
+                                repository,
+                                "--config-file",
+                                config_file,
+                                str(artifact),
+                            ],
+                            check=False,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            text=True,
+                        )
+                        if completed.stdout:
+                            print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+                        output = (completed.stdout or "").lower()
+                        duplicate_response = any(marker in output for marker in duplicate_markers) or (
+                            "409" in output and "conflict" in output
+                        )
+                        if completed.returncode == 0:
+                            continue
+                        if duplicate_response:
+                            print(f"Python artifact already exists in Azure Artifacts; skipping {artifact}.")
+                            continue
+                        raise SystemExit(completed.returncode)
+                    PY
                   displayName: Publish Python package to Azure Artifacts
 
                 - script: |
