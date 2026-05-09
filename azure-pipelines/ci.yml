@@ -11,10 +11,17 @@ pr:
       - main
 
 pool:
-  vmImage: ubuntu-latest
+  name: local-docker-agents
+  demands:
+    - Agent.OS -equals Linux
+    - CONTRACTS_TOOLCHAIN -equals true
+    - CONTRACTS_PYTHON -equals 3.14
+    - CONTRACTS_NODE -equals 20
+    - CONTRACTS_PNPM -equals 10.28.1
 
 variables:
   NODE_VERSION: "20.x"
+  PNPM_VERSION: "10.28.1"
   PYTHON_VERSION: "3.14"
 
 stages:
@@ -27,9 +34,7 @@ stages:
           - checkout: self
             fetchDepth: 0
 
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: "$(PYTHON_VERSION)"
+          - template: templates/contracts-toolchain-preflight.yml
 
           - script: |
               set -euo pipefail
@@ -84,9 +89,7 @@ stages:
         steps:
           - checkout: self
 
-          - task: NodeTool@0
-            inputs:
-              versionSpec: "$(NODE_VERSION)"
+          - template: templates/contracts-toolchain-preflight.yml
 
           - task: npmAuthenticate@0
             inputs:
@@ -94,7 +97,6 @@ stages:
 
           - script: |
               set -euo pipefail
-              corepack enable
               pnpm install --frozen-lockfile
               pnpm typecheck
               mkdir -p ../artifacts/ts

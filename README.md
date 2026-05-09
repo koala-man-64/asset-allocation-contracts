@@ -11,20 +11,21 @@ This repository owns:
 Documentation:
 
 - `docs/architecture/configuration-examples.md` contains valid examples for the shared configuration contract surfaces.
-- `docs/ops/env-contract.md` and `docs/ops/env-contract.csv` document the repo bootstrap env contract used for release and dispatch automation.
+- `docs/ops/env-contract.md` and `docs/ops/env-contract.csv` document the repo bootstrap env contract used for release and retained legacy dispatch automation.
 
-Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout, and `contracts_released` dispatches carry the exact published version for downstream jobs and UI automation.
+Downstream repos consume published package versions. Normal CI and release flows should not install contracts from a sibling checkout, and the retained release manifest carries the exact published version for downstream automation.
 
 It does not own runtime IO, storage, Postgres, Delta, monitoring, or orchestration helpers.
 
 ## Operations
 
-Canonical workflows live under `.github/workflows/`.
+Canonical workflows live under `azure-pipelines/`.
 
-- `ci.yml` is the required validation path for PRs and `main`.
-- `security.yml` runs dependency and supply-chain checks.
-- `release.yml` is a manual workflow that publishes the committed stable semver from `python/pyproject.toml` and `ts/package.json`, emits `release-manifest.json`, and dispatches `contracts_released` to downstream repos.
-- `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
+- `azure-pipelines/ci.yml` is the required validation path for PRs and `main`; it runs on the self-hosted `local-docker-agents` pool with the baked contracts toolchain.
+- `azure-pipelines/security.yml` runs dependency and supply-chain checks on the same local pool.
+- `azure-pipelines/release.yml` is a gated manual pipeline that publishes the committed stable semver from `python/pyproject.toml` and `ts/package.json` to Azure Artifacts and emits `release-manifest.json`.
+- `.github/workflows/` is retained as a legacy surface from the previous operating model; do not treat it as the canonical CI/CD path.
+- `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and retained legacy dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
 - `scripts/sync-all-to-azure-devops.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.
 

@@ -4,6 +4,8 @@ trigger: none
 pr: none
 
 pool:
+  # Release publishes packages and stays hosted until the local Docker pool has
+  # sustained CI/security history, uptime, patching, monitoring, and repeatability.
   vmImage: ubuntu-latest
 
 variables:

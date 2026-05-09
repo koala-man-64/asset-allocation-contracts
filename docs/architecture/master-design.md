@@ -20,7 +20,7 @@ It owns:
 - Shared TypeScript contract types under `ts/src/`
 - Generated JSON Schema artifacts under `schemas/`
 - Release automation that publishes both packages and notifies downstream repos
-- Repo-level env/config contract used to drive release and dispatch automation
+- Repo-level env/config contract used to drive release and retained legacy dispatch automation
 - Cross-repo compatibility validation expectations for contract changes
 
 This repo exists because the Asset Allocation platform was split into separate control-plane, jobs, UI, runtime-common, and contracts repos. After the split, shared shapes had to become explicit, versioned artifacts instead of implicit cross-repo source imports.
@@ -43,8 +43,9 @@ If a change requires owning runtime behavior instead of shared interfaces, it li
 - `README.md`
 - `python/pyproject.toml`
 - `ts/package.json`
-- `.github/workflows/ci.yml`
-- `.github/workflows/release.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
+- `azure-pipelines/release.yml`
 - `DEPLOYMENT_SETUP.md`
 
 ## 2. System Context
@@ -73,14 +74,14 @@ At a high level:
 2. JSON Schemas are regenerated from the Python models.
 3. CI validates version parity, schema drift, tests, and package builds.
 4. Release automation publishes Python and TypeScript artifacts.
-5. Release automation emits `release-manifest.json` and dispatches `contracts_released` to downstream repos so they can react to the new contract version.
+5. Release automation emits `release-manifest.json` so downstream automation can react to the exact published version.
 
 ### Primary Evidence
 
 - `README.md`
 - `docs/architecture/original-monolith-and-five-repo-map.md`
 - `scripts/compatibility_gate.ps1`
-- `.github/workflows/release.yml`
+- `azure-pipelines/release.yml`
 
 ## 3. Source-of-Truth Hierarchy
 
@@ -116,11 +117,11 @@ They are public and important, but they are not schema-generated today. They mus
 
 This repo also has operational interfaces that are part of its architecture:
 
-- GitHub workflow inputs and behavior under `.github/workflows/`
+- Azure Pipelines inputs and behavior under `azure-pipelines/`
 - Repo env/config contract under `docs/ops/env-contract.csv`
 - Bootstrap and sync scripts under `scripts/setup-env.ps1` and `scripts/sync-all-to-azure-devops.ps1`
 - Local release-prep script under `scripts/prepare-release.ps1`
-- Release artifact and downstream dispatch payload shapes
+- Release artifact and downstream version-handoff shapes
 
 These are not secondary implementation details. They are part of the repo's public operating contract.
 
@@ -361,9 +362,9 @@ Purpose:
 
 Owned by:
 
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
+- `azure-pipelines/release.yml`
 - `.env.template`
 - `docs/ops/env-contract.csv`
 - `docs/ops/env-contract.md`
@@ -373,9 +374,9 @@ Owned by:
 Purpose:
 
 - Define what makes the repo safe to build, publish, and operate
-- Define which GitHub variables and secrets are required
-- Define how local env bootstrap becomes GitHub configuration
-- Define downstream dispatch behavior after release
+- Define which Azure DevOps variables, feeds, and environment gates are required
+- Define how local env bootstrap becomes Azure DevOps configuration
+- Define downstream release-manifest handoff behavior after release
 
 ### Primary Evidence
 
@@ -411,20 +412,21 @@ CI treats schema drift as a failure. That means the checked-in `schemas/` direct
 
 ### 5.2 CI on Pull Requests and `main`
 
-`.github/workflows/ci.yml` is the required validation path.
+`azure-pipelines/ci.yml` is the required validation path.
 
 It enforces:
 
-- Workflow linting with `actionlint`
 - Python and TypeScript version parity
 - Schema export with no drift in `schemas/`
 - Python contract tests
 - Python distribution build
 - TypeScript typecheck and package pack
 
+It runs on the self-hosted `local-docker-agents` pool and requires the Linux contracts toolchain capabilities documented in `docs/ops/azure-devops-ci-cd.md`.
+
 ### 5.3 Scheduled Security Audit
 
-`.github/workflows/security.yml` runs on pull requests, `main`, manual dispatch, and a weekly schedule.
+`azure-pipelines/security.yml` runs on pull requests, `main`, and a weekly schedule.
 
 It audits:
 
@@ -435,25 +437,23 @@ Artifacts from those audits are uploaded for review.
 
 ### 5.4 Release by Manual Dispatch
 
-`.github/workflows/release.yml` runs by manual dispatch.
+`azure-pipelines/release.yml` runs manually against `main` and is gated by the `prod-package-release` environment.
 
 The release workflow reads the committed stable semver from `python/pyproject.toml` and `ts/package.json`, verifies that both manifests match exactly, and publishes that same version for both package ecosystems.
 
 It performs:
 
 1. Version parity and stable semver validation
-2. npm version availability check
-3. Python registry version availability check
+2. Schema export with no drift
+3. Python contract tests
 4. Python package build
-5. TypeScript package tarball build
-6. TypeScript package publish to public npm from a GitHub-hosted runner using npm trusted publishing
-7. Python package publish
+5. TypeScript typecheck and package tarball build
+6. Python package publish to Azure Artifacts
+7. TypeScript package publish to Azure Artifacts
 8. Release manifest generation
-9. GitHub App token creation
-10. Downstream `contracts_released` dispatch
-11. Release summary write-out
+9. Retained `contracts-release` artifact publication
 
-Normal steady-state releases do not use a long-lived npm publish token. The first publish of a brand-new npm package remains a one-time bootstrap exception handled outside the normal env-contract surface.
+Release intentionally stays on Microsoft-hosted `ubuntu-latest` until the local Docker agent pool has proven uptime, patching, monitoring, and repeatability.
 
 ### 5.5 Release Manifest Interface
 
@@ -461,43 +461,44 @@ Normal steady-state releases do not use a long-lived npm publish token. The firs
 
 ```json
 {
-  "repo": "<github repository slug>",
-  "git_sha": "<release commit sha>",
+  "schema_version": 1,
+  "ci_provider": "azure-devops",
+  "repo": "asset-allocation-contracts",
+  "source_repo": "<Azure Repos repository name>",
+  "source_sha": "<release commit sha>",
+  "build_id": "<Azure Pipelines build id>",
+  "pipeline_definition_id": "<Azure Pipelines definition id>",
+  "run_id": "<Azure Pipelines run id>",
+  "run_attempt": "<Azure Pipelines build number>",
+  "artifact_uri": "<Azure Pipelines artifact URL>",
   "artifact_kind": "contracts",
-  "artifact_ref": {
-    "python": ["<python artifact names>"],
-    "typescript": ["<typescript artifact names>"]
+  "artifact_ref": ["<artifact path>"],
+  "artifact_hashes": {
+    "<artifact path>": "<sha256>"
   },
-  "contracts_version": "<shared version>"
+  "package_version": "<shared version>",
+  "version_matrix": {
+    "contracts": "<shared version>",
+    "runtime_common": null,
+    "control_plane": null,
+    "jobs": null,
+    "ui": null
+  }
 }
 ```
 
 This is a public operational artifact and must remain intentional if changed.
 
-### 5.6 Downstream Dispatch Interface
+### 5.6 Downstream Version Handoff
 
-The release workflow dispatches the GitHub repository event `contracts_released` to downstream repos.
+The release workflow publishes the retained `contracts-release` artifact. Downstream automation should consume the exact `package_version`, `source_sha`, and artifact hashes from `release-manifest.json`.
 
-Current workflow behavior targets:
+Current downstream consumers remain:
 
 - Jobs
 - UI
 
-Current payload shape:
-
-```json
-{
-  "event_type": "contracts_released",
-  "client_payload": {
-    "contracts_version": "<shared version>",
-    "contracts_ref": "<git ref name>",
-    "contracts_sha": "<git sha>",
-    "manifest_path": "release-manifest.json"
-  }
-}
-```
-
-Any change to this payload or target-repo list is a release-contract change and must be documented and coordinated with consumers.
+Any change to the manifest shape or target consumer list is a release-contract change and must be documented and coordinated with consumers.
 
 ### 5.7 Cross-Repo Compatibility Gate
 
@@ -507,9 +508,9 @@ It validates this repo locally, then shells into sibling repos and runs selected
 
 ### Primary Evidence
 
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
+- `azure-pipelines/release.yml`
 - `scripts/compatibility_gate.ps1`
 - `scripts/prepare-release.ps1`
 - `python/scripts/export_schemas.py`
@@ -535,19 +536,19 @@ The following rules are mandatory design invariants.
 - TypeScript types must stay semantically aligned with the Python contract source.
 - Because alignment is maintained manually today, agents must treat TS updates as required companion work for shared-contract changes.
 
-### 6.4 Release and Dispatch Invariants
+### 6.4 Release and Handoff Invariants
 
 - Release artifacts must include both Python and TypeScript outputs.
-- TypeScript releases publish to public npm from GitHub Actions using npm trusted publishing.
+- Python and TypeScript releases publish to Azure Artifacts from Azure Pipelines.
 - `release-manifest.json` shape is part of the public operating contract.
-- `contracts_released` payload shape and target-repo set are part of the public operating contract.
+- Downstream version-handoff semantics and target consumer set are part of the public operating contract.
 
 ### 6.5 Env/Config Invariants
 
 - Workflow variable and secret references must be documented in `docs/ops/env-contract.csv`.
 - `.env.template`, `docs/ops/env-contract.csv`, `scripts/setup-env.ps1`, `scripts/sync-all-to-azure-devops.ps1`, and workflow references must stay synchronized.
-- `.env.web` carries Python registry and dispatch credentials only; TypeScript publish auth is not stored there.
-- `DISPATCH_APP_PRIVATE_KEY` is expected to be loaded from a PEM file path and stored in `.env.web` with literal `\n` escapes.
+- `.env.web` carries Python registry and retained legacy dispatch credentials only; TypeScript publish auth is not stored there.
+- `DISPATCH_APP_PRIVATE_KEY` is retained for the legacy GitHub workflow surface and is loaded from a PEM file path with literal `\n` escapes.
 
 ### 6.6 Scope Invariants
 
@@ -559,8 +560,9 @@ The following rules are mandatory design invariants.
 
 - `python/pyproject.toml`
 - `ts/package.json`
-- `.github/workflows/ci.yml`
-- `.github/workflows/release.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
+- `azure-pipelines/release.yml`
 - `docs/ops/env-contract.csv`
 - `scripts/setup-env.ps1`
 
@@ -615,14 +617,14 @@ powershell -ExecutionPolicy Bypass -File scripts/compatibility_gate.ps1
 
 ### Known Limits of the Current Validation Model
 
-- Cross-repo compatibility is not enforced by GitHub Actions in this repo
+- Cross-repo compatibility is not enforced by Azure Pipelines in this repo
 - TypeScript-to-Python semantic parity is not automatically diffed
-- Release manifest and dispatch payload shapes are not directly unit-tested as standalone contracts
+- Release manifest and downstream handoff shapes are not directly unit-tested as standalone contracts
 
 ### Primary Evidence
 
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
 - `tests/python/test_contract_models.py`
 - `tests/test_env_contract.py`
 - `scripts/compatibility_gate.ps1`
@@ -631,7 +633,7 @@ powershell -ExecutionPolicy Bypass -File scripts/compatibility_gate.ps1
 
 Future agents must treat the following files as one governance unit:
 
-- `.github/workflows/*.yml`
+- `azure-pipelines/*.yml`
 - `.env.template`
 - `docs/ops/env-contract.csv`
 - `docs/ops/env-contract.md`
@@ -678,7 +680,7 @@ When changing payload shape, removing fields, changing validation rules, or alte
 ### Primary Evidence
 
 - `tests/test_env_contract.py`
-- `.github/workflows/release.yml`
+- `azure-pipelines/release.yml`
 - `docs/ops/env-contract.csv`
 - `scripts/setup-env.ps1`
 - `scripts/sync-all-to-azure-devops.ps1`
@@ -691,9 +693,9 @@ This section records current mismatches observed during verification. It exists 
 
 Observed:
 
-- `release.yml` reads the committed version from `python/pyproject.toml` and `ts/package.json`
+- `azure-pipelines/release.yml` reads the committed version from `python/pyproject.toml` and `ts/package.json`
 - the committed version must be stable semver and identical across Python and TypeScript
-- npm and Python registry preflight checks block republishing an existing contracts version
+- Azure Artifacts is the current Python and TypeScript package publication target
 
 Interpretation:
 
@@ -705,7 +707,7 @@ Observed:
 
 - `scripts/compatibility_gate.ps1` is an important release-safety mechanism
 - It depends on sibling repos and local checkout layout
-- It is not currently enforced inside GitHub Actions for this repo
+- It is not currently enforced inside Azure Pipelines for this repo
 
 Interpretation:
 
@@ -736,7 +738,7 @@ This may represent an in-flight governance change rather than committed repo beh
 
 ### Primary Evidence
 
-- `.github/workflows/release.yml`
+- `azure-pipelines/release.yml`
 - `docs/ops/env-contract.csv`
 - `.env.template`
 - `tests/test_env_contract.py`
@@ -754,7 +756,7 @@ Update this document in the same change when any of the following happens:
 - A compatibility shim is added, changed, deprecated, or removed
 - A workflow variable or secret is added, removed, or repurposed
 - The release manifest shape changes
-- The downstream dispatch payload or target-repo list changes
+- The downstream version-handoff shape or target-repo list changes
 - The compatibility gate scope changes
 - A validation gate changes what “safe to release” means
 - Repo scope changes in a way that affects ownership boundaries
@@ -799,9 +801,10 @@ Primary files used to verify this document:
 - `ts/package.json`
 - `ts/src/contracts.ts`
 - `ts/src/index.ts`
-- `.github/workflows/ci.yml`
-- `.github/workflows/security.yml`
-- `.github/workflows/release.yml`
+- `azure-pipelines/ci.yml`
+- `azure-pipelines/security.yml`
+- `azure-pipelines/release.yml`
+- `.github/workflows/*.yml` (legacy surface; not canonical)
 - `scripts/compatibility_gate.ps1`
 - `scripts/setup-env.ps1`
 - `scripts/sync-all-to-azure-devops.ps1`

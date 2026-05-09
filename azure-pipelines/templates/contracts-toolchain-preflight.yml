@@ -1,0 +1,42 @@
+steps:
+  - script: |
+      set -euo pipefail
+
+      echo "Agent.Name=${AGENT_NAME:-unknown}"
+      echo "Agent.OS=${AGENT_OS:-unknown}"
+      echo "Agent.OSArchitecture=${AGENT_OSARCHITECTURE:-unknown}"
+      echo "Image contract: CONTRACTS_TOOLCHAIN=${CONTRACTS_TOOLCHAIN:-unset}"
+      echo "Image contract: CONTRACTS_PYTHON=${CONTRACTS_PYTHON:-unset}"
+      echo "Image contract: CONTRACTS_NODE=${CONTRACTS_NODE:-unset}"
+      echo "Image contract: CONTRACTS_PNPM=${CONTRACTS_PNPM:-unset}"
+
+      python --version
+      node --version
+      corepack --version
+      pnpm --version
+      git --version
+
+      python - <<'PY'
+      import os
+      import sys
+
+      expected = os.environ.get("PYTHON_VERSION", "3.14").removesuffix(".x")
+      actual = f"{sys.version_info.major}.{sys.version_info.minor}"
+      if actual != expected:
+          raise SystemExit(f"Expected Python {expected}.x, got {sys.version.split()[0]}")
+      PY
+
+      node - <<'NODE'
+      const expected = (process.env.NODE_VERSION || "20.x").split(".")[0];
+      const actual = process.versions.node.split(".")[0];
+      if (actual !== expected) {
+        throw new Error(`Expected Node ${expected}.x, got ${process.version}`);
+      }
+      NODE
+
+      actual_pnpm="$(pnpm --version)"
+      if [ "${actual_pnpm}" != "${PNPM_VERSION}" ]; then
+        printf 'Expected pnpm %s, got %s.\n' "${PNPM_VERSION}" "${actual_pnpm}" >&2
+        exit 1
+      fi
+    displayName: Validate local contracts toolchain
