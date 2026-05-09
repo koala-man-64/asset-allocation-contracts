@@ -97,18 +97,24 @@ stages:
 
                 - script: |
                     set -euo pipefail
-                    python -m twine upload -r "$(AZURE_ARTIFACTS_FEED)" --config-file "$(PYPIRC_PATH)" artifacts/python/*
+                    python -m twine upload --skip-existing -r "$(AZURE_ARTIFACTS_FEED)" --config-file "$(PYPIRC_PATH)" artifacts/python/*
                   displayName: Publish Python package to Azure Artifacts
 
                 - script: |
                     set -euo pipefail
                     shopt -s nullglob
+                    version="${CONTRACTS_VERSION:?CONTRACTS_VERSION is required}"
+                    npm_config="${BUILD_SOURCESDIRECTORY:?BUILD_SOURCESDIRECTORY is required}/ts/.npmrc"
                     tarballs=(artifacts/ts/*.tgz)
                     if [ "${#tarballs[@]}" -ne 1 ]; then
                       printf 'Expected exactly one TypeScript tarball, found %s.\n' "${#tarballs[@]}" >&2
                       exit 1
                     fi
-                    npm publish "${tarballs[0]}" --registry "$(NPM_FEED_REGISTRY_URL)"
+                    if npm view "@asset-allocation/contracts@${version}" version --registry "$(NPM_FEED_REGISTRY_URL)" --userconfig "${npm_config}" >/dev/null 2>&1; then
+                      printf 'TypeScript package @asset-allocation/contracts@%s already exists; skipping publish.\n' "${version}"
+                    else
+                      npm publish "${tarballs[0]}" --registry "$(NPM_FEED_REGISTRY_URL)" --userconfig "${npm_config}"
+                    fi
                   displayName: Publish TypeScript package to Azure Artifacts
 
                 - script: |
