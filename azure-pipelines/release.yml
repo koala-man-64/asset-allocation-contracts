@@ -183,6 +183,9 @@ stages:
                         f"{os.environ['SYSTEM_COLLECTIONURI']}{os.environ['SYSTEM_TEAMPROJECT']}"
                         f"/_build/results?buildId={os.environ['BUILD_BUILDID']}&view=artifacts&type=publishedArtifacts"
                     )
+                    pipeline_definition_id = os.environ.get("SYSTEM_DEFINITIONID") or os.environ.get("BUILD_DEFINITIONID")
+                    if not pipeline_definition_id:
+                        raise SystemExit("SYSTEM_DEFINITIONID is required to write the release manifest.")
                     manifest = {
                         "schema_version": 1,
                         "ci_provider": "azure-devops",
@@ -190,7 +193,7 @@ stages:
                         "source_repo": os.environ["BUILD_REPOSITORY_NAME"],
                         "source_sha": os.environ["BUILD_SOURCEVERSION"],
                         "build_id": os.environ["BUILD_BUILDID"],
-                        "pipeline_definition_id": os.environ["BUILD_DEFINITIONID"],
+                        "pipeline_definition_id": pipeline_definition_id,
                         "run_id": os.environ["BUILD_BUILDID"],
                         "run_attempt": os.environ["BUILD_BUILDNUMBER"],
                         "artifact_uri": artifact_uri,
