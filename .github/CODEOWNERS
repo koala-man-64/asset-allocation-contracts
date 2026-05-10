@@ -2,4 +2,4 @@
 #
 # Update this to your GitHub username/team as needed.
 * @rdprokes
-.github/workflows/* @rdprokes
+azure-pipelines/* @rdprokes

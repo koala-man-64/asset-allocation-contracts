@@ -24,7 +24,7 @@ Canonical workflows live under `azure-pipelines/`.
 - `azure-pipelines/ci.yml` is the required validation path for PRs and `main`; it runs on the self-hosted `local-docker-agents` pool with the baked contracts toolchain.
 - `azure-pipelines/security.yml` runs dependency and supply-chain checks on the same local pool.
 - `azure-pipelines/release.yml` is a gated manual pipeline that publishes the committed stable semver from `python/pyproject.toml` and `ts/package.json` to Azure Artifacts and emits `release-manifest.json`.
-- `.github/workflows/` is retained as a legacy surface from the previous operating model; do not treat it as the canonical CI/CD path.
+- `azure-pipelines/` is retained as a legacy surface from the previous operating model; do not treat it as the canonical CI/CD path.
 - `scripts/setup-env.ps1` builds repo-local `.env.web` for registry and retained legacy dispatch configuration, including loading `DISPATCH_APP_PRIVATE_KEY` from a PEM file.
 - `scripts/sync-all-to-azure-devops.ps1` syncs the `.env.web` surface into repo vars and secrets.
 - Deployment guidance and required registry credentials live in `DEPLOYMENT_SETUP.md`.

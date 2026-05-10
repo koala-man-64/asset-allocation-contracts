@@ -85,7 +85,7 @@ The business capability stayed the same. The packaging, release model, and cross
 | Operator UI pages and browser auth flow | `ui/` | `asset-allocation-ui`, with shared data shapes from `asset-allocation-contracts` |
 | Shared UI/runtime contracts | implicit cross-cutting shapes in `api/`, `core/`, `tasks/`, `ui/` | `asset-allocation-contracts` |
 | Shared runtime auth and HTTP transport helpers | reusable parts of `core/` | `asset-allocation-runtime-common` |
-| Deploy manifests and runtime-specific release logic | `deploy/`, `.github/workflows`, `scripts/` | Mainly `asset-allocation-control-plane`, `asset-allocation-jobs`, and `asset-allocation-ui`, with package publication owned by `asset-allocation-contracts` and `asset-allocation-runtime-common` |
+| Deploy manifests and runtime-specific release logic | `deploy/`, `azure-pipelines`, `scripts/` | Mainly `asset-allocation-control-plane`, `asset-allocation-jobs`, and `asset-allocation-ui`, with package publication owned by `asset-allocation-contracts` and `asset-allocation-runtime-common` |
 
 ## Current Runtime Interaction Model
 

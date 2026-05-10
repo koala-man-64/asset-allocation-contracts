@@ -107,10 +107,10 @@ def test_guardrail_surfaces_npm_exchange_errors(monkeypatch, capsys) -> None:
 
 def test_release_workflow_and_package_metadata_contract() -> None:
     package_json = json.loads((repo_root() / "ts" / "package.json").read_text(encoding="utf-8"))
-    release_workflow = (repo_root() / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    release_workflow = (repo_root() / "azure-pipelines" / "release.yml").read_text(encoding="utf-8")
 
     assert package_json["name"] == "@asset-allocation/contracts"
     assert package_json["repository"]["url"] == "git+https://github.com/koala-man-64/asset-allocation-contracts.git"
-    assert "id-token: write" in release_workflow
-    assert "Verify npm trusted publisher" in release_workflow
-    assert "python scripts/check_npm_trusted_publish.py" in release_workflow
+    assert "npmAuthenticate@0" in release_workflow
+    assert "NPM_FEED_REGISTRY_URL" in release_workflow
+    assert "python scripts/check_npm_trusted_publish.py" not in release_workflow

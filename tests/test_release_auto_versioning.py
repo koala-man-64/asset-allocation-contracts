@@ -23,37 +23,32 @@ def test_contracts_manifests_use_identical_stable_semver() -> None:
 
 
 def test_release_workflow_is_manual_and_uses_committed_manifest_version() -> None:
-    release_workflow = (repo_root() / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    release_workflow = (repo_root() / "azure-pipelines" / "release.yml").read_text(encoding="utf-8")
 
-    assert "workflow_dispatch:" in release_workflow
-    assert "push:" not in release_workflow
-    assert "Verify release ref is main" in release_workflow
-    assert 'if [ "${GITHUB_REF_NAME}" != "main" ]; then' in release_workflow
-    assert "release.yml only publishes from main." in release_workflow
-    assert release_workflow.index("Verify release ref is main") < release_workflow.index("Resolve committed release version")
+    assert "trigger: none" in release_workflow
+    assert "pr: none" in release_workflow
+    assert "condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')" in release_workflow
     assert "Resolve committed release version" in release_workflow
     assert "Compute release version" not in release_workflow
     assert "Stage generated release version" not in release_workflow
     assert "scripts/compute_release_version.py" not in release_workflow
     assert "scripts/stage_release_version.py" not in release_workflow
-    assert 'npm publish "${tarballs[0]}" --access public --provenance' in release_workflow
+    assert 'npm publish "${tarballs[0]}" --registry "$(NPM_FEED_REGISTRY_URL)" --userconfig "${npm_config}"' in release_workflow
     assert "--tag dev" not in release_workflow
 
 
 def test_release_workflow_checks_both_registries_before_publish() -> None:
-    release_workflow = (repo_root() / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    release_workflow = (repo_root() / "azure-pipelines" / "release.yml").read_text(encoding="utf-8")
 
-    assert "Check npm version availability" in release_workflow
-    assert "Check Python version availability" in release_workflow
-    assert "vars.PYTHON_PACKAGE_INDEX_URL" in release_workflow
-    assert "Bump python/pyproject.toml and ts/package.json before rerunning release.yml." in release_workflow
+    assert "TwineAuthenticate@1" in release_workflow
+    assert 'npm view "@asset-allocation/contracts@${version}" version' in release_workflow
+    assert "already exists in Azure Artifacts; skipping" in release_workflow
 
 
-def test_release_workflow_dispatches_only_jobs_and_ui() -> None:
-    release_workflow = (repo_root() / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+def test_release_workflow_no_longer_dispatches_github_consumers() -> None:
+    release_workflow = (repo_root() / "azure-pipelines" / "release.yml").read_text(encoding="utf-8")
 
     assert "CONTROL_" "PLANE_REPOSITORY" not in release_workflow
-    assert 'jobs_repo="${JOBS_REPOSITORY:-${owner}/asset-allocation-jobs}"' in release_workflow
-    assert 'ui_repo="${UI_REPOSITORY:-${owner}/asset-allocation-ui}"' in release_workflow
-    assert 'for repo in "${jobs_repo}" "${ui_repo}"; do' in release_workflow
-    assert 'echo "- Downstream dispatch: \\`contracts_released\\` to jobs and ui"' in release_workflow
+    assert "repository_dispatch" not in release_workflow
+    assert "contracts_released" not in release_workflow
+    assert "artifact: contracts-release" in release_workflow

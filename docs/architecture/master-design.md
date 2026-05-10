@@ -830,7 +830,7 @@ Primary files used to verify this document:
 - `azure-pipelines/ci.yml`
 - `azure-pipelines/security.yml`
 - `azure-pipelines/release.yml`
-- `.github/workflows/*.yml` (legacy surface; not canonical)
+- `azure-pipelines/*.yml` (legacy surface; not canonical)
 - `scripts/compatibility_gate.ps1`
 - `scripts/setup-env.ps1`
 - `scripts/sync-all-to-azure-devops.ps1`

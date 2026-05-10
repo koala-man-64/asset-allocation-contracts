@@ -26,7 +26,7 @@ architecture:
     - name: schemas
       path_glob: schemas/**/*.json
     - name: workflows
-      path_glob: .github/workflows/*.yml
+      path_glob: azure-pipelines/*.yml
   module_boundaries: []
   blessed_patterns: []
 
@@ -54,7 +54,7 @@ auto_remediate:
   enabled: false
   max_files_changed: 5
   safe_directories:
-    - .github/workflows
+    - azure-pipelines
     - python
     - schemas
     - ts

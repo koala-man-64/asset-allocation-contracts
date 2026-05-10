@@ -36,7 +36,7 @@ def env_keys(path: Path) -> set[str]:
 
 def workflow_refs(pattern: re.Pattern[str]) -> set[str]:
     refs: set[str] = set()
-    for path in (repo_root() / ".github" / "workflows").glob("*.yml"):
+    for path in (repo_root() / "azure-pipelines").glob("*.yml"):
         refs.update(pattern.findall(path.read_text(encoding="utf-8")))
     return refs
 
