@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from asset_allocation_contracts.ranking import RankingSchemaConfig
+from asset_allocation_contracts.ranking import RankingFieldReference, RankingPreviewResponse, RankingSchemaConfig
 from asset_allocation_contracts.regime import RegimePolicy
 
 ExitRuleType = Literal[
@@ -756,6 +756,82 @@ class RankingSchemaPreset(BaseModel):
 
     identity: ConfigIdentity
     config: RankingSchemaConfig
+
+
+class RankingSchemaDraftGenerationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plaintext: str = Field(..., min_length=1, max_length=4000)
+    nameHint: str | None = Field(default=None, min_length=1, max_length=128)
+    descriptionHint: str | None = Field(default=None, min_length=1, max_length=2048)
+    universeConfigNameHint: str | None = Field(default=None, min_length=1, max_length=128)
+    intendedUse: ReusableConfigIntendedUse | None = None
+    previewStrategyName: str | None = Field(default=None, min_length=1, max_length=128)
+    previewAsOfDate: date | None = None
+    previewSampleLimit: int = Field(default=25, ge=1, le=100)
+
+    @field_validator("plaintext", mode="before")
+    @classmethod
+    def normalize_plaintext(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+    @field_validator(
+        "nameHint",
+        "descriptionHint",
+        "universeConfigNameHint",
+        "previewStrategyName",
+        mode="before",
+    )
+    @classmethod
+    def normalize_optional_hint(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
+
+    @model_validator(mode="after")
+    def validate_preview_pair(self) -> "RankingSchemaDraftGenerationRequest":
+        if bool(self.previewStrategyName) != bool(self.previewAsOfDate):
+            raise ValueError("previewStrategyName and previewAsOfDate must be provided together.")
+        return self
+
+
+class RankingSchemaDraftGenerationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    draft: RankingSchemaPreset
+    explanation: str = Field(..., min_length=1, max_length=4096)
+    assumptions: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    fieldsUsed: list[RankingFieldReference] = Field(default_factory=list)
+    unmappedSignals: list[str] = Field(default_factory=list)
+    preview: RankingPreviewResponse | None = None
+
+    @field_validator("explanation", mode="before")
+    @classmethod
+    def normalize_explanation(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+    @field_validator("assumptions", "warnings", "unmappedSignals", mode="before")
+    @classmethod
+    def normalize_notes(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("generation response notes must be a list.")
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    @model_validator(mode="after")
+    def validate_draft_identity(self) -> "RankingSchemaDraftGenerationResponse":
+        if self.draft.identity.status != "draft":
+            raise ValueError("Generated ranking schema must be returned with draft status.")
+        if self.draft.identity.version != 1:
+            raise ValueError("Generated ranking schema drafts must use version 1.")
+        return self
 
 
 class RebalancePolicyPreset(BaseModel):

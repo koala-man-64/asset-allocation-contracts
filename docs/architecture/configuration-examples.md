@@ -8,6 +8,7 @@ It is intentionally limited to configuration surfaces that control behavior:
 - `ConfigReference`, `ConfigIdentity`, and reusable strategy component presets
 - `RebalancePolicy`, `StrategyRiskPolicy`, and reusable exit policy bundles
 - `RankingSchemaConfig`, `RankingGroup`, `RankingFactor`, and `RankingTransform`
+- `RankingSchemaDraftGenerationRequest` and `RankingSchemaDraftGenerationResponse`
 - `RegimePolicy` and `RegimeModelConfig`
 - `UiRuntimeConfig`
 - The repo bootstrap env surface defined by `.env.template` and `docs/ops/env-contract.*`
@@ -558,6 +559,7 @@ Validation notes:
 - `clip` requires at least one of `lower` or `upper`.
 - `winsorize` only accepts quantiles between `0` and `1`.
 - `coalesce` requires `params.value`.
+- Plaintext ranking generation returns an unsaved `RankingSchemaPreset` draft with `identity.status = "draft"` and `identity.version = 1`; saving remains outside the generation contract.
 
 ## Regime Policy and Model Configuration
 

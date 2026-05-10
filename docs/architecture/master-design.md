@@ -178,6 +178,8 @@ Reusable strategy configuration libraries are database-backed and revisioned out
 
 Plaintext-to-universe generation is a draft-only contract family. `UniverseConfigDraftGenerationRequest` carries the user's plaintext intent and optional editor hints; `UniverseConfigDraftGenerationResponse` returns a candidate `UniverseConfigPreset`, explanation, assumptions, warnings, fields used, and optional preview. The generated universe is not a saved reusable config. Control-plane owns prompt construction, Azure OpenAI calls, validation, preview, and persistence separation; this repo owns only the shared envelope and embedded `UniverseDefinition` semantics.
 
+Plaintext-to-ranking generation follows the same draft-only boundary. `RankingSchemaDraftGenerationRequest` carries the user's ranking intent plus optional naming, universe, and preview hints; `RankingSchemaDraftGenerationResponse` returns a candidate `RankingSchemaPreset`, explanation, assumptions, warnings, factor field references, unmapped signals, and optional ranking preview. The generated ranking schema is not persisted by this contract; control-plane owns prompt construction, Azure OpenAI calls, catalog validation, preview execution, and save separation.
+
 ### 4.2 Ranking Contracts
 
 Owned by:

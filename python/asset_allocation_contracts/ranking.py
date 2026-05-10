@@ -64,6 +64,31 @@ class RankingTransform(BaseModel):
         return self
 
 
+class RankingFieldReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    table: str = Field(..., min_length=1, max_length=128, pattern=_IDENTIFIER_PATTERN)
+    column: str = Field(..., min_length=1, max_length=128, pattern=_IDENTIFIER_PATTERN)
+    label: str | None = Field(default=None, min_length=1, max_length=128)
+    valueKind: RankingCatalogValueKind
+
+    @field_validator("table", "column", mode="before")
+    @classmethod
+    def normalize_identifier(cls, value: object) -> object:
+        normalized = str(value or "").strip().lower()
+        if not normalized:
+            raise ValueError("identifier is required.")
+        return normalized
+
+    @field_validator("label", mode="before")
+    @classmethod
+    def normalize_label(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
+
+
 class RankingFactor(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -147,6 +172,25 @@ class RankingPreviewRow(BaseModel):
     symbol: str
     rank: int
     score: float
+
+
+class RankingPreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    asOfDate: date
+    rowCount: int = Field(..., ge=0)
+    rows: list[RankingPreviewRow] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("warnings must be a list.")
+        return [str(item).strip() for item in value if str(item).strip()]
 
 
 class RankingMaterializationSummary(BaseModel):

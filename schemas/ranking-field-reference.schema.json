@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "column": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+      "title": "Column",
+      "type": "string"
+    },
+    "label": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Label"
+    },
+    "table": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+      "title": "Table",
+      "type": "string"
+    },
+    "valueKind": {
+      "enum": [
+        "number",
+        "boolean"
+      ],
+      "title": "Valuekind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "table",
+    "column",
+    "valueKind"
+  ],
+  "title": "RankingFieldReference",
+  "type": "object"
+}

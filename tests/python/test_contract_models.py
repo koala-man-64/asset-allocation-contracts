@@ -90,7 +90,7 @@ from asset_allocation_contracts.portfolio import (
     RebalanceProposal,
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
-from asset_allocation_contracts.ranking import RankingGroup, RankingSchemaConfig
+from asset_allocation_contracts.ranking import RankingFieldReference, RankingGroup, RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
     RegimePolicy,
@@ -138,6 +138,8 @@ from asset_allocation_contracts.strategy import (
     ExitRuleSetRevision,
     ExitRuleSetSummary,
     RankingSchemaPreset,
+    RankingSchemaDraftGenerationRequest,
+    RankingSchemaDraftGenerationResponse,
     RebalancePolicy,
     RebalancePolicyPreset,
     RegimePolicyPreset,
@@ -1151,6 +1153,168 @@ def test_universe_config_draft_generation_response_rejects_non_draft_identity() 
 
     try:
         UniverseConfigDraftGenerationResponse.model_validate(version_payload)
+    except Exception as exc:
+        assert "version 1" in str(exc)
+    else:
+        raise AssertionError("Expected generation response to reject non-v1 drafts.")
+
+
+def test_ranking_field_reference_normalizes_identifiers_and_label() -> None:
+    payload = RankingFieldReference(
+        table="  MARKET_DATA  ",
+        column="  RETURN_126D  ",
+        label="  126 Day Return  ",
+        valueKind="number",
+    )
+
+    assert payload.table == "market_data"
+    assert payload.column == "return_126d"
+    assert payload.label == "126 Day Return"
+    assert payload.valueKind == "number"
+
+
+def test_ranking_schema_draft_generation_request_normalizes_prompt_and_hints() -> None:
+    payload = RankingSchemaDraftGenerationRequest(
+        plaintext="  Rank liquid names by momentum and quality  ",
+        nameHint="  quality-momentum  ",
+        descriptionHint="  Generated ranking draft.  ",
+        universeConfigNameHint="  us-large-liquid  ",
+        intendedUse="validation",
+        previewStrategyName="  long-only-core  ",
+        previewAsOfDate="2026-05-08",
+    )
+
+    assert payload.plaintext == "Rank liquid names by momentum and quality"
+    assert payload.nameHint == "quality-momentum"
+    assert payload.descriptionHint == "Generated ranking draft."
+    assert payload.universeConfigNameHint == "us-large-liquid"
+    assert payload.previewStrategyName == "long-only-core"
+    assert payload.previewAsOfDate is not None
+    assert payload.previewSampleLimit == 25
+
+
+def test_ranking_schema_draft_generation_request_rejects_blank_prompt_and_preview_half_pair() -> None:
+    for invalid_payload in (
+        {"plaintext": "   "},
+        {"plaintext": "x" * 4001},
+        {"plaintext": "rank momentum", "previewStrategyName": "core"},
+        {"plaintext": "rank momentum", "previewAsOfDate": "2026-05-08"},
+    ):
+        try:
+            RankingSchemaDraftGenerationRequest.model_validate(invalid_payload)
+        except Exception as exc:
+            assert "plaintext" in str(exc) or "previewStrategyName" in str(exc)
+        else:
+            raise AssertionError("Expected invalid ranking draft generation request to fail validation.")
+
+
+def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview() -> None:
+    payload = RankingSchemaDraftGenerationResponse(
+        draft={
+            "identity": {
+                "name": "generated-quality-momentum",
+                "version": 1,
+                "status": "draft",
+                "description": "Generated ranking draft.",
+                "intendedUse": "research",
+            },
+            "config": {
+                "universeConfigName": "us-large-liquid",
+                "groups": [
+                    {
+                        "name": "momentum",
+                        "weight": 1,
+                        "factors": [
+                            {
+                                "name": "return_126d",
+                                "table": "market_data",
+                                "column": "return_126d",
+                                "weight": 1,
+                                "direction": "desc",
+                                "missingValuePolicy": "zero",
+                                "transforms": [{"type": "percentile_rank", "params": {}}],
+                            }
+                        ],
+                        "transforms": [],
+                    }
+                ],
+                "overallTransforms": [],
+            },
+        },
+        explanation="  Converted the request into a medium-term momentum factor.  ",
+        assumptions=["  Quality is not mapped because no governed field was provided.  ", ""],
+        warnings=["Review factor coverage before saving."],
+        fieldsUsed=[
+            {
+                "table": "market_data",
+                "column": "return_126d",
+                "label": "126 Day Return",
+                "valueKind": "number",
+            }
+        ],
+        unmappedSignals=["  quality  ", ""],
+        preview={
+            "strategyName": "long-only-core",
+            "asOfDate": "2026-05-08",
+            "rowCount": 1,
+            "rows": [{"symbol": "AAPL", "rank": 1, "score": 0.98}],
+            "warnings": [],
+        },
+    )
+
+    assert payload.draft.identity.status == "draft"
+    assert payload.draft.identity.version == 1
+    assert payload.explanation == "Converted the request into a medium-term momentum factor."
+    assert payload.assumptions == ["Quality is not mapped because no governed field was provided."]
+    assert payload.fieldsUsed[0].table == "market_data"
+    assert payload.unmappedSignals == ["quality"]
+    assert payload.preview is not None
+    assert payload.preview.rows[0].symbol == "AAPL"
+
+
+def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -> None:
+    base_payload = {
+        "draft": {
+            "identity": {
+                "name": "generated-quality-momentum",
+                "version": 1,
+                "status": "active",
+                "description": "Generated ranking draft.",
+                "intendedUse": "research",
+            },
+            "config": {
+                "universeConfigName": "us-large-liquid",
+                "groups": [
+                    {
+                        "name": "momentum",
+                        "factors": [
+                            {
+                                "name": "return_126d",
+                                "table": "market_data",
+                                "column": "return_126d",
+                            }
+                        ],
+                    }
+                ],
+            },
+        },
+        "explanation": "Generated a candidate draft.",
+        "fieldsUsed": [{"table": "market_data", "column": "return_126d", "valueKind": "number"}],
+    }
+
+    try:
+        RankingSchemaDraftGenerationResponse.model_validate(base_payload)
+    except Exception as exc:
+        assert "draft status" in str(exc)
+    else:
+        raise AssertionError("Expected generation response to reject active identity status.")
+
+    version_payload = dict(base_payload)
+    version_payload["draft"] = dict(base_payload["draft"])
+    version_payload["draft"]["identity"] = {**base_payload["draft"]["identity"], "status": "draft", "version": 2}
+
+    try:
+        RankingSchemaDraftGenerationResponse.model_validate(version_payload)
     except Exception as exc:
         assert "version 1" in str(exc)
     else:

@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "RankingPreviewRow": {
+      "properties": {
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        },
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol",
+        "rank",
+        "score"
+      ],
+      "title": "RankingPreviewRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "format": "date",
+      "title": "Asofdate",
+      "type": "string"
+    },
+    "rowCount": {
+      "minimum": 0,
+      "title": "Rowcount",
+      "type": "integer"
+    },
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/RankingPreviewRow"
+      },
+      "title": "Rows",
+      "type": "array"
+    },
+    "strategyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Strategyname",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "strategyName",
+    "asOfDate",
+    "rowCount"
+  ],
+  "title": "RankingPreviewResponse",
+  "type": "object"
+}

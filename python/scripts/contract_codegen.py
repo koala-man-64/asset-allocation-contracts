@@ -45,7 +45,17 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "universe-config-draft-generation-response.schema.json",
         strategy.UniverseConfigDraftGenerationResponse,
     ),
+    ("ranking-field-reference.schema.json", ranking.RankingFieldReference),
     ("ranking-schema-preset.schema.json", strategy.RankingSchemaPreset),
+    (
+        "ranking-schema-draft-generation-request.schema.json",
+        strategy.RankingSchemaDraftGenerationRequest,
+    ),
+    (
+        "ranking-schema-draft-generation-response.schema.json",
+        strategy.RankingSchemaDraftGenerationResponse,
+    ),
+    ("ranking-preview.schema.json", ranking.RankingPreviewResponse),
     ("rebalance-policy-preset.schema.json", strategy.RebalancePolicyPreset),
     ("regime-policy-preset.schema.json", strategy.RegimePolicyPreset),
     ("strategy-risk-policy-preset.schema.json", strategy.StrategyRiskPolicyPreset),
@@ -300,6 +310,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("RankingTransformType", ranking.RankingTransformType),
     ("RankingDirection", ranking.RankingDirection),
     ("RankingMissingValuePolicy", ranking.RankingMissingValuePolicy),
+    ("RankingCatalogValueKind", ranking.RankingCatalogValueKind),
     ("RegimeSignalState", regime.RegimeSignalState),
     ("RegimeTransitionType", regime.RegimeTransitionType),
     ("RegimePolicyMode", regime.RegimePolicyMode),
@@ -379,6 +390,7 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RegimeModelSummary", "description"),
     ("RegimeModelRevision", "description"),
     ("UniverseConfigDraftGenerationRequest", "previewSampleLimit"),
+    ("RankingSchemaDraftGenerationRequest", "previewSampleLimit"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
@@ -400,6 +412,7 @@ FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
     ("RegimePolicy", "mode"): "RegimePolicyMode",
     ("RegimePolicyConfig", "mode"): "RegimePolicyMode",
     ("RegimePolicyConfigSummary", "mode"): "RegimePolicyMode",
+    ("RankingFieldReference", "valueKind"): "RankingCatalogValueKind",
     ("BacktestPolicyEvent", "scope"): "BacktestPolicyEventScope",
     ("BacktestPolicyEvent", "policy_type"): "BacktestPolicyEventType",
     ("BacktestPolicyEvent", "decision"): "BacktestPolicyDecision",

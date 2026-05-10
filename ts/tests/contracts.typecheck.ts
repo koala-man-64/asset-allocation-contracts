@@ -44,6 +44,10 @@ import type {
   ConfigIdentity,
   ConfigReference,
   ExitPolicyPreset,
+  RankingFieldReference,
+  RankingPreviewResponse,
+  RankingSchemaDraftGenerationRequest,
+  RankingSchemaDraftGenerationResponse,
   RankingSchemaPreset,
   RebalancePolicyPreset,
   RegimePolicyPreset,
@@ -277,6 +281,13 @@ const universeDraftGenerationResponse: UniverseConfigDraftGenerationResponse = {
   preview,
 };
 
+const rankingFieldReference: RankingFieldReference = {
+  table: "market_data",
+  column: "return_126d",
+  label: "126 Day Return",
+  valueKind: "number",
+};
+
 const rankingPreset: RankingSchemaPreset = {
   identity: {
     ...configIdentity,
@@ -305,6 +316,42 @@ const rankingPreset: RankingSchemaPreset = {
     ],
     overallTransforms: [],
   },
+};
+
+const rankingDraftGenerationRequest: RankingSchemaDraftGenerationRequest = {
+  plaintext: "Rank the liquid universe by 126 day momentum and lower volatility.",
+  nameHint: "generated-quality-momentum",
+  descriptionHint: "Generated ranking draft.",
+  universeConfigNameHint: "us_large_liquid",
+  intendedUse: "research",
+  previewStrategyName: "long_only_core",
+  previewAsOfDate: "2026-05-08",
+};
+
+const rankingPreview: RankingPreviewResponse = {
+  strategyName: "long_only_core",
+  asOfDate: "2026-05-08",
+  rowCount: 1,
+  rows: [{ symbol: "AAPL", rank: 1, score: 0.98 }],
+  warnings: [],
+};
+
+const rankingDraftGenerationResponse: RankingSchemaDraftGenerationResponse = {
+  draft: {
+    identity: {
+      ...configIdentity,
+      name: "generated-quality-momentum",
+      version: 1,
+      status: "draft",
+    },
+    config: rankingPreset.config,
+  },
+  explanation: "Mapped the request to governed ranking factors.",
+  assumptions: ["Quality was not mapped because no governed factor was available."],
+  warnings: ["Review factor coverage before saving."],
+  fieldsUsed: [rankingFieldReference],
+  unmappedSignals: ["quality"],
+  preview: rankingPreview,
 };
 
 const rebalancePreset: RebalancePolicyPreset = {
@@ -848,7 +895,11 @@ void reusableComponentRefs;
 void universePreset;
 void universeDraftGenerationRequest;
 void universeDraftGenerationResponse;
+void rankingFieldReference;
 void rankingPreset;
+void rankingDraftGenerationRequest;
+void rankingPreview;
+void rankingDraftGenerationResponse;
 void rebalancePreset;
 void regimePreset;
 void riskPreset;

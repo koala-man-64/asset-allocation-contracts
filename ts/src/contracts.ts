@@ -38,6 +38,7 @@ export type UniverseValueKind = 'string' | 'number' | 'boolean' | 'date' | 'date
 export type RankingTransformType = 'percentile_rank' | 'zscore' | 'minmax' | 'clip' | 'winsorize' | 'coalesce' | 'log1p' | 'negate' | 'abs';
 export type RankingDirection = 'asc' | 'desc';
 export type RankingMissingValuePolicy = 'exclude' | 'zero';
+export type RankingCatalogValueKind = 'number' | 'boolean';
 export type RegimeSignalState = 'active' | 'inactive' | 'insufficient_data';
 export type RegimeTransitionType = 'entered' | 'exited';
 export type RegimePolicyMode = 'observe_only';
@@ -297,6 +298,13 @@ export interface UniversePreviewResponse {
   warnings: string[];
 }
 
+export interface RankingFieldReference {
+  table: string;
+  column: string;
+  label?: string | null;
+  valueKind: RankingCatalogValueKind;
+}
+
 export interface RankingSchemaPreset {
   identity: ConfigIdentity;
   config: RankingSchemaConfig;
@@ -328,6 +336,41 @@ export interface RankingFactor {
 export interface RankingTransform {
   type: RankingTransformType;
   params: Record<string, string | number | boolean | null>;
+}
+
+export interface RankingSchemaDraftGenerationRequest {
+  plaintext: string;
+  nameHint?: string | null;
+  descriptionHint?: string | null;
+  universeConfigNameHint?: string | null;
+  intendedUse?: ReusableConfigIntendedUse | null;
+  previewStrategyName?: string | null;
+  previewAsOfDate?: string | null;
+  previewSampleLimit?: number;
+}
+
+export interface RankingSchemaDraftGenerationResponse {
+  draft: RankingSchemaPreset;
+  explanation: string;
+  assumptions: string[];
+  warnings: string[];
+  fieldsUsed: RankingFieldReference[];
+  unmappedSignals: string[];
+  preview?: RankingPreviewResponse | null;
+}
+
+export interface RankingPreviewResponse {
+  strategyName: string;
+  asOfDate: string;
+  rowCount: number;
+  rows: RankingPreviewRow[];
+  warnings: string[];
+}
+
+export interface RankingPreviewRow {
+  symbol: string;
+  rank: number;
+  score: number;
 }
 
 export interface RebalancePolicyPreset {
