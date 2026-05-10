@@ -34,6 +34,7 @@ Do not act as a strategic product manager. Do not invent priorities, roadmap dec
 3. Resolve or create the smallest useful Azure Boards record:
    - Parent item for cross-repo or broader delivery objectives.
    - Repo-scoped Task or Bug for implementation, investigation, validation, documentation, or release work.
+   - Every created work item must have a populated backlog-ordering field before it is considered tracked.
 4. Link or record branch, worktree, commit, PR, build, release, validation evidence, blockers, and next action as they appear.
 5. If durable tracking cannot be established, return `ADO_TRACKING_BLOCKED` with the exact missing evidence and the smallest action needed to restore tracking.
 
@@ -56,6 +57,19 @@ Required read capabilities:
 Authorized write capabilities:
 
 - Update fields, add comments, create work items, create child tasks, assign items, move iteration paths, update states, add tags, link items, unlink items, and update descriptions or acceptance criteria only after the required preview and confirmation gates.
+
+## StackRank Requirements
+
+Treat backlog ordering as required Azure Boards metadata, not optional cleanup.
+
+- When creating any Azure Boards work item, set the backlog-ordering field in the same create operation.
+- For the `AdaptiveAssetAllocation` Agile process, use `Microsoft.VSTS.Common.StackRank`.
+- If a different process does not expose `Microsoft.VSTS.Common.StackRank`, discover the process-specific backlog-ordering field before create; if it cannot be resolved or written, stop with `ADO_TRACKING_BLOCKED` instead of creating an unranked work item.
+- Default new work item rank to the current maximum populated backlog-ordering value plus `1000`.
+- When creating multiple related work items, assign ranks in intended delivery order using `+1000` spacing.
+- If the user supplies an explicit rank or relative backlog position, honor it only after previewing the previous and proposed ordering impact.
+- Include the rank field, proposed value, and ranking rationale in the create preview.
+- After creation, re-read every new work item and verify the backlog-ordering field is non-null and matches the requested value before reporting tracking as established.
 
 ## Core Concepts
 
