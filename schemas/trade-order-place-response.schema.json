@@ -174,6 +174,67 @@
       "title": "OptionLeg",
       "type": "object"
     },
+    "TradeNormalizationWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 320,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "providerField": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerfield"
+        },
+        "rawValue": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rawvalue"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "TradeNormalizationWarning",
+      "type": "object"
+    },
     "TradeOrder": {
       "additionalProperties": false,
       "properties": {
@@ -204,6 +265,7 @@
             "option",
             "crypto",
             "mutual_fund",
+            "prediction_market",
             "unknown"
           ],
           "title": "Assetclass",
@@ -355,6 +417,33 @@
           "default": null,
           "title": "Idempotencykey"
         },
+        "ingestedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ingestedat"
+        },
+        "instrumentName": {
+          "anyOf": [
+            {
+              "maxLength": 240,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instrumentname"
+        },
         "limitPrice": {
           "anyOf": [
             {
@@ -367,6 +456,13 @@
           ],
           "default": null,
           "title": "Limitprice"
+        },
+        "normalizationWarnings": {
+          "items": {
+            "$ref": "#/$defs/TradeNormalizationWarning"
+          },
+          "title": "Normalizationwarnings",
+          "type": "array"
         },
         "notional": {
           "anyOf": [
@@ -439,6 +535,23 @@
           "title": "Ordertype",
           "type": "string"
         },
+        "outcomeSide": {
+          "anyOf": [
+            {
+              "enum": [
+                "yes",
+                "no",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outcomeside"
+        },
         "provider": {
           "enum": [
             "alpaca",
@@ -462,6 +575,20 @@
           ],
           "default": null,
           "title": "Providercorrelationid"
+        },
+        "providerInstrumentId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerinstrumentid"
         },
         "providerOrderId": {
           "anyOf": [
@@ -490,6 +617,20 @@
           "default": null,
           "title": "Quantity"
         },
+        "rawProviderStatus": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rawproviderstatus"
+        },
         "reconciliationRequired": {
           "default": false,
           "title": "Reconciliationrequired",
@@ -509,6 +650,33 @@
           ],
           "title": "Side",
           "type": "string"
+        },
+        "sourceObservedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourceobservedat"
+        },
+        "sourcePayloadHash": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcepayloadhash"
         },
         "status": {
           "enum": [
@@ -570,6 +738,20 @@
           "minLength": 1,
           "title": "Symbol",
           "type": "string"
+        },
+        "syncRunId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Syncrunid"
         },
         "timeInForce": {
           "default": "day",

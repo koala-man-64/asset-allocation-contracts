@@ -1,10 +1,87 @@
 {
+  "$defs": {
+    "TradeNormalizationWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 320,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "providerField": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerfield"
+        },
+        "rawValue": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rawvalue"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "TradeNormalizationWarning",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "accountId": {
       "maxLength": 128,
       "minLength": 1,
       "title": "Accountid",
+      "type": "string"
+    },
+    "assetClass": {
+      "default": "equity",
+      "enum": [
+        "equity",
+        "etf",
+        "option",
+        "crypto",
+        "mutual_fund",
+        "prediction_market",
+        "unknown"
+      ],
+      "title": "Assetclass",
       "type": "string"
     },
     "cashImpact": {
@@ -45,12 +122,17 @@
     "eventType": {
       "enum": [
         "fill",
+        "order",
         "cancel",
         "fee",
         "cash_adjustment",
         "dividend",
         "interest",
-        "journal"
+        "journal",
+        "settlement",
+        "deposit",
+        "withdrawal",
+        "other"
       ],
       "title": "Eventtype",
       "type": "string"
@@ -66,6 +148,40 @@
       ],
       "default": null,
       "title": "Fees"
+    },
+    "ingestedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ingestedat"
+    },
+    "instrumentName": {
+      "anyOf": [
+        {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Instrumentname"
+    },
+    "normalizationWarnings": {
+      "items": {
+        "$ref": "#/$defs/TradeNormalizationWarning"
+      },
+      "title": "Normalizationwarnings",
+      "type": "array"
     },
     "note": {
       "anyOf": [
@@ -97,6 +213,23 @@
       ],
       "default": null,
       "title": "Orderid"
+    },
+    "outcomeSide": {
+      "anyOf": [
+        {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcomeside"
     },
     "price": {
       "anyOf": [
@@ -149,6 +282,34 @@
       "default": null,
       "title": "Provideractivitytype"
     },
+    "providerEventId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providereventid"
+    },
+    "providerInstrumentId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providerinstrumentid"
+    },
     "providerOrderId": {
       "anyOf": [
         {
@@ -176,6 +337,39 @@
       "default": null,
       "title": "Quantity"
     },
+    "quarantineReason": {
+      "anyOf": [
+        {
+          "maxLength": 320,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quarantinereason"
+    },
+    "quarantined": {
+      "default": false,
+      "title": "Quarantined",
+      "type": "boolean"
+    },
+    "rawProviderStatus": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rawproviderstatus"
+    },
     "realizedPnl": {
       "anyOf": [
         {
@@ -187,6 +381,11 @@
       ],
       "default": null,
       "title": "Realizedpnl"
+    },
+    "reconciliationRequired": {
+      "default": false,
+      "title": "Reconciliationrequired",
+      "type": "boolean"
     },
     "rowId": {
       "maxLength": 128,
@@ -209,6 +408,33 @@
       ],
       "default": null,
       "title": "Side"
+    },
+    "sourceObservedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourceobservedat"
+    },
+    "sourcePayloadHash": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourcepayloadhash"
     },
     "status": {
       "anyOf": [
@@ -248,6 +474,20 @@
       ],
       "default": null,
       "title": "Symbol"
+    },
+    "syncRunId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Syncrunid"
     }
   },
   "required": [

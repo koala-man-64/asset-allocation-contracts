@@ -73,7 +73,7 @@ export type BrokerAccountActionStatus = 'accepted' | 'in_progress' | 'completed'
 export type TradeProvider = 'alpaca' | 'etrade' | 'schwab' | 'kalshi';
 export type TradeEnvironment = 'paper' | 'sandbox' | 'live';
 export type TradeReadiness = 'ready' | 'review' | 'blocked';
-export type TradeAssetClass = 'equity' | 'etf' | 'option' | 'crypto' | 'mutual_fund' | 'unknown';
+export type TradeAssetClass = 'equity' | 'etf' | 'option' | 'crypto' | 'mutual_fund' | 'prediction_market' | 'unknown';
 export type TradeOrderSide = 'buy' | 'sell';
 export type TradeOrderType = 'market' | 'limit' | 'stop' | 'stop_limit';
 export type TradeTimeInForce = 'day' | 'gtc' | 'opg' | 'cls' | 'ioc' | 'fok';
@@ -82,7 +82,7 @@ export type TradeRiskCheckStatus = 'pass' | 'warning' | 'fail';
 export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_update' | 'reject' | 'fill' | 'reconcile' | 'system_block' | 'authz_block';
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
-export type TradeBlotterEventType = 'fill' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal';
+export type TradeBlotterEventType = 'fill' | 'order' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal' | 'settlement' | 'deposit' | 'withdrawal' | 'other';
 export type NotificationKind = 'message' | 'trade_approval';
 export type NotificationDeliveryChannel = 'email' | 'sms';
 export type NotificationDeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
@@ -1784,6 +1784,10 @@ export interface TradeAccountSummary {
   policyVersion?: number | null;
   projectedTradingPolicy?: BrokerTradingPolicy | null;
   confirmationRequired: boolean;
+  sourceObservedAt?: string | null;
+  syncRunId?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  quarantinedRowCount: number;
 }
 
 export interface TradeCapabilityFlags {
@@ -1831,6 +1835,14 @@ export interface TradeDataFreshness {
   ordersAsOf?: string | null;
   maxAgeSeconds?: number | null;
   staleReason?: string | null;
+}
+
+export interface TradeNormalizationWarning {
+  code: string;
+  message: string;
+  severity: BrokerAlertSeverity;
+  providerField?: string | null;
+  rawValue?: string | null;
 }
 
 export interface TradeAccountDetail {
@@ -1907,6 +1919,11 @@ export interface TradePosition {
   accountId: string;
   symbol: string;
   assetClass: TradeAssetClass;
+  providerPositionId?: string | null;
+  providerInstrumentId?: string | null;
+  instrumentName?: string | null;
+  outcomeSide?: 'yes' | 'no' | 'unknown' | null;
+  rawProviderStatus?: string | null;
   quantity: number;
   marketValue: number;
   averageEntryPrice?: number | null;
@@ -1917,6 +1934,13 @@ export interface TradePosition {
   dayPnl?: number | null;
   weight?: number | null;
   asOf?: string | null;
+  sourceObservedAt?: string | null;
+  ingestedAt?: string | null;
+  syncRunId?: string | null;
+  sourcePayloadHash?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  quarantined: boolean;
+  quarantineReason?: string | null;
 }
 
 export interface TradePositionListResponse {
@@ -1924,6 +1948,11 @@ export interface TradePositionListResponse {
   positions: TradePosition[];
   generatedAt?: string | null;
   freshness: TradeDataFreshness;
+  sourceObservedAt?: string | null;
+  syncRunId?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  unmappedRowCount: number;
+  quarantinedRowCount: number;
 }
 
 export interface TradeOrder {
@@ -1942,6 +1971,10 @@ export interface TradeOrder {
   correlationId?: string | null;
   providerOrderId?: string | null;
   providerCorrelationId?: string | null;
+  providerInstrumentId?: string | null;
+  instrumentName?: string | null;
+  outcomeSide?: 'yes' | 'no' | 'unknown' | null;
+  rawProviderStatus?: string | null;
   quantity?: number | null;
   notional?: number | null;
   optionStrategyId?: OptionStrategyId | null;
@@ -1959,8 +1992,13 @@ export interface TradeOrder {
   expiresAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  sourceObservedAt?: string | null;
+  ingestedAt?: string | null;
+  syncRunId?: string | null;
+  sourcePayloadHash?: string | null;
   statusReason?: string | null;
   riskChecks: TradeRiskCheck[];
+  normalizationWarnings: TradeNormalizationWarning[];
   reconciliationRequired: boolean;
 }
 
@@ -1980,6 +2018,11 @@ export interface TradeOrderHistoryResponse {
   orders: TradeOrder[];
   generatedAt?: string | null;
   nextCursor?: string | null;
+  sourceObservedAt?: string | null;
+  syncRunId?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  unmappedRowCount: number;
+  quarantinedRowCount: number;
 }
 
 export interface TradeBlotterRow {
@@ -1991,17 +2034,31 @@ export interface TradeBlotterRow {
   occurredAt: string;
   orderId?: string | null;
   providerOrderId?: string | null;
+  providerEventId?: string | null;
   providerActivityId?: string | null;
   providerActivityType?: string | null;
+  providerInstrumentId?: string | null;
+  instrumentName?: string | null;
   clientRequestId?: string | null;
   symbol?: string | null;
+  assetClass: TradeAssetClass;
   side?: TradeOrderSide | null;
+  outcomeSide?: 'yes' | 'no' | 'unknown' | null;
   status?: TradeOrderStatus | null;
+  rawProviderStatus?: string | null;
   quantity?: number | null;
   price?: number | null;
   fees?: number | null;
   realizedPnl?: number | null;
   cashImpact?: number | null;
+  sourceObservedAt?: string | null;
+  ingestedAt?: string | null;
+  syncRunId?: string | null;
+  sourcePayloadHash?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  reconciliationRequired: boolean;
+  quarantined: boolean;
+  quarantineReason?: string | null;
   note?: string | null;
 }
 
@@ -2010,6 +2067,11 @@ export interface TradeBlotterResponse {
   rows: TradeBlotterRow[];
   generatedAt?: string | null;
   nextCursor?: string | null;
+  sourceObservedAt?: string | null;
+  syncRunId?: string | null;
+  normalizationWarnings: TradeNormalizationWarning[];
+  unmappedRowCount: number;
+  quarantinedRowCount: number;
 }
 
 export interface TradeOrderPreviewRequest {
@@ -2021,6 +2083,9 @@ export interface TradeOrderPreviewRequest {
   orderType: TradeOrderType;
   timeInForce: TradeTimeInForce;
   assetClass: TradeAssetClass;
+  providerInstrumentId?: string | null;
+  instrumentName?: string | null;
+  outcomeSide?: 'yes' | 'no' | 'unknown' | null;
   quantity?: number | null;
   notional?: number | null;
   optionStrategyId?: OptionStrategyId | null;
@@ -2065,6 +2130,9 @@ export interface TradeOrderPlaceRequest {
   orderType: TradeOrderType;
   timeInForce: TradeTimeInForce;
   assetClass: TradeAssetClass;
+  providerInstrumentId?: string | null;
+  instrumentName?: string | null;
+  outcomeSide?: 'yes' | 'no' | 'unknown' | null;
   quantity?: number | null;
   notional?: number | null;
   optionStrategyId?: OptionStrategyId | null;

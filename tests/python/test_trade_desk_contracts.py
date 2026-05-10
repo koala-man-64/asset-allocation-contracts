@@ -377,3 +377,97 @@ def test_trade_blotter_contracts_capture_realized_pnl_and_cash_impact() -> None:
     assert response.rows[0].providerActivityType == "FILL"
     assert response.rows[0].realizedPnl == 56.75
     assert response.rows[0].cashImpact == 561.25
+
+
+def test_trade_contracts_capture_prediction_market_normalization_metadata() -> None:
+    now = _now()
+    warning = {
+        "code": "unknown_kalshi_order_status",
+        "message": "Raw provider status was preserved for reconciliation.",
+        "providerField": "status",
+        "rawValue": "resting",
+    }
+    position = TradePosition(
+        accountId="kalshi-live-subaccount-0",
+        symbol="KXNYC-26MAY10-T75",
+        assetClass="prediction_market",
+        providerPositionId="pos-123",
+        providerInstrumentId="KXNYC-26MAY10-T75",
+        instrumentName="NYC high temperature above 75F on May 10",
+        outcomeSide="yes",
+        rawProviderStatus="active",
+        quantity=12,
+        marketValue=720,
+        asOf=now,
+        sourceObservedAt=now,
+        ingestedAt=now,
+        syncRunId="sync-001",
+        sourcePayloadHash="sha256:abc",
+        normalizationWarnings=[warning],
+    )
+    order = TradeOrder(
+        orderId="kalshi-order-001",
+        accountId="kalshi-live-subaccount-0",
+        provider="kalshi",
+        environment="live",
+        status="unknown_reconcile_required",
+        symbol="KXNYC-26MAY10-T75",
+        side="buy",
+        orderType="limit",
+        assetClass="prediction_market",
+        providerOrderId="provider-order-001",
+        providerInstrumentId="KXNYC-26MAY10-T75",
+        instrumentName="NYC high temperature above 75F on May 10",
+        outcomeSide="yes",
+        rawProviderStatus="resting",
+        quantity=10,
+        limitPrice=58,
+        sourceObservedAt=now,
+        ingestedAt=now,
+        syncRunId="sync-001",
+        normalizationWarnings=[warning],
+        reconciliationRequired=True,
+    )
+    response = TradeBlotterResponse(
+        accountId="kalshi-live-subaccount-0",
+        generatedAt=now,
+        sourceObservedAt=now,
+        syncRunId="sync-001",
+        normalizationWarnings=[warning],
+        quarantinedRowCount=1,
+        rows=[
+            TradeBlotterRow(
+                rowId="kalshi-event-001",
+                accountId="kalshi-live-subaccount-0",
+                provider="kalshi",
+                environment="live",
+                eventType="settlement",
+                occurredAt=now,
+                providerEventId="event-001",
+                providerInstrumentId="KXNYC-26MAY10-T75",
+                instrumentName="NYC high temperature above 75F on May 10",
+                symbol="KXNYC-26MAY10-T75",
+                assetClass="prediction_market",
+                side="buy",
+                outcomeSide="yes",
+                status="filled",
+                rawProviderStatus="settled",
+                quantity=10,
+                price=100,
+                cashImpact=420,
+                sourceObservedAt=now,
+                ingestedAt=now,
+                syncRunId="sync-001",
+                normalizationWarnings=[warning],
+            )
+        ],
+    )
+
+    assert position.assetClass == "prediction_market"
+    assert position.outcomeSide == "yes"
+    assert order.rawProviderStatus == "resting"
+    assert order.reconciliationRequired is True
+    assert response.rows[0].eventType == "settlement"
+    assert response.rows[0].providerEventId == "event-001"
+    assert response.quarantinedRowCount == 1
+    assert response.normalizationWarnings[0].code == "unknown_kalshi_order_status"

@@ -12,8 +12,9 @@ from asset_allocation_contracts.options import OptionApprovalLevel, OptionLeg, O
 TradeProvider = Literal["alpaca", "etrade", "schwab", "kalshi"]
 TradeEnvironment = Literal["paper", "sandbox", "live"]
 TradeReadiness = Literal["ready", "review", "blocked"]
-TradeAssetClass = Literal["equity", "etf", "option", "crypto", "mutual_fund", "unknown"]
+TradeAssetClass = Literal["equity", "etf", "option", "crypto", "mutual_fund", "prediction_market", "unknown"]
 TradeOrderSide = Literal["buy", "sell"]
+TradeOutcomeSide = Literal["yes", "no", "unknown"]
 TradeOrderType = Literal["market", "limit", "stop", "stop_limit"]
 TradeTimeInForce = Literal["day", "gtc", "opg", "cls", "ioc", "fok"]
 TradeOrderStatus = Literal[
@@ -45,12 +46,17 @@ TradeDataFreshnessState = Literal["fresh", "stale", "unknown"]
 TradeAuditSeverity = Literal["info", "warning", "critical"]
 TradeBlotterEventType = Literal[
     "fill",
+    "order",
     "cancel",
     "fee",
     "cash_adjustment",
     "dividend",
     "interest",
     "journal",
+    "settlement",
+    "deposit",
+    "withdrawal",
+    "other",
 ]
 
 
@@ -179,6 +185,26 @@ class TradeRiskCheck(BaseModel):
         return str(value or "").strip()
 
 
+class TradeNormalizationWarning(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    code: str = Field(..., min_length=1, max_length=128)
+    message: str = Field(..., min_length=1, max_length=320)
+    severity: TradeAuditSeverity = "warning"
+    providerField: str | None = Field(default=None, min_length=1, max_length=160)
+    rawValue: str | None = Field(default=None, min_length=1, max_length=320)
+
+    @field_validator("code", "message", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("providerField", "rawValue", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
 class TradePnlSnapshot(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -250,13 +276,17 @@ class TradeAccountSummary(BaseModel):
     policyVersion: int | None = Field(default=None, ge=1)
     projectedTradingPolicy: BrokerTradingPolicy | None = None
     confirmationRequired: bool = False
+    sourceObservedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    quarantinedRowCount: int = Field(default=0, ge=0)
 
     @field_validator("accountId", "name", mode="before")
     @classmethod
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
 
-    @field_validator("accountNumberMasked", "readinessReason", mode="before")
+    @field_validator("accountNumberMasked", "readinessReason", "syncRunId", mode="before")
     @classmethod
     def normalize_optional_text_fields(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
@@ -291,6 +321,11 @@ class TradePosition(BaseModel):
     accountId: str = Field(..., min_length=1, max_length=128)
     symbol: str = Field(..., min_length=1, max_length=32)
     assetClass: TradeAssetClass = "equity"
+    providerPositionId: str | None = Field(default=None, min_length=1, max_length=160)
+    providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
+    instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
+    outcomeSide: TradeOutcomeSide | None = None
+    rawProviderStatus: str | None = Field(default=None, min_length=1, max_length=160)
     quantity: float = 0.0
     marketValue: float = 0.0
     averageEntryPrice: float | None = None
@@ -301,6 +336,13 @@ class TradePosition(BaseModel):
     dayPnl: float | None = None
     weight: float | None = None
     asOf: datetime | None = None
+    sourceObservedAt: datetime | None = None
+    ingestedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    sourcePayloadHash: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    quarantined: bool = False
+    quarantineReason: str | None = Field(default=None, min_length=1, max_length=320)
 
     @field_validator("accountId", mode="before")
     @classmethod
@@ -312,6 +354,20 @@ class TradePosition(BaseModel):
     def normalize_position_symbol(cls, value: object) -> str:
         return _normalize_symbol(value)
 
+    @field_validator(
+        "providerPositionId",
+        "providerInstrumentId",
+        "instrumentName",
+        "rawProviderStatus",
+        "syncRunId",
+        "sourcePayloadHash",
+        "quarantineReason",
+        mode="before",
+    )
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
 
 class TradePositionListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -320,11 +376,21 @@ class TradePositionListResponse(BaseModel):
     positions: list[TradePosition] = Field(default_factory=list)
     generatedAt: datetime | None = None
     freshness: TradeDataFreshness = Field(default_factory=TradeDataFreshness)
+    sourceObservedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    unmappedRowCount: int = Field(default=0, ge=0)
+    quarantinedRowCount: int = Field(default=0, ge=0)
 
     @field_validator("accountId", mode="before")
     @classmethod
     def normalize_account_id(cls, value: object) -> str:
         return _normalize_required_text(value, "accountId")
+
+    @field_validator("syncRunId", mode="before")
+    @classmethod
+    def normalize_sync_run_id(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
 
 
 class TradeOrder(BaseModel):
@@ -345,6 +411,10 @@ class TradeOrder(BaseModel):
     correlationId: str | None = Field(default=None, min_length=1, max_length=160)
     providerOrderId: str | None = Field(default=None, min_length=1, max_length=160)
     providerCorrelationId: str | None = Field(default=None, min_length=1, max_length=160)
+    providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
+    instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
+    outcomeSide: TradeOutcomeSide | None = None
+    rawProviderStatus: str | None = Field(default=None, min_length=1, max_length=160)
     quantity: float | None = Field(default=None, gt=0)
     notional: float | None = Field(default=None, gt=0)
     optionStrategyId: OptionStrategyId | None = None
@@ -362,8 +432,13 @@ class TradeOrder(BaseModel):
     expiresAt: datetime | None = None
     createdAt: datetime | None = None
     updatedAt: datetime | None = None
+    sourceObservedAt: datetime | None = None
+    ingestedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    sourcePayloadHash: str | None = Field(default=None, min_length=1, max_length=160)
     statusReason: str | None = None
     riskChecks: list[TradeRiskCheck] = Field(default_factory=list)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
     reconciliationRequired: bool = False
 
     @field_validator("orderId", "accountId", mode="before")
@@ -377,6 +452,11 @@ class TradeOrder(BaseModel):
         "correlationId",
         "providerOrderId",
         "providerCorrelationId",
+        "providerInstrumentId",
+        "instrumentName",
+        "rawProviderStatus",
+        "syncRunId",
+        "sourcePayloadHash",
         "statusReason",
         mode="before",
     )
@@ -408,13 +488,18 @@ class TradeOrderHistoryResponse(BaseModel):
     orders: list[TradeOrder] = Field(default_factory=list)
     generatedAt: datetime | None = None
     nextCursor: str | None = None
+    sourceObservedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    unmappedRowCount: int = Field(default=0, ge=0)
+    quarantinedRowCount: int = Field(default=0, ge=0)
 
     @field_validator("accountId", mode="before")
     @classmethod
     def normalize_account_id(cls, value: object) -> str:
         return _normalize_required_text(value, "accountId")
 
-    @field_validator("nextCursor", mode="before")
+    @field_validator("nextCursor", "syncRunId", mode="before")
     @classmethod
     def normalize_next_cursor(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
@@ -431,17 +516,31 @@ class TradeBlotterRow(BaseModel):
     occurredAt: datetime
     orderId: str | None = Field(default=None, min_length=1, max_length=128)
     providerOrderId: str | None = Field(default=None, min_length=1, max_length=160)
+    providerEventId: str | None = Field(default=None, min_length=1, max_length=160)
     providerActivityId: str | None = Field(default=None, min_length=1, max_length=160)
     providerActivityType: str | None = Field(default=None, min_length=1, max_length=80)
+    providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
+    instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
     clientRequestId: str | None = Field(default=None, min_length=1, max_length=128)
     symbol: str | None = Field(default=None, min_length=1, max_length=32)
+    assetClass: TradeAssetClass = "equity"
     side: TradeOrderSide | None = None
+    outcomeSide: TradeOutcomeSide | None = None
     status: TradeOrderStatus | None = None
+    rawProviderStatus: str | None = Field(default=None, min_length=1, max_length=160)
     quantity: float | None = Field(default=None, gt=0)
     price: float | None = Field(default=None, ge=0)
     fees: float | None = None
     realizedPnl: float | None = None
     cashImpact: float | None = None
+    sourceObservedAt: datetime | None = None
+    ingestedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    sourcePayloadHash: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    reconciliationRequired: bool = False
+    quarantined: bool = False
+    quarantineReason: str | None = Field(default=None, min_length=1, max_length=320)
     note: str | None = None
 
     @field_validator("rowId", "accountId", mode="before")
@@ -452,9 +551,16 @@ class TradeBlotterRow(BaseModel):
     @field_validator(
         "orderId",
         "providerOrderId",
+        "providerEventId",
         "providerActivityId",
         "providerActivityType",
+        "providerInstrumentId",
+        "instrumentName",
         "clientRequestId",
+        "rawProviderStatus",
+        "syncRunId",
+        "sourcePayloadHash",
+        "quarantineReason",
         "note",
         mode="before",
     )
@@ -477,13 +583,18 @@ class TradeBlotterResponse(BaseModel):
     rows: list[TradeBlotterRow] = Field(default_factory=list)
     generatedAt: datetime | None = None
     nextCursor: str | None = None
+    sourceObservedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+    normalizationWarnings: list[TradeNormalizationWarning] = Field(default_factory=list)
+    unmappedRowCount: int = Field(default=0, ge=0)
+    quarantinedRowCount: int = Field(default=0, ge=0)
 
     @field_validator("accountId", mode="before")
     @classmethod
     def normalize_account_id(cls, value: object) -> str:
         return _normalize_required_text(value, "accountId")
 
-    @field_validator("nextCursor", mode="before")
+    @field_validator("nextCursor", "syncRunId", mode="before")
     @classmethod
     def normalize_next_cursor(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
@@ -500,6 +611,9 @@ class TradeOrderPreviewRequest(BaseModel):
     orderType: TradeOrderType
     timeInForce: TradeTimeInForce = "day"
     assetClass: TradeAssetClass = "equity"
+    providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
+    instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
+    outcomeSide: TradeOutcomeSide | None = None
     quantity: float | None = Field(default=None, gt=0)
     notional: float | None = Field(default=None, gt=0)
     optionStrategyId: OptionStrategyId | None = None
@@ -519,6 +633,11 @@ class TradeOrderPreviewRequest(BaseModel):
     @classmethod
     def normalize_order_symbol(cls, value: object) -> str:
         return _normalize_symbol(value)
+
+    @field_validator("providerInstrumentId", "instrumentName", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
 
     @model_validator(mode="after")
     def validate_intent(self) -> "TradeOrderPreviewRequest":

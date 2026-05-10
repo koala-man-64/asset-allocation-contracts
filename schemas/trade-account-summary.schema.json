@@ -329,6 +329,67 @@
       "title": "TradeDataFreshness",
       "type": "object"
     },
+    "TradeNormalizationWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 320,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "providerField": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerfield"
+        },
+        "rawValue": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rawvalue"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "TradeNormalizationWarning",
+      "type": "object"
+    },
     "TradePnlSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -511,6 +572,13 @@
       "title": "Name",
       "type": "string"
     },
+    "normalizationWarnings": {
+      "items": {
+        "$ref": "#/$defs/TradeNormalizationWarning"
+      },
+      "title": "Normalizationwarnings",
+      "type": "array"
+    },
     "openOrderCount": {
       "default": 0,
       "minimum": 0,
@@ -568,6 +636,12 @@
       "title": "Provider",
       "type": "string"
     },
+    "quarantinedRowCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Quarantinedrowcount",
+      "type": "integer"
+    },
     "readiness": {
       "default": "review",
       "enum": [
@@ -602,6 +676,33 @@
       ],
       "default": null,
       "title": "Snapshotasof"
+    },
+    "sourceObservedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourceobservedat"
+    },
+    "syncRunId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Syncrunid"
     },
     "unresolvedAlertCount": {
       "default": 0,

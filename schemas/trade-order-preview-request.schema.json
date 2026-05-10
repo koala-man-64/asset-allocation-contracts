@@ -225,6 +225,7 @@
         "option",
         "crypto",
         "mutual_fund",
+        "prediction_market",
         "unknown"
       ],
       "title": "Assetclass",
@@ -244,6 +245,20 @@
       ],
       "title": "Environment",
       "type": "string"
+    },
+    "instrumentName": {
+      "anyOf": [
+        {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Instrumentname"
     },
     "limitPrice": {
       "anyOf": [
@@ -322,6 +337,37 @@
       ],
       "title": "Ordertype",
       "type": "string"
+    },
+    "outcomeSide": {
+      "anyOf": [
+        {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcomeside"
+    },
+    "providerInstrumentId": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providerinstrumentid"
     },
     "quantity": {
       "anyOf": [
