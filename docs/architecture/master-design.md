@@ -260,6 +260,29 @@ Key design note:
 
 Broker-account contracts own account-level hard controls and operator-facing configuration state. They do not move portfolio construction ownership away from the active portfolio. Account allocation edits are orchestrated through broker-account commands, but the active portfolio remains the canonical source for sleeve definitions and allocation rows.
 
+### 4.6.1 Options Strategy and Backtest Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/options.py`
+- `python/asset_allocation_contracts/backtest.py`
+- `python/asset_allocation_contracts/trade_desk.py`
+- `schemas/option-*.schema.json`
+- `schemas/backtest-*.schema.json`
+- `schemas/trade-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define canonical option contract identity, option legs, leg groups, strategy templates, payoff profiles, quote/Greeks snapshots, lifecycle events, broker capability profiles, risk gates, and option backtest result/event envelopes
+- Publish the full options ladder taxonomy while keeping v1 research-only through explicit `researchBacktestSupported`, `brokerPreviewSupported`, and `liveSubmitSupported` flags
+- Carry option-specific backtest observability fields such as quote/Greeks missing counts, chain staleness, assignment/exercise/expiry counts, research-only blocks, and model-quality status
+- Represent Alpaca as the first broker capability profile without making Alpaca the canonical strategy model
+
+Key design note:
+
+Options are a contracts-repo-first capability. Consumer repos must not invent divergent option payloads for strategies, broker previews, chain snapshots, lifecycle events, or payoff/risk evaluation. V1 does not support live option submission: every canonical strategy template and broker constraint profile must keep `liveSubmitSupported=false`. Runtime-common may add pure payoff and normalization helpers after consuming a published contracts version, but API state, saved configuration, provider ingestion, and UI workflows remain owned by their respective consumer repos.
+
 ### 4.7 Notification And Trade Approval Contracts
 
 Owned by:
@@ -387,6 +410,7 @@ Purpose:
 - `python/asset_allocation_contracts/regime.py`
 - `python/asset_allocation_contracts/backtest.py`
 - `python/asset_allocation_contracts/broker_accounts.py`
+- `python/asset_allocation_contracts/options.py`
 - `python/asset_allocation_contracts/job_metadata.py`
 - `python/asset_allocation_contracts/strategy_publication.py`
 - `python/asset_allocation_contracts/trade_desk.py`

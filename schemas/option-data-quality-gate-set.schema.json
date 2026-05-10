@@ -1,0 +1,84 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "maxBidAskWidthPct": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxbidaskwidthpct"
+    },
+    "maxQuoteAgeSeconds": {
+      "minimum": 0,
+      "title": "Maxquoteageseconds",
+      "type": "integer"
+    },
+    "minOpenInterest": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minopeninterest"
+    },
+    "minVolume": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minvolume"
+    },
+    "rejectStaleChain": {
+      "default": true,
+      "title": "Rejectstalechain",
+      "type": "boolean"
+    },
+    "requireChainCompleteness": {
+      "default": true,
+      "title": "Requirechaincompleteness",
+      "type": "boolean"
+    },
+    "requireFeedMetadata": {
+      "default": true,
+      "title": "Requirefeedmetadata",
+      "type": "boolean"
+    },
+    "requireGreeks": {
+      "default": true,
+      "title": "Requiregreeks",
+      "type": "boolean"
+    },
+    "requireImpliedVolatility": {
+      "default": true,
+      "title": "Requireimpliedvolatility",
+      "type": "boolean"
+    },
+    "requirePaginationCoverage": {
+      "default": true,
+      "title": "Requirepaginationcoverage",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "maxQuoteAgeSeconds"
+  ],
+  "title": "OptionDataQualityGateSet",
+  "type": "object"
+}

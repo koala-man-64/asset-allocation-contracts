@@ -114,6 +114,19 @@
           "default": null,
           "title": "Approval Readiness"
         },
+        "assignment_event_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assignment Event Count"
+        },
         "avg_gross_exposure": {
           "anyOf": [
             {
@@ -198,6 +211,19 @@
           "default": null,
           "title": "Calmar Ratio"
         },
+        "chain_staleness_seconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chain Staleness Seconds"
+        },
         "closed_positions": {
           "anyOf": [
             {
@@ -273,6 +299,19 @@
           "default": null,
           "title": "Execution Model Quality"
         },
+        "exercise_event_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exercise Event Count"
+        },
         "expectancy_pnl": {
           "anyOf": [
             {
@@ -297,6 +336,19 @@
           "default": null,
           "title": "Expectancy Return"
         },
+        "expiry_event_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expiry Event Count"
+        },
         "final_equity": {
           "anyOf": [
             {
@@ -308,6 +360,19 @@
           ],
           "default": null,
           "title": "Final Equity"
+        },
+        "greeks_missing_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Greeks Missing Count"
         },
         "gross_annualized_return": {
           "anyOf": [
@@ -381,6 +446,85 @@
           "default": null,
           "title": "Max Drawdown"
         },
+        "option_backtest_model_quality": {
+          "anyOf": [
+            {
+              "enum": [
+                "specified_only",
+                "fixture_backed",
+                "chain_backed",
+                "lifecycle_backed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Option Backtest Model Quality"
+        },
+        "option_chain_snapshot_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Option Chain Snapshot Count"
+        },
+        "option_quote_missing_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Option Quote Missing Count"
+        },
+        "option_strategy_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "covered_call",
+                "cash_secured_put",
+                "long_call",
+                "long_put",
+                "protective_put",
+                "collar",
+                "bull_call_spread",
+                "bear_put_spread",
+                "bull_put_spread",
+                "bear_call_spread",
+                "long_straddle",
+                "long_strangle",
+                "iron_condor",
+                "iron_butterfly",
+                "long_butterfly",
+                "calendar_spread",
+                "diagonal_spread",
+                "pmcc",
+                "covered_straddle",
+                "covered_combination",
+                "covered_strangle"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Option Strategy Id"
+        },
         "payoff_ratio": {
           "anyOf": [
             {
@@ -434,6 +578,19 @@
           ],
           "default": null,
           "title": "Research Integrity Status"
+        },
+        "research_only_block_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Only Block Count"
         },
         "run_id": {
           "anyOf": [
@@ -554,6 +711,19 @@
           ],
           "default": null,
           "title": "Trades"
+        },
+        "wide_spread_reject_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wide Spread Reject Count"
         },
         "winning_positions": {
           "anyOf": [

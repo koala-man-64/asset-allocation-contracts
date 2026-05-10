@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
+from asset_allocation_contracts.options import OptionBacktestModelQuality, OptionStrategyId
 from asset_allocation_contracts.strategy import StrategyConfig
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -181,6 +182,17 @@ class BacktestSummary(BaseModel):
     approval_readiness: BacktestApprovalReadiness | None = None
     data_quality_event_count: int | None = Field(default=None, ge=0)
     policy_event_count: int | None = Field(default=None, ge=0)
+    option_strategy_id: OptionStrategyId | None = None
+    option_chain_snapshot_count: int | None = Field(default=None, ge=0)
+    option_quote_missing_count: int | None = Field(default=None, ge=0)
+    greeks_missing_count: int | None = Field(default=None, ge=0)
+    chain_staleness_seconds: float | None = Field(default=None, ge=0)
+    wide_spread_reject_count: int | None = Field(default=None, ge=0)
+    assignment_event_count: int | None = Field(default=None, ge=0)
+    exercise_event_count: int | None = Field(default=None, ge=0)
+    expiry_event_count: int | None = Field(default=None, ge=0)
+    research_only_block_count: int | None = Field(default=None, ge=0)
+    option_backtest_model_quality: OptionBacktestModelQuality | None = None
 
 
 class BacktestResultMetadata(BaseModel):

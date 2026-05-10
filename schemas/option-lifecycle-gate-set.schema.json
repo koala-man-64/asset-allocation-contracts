@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "blockInsufficientBuyingPowerAtExpiry": {
+      "default": true,
+      "title": "Blockinsufficientbuyingpoweratexpiry",
+      "type": "boolean"
+    },
+    "handleAssignment": {
+      "default": true,
+      "title": "Handleassignment",
+      "type": "boolean"
+    },
+    "handleDoNotExerciseGap": {
+      "default": true,
+      "title": "Handledonotexercisegap",
+      "type": "boolean"
+    },
+    "handleExercise": {
+      "default": true,
+      "title": "Handleexercise",
+      "type": "boolean"
+    },
+    "handleExpiration": {
+      "default": true,
+      "title": "Handleexpiration",
+      "type": "boolean"
+    },
+    "handleForcedLiquidationWindow": {
+      "default": true,
+      "title": "Handleforcedliquidationwindow",
+      "type": "boolean"
+    },
+    "trackPostAssignmentStockCashExposure": {
+      "default": true,
+      "title": "Trackpostassignmentstockcashexposure",
+      "type": "boolean"
+    }
+  },
+  "title": "OptionLifecycleGateSet",
+  "type": "object"
+}

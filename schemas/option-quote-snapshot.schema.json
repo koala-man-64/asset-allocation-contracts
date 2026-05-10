@@ -1,0 +1,343 @@
+{
+  "$defs": {
+    "OptionContractIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "exerciseStyle": {
+          "default": "american",
+          "enum": [
+            "american",
+            "european"
+          ],
+          "title": "Exercisestyle",
+          "type": "string"
+        },
+        "expirationDate": {
+          "format": "date",
+          "title": "Expirationdate",
+          "type": "string"
+        },
+        "multiplier": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Multiplier",
+          "type": "integer"
+        },
+        "optionSymbol": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Optionsymbol",
+          "type": "string"
+        },
+        "right": {
+          "enum": [
+            "call",
+            "put"
+          ],
+          "title": "Right",
+          "type": "string"
+        },
+        "rootSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rootsymbol"
+        },
+        "settlementStyle": {
+          "default": "physical",
+          "enum": [
+            "physical",
+            "cash"
+          ],
+          "title": "Settlementstyle",
+          "type": "string"
+        },
+        "strikePrice": {
+          "exclusiveMinimum": 0,
+          "title": "Strikeprice",
+          "type": "number"
+        },
+        "underlyingSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Underlyingsymbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "underlyingSymbol",
+        "optionSymbol",
+        "expirationDate",
+        "strikePrice",
+        "right"
+      ],
+      "title": "OptionContractIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOf": {
+      "format": "date-time",
+      "title": "Asof",
+      "type": "string"
+    },
+    "ask": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ask"
+    },
+    "bid": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bid"
+    },
+    "bidAskWidth": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bidaskwidth"
+    },
+    "bidAskWidthPct": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bidaskwidthpct"
+    },
+    "contract": {
+      "$ref": "#/$defs/OptionContractIdentity"
+    },
+    "delta": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Delta"
+    },
+    "feed": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Feed"
+    },
+    "gamma": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gamma"
+    },
+    "impliedVolatility": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Impliedvolatility"
+    },
+    "last": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last"
+    },
+    "mark": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mark"
+    },
+    "mid": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mid"
+    },
+    "openInterest": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Openinterest"
+    },
+    "provider": {
+      "default": "alpaca",
+      "enum": [
+        "alpaca",
+        "schwab",
+        "etrade",
+        "other"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "quoteAgeSeconds": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quoteageseconds"
+    },
+    "rho": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rho"
+    },
+    "snapshotId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Snapshotid",
+      "type": "string"
+    },
+    "stale": {
+      "default": false,
+      "title": "Stale",
+      "type": "boolean"
+    },
+    "theta": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Theta"
+    },
+    "vega": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vega"
+    },
+    "volume": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Volume"
+    }
+  },
+  "required": [
+    "snapshotId",
+    "contract",
+    "asOf"
+  ],
+  "title": "OptionQuoteSnapshot",
+  "type": "object"
+}

@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "exerciseStyle": {
+      "default": "american",
+      "enum": [
+        "american",
+        "european"
+      ],
+      "title": "Exercisestyle",
+      "type": "string"
+    },
+    "expirationDate": {
+      "format": "date",
+      "title": "Expirationdate",
+      "type": "string"
+    },
+    "multiplier": {
+      "default": 100,
+      "exclusiveMinimum": 0,
+      "title": "Multiplier",
+      "type": "integer"
+    },
+    "optionSymbol": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Optionsymbol",
+      "type": "string"
+    },
+    "right": {
+      "enum": [
+        "call",
+        "put"
+      ],
+      "title": "Right",
+      "type": "string"
+    },
+    "rootSymbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rootsymbol"
+    },
+    "settlementStyle": {
+      "default": "physical",
+      "enum": [
+        "physical",
+        "cash"
+      ],
+      "title": "Settlementstyle",
+      "type": "string"
+    },
+    "strikePrice": {
+      "exclusiveMinimum": 0,
+      "title": "Strikeprice",
+      "type": "number"
+    },
+    "underlyingSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Underlyingsymbol",
+      "type": "string"
+    }
+  },
+  "required": [
+    "underlyingSymbol",
+    "optionSymbol",
+    "expirationDate",
+    "strikePrice",
+    "right"
+  ],
+  "title": "OptionContractIdentity",
+  "type": "object"
+}

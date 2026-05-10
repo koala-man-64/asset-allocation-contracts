@@ -1,0 +1,232 @@
+{
+  "$defs": {
+    "OptionStrategySupportFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blockedreason"
+        },
+        "brokerPreviewSupported": {
+          "default": false,
+          "title": "Brokerpreviewsupported",
+          "type": "boolean"
+        },
+        "liveSubmitSupported": {
+          "default": false,
+          "title": "Livesubmitsupported",
+          "type": "boolean"
+        },
+        "researchBacktestSupported": {
+          "default": false,
+          "title": "Researchbacktestsupported",
+          "type": "boolean"
+        }
+      },
+      "title": "OptionStrategySupportFlags",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "breakevens": {
+      "items": {
+        "type": "number"
+      },
+      "title": "Breakevens",
+      "type": "array"
+    },
+    "deltaSign": {
+      "default": "mixed",
+      "enum": [
+        "positive",
+        "negative",
+        "neutral",
+        "mixed",
+        "path_dependent"
+      ],
+      "title": "Deltasign",
+      "type": "string"
+    },
+    "expirationScope": {
+      "default": "final_expiration",
+      "enum": [
+        "final_expiration",
+        "short_leg_expiration",
+        "path_dependent"
+      ],
+      "title": "Expirationscope",
+      "type": "string"
+    },
+    "idealIvEnvironment": {
+      "default": "unknown",
+      "enum": [
+        "cheap",
+        "rich",
+        "neutral",
+        "term_structure",
+        "event_vol",
+        "unknown"
+      ],
+      "title": "Idealivenvironment",
+      "type": "string"
+    },
+    "maxLoss": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxloss"
+    },
+    "maxLossDescription": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxlossdescription"
+    },
+    "maxProfit": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxprofit"
+    },
+    "maxProfitDescription": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxprofitdescription"
+    },
+    "profitWindowDescription": {
+      "maxLength": 512,
+      "minLength": 1,
+      "title": "Profitwindowdescription",
+      "type": "string"
+    },
+    "profitWindowLower": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Profitwindowlower"
+    },
+    "profitWindowUpper": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Profitwindowupper"
+    },
+    "strategyId": {
+      "enum": [
+        "covered_call",
+        "cash_secured_put",
+        "long_call",
+        "long_put",
+        "protective_put",
+        "collar",
+        "bull_call_spread",
+        "bear_put_spread",
+        "bull_put_spread",
+        "bear_call_spread",
+        "long_straddle",
+        "long_strangle",
+        "iron_condor",
+        "iron_butterfly",
+        "long_butterfly",
+        "calendar_spread",
+        "diagonal_spread",
+        "pmcc",
+        "covered_straddle",
+        "covered_combination",
+        "covered_strangle"
+      ],
+      "title": "Strategyid",
+      "type": "string"
+    },
+    "support": {
+      "$ref": "#/$defs/OptionStrategySupportFlags"
+    },
+    "thetaSign": {
+      "default": "mixed",
+      "enum": [
+        "positive",
+        "negative",
+        "neutral",
+        "mixed",
+        "path_dependent"
+      ],
+      "title": "Thetasign",
+      "type": "string"
+    },
+    "vegaSign": {
+      "default": "mixed",
+      "enum": [
+        "positive",
+        "negative",
+        "neutral",
+        "mixed",
+        "path_dependent"
+      ],
+      "title": "Vegasign",
+      "type": "string"
+    }
+  },
+  "required": [
+    "strategyId",
+    "profitWindowDescription",
+    "support"
+  ],
+  "title": "OptionPayoffProfile",
+  "type": "object"
+}

@@ -107,6 +107,30 @@ export type BacktestExecutionModel = 'simple_bps';
 export type BacktestExecutionModelQuality = 'not_tca_grade';
 export type BacktestApprovalReadiness = 'research_only';
 export type BacktestDataQualityEventSeverity = 'warning' | 'error' | 'fatal';
+export type OptionRight = 'call' | 'put';
+export type OptionExerciseStyle = 'american' | 'european';
+export type OptionSettlementStyle = 'physical' | 'cash';
+export type OptionLegSide = 'long' | 'short';
+export type OptionLegRole = 'stock' | 'long_call' | 'short_call' | 'long_put' | 'short_put' | 'long_wing' | 'short_body' | 'underlying_stock' | 'cash_reserve';
+export type OptionOpenClose = 'open' | 'close';
+export type OptionPayoffFamily = 'stock_overlay_income' | 'outright_directional' | 'vertical_spread' | 'time_spread' | 'volatility' | 'hedge' | 'stock_overlay_hedge' | 'aggressive_income';
+export type OptionStrategyId = 'covered_call' | 'cash_secured_put' | 'long_call' | 'long_put' | 'protective_put' | 'collar' | 'bull_call_spread' | 'bear_put_spread' | 'bull_put_spread' | 'bear_call_spread' | 'long_straddle' | 'long_strangle' | 'iron_condor' | 'iron_butterfly' | 'long_butterfly' | 'calendar_spread' | 'diagonal_spread' | 'pmcc' | 'covered_straddle' | 'covered_combination' | 'covered_strangle';
+export type OptionStrategyStage = 'core_research' | 'experimental_research' | 'specified_blocked' | 'out_of_v1';
+export type OptionApprovalLevel = 1 | 2 | 3;
+export type OptionNetPremiumDirection = 'debit' | 'credit' | 'zero_or_variable' | 'path_dependent';
+export type OptionExpirationScope = 'final_expiration' | 'short_leg_expiration' | 'path_dependent';
+export type OptionExposureSign = 'positive' | 'negative' | 'neutral' | 'mixed' | 'path_dependent';
+export type OptionIvEnvironment = 'cheap' | 'rich' | 'neutral' | 'term_structure' | 'event_vol' | 'unknown';
+export type OptionProvider = 'alpaca' | 'schwab' | 'etrade' | 'other';
+export type OptionEnvironment = 'paper' | 'sandbox' | 'live';
+export type OptionOrderType = 'market' | 'limit' | 'stop' | 'stop_limit';
+export type OptionTimeInForce = 'day' | 'gtc' | 'opg' | 'cls' | 'ioc' | 'fok';
+export type OptionLifecycleEventType = 'expiration' | 'assignment' | 'exercise' | 'do_not_exercise' | 'forced_liquidation_window' | 'post_assignment_exposure';
+export type OptionBacktestEventType = 'payoff_evaluated' | 'risk_gate' | 'data_quality_gate' | 'lifecycle_event' | 'research_only_block' | 'broker_preview_block';
+export type OptionGateStatus = 'pass' | 'warning' | 'fail';
+export type OptionEventSeverity = 'info' | 'warning' | 'error' | 'critical';
+export type OptionBacktestModelQuality = 'specified_only' | 'fixture_backed' | 'chain_backed' | 'lifecycle_backed';
+export type OptionOrderQuantityMode = 'whole_contracts';
 export type AiChatStreamEvent = AiChatStartedEvent | AiChatStatusEvent | AiChatReasoningSummaryDeltaEvent | AiChatOutputTextDeltaEvent | AiChatCompletedEvent | AiChatErrorEvent;
 export type UniverseNode = UniverseGroup | UniverseCondition;
 
@@ -328,7 +352,7 @@ export interface RankingFactor {
   table: string;
   column: string;
   weight: number;
-  direction: StockScreenerSortDirection;
+  direction: RankingDirection;
   missingValuePolicy: RankingMissingValuePolicy;
   transforms: RankingTransform[];
 }
@@ -722,7 +746,7 @@ export interface StrategyPublicationReconcileSignalResponse {
 
 export interface RunRecordResponse {
   run_id: string;
-  status: BrokerSyncRunStatus;
+  status: RunStatus;
   submitted_at: string;
   started_at?: string | null;
   completed_at?: string | null;
@@ -766,7 +790,7 @@ export interface BacktestLookupResponse {
 
 export interface RunStatusResponse {
   run_id: string;
-  status: BrokerSyncRunStatus;
+  status: RunStatus;
   submitted_at: string;
   started_at?: string | null;
   completed_at?: string | null;
@@ -835,6 +859,17 @@ export interface BacktestSummary {
   approval_readiness?: BacktestApprovalReadiness | null;
   data_quality_event_count?: number | null;
   policy_event_count?: number | null;
+  option_strategy_id?: OptionStrategyId | null;
+  option_chain_snapshot_count?: number | null;
+  option_quote_missing_count?: number | null;
+  greeks_missing_count?: number | null;
+  chain_staleness_seconds?: number | null;
+  wide_spread_reject_count?: number | null;
+  assignment_event_count?: number | null;
+  exercise_event_count?: number | null;
+  expiry_event_count?: number | null;
+  research_only_block_count?: number | null;
+  option_backtest_model_quality?: OptionBacktestModelQuality | null;
   [key: string]: unknown;
 }
 
@@ -1015,6 +1050,274 @@ export interface BacktestDataQualityEvent {
   details: Record<string, unknown>;
 }
 
+export interface OptionContractIdentity {
+  underlyingSymbol: string;
+  optionSymbol: string;
+  expirationDate: string;
+  strikePrice: number;
+  right: OptionRight;
+  multiplier: number;
+  exerciseStyle: OptionExerciseStyle;
+  settlementStyle: OptionSettlementStyle;
+  rootSymbol?: string | null;
+}
+
+export interface OptionLeg {
+  legId: string;
+  contract: OptionContractIdentity;
+  side: OptionLegSide;
+  quantity: number;
+  ratio: number;
+  role: OptionLegRole;
+  openClose: OptionOpenClose;
+  premium?: number | null;
+  limitPrice?: number | null;
+}
+
+export interface OptionLegGroup {
+  groupId: string;
+  strategyId: OptionStrategyId;
+  underlyingSymbol: string;
+  legs: OptionLeg[];
+  stockQuantity?: number | null;
+  cashReserved?: number | null;
+  openedAt?: string | null;
+}
+
+export interface OptionStrategySupportFlags {
+  researchBacktestSupported: boolean;
+  brokerPreviewSupported: boolean;
+  liveSubmitSupported: boolean;
+  blockedReason?: string | null;
+}
+
+export interface OptionStrategyTemplate {
+  strategyId: OptionStrategyId;
+  displayName: string;
+  payoffFamily: OptionPayoffFamily;
+  stage: OptionStrategyStage;
+  approvalLevel: OptionApprovalLevel;
+  minLegs: number;
+  maxLegs: number;
+  requiredLegRoles: OptionLegRole[];
+  usesStockOverlay: boolean;
+  requiresStockPosition: boolean;
+  requiresCashSecuring: boolean;
+  definedRisk: boolean;
+  netPremiumDirection: OptionNetPremiumDirection;
+  lifecycleModelRequired: boolean;
+  support: OptionStrategySupportFlags;
+  summary: string;
+  notes: string[];
+}
+
+export interface OptionStrategyExclusion {
+  strategyId: string;
+  reason: string;
+  stage: OptionStrategyStage;
+}
+
+export interface OptionStrategyLadderResponse {
+  ladderVersion: string;
+  templates: OptionStrategyTemplate[];
+  exclusions: OptionStrategyExclusion[];
+  generatedAt?: string | null;
+}
+
+export interface OptionPayoffProfile {
+  strategyId: OptionStrategyId;
+  expirationScope: OptionExpirationScope;
+  maxProfit?: number | null;
+  maxProfitDescription?: string | null;
+  maxLoss?: number | null;
+  maxLossDescription?: string | null;
+  breakevens: number[];
+  profitWindowLower?: number | null;
+  profitWindowUpper?: number | null;
+  profitWindowDescription: string;
+  deltaSign: OptionExposureSign;
+  thetaSign: OptionExposureSign;
+  vegaSign: OptionExposureSign;
+  idealIvEnvironment: OptionIvEnvironment;
+  assumptions: string[];
+  support: OptionStrategySupportFlags;
+}
+
+export interface OptionQuoteSnapshot {
+  snapshotId: string;
+  contract: OptionContractIdentity;
+  asOf: string;
+  bid?: number | null;
+  ask?: number | null;
+  mid?: number | null;
+  last?: number | null;
+  mark?: number | null;
+  bidAskWidth?: number | null;
+  bidAskWidthPct?: number | null;
+  impliedVolatility?: number | null;
+  delta?: number | null;
+  gamma?: number | null;
+  theta?: number | null;
+  vega?: number | null;
+  rho?: number | null;
+  openInterest?: number | null;
+  volume?: number | null;
+  quoteAgeSeconds?: number | null;
+  feed?: string | null;
+  provider: OptionProvider;
+  stale: boolean;
+}
+
+export interface OptionChainSnapshot {
+  snapshotId: string;
+  provider: OptionProvider;
+  underlyingSymbol: string;
+  asOf: string;
+  expirationDate?: string | null;
+  quotes: OptionQuoteSnapshot[];
+  totalContractCount: number;
+  pageCount: number;
+  paginationComplete: boolean;
+  chainComplete: boolean;
+  missingQuoteCount: number;
+  missingGreeksCount: number;
+  maxQuoteAgeSeconds?: number | null;
+  feed?: string | null;
+}
+
+export interface OptionLifecycleEvent {
+  eventId: string;
+  eventType: OptionLifecycleEventType;
+  occurredAt: string;
+  strategyId?: OptionStrategyId | null;
+  contract?: OptionContractIdentity | null;
+  quantity?: number | null;
+  cashImpact?: number | null;
+  stockQuantityImpact?: number | null;
+  message: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface OptionBrokerCapability {
+  provider: OptionProvider;
+  environment: OptionEnvironment;
+  approvalLevel?: OptionApprovalLevel | null;
+  supportsOptionAccounts: boolean;
+  supportsOptionChains: boolean;
+  supportsOptionQuotes: boolean;
+  supportsOptionGreeks: boolean;
+  supportsMultiLegOrders: boolean;
+  supportsExercise: boolean;
+  supportsWholeContractQuantityOnly: boolean;
+  supportsNotionalOptionOrders: boolean;
+  supportsExtendedHoursOptions: boolean;
+  allowedOrderTypes: OptionOrderType[];
+  allowedTimeInForce: OptionTimeInForce[];
+  maxLegsPerOrder?: number | null;
+  restrictions: string[];
+}
+
+export interface OptionBrokerConstraintProfile {
+  provider: OptionProvider;
+  environment: OptionEnvironment;
+  capability: OptionBrokerCapability;
+  orderQuantityMode: OptionOrderQuantityMode;
+  allowedFamilies: OptionStrategyId[];
+  blockedFamilies: OptionStrategyId[];
+  multiLegRestrictions: string[];
+  researchOnly: boolean;
+  brokerPreviewSupported: boolean;
+  liveSubmitSupported: boolean;
+}
+
+export interface OptionRiskLimitSet {
+  maxUnderlierDeltaEquivalentExposure?: number | null;
+  maxGrossOptionNotional?: number | null;
+  maxPremiumAtRisk?: number | null;
+  maxDefinedMaxLoss?: number | null;
+  maxContractsPerUnderlier?: number | null;
+  maxContractsPerExpiry?: number | null;
+  maxContractsPerFamily?: number | null;
+  maxExpirationBucketConcentrationPct?: number | null;
+  maxShortGammaConcentrationPct?: number | null;
+}
+
+export interface OptionDataQualityGateSet {
+  maxQuoteAgeSeconds: number;
+  maxBidAskWidthPct?: number | null;
+  requireChainCompleteness: boolean;
+  requireGreeks: boolean;
+  requireImpliedVolatility: boolean;
+  minOpenInterest?: number | null;
+  minVolume?: number | null;
+  requireFeedMetadata: boolean;
+  rejectStaleChain: boolean;
+  requirePaginationCoverage: boolean;
+}
+
+export interface OptionLifecycleGateSet {
+  handleExpiration: boolean;
+  handleAssignment: boolean;
+  handleExercise: boolean;
+  handleDoNotExerciseGap: boolean;
+  blockInsufficientBuyingPowerAtExpiry: boolean;
+  handleForcedLiquidationWindow: boolean;
+  trackPostAssignmentStockCashExposure: boolean;
+}
+
+export interface OptionRiskGateResult {
+  code: string;
+  status: OptionGateStatus;
+  severity: OptionEventSeverity;
+  blocking: boolean;
+  message: string;
+  observedValue?: number | string | boolean | null;
+  limitValue?: number | string | boolean | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface OptionRiskEvaluation {
+  evaluationId: string;
+  strategyId: OptionStrategyId;
+  generatedAt: string;
+  support: OptionStrategySupportFlags;
+  payoff: OptionPayoffProfile;
+  riskLimits: OptionRiskLimitSet;
+  dataQualityGates: OptionDataQualityGateSet;
+  lifecycleGates: OptionLifecycleGateSet;
+  gateResults: OptionRiskGateResult[];
+  metrics: string[];
+  approvedForResearchBacktest: boolean;
+  approvedForBrokerPreview: boolean;
+  approvedForLiveSubmit: boolean;
+}
+
+export interface OptionBacktestEvent {
+  eventId: string;
+  runId: string;
+  eventType: OptionBacktestEventType;
+  severity: OptionEventSeverity;
+  occurredAt: string;
+  strategyId?: OptionStrategyId | null;
+  contract?: OptionContractIdentity | null;
+  message: string;
+  blocking: boolean;
+  metadata: Record<string, unknown>;
+}
+
+export interface OptionBacktestResult {
+  resultId: string;
+  runId: string;
+  strategyTemplate: OptionStrategyTemplate;
+  payoff: OptionPayoffProfile;
+  modelQuality: OptionBacktestModelQuality;
+  quoteSnapshots: OptionQuoteSnapshot[];
+  chainSnapshots: OptionChainSnapshot[];
+  lifecycleEvents: OptionLifecycleEvent[];
+  events: OptionBacktestEvent[];
+  riskEvaluation?: OptionRiskEvaluation | null;
+}
+
 export interface BacktestClaimRequest {
   executionName?: string | null;
 }
@@ -1048,7 +1351,7 @@ export interface StockScreenerRequest {
   limit: number;
   offset: number;
   sort: StockScreenerSortKey;
-  direction: StockScreenerSortDirection;
+  direction: RankingDirection;
   ranking_schema_name?: string | null;
   ranking_schema_version?: number | null;
   sectors?: string[] | null;
@@ -1190,14 +1493,14 @@ export interface BrokerAccountDetail {
 
 export interface BrokerAccountSummary {
   accountId: string;
-  broker: TradeProvider;
+  broker: BrokerVendor;
   name: string;
   accountNumberMasked?: string | null;
   baseCurrency: string;
   overallStatus: BrokerHealthTone;
-  tradeReadiness: TradeReadiness;
+  tradeReadiness: BrokerTradeReadiness;
   tradeReadinessReason?: string | null;
-  highestAlertSeverity?: TradeAuditSeverity | null;
+  highestAlertSeverity?: BrokerAlertSeverity | null;
   connectionHealth: BrokerConnectionHealth;
   equity: number;
   cash: number;
@@ -1230,7 +1533,7 @@ export interface BrokerConnectionHealth {
 export interface BrokerStrategyAllocationSummary {
   portfolioName?: string | null;
   portfolioVersion?: number | null;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   allocatableCapital?: number | null;
   allocatedPercent?: number | null;
   allocatedNotionalBaseCcy?: number | null;
@@ -1245,7 +1548,7 @@ export interface BrokerStrategyAllocationItem {
   sleeveId: string;
   sleeveName: string;
   strategy: BrokerStrategyReference;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   targetWeightPct?: number | null;
   targetNotionalBaseCcy?: number | null;
   derivedWeightPct?: number | null;
@@ -1278,7 +1581,7 @@ export interface BrokerCapabilityFlags {
 export interface BrokerAccountAlert {
   alertId: string;
   accountId: string;
-  severity: TradeAuditSeverity;
+  severity: BrokerAlertSeverity;
   status: BrokerAlertStatus;
   code: string;
   title: string;
@@ -1295,7 +1598,7 @@ export interface BrokerSyncRun {
   accountId: string;
   trigger: BrokerSyncTrigger;
   scope: BrokerSyncScope;
-  status: BrokerSyncRunStatus;
+  status: RunStatus;
   requestedAt: string;
   startedAt?: string | null;
   completedAt?: string | null;
@@ -1337,12 +1640,12 @@ export interface BrokerTradingPolicy {
   maxOpenPositions?: number | null;
   maxSinglePositionExposure?: BrokerPositionSizeLimit | null;
   allowedSides: BrokerPolicySide[];
-  allowedAssetClasses: BrokerPolicyAssetClass[];
+  allowedAssetClasses: StrategyPositionAssetClass[];
   requireOrderConfirmation: boolean;
 }
 
 export interface BrokerPositionSizeLimit {
-  mode: BrokerPositionSizeMode;
+  mode: StrategyPositionSizeMode;
   value: number;
 }
 
@@ -1374,13 +1677,13 @@ export interface BrokerAccountActionResponse {
   requestedAt: string;
   message?: string | null;
   resultingConnectionHealth?: BrokerConnectionHealth | null;
-  tradeReadiness?: TradeReadiness | null;
+  tradeReadiness?: BrokerTradeReadiness | null;
   syncPaused?: boolean | null;
 }
 
 export interface BrokerAccountOnboardingCandidate {
   candidateId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   suggestedAccountId: string;
   displayName: string;
@@ -1403,10 +1706,10 @@ export interface BrokerAccountOnboardingCandidateListResponse {
 
 export interface BrokerAccountOnboardingRequest {
   candidateId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   displayName: string;
-  readiness: TradeReadiness;
+  readiness: BrokerTradeReadiness;
   executionPosture: BrokerAccountExecutionPosture;
   initialRefresh: boolean;
   reason: string;
@@ -1425,7 +1728,7 @@ export interface BrokerAccountOnboardingResponse {
 
 export interface BrokerAccountAllocationUpdateRequest {
   expectedConfigurationVersion?: number | null;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   allocatableCapital?: number | null;
   effectiveFrom?: string | null;
   items: BrokerStrategyAllocationItem[];
@@ -1459,11 +1762,11 @@ export interface AcknowledgeBrokerAlertRequest {
 export interface TradeAccountSummary {
   accountId: string;
   name: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   accountNumberMasked?: string | null;
   baseCurrency: string;
-  readiness: TradeReadiness;
+  readiness: BrokerTradeReadiness;
   readinessReason?: string | null;
   capabilities: TradeCapabilityFlags;
   cash: number;
@@ -1501,6 +1804,11 @@ export interface TradeCapabilityFlags {
   supportsEquities: boolean;
   supportsEtfs: boolean;
   supportsOptions: boolean;
+  optionApprovalLevel?: OptionApprovalLevel | null;
+  supportsOptionChains: boolean;
+  supportsOptionGreeks: boolean;
+  supportsOptionMultiLegOrders: boolean;
+  supportsOptionExercise: boolean;
   readOnly: boolean;
   unsupportedReason?: string | null;
 }
@@ -1538,16 +1846,21 @@ export interface TradeRiskLimit {
   maxOrderNotional?: number | null;
   maxDailyNotional?: number | null;
   maxShareQuantity?: number | null;
+  maxOptionContracts?: number | null;
+  maxOptionPremiumAtRisk?: number | null;
+  maxDefinedOptionLoss?: number | null;
   allowedAssetClasses: TradeAssetClass[];
   allowedOrderTypes: TradeOrderType[];
+  allowedOptionStrategies: OptionStrategyId[];
   liveTradingAllowed: boolean;
+  liveOptionSubmitAllowed: boolean;
   liveTradingReason?: string | null;
 }
 
 export interface TradeDeskAlert {
   alertId: string;
   accountId: string;
-  severity: TradeAuditSeverity;
+  severity: BrokerAlertSeverity;
   status: BrokerAlertStatus;
   code: string;
   title: string;
@@ -1563,10 +1876,10 @@ export interface TradeDeskAlert {
 export interface TradeDeskAuditEvent {
   eventId: string;
   accountId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   eventType: TradeAuditEventType;
-  severity: TradeAuditSeverity;
+  severity: BrokerAlertSeverity;
   occurredAt: string;
   actor?: string | null;
   orderId?: string | null;
@@ -1616,7 +1929,7 @@ export interface TradePositionListResponse {
 export interface TradeOrder {
   orderId: string;
   accountId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   status: TradeOrderStatus;
   symbol: string;
@@ -1631,6 +1944,8 @@ export interface TradeOrder {
   providerCorrelationId?: string | null;
   quantity?: number | null;
   notional?: number | null;
+  optionStrategyId?: OptionStrategyId | null;
+  optionLegs: OptionLeg[];
   limitPrice?: number | null;
   stopPrice?: number | null;
   estimatedPrice?: number | null;
@@ -1654,7 +1969,7 @@ export interface TradeRiskCheck {
   code: string;
   label: string;
   status: TradeRiskCheckStatus;
-  severity: TradeAuditSeverity;
+  severity: BrokerAlertSeverity;
   blocking: boolean;
   message: string;
   metadata: Record<string, unknown>;
@@ -1670,7 +1985,7 @@ export interface TradeOrderHistoryResponse {
 export interface TradeBlotterRow {
   rowId: string;
   accountId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   eventType: TradeBlotterEventType;
   occurredAt: string;
@@ -1706,6 +2021,8 @@ export interface TradeOrderPreviewRequest {
   assetClass: TradeAssetClass;
   quantity?: number | null;
   notional?: number | null;
+  optionStrategyId?: OptionStrategyId | null;
+  optionLegs: OptionLeg[];
   limitPrice?: number | null;
   stopPrice?: number | null;
   allowExtendedHours: boolean;
@@ -1716,7 +2033,7 @@ export interface TradeOrderPreviewRequest {
 export interface TradeOrderPreviewResponse {
   previewId: string;
   accountId: string;
-  provider: TradeProvider;
+  provider: BrokerVendor;
   environment: TradeEnvironment;
   order: TradeOrder;
   generatedAt: string;
@@ -1748,6 +2065,8 @@ export interface TradeOrderPlaceRequest {
   assetClass: TradeAssetClass;
   quantity?: number | null;
   notional?: number | null;
+  optionStrategyId?: OptionStrategyId | null;
+  optionLegs: OptionLeg[];
   limitPrice?: number | null;
   stopPrice?: number | null;
   allowExtendedHours: boolean;
@@ -2002,7 +2321,7 @@ export interface PortfolioAlertListResponse {
 export interface PortfolioAlert {
   alertId: string;
   accountId: string;
-  severity: TradeAuditSeverity;
+  severity: BrokerAlertSeverity;
   status: BrokerAlertStatus;
   code: string;
   title: string;
@@ -2044,7 +2363,7 @@ export interface PortfolioRevision {
   version: number;
   description: string;
   benchmarkSymbol?: string | null;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   allocatableCapital?: number | null;
   allocations: PortfolioSleeveAllocation[];
   notes: string;
@@ -2057,7 +2376,7 @@ export interface PortfolioSleeveAllocation {
   sleeveId: string;
   sleeveName: string;
   strategy: StrategyVersionReference;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   targetWeight?: number | null;
   targetNotionalBaseCcy?: number | null;
   derivedWeight?: number | null;
@@ -2223,7 +2542,7 @@ export interface PortfolioUpsertRequest {
   name: string;
   description: string;
   benchmarkSymbol?: string | null;
-  allocationMode: PortfolioAllocationMode;
+  allocationMode: BrokerAllocationMode;
   allocatableCapital?: number | null;
   allocations: PortfolioSleeveAllocation[];
   notes: string;
@@ -2488,7 +2807,7 @@ export interface SymbolCleanupWorkItem {
 
 export interface SymbolCleanupRunSummary {
   runId: string;
-  status: BrokerSyncRunStatus;
+  status: RunStatus;
   mode: 'fill_missing' | 'full_reconcile';
   queuedCount: number;
   claimedCount: number;

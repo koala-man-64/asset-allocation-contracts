@@ -1,0 +1,262 @@
+{
+  "$defs": {
+    "OptionBrokerCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedOrderTypes": {
+          "items": {
+            "enum": [
+              "market",
+              "limit",
+              "stop",
+              "stop_limit"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedordertypes",
+          "type": "array"
+        },
+        "allowedTimeInForce": {
+          "items": {
+            "enum": [
+              "day",
+              "gtc",
+              "opg",
+              "cls",
+              "ioc",
+              "fok"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedtimeinforce",
+          "type": "array"
+        },
+        "approvalLevel": {
+          "anyOf": [
+            {
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approvallevel"
+        },
+        "environment": {
+          "default": "paper",
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "maxLegsPerOrder": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlegsperorder"
+        },
+        "provider": {
+          "default": "alpaca",
+          "enum": [
+            "alpaca",
+            "schwab",
+            "etrade",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "restrictions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Restrictions",
+          "type": "array"
+        },
+        "supportsExercise": {
+          "default": false,
+          "title": "Supportsexercise",
+          "type": "boolean"
+        },
+        "supportsExtendedHoursOptions": {
+          "default": false,
+          "title": "Supportsextendedhoursoptions",
+          "type": "boolean"
+        },
+        "supportsMultiLegOrders": {
+          "default": false,
+          "title": "Supportsmultilegorders",
+          "type": "boolean"
+        },
+        "supportsNotionalOptionOrders": {
+          "default": false,
+          "title": "Supportsnotionaloptionorders",
+          "type": "boolean"
+        },
+        "supportsOptionAccounts": {
+          "default": false,
+          "title": "Supportsoptionaccounts",
+          "type": "boolean"
+        },
+        "supportsOptionChains": {
+          "default": false,
+          "title": "Supportsoptionchains",
+          "type": "boolean"
+        },
+        "supportsOptionGreeks": {
+          "default": false,
+          "title": "Supportsoptiongreeks",
+          "type": "boolean"
+        },
+        "supportsOptionQuotes": {
+          "default": false,
+          "title": "Supportsoptionquotes",
+          "type": "boolean"
+        },
+        "supportsWholeContractQuantityOnly": {
+          "default": true,
+          "title": "Supportswholecontractquantityonly",
+          "type": "boolean"
+        }
+      },
+      "title": "OptionBrokerCapability",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowedFamilies": {
+      "items": {
+        "enum": [
+          "covered_call",
+          "cash_secured_put",
+          "long_call",
+          "long_put",
+          "protective_put",
+          "collar",
+          "bull_call_spread",
+          "bear_put_spread",
+          "bull_put_spread",
+          "bear_call_spread",
+          "long_straddle",
+          "long_strangle",
+          "iron_condor",
+          "iron_butterfly",
+          "long_butterfly",
+          "calendar_spread",
+          "diagonal_spread",
+          "pmcc",
+          "covered_straddle",
+          "covered_combination",
+          "covered_strangle"
+        ],
+        "type": "string"
+      },
+      "title": "Allowedfamilies",
+      "type": "array"
+    },
+    "blockedFamilies": {
+      "items": {
+        "enum": [
+          "covered_call",
+          "cash_secured_put",
+          "long_call",
+          "long_put",
+          "protective_put",
+          "collar",
+          "bull_call_spread",
+          "bear_put_spread",
+          "bull_put_spread",
+          "bear_call_spread",
+          "long_straddle",
+          "long_strangle",
+          "iron_condor",
+          "iron_butterfly",
+          "long_butterfly",
+          "calendar_spread",
+          "diagonal_spread",
+          "pmcc",
+          "covered_straddle",
+          "covered_combination",
+          "covered_strangle"
+        ],
+        "type": "string"
+      },
+      "title": "Blockedfamilies",
+      "type": "array"
+    },
+    "brokerPreviewSupported": {
+      "default": false,
+      "title": "Brokerpreviewsupported",
+      "type": "boolean"
+    },
+    "capability": {
+      "$ref": "#/$defs/OptionBrokerCapability"
+    },
+    "environment": {
+      "default": "paper",
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "liveSubmitSupported": {
+      "default": false,
+      "title": "Livesubmitsupported",
+      "type": "boolean"
+    },
+    "multiLegRestrictions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Multilegrestrictions",
+      "type": "array"
+    },
+    "orderQuantityMode": {
+      "const": "whole_contracts",
+      "default": "whole_contracts",
+      "title": "Orderquantitymode",
+      "type": "string"
+    },
+    "provider": {
+      "default": "alpaca",
+      "enum": [
+        "alpaca",
+        "schwab",
+        "etrade",
+        "other"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "researchOnly": {
+      "default": true,
+      "title": "Researchonly",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "capability"
+  ],
+  "title": "OptionBrokerConstraintProfile",
+  "type": "object"
+}

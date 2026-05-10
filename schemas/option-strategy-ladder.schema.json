@@ -1,0 +1,279 @@
+{
+  "$defs": {
+    "OptionStrategyExclusion": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "stage": {
+          "default": "out_of_v1",
+          "enum": [
+            "core_research",
+            "experimental_research",
+            "specified_blocked",
+            "out_of_v1"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "strategyId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "strategyId",
+        "reason"
+      ],
+      "title": "OptionStrategyExclusion",
+      "type": "object"
+    },
+    "OptionStrategySupportFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blockedreason"
+        },
+        "brokerPreviewSupported": {
+          "default": false,
+          "title": "Brokerpreviewsupported",
+          "type": "boolean"
+        },
+        "liveSubmitSupported": {
+          "default": false,
+          "title": "Livesubmitsupported",
+          "type": "boolean"
+        },
+        "researchBacktestSupported": {
+          "default": false,
+          "title": "Researchbacktestsupported",
+          "type": "boolean"
+        }
+      },
+      "title": "OptionStrategySupportFlags",
+      "type": "object"
+    },
+    "OptionStrategyTemplate": {
+      "additionalProperties": false,
+      "properties": {
+        "approvalLevel": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "title": "Approvallevel",
+          "type": "integer"
+        },
+        "definedRisk": {
+          "default": true,
+          "title": "Definedrisk",
+          "type": "boolean"
+        },
+        "displayName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Displayname",
+          "type": "string"
+        },
+        "lifecycleModelRequired": {
+          "default": false,
+          "title": "Lifecyclemodelrequired",
+          "type": "boolean"
+        },
+        "maxLegs": {
+          "minimum": 1,
+          "title": "Maxlegs",
+          "type": "integer"
+        },
+        "minLegs": {
+          "minimum": 1,
+          "title": "Minlegs",
+          "type": "integer"
+        },
+        "netPremiumDirection": {
+          "default": "zero_or_variable",
+          "enum": [
+            "debit",
+            "credit",
+            "zero_or_variable",
+            "path_dependent"
+          ],
+          "title": "Netpremiumdirection",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "payoffFamily": {
+          "enum": [
+            "stock_overlay_income",
+            "outright_directional",
+            "vertical_spread",
+            "time_spread",
+            "volatility",
+            "hedge",
+            "stock_overlay_hedge",
+            "aggressive_income"
+          ],
+          "title": "Payofffamily",
+          "type": "string"
+        },
+        "requiredLegRoles": {
+          "items": {
+            "enum": [
+              "stock",
+              "long_call",
+              "short_call",
+              "long_put",
+              "short_put",
+              "long_wing",
+              "short_body",
+              "underlying_stock",
+              "cash_reserve"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredlegroles",
+          "type": "array"
+        },
+        "requiresCashSecuring": {
+          "default": false,
+          "title": "Requirescashsecuring",
+          "type": "boolean"
+        },
+        "requiresStockPosition": {
+          "default": false,
+          "title": "Requiresstockposition",
+          "type": "boolean"
+        },
+        "stage": {
+          "enum": [
+            "core_research",
+            "experimental_research",
+            "specified_blocked",
+            "out_of_v1"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "strategyId": {
+          "enum": [
+            "covered_call",
+            "cash_secured_put",
+            "long_call",
+            "long_put",
+            "protective_put",
+            "collar",
+            "bull_call_spread",
+            "bear_put_spread",
+            "bull_put_spread",
+            "bear_call_spread",
+            "long_straddle",
+            "long_strangle",
+            "iron_condor",
+            "iron_butterfly",
+            "long_butterfly",
+            "calendar_spread",
+            "diagonal_spread",
+            "pmcc",
+            "covered_straddle",
+            "covered_combination",
+            "covered_strangle"
+          ],
+          "title": "Strategyid",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/OptionStrategySupportFlags"
+        },
+        "usesStockOverlay": {
+          "default": false,
+          "title": "Usesstockoverlay",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "strategyId",
+        "displayName",
+        "payoffFamily",
+        "stage",
+        "approvalLevel",
+        "minLegs",
+        "maxLegs",
+        "support",
+        "summary"
+      ],
+      "title": "OptionStrategyTemplate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "exclusions": {
+      "items": {
+        "$ref": "#/$defs/OptionStrategyExclusion"
+      },
+      "title": "Exclusions",
+      "type": "array"
+    },
+    "generatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generatedat"
+    },
+    "ladderVersion": {
+      "default": "options-ladder-v1",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Ladderversion",
+      "type": "string"
+    },
+    "templates": {
+      "items": {
+        "$ref": "#/$defs/OptionStrategyTemplate"
+      },
+      "minItems": 1,
+      "title": "Templates",
+      "type": "array"
+    }
+  },
+  "required": [
+    "templates"
+  ],
+  "title": "OptionStrategyLadderResponse",
+  "type": "object"
+}

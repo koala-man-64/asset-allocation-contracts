@@ -1,0 +1,126 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "maxContractsPerExpiry": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxcontractsperexpiry"
+    },
+    "maxContractsPerFamily": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxcontractsperfamily"
+    },
+    "maxContractsPerUnderlier": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxcontractsperunderlier"
+    },
+    "maxDefinedMaxLoss": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxdefinedmaxloss"
+    },
+    "maxExpirationBucketConcentrationPct": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxexpirationbucketconcentrationpct"
+    },
+    "maxGrossOptionNotional": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxgrossoptionnotional"
+    },
+    "maxPremiumAtRisk": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxpremiumatrisk"
+    },
+    "maxShortGammaConcentrationPct": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxshortgammaconcentrationpct"
+    },
+    "maxUnderlierDeltaEquivalentExposure": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxunderlierdeltaequivalentexposure"
+    }
+  },
+  "title": "OptionRiskLimitSet",
+  "type": "object"
+}

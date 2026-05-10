@@ -46,6 +46,23 @@
       "title": "Cansubmitsandbox",
       "type": "boolean"
     },
+    "optionApprovalLevel": {
+      "anyOf": [
+        {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Optionapprovallevel"
+    },
     "readOnly": {
       "default": true,
       "title": "Readonly",
@@ -79,6 +96,26 @@
     "supportsNotionalOrders": {
       "default": false,
       "title": "Supportsnotionalorders",
+      "type": "boolean"
+    },
+    "supportsOptionChains": {
+      "default": false,
+      "title": "Supportsoptionchains",
+      "type": "boolean"
+    },
+    "supportsOptionExercise": {
+      "default": false,
+      "title": "Supportsoptionexercise",
+      "type": "boolean"
+    },
+    "supportsOptionGreeks": {
+      "default": false,
+      "title": "Supportsoptiongreeks",
+      "type": "boolean"
+    },
+    "supportsOptionMultiLegOrders": {
+      "default": false,
+      "title": "Supportsoptionmultilegorders",
       "type": "boolean"
     },
     "supportsOptions": {

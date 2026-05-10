@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator, field_valida
 
 from asset_allocation_contracts.backtest import StrategyReferenceInput
 from asset_allocation_contracts.broker_accounts import BrokerAlertStatus, BrokerTradingPolicy
+from asset_allocation_contracts.options import OptionApprovalLevel, OptionLeg, OptionStrategyId
 
 TradeProvider = Literal["alpaca", "etrade", "schwab", "kalshi"]
 TradeEnvironment = Literal["paper", "sandbox", "live"]
@@ -101,6 +102,11 @@ class TradeCapabilityFlags(BaseModel):
     supportsEquities: bool = False
     supportsEtfs: bool = False
     supportsOptions: bool = False
+    optionApprovalLevel: OptionApprovalLevel | None = None
+    supportsOptionChains: bool = False
+    supportsOptionGreeks: bool = False
+    supportsOptionMultiLegOrders: bool = False
+    supportsOptionExercise: bool = False
     readOnly: bool = True
     unsupportedReason: str | None = None
 
@@ -134,9 +140,14 @@ class TradeRiskLimit(BaseModel):
     maxOrderNotional: float | None = Field(default=None, gt=0)
     maxDailyNotional: float | None = Field(default=None, gt=0)
     maxShareQuantity: float | None = Field(default=None, gt=0)
+    maxOptionContracts: int | None = Field(default=None, ge=1)
+    maxOptionPremiumAtRisk: float | None = Field(default=None, gt=0)
+    maxDefinedOptionLoss: float | None = Field(default=None, gt=0)
     allowedAssetClasses: list[TradeAssetClass] = Field(default_factory=list)
     allowedOrderTypes: list[TradeOrderType] = Field(default_factory=list)
+    allowedOptionStrategies: list[OptionStrategyId] = Field(default_factory=list)
     liveTradingAllowed: bool = False
+    liveOptionSubmitAllowed: bool = False
     liveTradingReason: str | None = None
 
     @field_validator("liveTradingReason", mode="before")
@@ -336,6 +347,8 @@ class TradeOrder(BaseModel):
     providerCorrelationId: str | None = Field(default=None, min_length=1, max_length=160)
     quantity: float | None = Field(default=None, gt=0)
     notional: float | None = Field(default=None, gt=0)
+    optionStrategyId: OptionStrategyId | None = None
+    optionLegs: list[OptionLeg] = Field(default_factory=list)
     limitPrice: float | None = Field(default=None, gt=0)
     stopPrice: float | None = Field(default=None, gt=0)
     estimatedPrice: float | None = None
@@ -375,6 +388,17 @@ class TradeOrder(BaseModel):
     @classmethod
     def normalize_order_symbol(cls, value: object) -> str:
         return _normalize_symbol(value)
+
+    @model_validator(mode="after")
+    def validate_option_order_shape(self) -> "TradeOrder":
+        if self.assetClass != "option" and (self.optionStrategyId is not None or self.optionLegs):
+            raise ValueError("optionStrategyId and optionLegs require assetClass='option'.")
+        if self.assetClass == "option":
+            if self.notional is not None:
+                raise ValueError("Option orders must use whole-contract quantity, not notional.")
+            if self.quantity is not None and int(self.quantity) != self.quantity:
+                raise ValueError("Option quantity must be a whole-contract quantity.")
+        return self
 
 
 class TradeOrderHistoryResponse(BaseModel):
@@ -468,6 +492,8 @@ class TradeOrderPreviewRequest(BaseModel):
     assetClass: TradeAssetClass = "equity"
     quantity: float | None = Field(default=None, gt=0)
     notional: float | None = Field(default=None, gt=0)
+    optionStrategyId: OptionStrategyId | None = None
+    optionLegs: list[OptionLeg] = Field(default_factory=list)
     limitPrice: float | None = Field(default=None, gt=0)
     stopPrice: float | None = Field(default=None, gt=0)
     allowExtendedHours: bool = False
@@ -488,6 +514,15 @@ class TradeOrderPreviewRequest(BaseModel):
     def validate_intent(self) -> "TradeOrderPreviewRequest":
         if (self.quantity is None) == (self.notional is None):
             raise ValueError("Exactly one of quantity or notional must be provided.")
+        if self.assetClass != "option" and (self.optionStrategyId is not None or self.optionLegs):
+            raise ValueError("optionStrategyId and optionLegs require assetClass='option'.")
+        if self.assetClass == "option":
+            if self.notional is not None:
+                raise ValueError("Option orders must use whole-contract quantity, not notional.")
+            if self.quantity is None or int(self.quantity) != self.quantity:
+                raise ValueError("Option quantity must be a whole-contract quantity.")
+            if self.allowExtendedHours:
+                raise ValueError("Extended-hours option orders are not supported.")
         if self.orderType in {"limit", "stop_limit"} and self.limitPrice is None:
             raise ValueError("limitPrice is required for limit and stop_limit orders.")
         if self.orderType in {"stop", "stop_limit"} and self.stopPrice is None:

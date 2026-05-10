@@ -1,0 +1,199 @@
+{
+  "$defs": {
+    "OptionContractIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "exerciseStyle": {
+          "default": "american",
+          "enum": [
+            "american",
+            "european"
+          ],
+          "title": "Exercisestyle",
+          "type": "string"
+        },
+        "expirationDate": {
+          "format": "date",
+          "title": "Expirationdate",
+          "type": "string"
+        },
+        "multiplier": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Multiplier",
+          "type": "integer"
+        },
+        "optionSymbol": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Optionsymbol",
+          "type": "string"
+        },
+        "right": {
+          "enum": [
+            "call",
+            "put"
+          ],
+          "title": "Right",
+          "type": "string"
+        },
+        "rootSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rootsymbol"
+        },
+        "settlementStyle": {
+          "default": "physical",
+          "enum": [
+            "physical",
+            "cash"
+          ],
+          "title": "Settlementstyle",
+          "type": "string"
+        },
+        "strikePrice": {
+          "exclusiveMinimum": 0,
+          "title": "Strikeprice",
+          "type": "number"
+        },
+        "underlyingSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Underlyingsymbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "underlyingSymbol",
+        "optionSymbol",
+        "expirationDate",
+        "strikePrice",
+        "right"
+      ],
+      "title": "OptionContractIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "blocking": {
+      "default": false,
+      "title": "Blocking",
+      "type": "boolean"
+    },
+    "contract": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OptionContractIdentity"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "eventId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Eventid",
+      "type": "string"
+    },
+    "eventType": {
+      "enum": [
+        "payoff_evaluated",
+        "risk_gate",
+        "data_quality_gate",
+        "lifecycle_event",
+        "research_only_block",
+        "broker_preview_block"
+      ],
+      "title": "Eventtype",
+      "type": "string"
+    },
+    "message": {
+      "default": "",
+      "maxLength": 512,
+      "title": "Message",
+      "type": "string"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "occurredAt": {
+      "format": "date-time",
+      "title": "Occurredat",
+      "type": "string"
+    },
+    "runId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "severity": {
+      "default": "info",
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "critical"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "strategyId": {
+      "anyOf": [
+        {
+          "enum": [
+            "covered_call",
+            "cash_secured_put",
+            "long_call",
+            "long_put",
+            "protective_put",
+            "collar",
+            "bull_call_spread",
+            "bear_put_spread",
+            "bull_put_spread",
+            "bear_call_spread",
+            "long_straddle",
+            "long_strangle",
+            "iron_condor",
+            "iron_butterfly",
+            "long_butterfly",
+            "calendar_spread",
+            "diagonal_spread",
+            "pmcc",
+            "covered_straddle",
+            "covered_combination",
+            "covered_strangle"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategyid"
+    }
+  },
+  "required": [
+    "eventId",
+    "runId",
+    "eventType",
+    "occurredAt"
+  ],
+  "title": "OptionBacktestEvent",
+  "type": "object"
+}

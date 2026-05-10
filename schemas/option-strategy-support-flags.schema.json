@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "blockedReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blockedreason"
+    },
+    "brokerPreviewSupported": {
+      "default": false,
+      "title": "Brokerpreviewsupported",
+      "type": "boolean"
+    },
+    "liveSubmitSupported": {
+      "default": false,
+      "title": "Livesubmitsupported",
+      "type": "boolean"
+    },
+    "researchBacktestSupported": {
+      "default": false,
+      "title": "Researchbacktestsupported",
+      "type": "boolean"
+    }
+  },
+  "title": "OptionStrategySupportFlags",
+  "type": "object"
+}

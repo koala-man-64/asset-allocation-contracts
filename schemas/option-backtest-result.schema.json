@@ -1,0 +1,1622 @@
+{
+  "$defs": {
+    "OptionBacktestEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "contract": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OptionContractIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "eventId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "eventType": {
+          "enum": [
+            "payoff_evaluated",
+            "risk_gate",
+            "data_quality_gate",
+            "lifecycle_event",
+            "research_only_block",
+            "broker_preview_block"
+          ],
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "maxLength": 512,
+          "title": "Message",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "occurredAt": {
+          "format": "date-time",
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "runId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "severity": {
+          "default": "info",
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "strategyId": {
+          "anyOf": [
+            {
+              "enum": [
+                "covered_call",
+                "cash_secured_put",
+                "long_call",
+                "long_put",
+                "protective_put",
+                "collar",
+                "bull_call_spread",
+                "bear_put_spread",
+                "bull_put_spread",
+                "bear_call_spread",
+                "long_straddle",
+                "long_strangle",
+                "iron_condor",
+                "iron_butterfly",
+                "long_butterfly",
+                "calendar_spread",
+                "diagonal_spread",
+                "pmcc",
+                "covered_straddle",
+                "covered_combination",
+                "covered_strangle"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyid"
+        }
+      },
+      "required": [
+        "eventId",
+        "runId",
+        "eventType",
+        "occurredAt"
+      ],
+      "title": "OptionBacktestEvent",
+      "type": "object"
+    },
+    "OptionChainSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "format": "date-time",
+          "title": "Asof",
+          "type": "string"
+        },
+        "chainComplete": {
+          "default": false,
+          "title": "Chaincomplete",
+          "type": "boolean"
+        },
+        "expirationDate": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expirationdate"
+        },
+        "feed": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feed"
+        },
+        "maxQuoteAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxquoteageseconds"
+        },
+        "missingGreeksCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Missinggreekscount",
+          "type": "integer"
+        },
+        "missingQuoteCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Missingquotecount",
+          "type": "integer"
+        },
+        "pageCount": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Pagecount",
+          "type": "integer"
+        },
+        "paginationComplete": {
+          "default": false,
+          "title": "Paginationcomplete",
+          "type": "boolean"
+        },
+        "provider": {
+          "default": "alpaca",
+          "enum": [
+            "alpaca",
+            "schwab",
+            "etrade",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "quotes": {
+          "items": {
+            "$ref": "#/$defs/OptionQuoteSnapshot"
+          },
+          "title": "Quotes",
+          "type": "array"
+        },
+        "snapshotId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Snapshotid",
+          "type": "string"
+        },
+        "totalContractCount": {
+          "minimum": 0,
+          "title": "Totalcontractcount",
+          "type": "integer"
+        },
+        "underlyingSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Underlyingsymbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshotId",
+        "underlyingSymbol",
+        "asOf",
+        "totalContractCount"
+      ],
+      "title": "OptionChainSnapshot",
+      "type": "object"
+    },
+    "OptionContractIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "exerciseStyle": {
+          "default": "american",
+          "enum": [
+            "american",
+            "european"
+          ],
+          "title": "Exercisestyle",
+          "type": "string"
+        },
+        "expirationDate": {
+          "format": "date",
+          "title": "Expirationdate",
+          "type": "string"
+        },
+        "multiplier": {
+          "default": 100,
+          "exclusiveMinimum": 0,
+          "title": "Multiplier",
+          "type": "integer"
+        },
+        "optionSymbol": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Optionsymbol",
+          "type": "string"
+        },
+        "right": {
+          "enum": [
+            "call",
+            "put"
+          ],
+          "title": "Right",
+          "type": "string"
+        },
+        "rootSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rootsymbol"
+        },
+        "settlementStyle": {
+          "default": "physical",
+          "enum": [
+            "physical",
+            "cash"
+          ],
+          "title": "Settlementstyle",
+          "type": "string"
+        },
+        "strikePrice": {
+          "exclusiveMinimum": 0,
+          "title": "Strikeprice",
+          "type": "number"
+        },
+        "underlyingSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Underlyingsymbol",
+          "type": "string"
+        }
+      },
+      "required": [
+        "underlyingSymbol",
+        "optionSymbol",
+        "expirationDate",
+        "strikePrice",
+        "right"
+      ],
+      "title": "OptionContractIdentity",
+      "type": "object"
+    },
+    "OptionDataQualityGateSet": {
+      "additionalProperties": false,
+      "properties": {
+        "maxBidAskWidthPct": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxbidaskwidthpct"
+        },
+        "maxQuoteAgeSeconds": {
+          "minimum": 0,
+          "title": "Maxquoteageseconds",
+          "type": "integer"
+        },
+        "minOpenInterest": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minopeninterest"
+        },
+        "minVolume": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minvolume"
+        },
+        "rejectStaleChain": {
+          "default": true,
+          "title": "Rejectstalechain",
+          "type": "boolean"
+        },
+        "requireChainCompleteness": {
+          "default": true,
+          "title": "Requirechaincompleteness",
+          "type": "boolean"
+        },
+        "requireFeedMetadata": {
+          "default": true,
+          "title": "Requirefeedmetadata",
+          "type": "boolean"
+        },
+        "requireGreeks": {
+          "default": true,
+          "title": "Requiregreeks",
+          "type": "boolean"
+        },
+        "requireImpliedVolatility": {
+          "default": true,
+          "title": "Requireimpliedvolatility",
+          "type": "boolean"
+        },
+        "requirePaginationCoverage": {
+          "default": true,
+          "title": "Requirepaginationcoverage",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "maxQuoteAgeSeconds"
+      ],
+      "title": "OptionDataQualityGateSet",
+      "type": "object"
+    },
+    "OptionLifecycleEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "cashImpact": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cashimpact"
+        },
+        "contract": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OptionContractIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "eventId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Eventid",
+          "type": "string"
+        },
+        "eventType": {
+          "enum": [
+            "expiration",
+            "assignment",
+            "exercise",
+            "do_not_exercise",
+            "forced_liquidation_window",
+            "post_assignment_exposure"
+          ],
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "title": "Message",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "occurredAt": {
+          "format": "date-time",
+          "title": "Occurredat",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quantity"
+        },
+        "stockQuantityImpact": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stockquantityimpact"
+        },
+        "strategyId": {
+          "anyOf": [
+            {
+              "enum": [
+                "covered_call",
+                "cash_secured_put",
+                "long_call",
+                "long_put",
+                "protective_put",
+                "collar",
+                "bull_call_spread",
+                "bear_put_spread",
+                "bull_put_spread",
+                "bear_call_spread",
+                "long_straddle",
+                "long_strangle",
+                "iron_condor",
+                "iron_butterfly",
+                "long_butterfly",
+                "calendar_spread",
+                "diagonal_spread",
+                "pmcc",
+                "covered_straddle",
+                "covered_combination",
+                "covered_strangle"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyid"
+        }
+      },
+      "required": [
+        "eventId",
+        "eventType",
+        "occurredAt"
+      ],
+      "title": "OptionLifecycleEvent",
+      "type": "object"
+    },
+    "OptionLifecycleGateSet": {
+      "additionalProperties": false,
+      "properties": {
+        "blockInsufficientBuyingPowerAtExpiry": {
+          "default": true,
+          "title": "Blockinsufficientbuyingpoweratexpiry",
+          "type": "boolean"
+        },
+        "handleAssignment": {
+          "default": true,
+          "title": "Handleassignment",
+          "type": "boolean"
+        },
+        "handleDoNotExerciseGap": {
+          "default": true,
+          "title": "Handledonotexercisegap",
+          "type": "boolean"
+        },
+        "handleExercise": {
+          "default": true,
+          "title": "Handleexercise",
+          "type": "boolean"
+        },
+        "handleExpiration": {
+          "default": true,
+          "title": "Handleexpiration",
+          "type": "boolean"
+        },
+        "handleForcedLiquidationWindow": {
+          "default": true,
+          "title": "Handleforcedliquidationwindow",
+          "type": "boolean"
+        },
+        "trackPostAssignmentStockCashExposure": {
+          "default": true,
+          "title": "Trackpostassignmentstockcashexposure",
+          "type": "boolean"
+        }
+      },
+      "title": "OptionLifecycleGateSet",
+      "type": "object"
+    },
+    "OptionPayoffProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "breakevens": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Breakevens",
+          "type": "array"
+        },
+        "deltaSign": {
+          "default": "mixed",
+          "enum": [
+            "positive",
+            "negative",
+            "neutral",
+            "mixed",
+            "path_dependent"
+          ],
+          "title": "Deltasign",
+          "type": "string"
+        },
+        "expirationScope": {
+          "default": "final_expiration",
+          "enum": [
+            "final_expiration",
+            "short_leg_expiration",
+            "path_dependent"
+          ],
+          "title": "Expirationscope",
+          "type": "string"
+        },
+        "idealIvEnvironment": {
+          "default": "unknown",
+          "enum": [
+            "cheap",
+            "rich",
+            "neutral",
+            "term_structure",
+            "event_vol",
+            "unknown"
+          ],
+          "title": "Idealivenvironment",
+          "type": "string"
+        },
+        "maxLoss": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxloss"
+        },
+        "maxLossDescription": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlossdescription"
+        },
+        "maxProfit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxprofit"
+        },
+        "maxProfitDescription": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxprofitdescription"
+        },
+        "profitWindowDescription": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Profitwindowdescription",
+          "type": "string"
+        },
+        "profitWindowLower": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profitwindowlower"
+        },
+        "profitWindowUpper": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profitwindowupper"
+        },
+        "strategyId": {
+          "enum": [
+            "covered_call",
+            "cash_secured_put",
+            "long_call",
+            "long_put",
+            "protective_put",
+            "collar",
+            "bull_call_spread",
+            "bear_put_spread",
+            "bull_put_spread",
+            "bear_call_spread",
+            "long_straddle",
+            "long_strangle",
+            "iron_condor",
+            "iron_butterfly",
+            "long_butterfly",
+            "calendar_spread",
+            "diagonal_spread",
+            "pmcc",
+            "covered_straddle",
+            "covered_combination",
+            "covered_strangle"
+          ],
+          "title": "Strategyid",
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/OptionStrategySupportFlags"
+        },
+        "thetaSign": {
+          "default": "mixed",
+          "enum": [
+            "positive",
+            "negative",
+            "neutral",
+            "mixed",
+            "path_dependent"
+          ],
+          "title": "Thetasign",
+          "type": "string"
+        },
+        "vegaSign": {
+          "default": "mixed",
+          "enum": [
+            "positive",
+            "negative",
+            "neutral",
+            "mixed",
+            "path_dependent"
+          ],
+          "title": "Vegasign",
+          "type": "string"
+        }
+      },
+      "required": [
+        "strategyId",
+        "profitWindowDescription",
+        "support"
+      ],
+      "title": "OptionPayoffProfile",
+      "type": "object"
+    },
+    "OptionQuoteSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "format": "date-time",
+          "title": "Asof",
+          "type": "string"
+        },
+        "ask": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ask"
+        },
+        "bid": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bid"
+        },
+        "bidAskWidth": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bidaskwidth"
+        },
+        "bidAskWidthPct": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bidaskwidthpct"
+        },
+        "contract": {
+          "$ref": "#/$defs/OptionContractIdentity"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "feed": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feed"
+        },
+        "gamma": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gamma"
+        },
+        "impliedVolatility": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impliedvolatility"
+        },
+        "last": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last"
+        },
+        "mark": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mark"
+        },
+        "mid": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mid"
+        },
+        "openInterest": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Openinterest"
+        },
+        "provider": {
+          "default": "alpaca",
+          "enum": [
+            "alpaca",
+            "schwab",
+            "etrade",
+            "other"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "quoteAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quoteageseconds"
+        },
+        "rho": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rho"
+        },
+        "snapshotId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Snapshotid",
+          "type": "string"
+        },
+        "stale": {
+          "default": false,
+          "title": "Stale",
+          "type": "boolean"
+        },
+        "theta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Theta"
+        },
+        "vega": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vega"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Volume"
+        }
+      },
+      "required": [
+        "snapshotId",
+        "contract",
+        "asOf"
+      ],
+      "title": "OptionQuoteSnapshot",
+      "type": "object"
+    },
+    "OptionRiskEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "approvedForBrokerPreview": {
+          "default": false,
+          "title": "Approvedforbrokerpreview",
+          "type": "boolean"
+        },
+        "approvedForLiveSubmit": {
+          "default": false,
+          "title": "Approvedforlivesubmit",
+          "type": "boolean"
+        },
+        "approvedForResearchBacktest": {
+          "default": false,
+          "title": "Approvedforresearchbacktest",
+          "type": "boolean"
+        },
+        "dataQualityGates": {
+          "$ref": "#/$defs/OptionDataQualityGateSet"
+        },
+        "evaluationId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Evaluationid",
+          "type": "string"
+        },
+        "gateResults": {
+          "items": {
+            "$ref": "#/$defs/OptionRiskGateResult"
+          },
+          "title": "Gateresults",
+          "type": "array"
+        },
+        "generatedAt": {
+          "format": "date-time",
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "lifecycleGates": {
+          "$ref": "#/$defs/OptionLifecycleGateSet"
+        },
+        "metrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Metrics",
+          "type": "array"
+        },
+        "payoff": {
+          "$ref": "#/$defs/OptionPayoffProfile"
+        },
+        "riskLimits": {
+          "$ref": "#/$defs/OptionRiskLimitSet"
+        },
+        "strategyId": {
+          "enum": [
+            "covered_call",
+            "cash_secured_put",
+            "long_call",
+            "long_put",
+            "protective_put",
+            "collar",
+            "bull_call_spread",
+            "bear_put_spread",
+            "bull_put_spread",
+            "bear_call_spread",
+            "long_straddle",
+            "long_strangle",
+            "iron_condor",
+            "iron_butterfly",
+            "long_butterfly",
+            "calendar_spread",
+            "diagonal_spread",
+            "pmcc",
+            "covered_straddle",
+            "covered_combination",
+            "covered_strangle"
+          ],
+          "title": "Strategyid",
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/OptionStrategySupportFlags"
+        }
+      },
+      "required": [
+        "evaluationId",
+        "strategyId",
+        "generatedAt",
+        "support",
+        "payoff",
+        "riskLimits",
+        "dataQualityGates",
+        "lifecycleGates"
+      ],
+      "title": "OptionRiskEvaluation",
+      "type": "object"
+    },
+    "OptionRiskGateResult": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "limitValue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limitvalue"
+        },
+        "message": {
+          "default": "",
+          "maxLength": 512,
+          "title": "Message",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "observedValue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observedvalue"
+        },
+        "severity": {
+          "default": "info",
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "warning",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "status"
+      ],
+      "title": "OptionRiskGateResult",
+      "type": "object"
+    },
+    "OptionRiskLimitSet": {
+      "additionalProperties": false,
+      "properties": {
+        "maxContractsPerExpiry": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcontractsperexpiry"
+        },
+        "maxContractsPerFamily": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcontractsperfamily"
+        },
+        "maxContractsPerUnderlier": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcontractsperunderlier"
+        },
+        "maxDefinedMaxLoss": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxdefinedmaxloss"
+        },
+        "maxExpirationBucketConcentrationPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 100,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxexpirationbucketconcentrationpct"
+        },
+        "maxGrossOptionNotional": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxgrossoptionnotional"
+        },
+        "maxPremiumAtRisk": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxpremiumatrisk"
+        },
+        "maxShortGammaConcentrationPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 100,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxshortgammaconcentrationpct"
+        },
+        "maxUnderlierDeltaEquivalentExposure": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxunderlierdeltaequivalentexposure"
+        }
+      },
+      "title": "OptionRiskLimitSet",
+      "type": "object"
+    },
+    "OptionStrategySupportFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blockedreason"
+        },
+        "brokerPreviewSupported": {
+          "default": false,
+          "title": "Brokerpreviewsupported",
+          "type": "boolean"
+        },
+        "liveSubmitSupported": {
+          "default": false,
+          "title": "Livesubmitsupported",
+          "type": "boolean"
+        },
+        "researchBacktestSupported": {
+          "default": false,
+          "title": "Researchbacktestsupported",
+          "type": "boolean"
+        }
+      },
+      "title": "OptionStrategySupportFlags",
+      "type": "object"
+    },
+    "OptionStrategyTemplate": {
+      "additionalProperties": false,
+      "properties": {
+        "approvalLevel": {
+          "enum": [
+            1,
+            2,
+            3
+          ],
+          "title": "Approvallevel",
+          "type": "integer"
+        },
+        "definedRisk": {
+          "default": true,
+          "title": "Definedrisk",
+          "type": "boolean"
+        },
+        "displayName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Displayname",
+          "type": "string"
+        },
+        "lifecycleModelRequired": {
+          "default": false,
+          "title": "Lifecyclemodelrequired",
+          "type": "boolean"
+        },
+        "maxLegs": {
+          "minimum": 1,
+          "title": "Maxlegs",
+          "type": "integer"
+        },
+        "minLegs": {
+          "minimum": 1,
+          "title": "Minlegs",
+          "type": "integer"
+        },
+        "netPremiumDirection": {
+          "default": "zero_or_variable",
+          "enum": [
+            "debit",
+            "credit",
+            "zero_or_variable",
+            "path_dependent"
+          ],
+          "title": "Netpremiumdirection",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "payoffFamily": {
+          "enum": [
+            "stock_overlay_income",
+            "outright_directional",
+            "vertical_spread",
+            "time_spread",
+            "volatility",
+            "hedge",
+            "stock_overlay_hedge",
+            "aggressive_income"
+          ],
+          "title": "Payofffamily",
+          "type": "string"
+        },
+        "requiredLegRoles": {
+          "items": {
+            "enum": [
+              "stock",
+              "long_call",
+              "short_call",
+              "long_put",
+              "short_put",
+              "long_wing",
+              "short_body",
+              "underlying_stock",
+              "cash_reserve"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredlegroles",
+          "type": "array"
+        },
+        "requiresCashSecuring": {
+          "default": false,
+          "title": "Requirescashsecuring",
+          "type": "boolean"
+        },
+        "requiresStockPosition": {
+          "default": false,
+          "title": "Requiresstockposition",
+          "type": "boolean"
+        },
+        "stage": {
+          "enum": [
+            "core_research",
+            "experimental_research",
+            "specified_blocked",
+            "out_of_v1"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "strategyId": {
+          "enum": [
+            "covered_call",
+            "cash_secured_put",
+            "long_call",
+            "long_put",
+            "protective_put",
+            "collar",
+            "bull_call_spread",
+            "bear_put_spread",
+            "bull_put_spread",
+            "bear_call_spread",
+            "long_straddle",
+            "long_strangle",
+            "iron_condor",
+            "iron_butterfly",
+            "long_butterfly",
+            "calendar_spread",
+            "diagonal_spread",
+            "pmcc",
+            "covered_straddle",
+            "covered_combination",
+            "covered_strangle"
+          ],
+          "title": "Strategyid",
+          "type": "string"
+        },
+        "summary": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/OptionStrategySupportFlags"
+        },
+        "usesStockOverlay": {
+          "default": false,
+          "title": "Usesstockoverlay",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "strategyId",
+        "displayName",
+        "payoffFamily",
+        "stage",
+        "approvalLevel",
+        "minLegs",
+        "maxLegs",
+        "support",
+        "summary"
+      ],
+      "title": "OptionStrategyTemplate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "chainSnapshots": {
+      "items": {
+        "$ref": "#/$defs/OptionChainSnapshot"
+      },
+      "title": "Chainsnapshots",
+      "type": "array"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/OptionBacktestEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "lifecycleEvents": {
+      "items": {
+        "$ref": "#/$defs/OptionLifecycleEvent"
+      },
+      "title": "Lifecycleevents",
+      "type": "array"
+    },
+    "modelQuality": {
+      "default": "specified_only",
+      "enum": [
+        "specified_only",
+        "fixture_backed",
+        "chain_backed",
+        "lifecycle_backed"
+      ],
+      "title": "Modelquality",
+      "type": "string"
+    },
+    "payoff": {
+      "$ref": "#/$defs/OptionPayoffProfile"
+    },
+    "quoteSnapshots": {
+      "items": {
+        "$ref": "#/$defs/OptionQuoteSnapshot"
+      },
+      "title": "Quotesnapshots",
+      "type": "array"
+    },
+    "resultId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Resultid",
+      "type": "string"
+    },
+    "riskEvaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OptionRiskEvaluation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "runId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "strategyTemplate": {
+      "$ref": "#/$defs/OptionStrategyTemplate"
+    }
+  },
+  "required": [
+    "resultId",
+    "runId",
+    "strategyTemplate",
+    "payoff"
+  ],
+  "title": "OptionBacktestResult",
+  "type": "object"
+}
