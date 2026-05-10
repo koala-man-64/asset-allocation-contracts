@@ -6,7 +6,7 @@ This repo now publishes contract packages through Azure Pipelines and Azure Arti
 
 - `azure-pipelines/ci.yml`: PR and `main` validation for Python contracts, schema drift, TypeScript typecheck, and package packing. Runs on `local-docker-agents`.
 - `azure-pipelines/security.yml`: PR, `main`, and weekly dependency audits. Runs on `local-docker-agents`.
-- `azure-pipelines/release.yml`: gated manual release to the `prod-package-release` environment. Stays on Microsoft-hosted `ubuntu-latest`.
+- `azure-pipelines/release.yml`: CI-triggered package release to the `prod-package-release` environment. Stays on Microsoft-hosted `ubuntu-latest`.
 
 ## Agent Pools
 
@@ -18,6 +18,8 @@ CI and security require the self-hosted `local-docker-agents` pool with a Linux 
 - `CONTRACTS_PNPM=10.28.1`
 
 The release pipeline intentionally stays hosted because package publication should not depend on a local workstation runner until the local pool has proven uptime, patching, monitoring, and repeatability.
+
+Release is driven only by the `asset-allocation-contracts-ci` pipeline resource after successful `main` CI. It keeps top-level YAML and PR triggers disabled.
 
 Do not mount the host Docker socket for PR or `main` validation. Docker socket mode gives pipeline code control over the host daemon and should be reserved for explicitly trusted pipelines.
 

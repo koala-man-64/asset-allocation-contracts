@@ -3,6 +3,15 @@ name: contracts-release-$(Date:yyyyMMdd)$(Rev:.r)
 trigger: none
 pr: none
 
+resources:
+  pipelines:
+    - pipeline: contractsCi
+      source: asset-allocation-contracts-ci
+      trigger:
+        branches:
+          include:
+            - main
+
 pool:
   # Release publishes packages and stays hosted until the local Docker pool has
   # sustained CI/security history, uptime, patching, monitoring, and repeatability.
