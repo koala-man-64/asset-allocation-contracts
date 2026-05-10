@@ -155,5 +155,5 @@ Copy these into a repo to bootstrap consistent docs:
 - Produces PR-ready docs for a feature with evidence links (or Unverified flags + queued tasks).
 - Generates API reference docs from a spec with runnable examples.
 - Creates release notes from a change set with user-impact framing.
-- Enforces MCP-first tool usage with logged fallbacks.
+- Documents tool usage constraints with auditable fallback notes.
 - Runs a docs audit and proposes prioritized fixes.

@@ -103,6 +103,71 @@ def _pipeline_signals(text: str) -> Dict[str, Any]:
     }
 
 
+_YAML_DOUBLE_QUOTE_ESCAPES = set('0abtnvfre "\\/N_LP')
+
+
+def _yaml_syntax_errors(text: str) -> List[str]:
+    """Return sanitized, best-effort YAML syntax errors without parsing values."""
+    errors: List[str] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        in_double_quote = False
+        index = 0
+        while index < len(line):
+            char = line[index]
+            if char == '"' and not in_double_quote:
+                in_double_quote = True
+                index += 1
+                continue
+            if char == '"' and in_double_quote:
+                in_double_quote = False
+                index += 1
+                continue
+            if char == "\\" and in_double_quote:
+                next_char = line[index + 1] if index + 1 < len(line) else ""
+                if next_char not in _YAML_DOUBLE_QUOTE_ESCAPES:
+                    errors.append(
+                        f"line {line_number}: invalid escape in double-quoted scalar"
+                    )
+                    break
+                index += 2
+                continue
+            index += 1
+    return errors
+
+
+def _codex_skills_snapshot(repo: Path) -> Dict[str, Any]:
+    skills_dir = repo / ".codex" / "skills"
+    if not skills_dir.exists():
+        return {
+            "present": False,
+            "skill_directory_count": 0,
+            "skill_md_count": 0,
+            "openai_yaml_count": 0,
+            "config_toml_zero_byte": False,
+            "yaml_parse_errors": [],
+        }
+
+    yaml_parse_errors: List[str] = []
+    for path in sorted(skills_dir.rglob("*.yaml")):
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            yaml_parse_errors.append(f"{path.relative_to(repo)}: unreadable")
+            continue
+        for error in _yaml_syntax_errors(text):
+            yaml_parse_errors.append(f"{path.relative_to(repo)}: {error}")
+
+    config_path = skills_dir / "config.toml"
+    return {
+        "present": True,
+        "skill_directory_count": len([path for path in skills_dir.iterdir() if path.is_dir()]),
+        "skill_md_count": len(list(skills_dir.glob("*/SKILL.md"))),
+        "openai_yaml_count": len(list(skills_dir.glob("*/agents/openai.yaml"))),
+        "config_toml_zero_byte": config_path.exists() and config_path.stat().st_size == 0,
+        "yaml_parse_errors": yaml_parse_errors,
+    }
+
+
 def build_snapshot(repo: Path) -> Dict[str, Any]:
     repo = repo.resolve()
 
@@ -114,6 +179,7 @@ def build_snapshot(repo: Path) -> Dict[str, Any]:
         "pipelines": {"paths": [], "files": []},
         "project_files": {},
         "azure_devops": {},
+        "codex_skills": {},
     }
 
     # Git context (best-effort)
@@ -138,8 +204,16 @@ def build_snapshot(repo: Path) -> Dict[str, Any]:
             "README.md",
             "LICENSE",
             "pyproject.toml",
+            "python/pyproject.toml",
             "requirements.txt",
             "requirements-dev.txt",
+            "requirements.lock.txt",
+            "requirements-dev.lock.txt",
+            "requirements-ci.txt",
+            "package.json",
+            "pnpm-lock.yaml",
+            "ts/package.json",
+            "ts/pnpm-lock.yaml",
             ".editorconfig",
             ".pre-commit-config.yaml",
             "Dockerfile",
@@ -167,6 +241,8 @@ def build_snapshot(repo: Path) -> Dict[str, Any]:
             ".pipelines",
         ],
     )
+
+    snapshot["codex_skills"] = _codex_skills_snapshot(repo)
 
     pipeline_patterns = [
         "azure-pipelines.yml",
