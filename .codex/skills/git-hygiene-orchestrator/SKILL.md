@@ -43,6 +43,27 @@ If delegation is unavailable or not allowed, perform those roles directly.
 - Treat remote branch deletion as higher risk than local branch deletion.
 - Avoid plain `git prune`; use `git worktree prune` and `git remote prune` for this task.
 
+## Pull Request Defaults
+
+When this skill creates or completes a pull request, default to the repository's protected-branch completion path unless the user or repo policy explicitly requires something else:
+
+- Enable squash merge.
+- Enable auto-complete after required policies, checks, and reviews pass.
+- Enable source-branch deletion after completion.
+- In Azure Repos, pass those options when creating the PR:
+
+```powershell
+az repos pr create --source-branch <branch> --target-branch <base> --auto-complete true --squash true --delete-source-branch true --transition-work-items true
+```
+
+- If the PR already exists, set the same defaults immediately:
+
+```powershell
+az repos pr update --id <pr-id> --auto-complete true --squash true --delete-source-branch true --transition-work-items true
+```
+
+If the repository does not support one of those settings, or policy prevents auto-complete, leave the PR open in the safest available state and report the exact blocker. Do not silently fall back to a merge commit or leave source-branch cleanup unspecified.
+
 ## Inventory
 
 Run read-only checks first. Detect the primary branch if `main` is not confirmed:
