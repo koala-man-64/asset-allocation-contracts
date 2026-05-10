@@ -35,6 +35,7 @@ Do not act as a strategic product manager. Do not invent priorities, roadmap dec
    - Parent item for cross-repo or broader delivery objectives.
    - Repo-scoped Task or Bug for implementation, investigation, validation, documentation, or release work.
    - Every created work item must have a populated backlog-ordering field before it is considered tracked.
+   - Every created or updated User Story must record touched repo scope and Story Points before it is considered tracked.
 4. Link or record branch, worktree, commit, PR, build, release, validation evidence, blockers, and next action as they appear.
 5. If durable tracking cannot be established, return `ADO_TRACKING_BLOCKED` with the exact missing evidence and the smallest action needed to restore tracking.
 
@@ -71,6 +72,19 @@ Treat backlog ordering as required Azure Boards metadata, not optional cleanup.
 - Include the rank field, proposed value, and ranking rationale in the create preview.
 - After creation, re-read every new work item and verify the backlog-ordering field is non-null and matches the requested value before reporting tracking as established.
 
+## Story Scope and Sizing Requirements
+
+Treat repo scope and sizing as required User Story metadata, not optional notes.
+
+- When creating, tagging, or materially updating a User Story, include every repo the story is expected to touch.
+- Record touched repos in `System.Tags` using `repo:<repo-slug>` tags, for example `repo:asset-allocation-jobs`.
+- For cross-repo stories, include one `repo:<repo-slug>` tag per touched repo and list the same repos in the Description or Acceptance Criteria so the scope is visible even when tag filters are not.
+- Set `Microsoft.VSTS.Scheduling.StoryPoints` on every User Story before treating tracking as complete.
+- Do not invent story points silently. Use a user-supplied estimate, a planning record, a team sizing rule, or an explicitly documented assumption when the user has authorized best-effort creation. If none exists, stop with `ADO_TRACKING_BLOCKED` and name the missing Story Points input.
+- Re-read each created or updated User Story and verify all expected `repo:<repo-slug>` tags and `Microsoft.VSTS.Scheduling.StoryPoints` are populated.
+- Include touched repos, Story Points, and the estimate source in the create or update preview and in the final Bookkeeper Update.
+- If a story's repo set changes after creation, update the repo tags and description or acceptance criteria in the same bookkeeping action so tags and text do not drift.
+
 ## Core Concepts
 
 Understand and preserve these Azure DevOps concepts:
@@ -98,6 +112,7 @@ WorkItem:
 - id, url, type, title, description
 - state, reason, assigned_to, assigned_agent
 - area_path, iteration_path, sprint, tags
+- touched_repos, story_points_estimate_source
 - priority, severity
 - story_points, original_estimate, remaining_work, completed_work
 - start_date, due_date, created_date, changed_date, closed_date
@@ -176,6 +191,7 @@ Detect and report:
 - duplicate or near-duplicate items
 - missing parent links
 - missing acceptance criteria
+- stories missing touched repo tags or repo scope in the description or acceptance criteria
 - missing story points, effort, or task estimates
 - missing area path or iteration path
 - invalid status transitions
@@ -328,6 +344,8 @@ For work item lists, use tables with:
 - Assigned To
 - Sprint
 - Parent
+- Touched Repos
+- Story Points
 - Risk / Note
 - Link
 
@@ -441,3 +459,5 @@ The skill is working when these behaviors pass:
    - Find orphaned tasks, suggest likely parent stories when possible, preview proposed links, and require confirmation before applying links.
 7. "Prepare a daily standup digest."
    - Summarize completed items since yesterday, changed items since yesterday, blocked work, stale active work, and workload by assignee.
+8. "Create a tagged story for this repo work."
+   - Create or preview a User Story with StackRank, `repo:<repo-slug>` tags for every touched repo, the same repo list in Description or Acceptance Criteria, populated Story Points, and a verification read-back before reporting tracking as complete.
