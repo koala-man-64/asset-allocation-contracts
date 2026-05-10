@@ -431,6 +431,8 @@ class TradeBlotterRow(BaseModel):
     occurredAt: datetime
     orderId: str | None = Field(default=None, min_length=1, max_length=128)
     providerOrderId: str | None = Field(default=None, min_length=1, max_length=160)
+    providerActivityId: str | None = Field(default=None, min_length=1, max_length=160)
+    providerActivityType: str | None = Field(default=None, min_length=1, max_length=80)
     clientRequestId: str | None = Field(default=None, min_length=1, max_length=128)
     symbol: str | None = Field(default=None, min_length=1, max_length=32)
     side: TradeOrderSide | None = None
@@ -447,7 +449,15 @@ class TradeBlotterRow(BaseModel):
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
 
-    @field_validator("orderId", "providerOrderId", "clientRequestId", "note", mode="before")
+    @field_validator(
+        "orderId",
+        "providerOrderId",
+        "providerActivityId",
+        "providerActivityType",
+        "clientRequestId",
+        "note",
+        mode="before",
+    )
     @classmethod
     def normalize_optional_text_fields(cls, value: object) -> str | None:
         return _normalize_optional_text(value)

@@ -1991,6 +1991,8 @@ export interface TradeBlotterRow {
   occurredAt: string;
   orderId?: string | null;
   providerOrderId?: string | null;
+  providerActivityId?: string | null;
+  providerActivityType?: string | null;
   clientRequestId?: string | null;
   symbol?: string | null;
   side?: TradeOrderSide | null;

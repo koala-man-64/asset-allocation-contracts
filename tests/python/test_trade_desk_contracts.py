@@ -356,6 +356,8 @@ def test_trade_blotter_contracts_capture_realized_pnl_and_cash_impact() -> None:
                 eventType="fill",
                 occurredAt=now,
                 orderId="order-001",
+                providerActivityId=" 202605100001::alpaca-fill-001 ",
+                providerActivityType=" FILL ",
                 clientRequestId="client-001",
                 symbol=" msft ",
                 side="sell",
@@ -371,5 +373,7 @@ def test_trade_blotter_contracts_capture_realized_pnl_and_cash_impact() -> None:
     )
 
     assert response.rows[0].symbol == "MSFT"
+    assert response.rows[0].providerActivityId == "202605100001::alpaca-fill-001"
+    assert response.rows[0].providerActivityType == "FILL"
     assert response.rows[0].realizedPnl == 56.75
     assert response.rows[0].cashImpact == 561.25
