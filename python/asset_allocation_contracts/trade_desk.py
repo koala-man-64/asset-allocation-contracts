@@ -59,6 +59,8 @@ TradeBlotterEventType = Literal[
     "other",
 ]
 
+TRADE_SYMBOL_MAX_LENGTH = 128
+
 
 def _normalize_required_text(value: object, field_name: str) -> str:
     normalized = str(value or "").strip()
@@ -76,8 +78,8 @@ def _normalize_optional_text(value: object) -> str | None:
 
 def _normalize_symbol(value: object) -> str:
     normalized = _normalize_required_text(value, "symbol").upper()
-    if len(normalized) > 32:
-        raise ValueError("symbol must be 32 characters or fewer.")
+    if len(normalized) > TRADE_SYMBOL_MAX_LENGTH:
+        raise ValueError(f"symbol must be {TRADE_SYMBOL_MAX_LENGTH} characters or fewer.")
     return normalized
 
 
@@ -319,7 +321,7 @@ class TradePosition(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     accountId: str = Field(..., min_length=1, max_length=128)
-    symbol: str = Field(..., min_length=1, max_length=32)
+    symbol: str = Field(..., min_length=1, max_length=TRADE_SYMBOL_MAX_LENGTH)
     assetClass: TradeAssetClass = "equity"
     providerPositionId: str | None = Field(default=None, min_length=1, max_length=160)
     providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
@@ -401,7 +403,7 @@ class TradeOrder(BaseModel):
     provider: TradeProvider
     environment: TradeEnvironment
     status: TradeOrderStatus
-    symbol: str = Field(..., min_length=1, max_length=32)
+    symbol: str = Field(..., min_length=1, max_length=TRADE_SYMBOL_MAX_LENGTH)
     side: TradeOrderSide
     orderType: TradeOrderType
     timeInForce: TradeTimeInForce = "day"
@@ -522,7 +524,7 @@ class TradeBlotterRow(BaseModel):
     providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
     instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
     clientRequestId: str | None = Field(default=None, min_length=1, max_length=128)
-    symbol: str | None = Field(default=None, min_length=1, max_length=32)
+    symbol: str | None = Field(default=None, min_length=1, max_length=TRADE_SYMBOL_MAX_LENGTH)
     assetClass: TradeAssetClass = "equity"
     side: TradeOrderSide | None = None
     outcomeSide: TradeOutcomeSide | None = None
@@ -606,7 +608,7 @@ class TradeOrderPreviewRequest(BaseModel):
     accountId: str = Field(..., min_length=1, max_length=128)
     environment: TradeEnvironment
     clientRequestId: str = Field(..., min_length=1, max_length=128)
-    symbol: str = Field(..., min_length=1, max_length=32)
+    symbol: str = Field(..., min_length=1, max_length=TRADE_SYMBOL_MAX_LENGTH)
     side: TradeOrderSide
     orderType: TradeOrderType
     timeInForce: TradeTimeInForce = "day"

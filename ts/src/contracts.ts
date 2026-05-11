@@ -83,6 +83,12 @@ export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_upda
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
 export type TradeBlotterEventType = 'fill' | 'order' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal' | 'settlement' | 'deposit' | 'withdrawal' | 'other';
+export type KalshiProviderEnvironment = 'demo' | 'live';
+export type KalshiOutcomeSide = 'yes' | 'no';
+export type KalshiBookSide = 'bid' | 'ask';
+export type KalshiPaginationTier = 'live' | 'historical';
+export type KalshiStreamState = 'fresh' | 'stale' | 'partial' | 'unknown' | 'failed';
+export type KalshiWarningSeverity = 'info' | 'warning' | 'critical';
 export type NotificationKind = 'message' | 'trade_approval';
 export type NotificationDeliveryChannel = 'email' | 'sms';
 export type NotificationDeliveryStatus = 'pending' | 'sent' | 'failed' | 'skipped';
@@ -2177,6 +2183,214 @@ export interface TradeDeskAuditEventListResponse {
   events: TradeDeskAuditEvent[];
   generatedAt?: string | null;
   nextCursor?: string | null;
+}
+
+export interface KalshiAccountSnapshot {
+  account_id: string;
+  environment: KalshiProviderEnvironment;
+  subaccount: number;
+  generated_at: string;
+  balance: KalshiBalance;
+  positions: KalshiPositionsPage;
+  orders: KalshiOrdersPage;
+  fills: KalshiFillsPage;
+  account_limits?: KalshiAccountLimits | null;
+  historical_cutoff?: KalshiHistoricalCutoff | null;
+  freshness: KalshiAccountFreshness;
+  warnings: KalshiWarning[];
+  quarantine: KalshiQuarantineRecord[];
+}
+
+export interface KalshiBalance {
+  balance: number;
+  portfolio_value: number;
+  updated_ts: number;
+  balance_breakdown: KalshiBalanceBreakdown[];
+  subaccount: number;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiBalanceBreakdown {
+  exchange_index: number;
+  balance: string;
+}
+
+export interface KalshiLineage {
+  sync_run_id: string;
+  source_observed_at: string;
+  ingested_at: string;
+  source_payload_hash: string;
+  endpoint: string;
+  request_id?: string | null;
+  cursor_in?: string | null;
+  cursor_out?: string | null;
+  page_number?: number | null;
+  tier: KalshiPaginationTier;
+  cutoff_field?: string | null;
+  cutoff_value?: string | null;
+}
+
+export interface KalshiPositionsPage {
+  market_positions: KalshiMarketPosition[];
+  event_positions: KalshiEventPosition[];
+  cursor?: string | null;
+  page?: KalshiPage | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiMarketPosition {
+  ticker: string;
+  total_traded_dollars: string;
+  position_fp: string;
+  market_exposure_dollars: string;
+  realized_pnl_dollars: string;
+  resting_orders_count: number;
+  fees_paid_dollars: string;
+  last_updated_ts?: string | null;
+  subaccount_number?: number | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiEventPosition {
+  event_ticker: string;
+  total_cost_dollars: string;
+  total_cost_shares_fp: string;
+  event_exposure_dollars: string;
+  realized_pnl_dollars: string;
+  fees_paid_dollars: string;
+  subaccount_number?: number | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiPage {
+  cursor?: string | null;
+  limit?: number | null;
+  page_number: number;
+  tier: KalshiPaginationTier;
+  exhausted: boolean;
+}
+
+export interface KalshiOrdersPage {
+  orders: KalshiOrder[];
+  cursor?: string | null;
+  page?: KalshiPage | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiOrder {
+  order_id: string;
+  user_id?: string | null;
+  client_order_id?: string | null;
+  ticker: string;
+  side?: string | null;
+  action?: string | null;
+  outcome_side: KalshiOutcomeSide;
+  book_side: KalshiBookSide;
+  type: string;
+  status: string;
+  yes_price_dollars?: string | null;
+  no_price_dollars?: string | null;
+  fill_count_fp: string;
+  remaining_count_fp: string;
+  initial_count_fp: string;
+  taker_fill_cost_dollars?: string | null;
+  maker_fill_cost_dollars?: string | null;
+  taker_fees_dollars?: string | null;
+  maker_fees_dollars?: string | null;
+  expiration_time?: string | null;
+  created_time?: string | null;
+  last_update_time?: string | null;
+  self_trade_prevention_type?: string | null;
+  order_group_id?: string | null;
+  cancel_order_on_pause?: boolean | null;
+  subaccount_number?: number | null;
+  tier: KalshiPaginationTier;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiFillsPage {
+  fills: KalshiFill[];
+  cursor?: string | null;
+  page?: KalshiPage | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiFill {
+  fill_id: string;
+  trade_id?: string | null;
+  order_id?: string | null;
+  ticker: string;
+  market_ticker?: string | null;
+  side?: string | null;
+  action?: string | null;
+  outcome_side: KalshiOutcomeSide;
+  book_side: KalshiBookSide;
+  count_fp: string;
+  yes_price_dollars?: string | null;
+  no_price_dollars?: string | null;
+  is_taker?: boolean | null;
+  fee_cost?: string | null;
+  created_time?: string | null;
+  subaccount_number?: number | null;
+  ts?: number | null;
+  tier: KalshiPaginationTier;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiAccountLimits {
+  usage_tier: string;
+  read: KalshiRateLimitBucket;
+  write: KalshiRateLimitBucket;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiRateLimitBucket {
+  refill_rate: number;
+  bucket_capacity: number;
+}
+
+export interface KalshiHistoricalCutoff {
+  market_settled_ts?: string | null;
+  trades_created_ts: string;
+  orders_updated_ts: string;
+  observed_at?: string | null;
+  lineage?: KalshiLineage | null;
+}
+
+export interface KalshiAccountFreshness {
+  balance: KalshiStreamFreshness;
+  positions: KalshiStreamFreshness;
+  orders: KalshiStreamFreshness;
+  fills: KalshiStreamFreshness;
+  account_limits: KalshiStreamFreshness;
+  historical_cutoff: KalshiStreamFreshness;
+}
+
+export interface KalshiStreamFreshness {
+  state: KalshiStreamState;
+  as_of?: string | null;
+  row_count: number;
+  cursor_exhausted: boolean;
+  stale_reason?: string | null;
+  warning_count: number;
+}
+
+export interface KalshiWarning {
+  code: string;
+  message: string;
+  severity: BrokerAlertSeverity;
+  domain?: string | null;
+  provider_field?: string | null;
+  raw_value?: string | null;
+}
+
+export interface KalshiQuarantineRecord {
+  domain: string;
+  reason: string;
+  source_payload_hash: string;
+  observed_at: string;
+  endpoint?: string | null;
+  request_id?: string | null;
 }
 
 export interface CreateNotificationRequest {

@@ -734,7 +734,7 @@
           "title": "Submittedat"
         },
         "symbol": {
-          "maxLength": 32,
+          "maxLength": 128,
           "minLength": 1,
           "title": "Symbol",
           "type": "string"

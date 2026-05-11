@@ -1,0 +1,1560 @@
+{
+  "$defs": {
+    "KalshiAccountFreshness": {
+      "additionalProperties": false,
+      "properties": {
+        "account_limits": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        },
+        "balance": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        },
+        "fills": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        },
+        "historical_cutoff": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        },
+        "orders": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        },
+        "positions": {
+          "$ref": "#/$defs/KalshiStreamFreshness"
+        }
+      },
+      "title": "KalshiAccountFreshness",
+      "type": "object"
+    },
+    "KalshiAccountLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "read": {
+          "$ref": "#/$defs/KalshiRateLimitBucket"
+        },
+        "usage_tier": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Usage Tier",
+          "type": "string"
+        },
+        "write": {
+          "$ref": "#/$defs/KalshiRateLimitBucket"
+        }
+      },
+      "required": [
+        "usage_tier",
+        "read",
+        "write"
+      ],
+      "title": "KalshiAccountLimits",
+      "type": "object"
+    },
+    "KalshiBalance": {
+      "additionalProperties": false,
+      "properties": {
+        "balance": {
+          "minimum": 0,
+          "title": "Balance",
+          "type": "integer"
+        },
+        "balance_breakdown": {
+          "items": {
+            "$ref": "#/$defs/KalshiBalanceBreakdown"
+          },
+          "title": "Balance Breakdown",
+          "type": "array"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "portfolio_value": {
+          "minimum": 0,
+          "title": "Portfolio Value",
+          "type": "integer"
+        },
+        "subaccount": {
+          "default": 0,
+          "maximum": 32,
+          "minimum": 0,
+          "title": "Subaccount",
+          "type": "integer"
+        },
+        "updated_ts": {
+          "minimum": 0,
+          "title": "Updated Ts",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "balance",
+        "portfolio_value",
+        "updated_ts"
+      ],
+      "title": "KalshiBalance",
+      "type": "object"
+    },
+    "KalshiBalanceBreakdown": {
+      "additionalProperties": false,
+      "properties": {
+        "balance": {
+          "minLength": 1,
+          "title": "Balance",
+          "type": "string"
+        },
+        "exchange_index": {
+          "minimum": 0,
+          "title": "Exchange Index",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "exchange_index",
+        "balance"
+      ],
+      "title": "KalshiBalanceBreakdown",
+      "type": "object"
+    },
+    "KalshiEventPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "event_exposure_dollars": {
+          "minLength": 1,
+          "title": "Event Exposure Dollars",
+          "type": "string"
+        },
+        "event_ticker": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Event Ticker",
+          "type": "string"
+        },
+        "fees_paid_dollars": {
+          "minLength": 1,
+          "title": "Fees Paid Dollars",
+          "type": "string"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "realized_pnl_dollars": {
+          "minLength": 1,
+          "title": "Realized Pnl Dollars",
+          "type": "string"
+        },
+        "subaccount_number": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subaccount Number"
+        },
+        "total_cost_dollars": {
+          "minLength": 1,
+          "title": "Total Cost Dollars",
+          "type": "string"
+        },
+        "total_cost_shares_fp": {
+          "minLength": 1,
+          "title": "Total Cost Shares Fp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_ticker",
+        "total_cost_dollars",
+        "total_cost_shares_fp",
+        "event_exposure_dollars",
+        "realized_pnl_dollars",
+        "fees_paid_dollars"
+      ],
+      "title": "KalshiEventPosition",
+      "type": "object"
+    },
+    "KalshiFill": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action"
+        },
+        "book_side": {
+          "enum": [
+            "bid",
+            "ask"
+          ],
+          "title": "Book Side",
+          "type": "string"
+        },
+        "count_fp": {
+          "minLength": 1,
+          "title": "Count Fp",
+          "type": "string"
+        },
+        "created_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created Time"
+        },
+        "fee_cost": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fee Cost"
+        },
+        "fill_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Fill Id",
+          "type": "string"
+        },
+        "is_taker": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Taker"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market_ticker": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market Ticker"
+        },
+        "no_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "No Price Dollars"
+        },
+        "order_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Order Id"
+        },
+        "outcome_side": {
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "title": "Outcome Side",
+          "type": "string"
+        },
+        "side": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Side"
+        },
+        "subaccount_number": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subaccount Number"
+        },
+        "ticker": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ticker",
+          "type": "string"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "trade_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trade Id"
+        },
+        "ts": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ts"
+        },
+        "yes_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Yes Price Dollars"
+        }
+      },
+      "required": [
+        "fill_id",
+        "ticker",
+        "outcome_side",
+        "book_side",
+        "count_fp"
+      ],
+      "title": "KalshiFill",
+      "type": "object"
+    },
+    "KalshiFillsPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "fills": {
+          "items": {
+            "$ref": "#/$defs/KalshiFill"
+          },
+          "title": "Fills",
+          "type": "array"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "page": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiPage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "KalshiFillsPage",
+      "type": "object"
+    },
+    "KalshiHistoricalCutoff": {
+      "additionalProperties": false,
+      "properties": {
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market_settled_ts": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market Settled Ts"
+        },
+        "observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed At"
+        },
+        "orders_updated_ts": {
+          "format": "date-time",
+          "title": "Orders Updated Ts",
+          "type": "string"
+        },
+        "trades_created_ts": {
+          "format": "date-time",
+          "title": "Trades Created Ts",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trades_created_ts",
+        "orders_updated_ts"
+      ],
+      "title": "KalshiHistoricalCutoff",
+      "type": "object"
+    },
+    "KalshiLineage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor_in": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor In"
+        },
+        "cursor_out": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor Out"
+        },
+        "cutoff_field": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cutoff Field"
+        },
+        "cutoff_value": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cutoff Value"
+        },
+        "endpoint": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Endpoint",
+          "type": "string"
+        },
+        "ingested_at": {
+          "format": "date-time",
+          "title": "Ingested At",
+          "type": "string"
+        },
+        "page_number": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Number"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "source_observed_at": {
+          "format": "date-time",
+          "title": "Source Observed At",
+          "type": "string"
+        },
+        "source_payload_hash": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Source Payload Hash",
+          "type": "string"
+        },
+        "sync_run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sync Run Id",
+          "type": "string"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sync_run_id",
+        "source_observed_at",
+        "ingested_at",
+        "source_payload_hash",
+        "endpoint"
+      ],
+      "title": "KalshiLineage",
+      "type": "object"
+    },
+    "KalshiMarketPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "fees_paid_dollars": {
+          "minLength": 1,
+          "title": "Fees Paid Dollars",
+          "type": "string"
+        },
+        "last_updated_ts": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Updated Ts"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market_exposure_dollars": {
+          "minLength": 1,
+          "title": "Market Exposure Dollars",
+          "type": "string"
+        },
+        "position_fp": {
+          "minLength": 1,
+          "title": "Position Fp",
+          "type": "string"
+        },
+        "realized_pnl_dollars": {
+          "minLength": 1,
+          "title": "Realized Pnl Dollars",
+          "type": "string"
+        },
+        "resting_orders_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Resting Orders Count",
+          "type": "integer"
+        },
+        "subaccount_number": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subaccount Number"
+        },
+        "ticker": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ticker",
+          "type": "string"
+        },
+        "total_traded_dollars": {
+          "minLength": 1,
+          "title": "Total Traded Dollars",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticker",
+        "total_traded_dollars",
+        "position_fp",
+        "market_exposure_dollars",
+        "realized_pnl_dollars",
+        "fees_paid_dollars"
+      ],
+      "title": "KalshiMarketPosition",
+      "type": "object"
+    },
+    "KalshiOrder": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action"
+        },
+        "book_side": {
+          "enum": [
+            "bid",
+            "ask"
+          ],
+          "title": "Book Side",
+          "type": "string"
+        },
+        "cancel_order_on_pause": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cancel Order On Pause"
+        },
+        "client_order_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Client Order Id"
+        },
+        "created_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created Time"
+        },
+        "expiration_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expiration Time"
+        },
+        "fill_count_fp": {
+          "minLength": 1,
+          "title": "Fill Count Fp",
+          "type": "string"
+        },
+        "initial_count_fp": {
+          "minLength": 1,
+          "title": "Initial Count Fp",
+          "type": "string"
+        },
+        "last_update_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Update Time"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "maker_fees_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maker Fees Dollars"
+        },
+        "maker_fill_cost_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maker Fill Cost Dollars"
+        },
+        "no_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "No Price Dollars"
+        },
+        "order_group_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Order Group Id"
+        },
+        "order_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Order Id",
+          "type": "string"
+        },
+        "outcome_side": {
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "title": "Outcome Side",
+          "type": "string"
+        },
+        "remaining_count_fp": {
+          "minLength": 1,
+          "title": "Remaining Count Fp",
+          "type": "string"
+        },
+        "self_trade_prevention_type": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Self Trade Prevention Type"
+        },
+        "side": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Side"
+        },
+        "status": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Status",
+          "type": "string"
+        },
+        "subaccount_number": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subaccount Number"
+        },
+        "taker_fees_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taker Fees Dollars"
+        },
+        "taker_fill_cost_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Taker Fill Cost Dollars"
+        },
+        "ticker": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ticker",
+          "type": "string"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "type": {
+          "maxLength": 40,
+          "minLength": 1,
+          "title": "Type",
+          "type": "string"
+        },
+        "user_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Id"
+        },
+        "yes_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Yes Price Dollars"
+        }
+      },
+      "required": [
+        "order_id",
+        "ticker",
+        "outcome_side",
+        "book_side",
+        "type",
+        "status",
+        "fill_count_fp",
+        "remaining_count_fp",
+        "initial_count_fp"
+      ],
+      "title": "KalshiOrder",
+      "type": "object"
+    },
+    "KalshiOrdersPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "orders": {
+          "items": {
+            "$ref": "#/$defs/KalshiOrder"
+          },
+          "title": "Orders",
+          "type": "array"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiPage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "KalshiOrdersPage",
+      "type": "object"
+    },
+    "KalshiPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "exhausted": {
+          "default": false,
+          "title": "Exhausted",
+          "type": "boolean"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limit"
+        },
+        "page_number": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Page Number",
+          "type": "integer"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "title": "KalshiPage",
+      "type": "object"
+    },
+    "KalshiPositionsPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "event_positions": {
+          "items": {
+            "$ref": "#/$defs/KalshiEventPosition"
+          },
+          "title": "Event Positions",
+          "type": "array"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market_positions": {
+          "items": {
+            "$ref": "#/$defs/KalshiMarketPosition"
+          },
+          "title": "Market Positions",
+          "type": "array"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiPage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "KalshiPositionsPage",
+      "type": "object"
+    },
+    "KalshiQuarantineRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Domain",
+          "type": "string"
+        },
+        "endpoint": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endpoint"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "source_payload_hash": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Source Payload Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "reason",
+        "source_payload_hash",
+        "observed_at"
+      ],
+      "title": "KalshiQuarantineRecord",
+      "type": "object"
+    },
+    "KalshiRateLimitBucket": {
+      "additionalProperties": false,
+      "properties": {
+        "bucket_capacity": {
+          "minimum": 0,
+          "title": "Bucket Capacity",
+          "type": "integer"
+        },
+        "refill_rate": {
+          "minimum": 0,
+          "title": "Refill Rate",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "refill_rate",
+        "bucket_capacity"
+      ],
+      "title": "KalshiRateLimitBucket",
+      "type": "object"
+    },
+    "KalshiStreamFreshness": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of"
+        },
+        "cursor_exhausted": {
+          "default": false,
+          "title": "Cursor Exhausted",
+          "type": "boolean"
+        },
+        "row_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Row Count",
+          "type": "integer"
+        },
+        "stale_reason": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stale Reason"
+        },
+        "state": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "warning_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Warning Count",
+          "type": "integer"
+        }
+      },
+      "title": "KalshiStreamFreshness",
+      "type": "object"
+    },
+    "KalshiWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "message": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "provider_field": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Field"
+        },
+        "raw_value": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Value"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "KalshiWarning",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Account Id",
+      "type": "string"
+    },
+    "account_limits": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KalshiAccountLimits"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "balance": {
+      "$ref": "#/$defs/KalshiBalance"
+    },
+    "environment": {
+      "enum": [
+        "demo",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "fills": {
+      "$ref": "#/$defs/KalshiFillsPage"
+    },
+    "freshness": {
+      "$ref": "#/$defs/KalshiAccountFreshness"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "historical_cutoff": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KalshiHistoricalCutoff"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "orders": {
+      "$ref": "#/$defs/KalshiOrdersPage"
+    },
+    "positions": {
+      "$ref": "#/$defs/KalshiPositionsPage"
+    },
+    "quarantine": {
+      "items": {
+        "$ref": "#/$defs/KalshiQuarantineRecord"
+      },
+      "title": "Quarantine",
+      "type": "array"
+    },
+    "subaccount": {
+      "default": 0,
+      "maximum": 32,
+      "minimum": 0,
+      "title": "Subaccount",
+      "type": "integer"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/KalshiWarning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "account_id",
+    "environment",
+    "generated_at",
+    "balance"
+  ],
+  "title": "KalshiAccountSnapshot",
+  "type": "object"
+}

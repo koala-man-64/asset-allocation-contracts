@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "KalshiStreamFreshness": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of"
+        },
+        "cursor_exhausted": {
+          "default": false,
+          "title": "Cursor Exhausted",
+          "type": "boolean"
+        },
+        "row_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Row Count",
+          "type": "integer"
+        },
+        "stale_reason": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stale Reason"
+        },
+        "state": {
+          "default": "unknown",
+          "enum": [
+            "fresh",
+            "stale",
+            "partial",
+            "unknown",
+            "failed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "warning_count": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Warning Count",
+          "type": "integer"
+        }
+      },
+      "title": "KalshiStreamFreshness",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "account_limits": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    },
+    "balance": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    },
+    "fills": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    },
+    "historical_cutoff": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    },
+    "orders": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    },
+    "positions": {
+      "$ref": "#/$defs/KalshiStreamFreshness"
+    }
+  },
+  "title": "KalshiAccountFreshness",
+  "type": "object"
+}

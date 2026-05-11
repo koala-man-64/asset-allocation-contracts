@@ -1,0 +1,468 @@
+{
+  "$defs": {
+    "KalshiFill": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action"
+        },
+        "book_side": {
+          "enum": [
+            "bid",
+            "ask"
+          ],
+          "title": "Book Side",
+          "type": "string"
+        },
+        "count_fp": {
+          "minLength": 1,
+          "title": "Count Fp",
+          "type": "string"
+        },
+        "created_time": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created Time"
+        },
+        "fee_cost": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fee Cost"
+        },
+        "fill_id": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Fill Id",
+          "type": "string"
+        },
+        "is_taker": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Taker"
+        },
+        "lineage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalshiLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market_ticker": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Market Ticker"
+        },
+        "no_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "No Price Dollars"
+        },
+        "order_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Order Id"
+        },
+        "outcome_side": {
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "title": "Outcome Side",
+          "type": "string"
+        },
+        "side": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Side"
+        },
+        "subaccount_number": {
+          "anyOf": [
+            {
+              "maximum": 32,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subaccount Number"
+        },
+        "ticker": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ticker",
+          "type": "string"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "trade_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trade Id"
+        },
+        "ts": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ts"
+        },
+        "yes_price_dollars": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Yes Price Dollars"
+        }
+      },
+      "required": [
+        "fill_id",
+        "ticker",
+        "outcome_side",
+        "book_side",
+        "count_fp"
+      ],
+      "title": "KalshiFill",
+      "type": "object"
+    },
+    "KalshiLineage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor_in": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor In"
+        },
+        "cursor_out": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor Out"
+        },
+        "cutoff_field": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cutoff Field"
+        },
+        "cutoff_value": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cutoff Value"
+        },
+        "endpoint": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Endpoint",
+          "type": "string"
+        },
+        "ingested_at": {
+          "format": "date-time",
+          "title": "Ingested At",
+          "type": "string"
+        },
+        "page_number": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Number"
+        },
+        "request_id": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "source_observed_at": {
+          "format": "date-time",
+          "title": "Source Observed At",
+          "type": "string"
+        },
+        "source_payload_hash": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Source Payload Hash",
+          "type": "string"
+        },
+        "sync_run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Sync Run Id",
+          "type": "string"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sync_run_id",
+        "source_observed_at",
+        "ingested_at",
+        "source_payload_hash",
+        "endpoint"
+      ],
+      "title": "KalshiLineage",
+      "type": "object"
+    },
+    "KalshiPage": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        },
+        "exhausted": {
+          "default": false,
+          "title": "Exhausted",
+          "type": "boolean"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limit"
+        },
+        "page_number": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Page Number",
+          "type": "integer"
+        },
+        "tier": {
+          "default": "live",
+          "enum": [
+            "live",
+            "historical"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "title": "KalshiPage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "anyOf": [
+        {
+          "maxLength": 1024,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cursor"
+    },
+    "fills": {
+      "items": {
+        "$ref": "#/$defs/KalshiFill"
+      },
+      "title": "Fills",
+      "type": "array"
+    },
+    "lineage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KalshiLineage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "page": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/KalshiPage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "KalshiFillsPage",
+  "type": "object"
+}

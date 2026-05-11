@@ -403,7 +403,7 @@
         "symbol": {
           "anyOf": [
             {
-              "maxLength": 32,
+              "maxLength": 128,
               "minLength": 1,
               "type": "string"
             },
