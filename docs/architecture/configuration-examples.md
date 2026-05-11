@@ -616,10 +616,8 @@ Source of truth:
 ```json
 {
   "apiBaseUrl": "/api",
-  "authSessionMode": "bearer",
-  "authProvider": "disabled",
-  "oidcEnabled": false,
-  "authRequired": false,
+  "authSessionMode": "cookie",
+  "authProvider": "oidc",
   "oidcScopes": [],
   "oidcAudience": []
 }
@@ -634,8 +632,6 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
   "apiBaseUrl": "https://control-plane.example.com/api",
   "authSessionMode": "bearer",
   "authProvider": "oidc",
-  "oidcEnabled": true,
-  "authRequired": true,
   "oidcAuthority": "https://login.example.com/tenant/v2.0",
   "oidcClientId": "11111111-2222-3333-4444-555555555555",
   "oidcScopes": "api://asset-allocation-api/user_impersonation openid profile",
@@ -648,8 +644,8 @@ This is also a valid Python input payload because `oidcScopes` and `oidcAudience
 Validation notes:
 
 - `apiBaseUrl` must be a non-empty string.
-- `authSessionMode` defaults to `bearer`; cookie-backed sessions are no longer a valid runtime contract.
-- `authProvider` defaults to `disabled`; deployed auth uses `oidc`.
+- `authSessionMode` defaults to `cookie`; `bearer` remains valid for token-backed clients.
+- `authProvider` defaults to `oidc`; `password` remains available for explicitly configured break-glass or local flows.
 - `oidcScopes` and `oidcAudience` normalize `string`, `list`, `tuple`, and `set` inputs into string arrays.
 
 ## Repo Bootstrap Env Configuration

@@ -25,8 +25,6 @@ def test_documented_oidc_auth_runtime_config_example_is_valid() -> None:
             "apiBaseUrl": "/api",
             "authSessionMode": "bearer",
             "authProvider": "oidc",
-            "oidcEnabled": True,
-            "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
             "oidcClientId": "11111111-2222-3333-4444-555555555555",
             "oidcScopes": "api://asset-allocation-api/user_impersonation openid profile",
@@ -468,9 +466,6 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
     minimal = UiRuntimeConfig.model_validate(
         {
             "apiBaseUrl": "/api",
-            "authProvider": "disabled",
-            "oidcEnabled": False,
-            "authRequired": False,
             "oidcScopes": [],
             "oidcAudience": [],
         }
@@ -479,8 +474,6 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
         {
             "apiBaseUrl": "https://control-plane.example.com/api",
             "authProvider": "oidc",
-            "oidcEnabled": True,
-            "authRequired": True,
             "oidcAuthority": "https://login.example.com/tenant/v2.0",
             "oidcClientId": "11111111-2222-3333-4444-555555555555",
             "oidcScopes": "api://asset-allocation-api/user_impersonation openid profile",
@@ -490,7 +483,8 @@ def test_documented_ui_runtime_config_examples_are_valid() -> None:
         }
     )
     assert minimal.apiBaseUrl == "/api"
-    assert minimal.authProvider == "disabled"
+    assert minimal.authProvider == "oidc"
+    assert minimal.authSessionMode == "cookie"
     assert oidc_enabled.oidcScopes == [
         "api://asset-allocation-api/user_impersonation",
         "openid",

@@ -2,7 +2,7 @@
 // Do not edit by hand.
 
 export type AuthSessionMode = 'bearer' | 'cookie';
-export type AuthProvider = 'disabled' | 'oidc' | 'password';
+export type AuthProvider = 'oidc' | 'password';
 export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-support';
 export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
 export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
@@ -665,8 +665,6 @@ export interface UiRuntimeConfig {
   apiBaseUrl: string;
   authSessionMode: AuthSessionMode;
   authProvider: AuthProvider;
-  oidcEnabled: boolean;
-  authRequired: boolean;
   oidcAuthority?: string | null;
   oidcClientId?: string | null;
   oidcScopes: string[];
@@ -693,12 +691,7 @@ export interface RuntimeJobMetadata {
   metadataStatus: JobMetadataStatus;
 }
 
-export interface ResultsReconcileRequest {
-  dryRun: boolean;
-}
-
 export interface ResultsReconcileResponse {
-  dryRun: boolean;
   rankingDirtyCount: number;
   rankingNoopCount: number;
   canonicalEnqueuedCount: number;

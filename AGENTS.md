@@ -4,6 +4,16 @@
 
 Repo-local agents live under `.codex/skills`. Use that directory as the authoritative repo-local agent inventory for this repository.
 
+## Service and Process Defaults
+
+Do not add feature flags, enable/disable toggles, kill switches, dry-run gates, rollout flags, or env-controlled process gates unless the user explicitly requests that control.
+
+Services, jobs, workers, routes, integrations, and shared contracts for operational processes are enabled by default when added. Missing credentials, identity, endpoints, roles, or provider configuration should fail fast instead of silently disabling behavior.
+
+If temporary rollout control is explicitly requested, include a named owner, expiry or removal condition, tests, and documentation in the same change.
+
+Do not remove UI component disabled states, React Query execution options, validation booleans, or domain business-rule `enabled` fields unless they are actually service or process gates.
+
 ## Cross-Repo Contract Ownership
 
 This repo owns shared cross-repo data contract authoring for the asset-allocation repo family.
@@ -25,6 +35,7 @@ Required routing:
 - Author shared contract shape changes in this repo first.
 - Use `docs/architecture/master-design.md` as the contract process reference.
 - Consumer repos should only plan adoption, adapters, migration, or version-bump work until this repo's contract work item exists and the target version is planned or published.
+- When removing platform, service, process, or runtime enablement fields, update Python models, TypeScript models, generated schemas, examples, and consumer adoption work together.
 
 Required planning decision:
 

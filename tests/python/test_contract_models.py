@@ -104,7 +104,7 @@ from asset_allocation_contracts.regime import (
     canonical_default_regime_model_config,
     validate_canonical_default_regime_config,
 )
-from asset_allocation_contracts.results import ResultsReconcileRequest, ResultsReconcileResponse
+from asset_allocation_contracts.results import ResultsReconcileResponse
 from asset_allocation_contracts.strategy_publication import (
     RegimePublicationReconcileMetadata,
     StrategyPublicationReconcileSignalRequest,
@@ -1324,8 +1324,8 @@ def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -
 def test_ui_runtime_config_defaults_to_api_root() -> None:
     config = UiRuntimeConfig()
     assert config.apiBaseUrl == "/api"
-    assert config.authSessionMode == "bearer"
-    assert config.authProvider == "disabled"
+    assert config.authSessionMode == "cookie"
+    assert config.authProvider == "oidc"
     assert config.oidcScopes == []
     assert config.oidcAudience == []
     assert config.oidcPostLogoutRedirectUri is None
@@ -1464,9 +1464,7 @@ def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerp
 
 
 def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
-    request = ResultsReconcileRequest(dryRun=True)
     response = ResultsReconcileResponse(
-        dryRun=True,
         rankingDirtyCount=1,
         rankingNoopCount=2,
         canonicalEnqueuedCount=3,
@@ -1478,20 +1476,11 @@ def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
         errors=[],
     )
 
-    assert request.dryRun is True
     assert response.publicationSignalsProcessedCount == 6
-
-    try:
-        ResultsReconcileRequest.model_validate({"dryRun": "true"})
-    except Exception:
-        pass
-    else:
-        raise AssertionError("Expected results reconcile request validation to reject non-boolean dryRun.")
 
     bad_payloads = (
         {},
         {
-            "dryRun": True,
             "rankingDirtyCount": "1",
             "rankingNoopCount": 0,
             "canonicalEnqueuedCount": 0,

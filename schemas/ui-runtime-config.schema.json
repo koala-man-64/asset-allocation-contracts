@@ -8,22 +8,16 @@
       "type": "string"
     },
     "authProvider": {
-      "default": "disabled",
+      "default": "oidc",
       "enum": [
-        "disabled",
         "oidc",
         "password"
       ],
       "title": "Authprovider",
       "type": "string"
     },
-    "authRequired": {
-      "default": false,
-      "title": "Authrequired",
-      "type": "boolean"
-    },
     "authSessionMode": {
-      "default": "bearer",
+      "default": "cookie",
       "enum": [
         "bearer",
         "cookie"
@@ -61,11 +55,6 @@
       ],
       "default": null,
       "title": "Oidcclientid"
-    },
-    "oidcEnabled": {
-      "default": false,
-      "title": "Oidcenabled",
-      "type": "boolean"
     },
     "oidcPostLogoutRedirectUri": {
       "anyOf": [

@@ -16,10 +16,6 @@
       "title": "Canonicaluptodatecount",
       "type": "integer"
     },
-    "dryRun": {
-      "title": "Dryrun",
-      "type": "boolean"
-    },
     "errorCount": {
       "minimum": 0,
       "title": "Errorcount",
@@ -54,7 +50,6 @@
     }
   },
   "required": [
-    "dryRun",
     "rankingDirtyCount",
     "rankingNoopCount",
     "canonicalEnqueuedCount",

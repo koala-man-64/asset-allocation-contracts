@@ -23,17 +23,15 @@ def _normalize_scopes(value: Any) -> list[str]:
 
 
 AuthSessionMode = Literal["bearer", "cookie"]
-AuthProvider = Literal["disabled", "oidc", "password"]
+AuthProvider = Literal["oidc", "password"]
 
 
 class UiRuntimeConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     apiBaseUrl: str = Field(default="/api", min_length=1)
-    authSessionMode: AuthSessionMode = "bearer"
-    authProvider: AuthProvider = "disabled"
-    oidcEnabled: bool = False
-    authRequired: bool = False
+    authSessionMode: AuthSessionMode = "cookie"
+    authProvider: AuthProvider = "oidc"
     oidcAuthority: str | None = None
     oidcClientId: str | None = None
     oidcScopes: list[str] = Field(default_factory=list)

@@ -555,10 +555,8 @@ const exitPreset: ExitPolicyPreset = {
 
 const runtimeConfig: UiRuntimeConfig = {
   apiBaseUrl: "/api",
-  authSessionMode: "bearer",
+  authSessionMode: "cookie",
   authProvider: "oidc",
-  oidcEnabled: true,
-  authRequired: true,
   oidcAuthority: "https://login.example.com/tenant/v2.0",
   oidcClientId: "11111111-2222-3333-4444-555555555555",
   oidcScopes: ["openid", "profile"],
