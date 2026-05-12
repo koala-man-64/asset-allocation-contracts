@@ -25,6 +25,23 @@ Do not act as a strategic product manager. Do not invent priorities, roadmap dec
 - Keep an audit-friendly explanation of every attempted or completed change.
 - Do not expose PATs, OAuth tokens, secrets, connection strings, private keys, or confidential details beyond the user's authorized access.
 
+## AdaptiveAssetAllocation Methodology
+
+Treat `AdaptiveAssetAllocation` as an Azure DevOps Agile-process project unless live project metadata proves otherwise.
+
+- Use Agile hierarchy by default: `Epic -> Feature -> User Story -> Task`. Use `Bug` at the story level when the work is defect/remediation rather than planned feature delivery.
+- Create new repo execution work as `Task` items under the smallest relevant `User Story`, `Feature`, or existing project grouping. Create a `User Story` only when the work represents user-facing or cross-repo capability scope rather than a single repo execution step.
+- Do not create new `Issue` work items unless the live project process or an existing parent explicitly requires that type. Existing `Issue` items may still be used as legacy or custom story-level containers; report them as `Issue` and map them operationally to story-level progress.
+- Use Agile state semantics by default:
+  - `New` for backlog/intake work.
+  - `Active` for in-progress delivery work.
+  - `Closed` for completed work.
+  - `Removed` only when the item is intentionally removed from scope.
+- Never assume `To Do`, `Doing`, or `Done` are valid System.State values just because board columns use those labels. Discover valid states for the specific work item type before state writes, and prefer `Active`/`Closed` when the CLI or API rejects board-column labels.
+- For Agile backlog ordering in this project, use `Microsoft.VSTS.Common.StackRank`.
+- For Agile story sizing in this project, use `Microsoft.VSTS.Scheduling.StoryPoints` on every created or materially updated `User Story`.
+- Keep repo scope visible through both `repo:<repo-slug>` tags and Description or Acceptance Criteria text when the item is a `User Story`.
+
 ## Start Every Task
 
 1. Run after `delivery-orchestrator-agent` identifies the objective, acceptance criteria, routing, owner, and gates.
@@ -36,6 +53,7 @@ Do not act as a strategic product manager. Do not invent priorities, roadmap dec
    - Repo-scoped Task or Bug for implementation, investigation, validation, documentation, or release work.
    - Every created work item must have a populated backlog-ordering field before it is considered tracked.
    - Every created or updated User Story must record touched repo scope and Story Points before it is considered tracked.
+   - In `AdaptiveAssetAllocation`, default new work to Agile `Task` items unless the scope clearly requires a `User Story`.
 4. Link or record branch, worktree, commit, PR, build, release, validation evidence, blockers, and next action as they appear.
 5. If durable tracking cannot be established, return `ADO_TRACKING_BLOCKED` with the exact missing evidence and the smallest action needed to restore tracking.
 
@@ -97,11 +115,13 @@ Understand and preserve these Azure DevOps concepts:
 - Parent/Child links and Related links
 - Acceptance Criteria, Description, comments, revisions, custom fields
 
-Expected hierarchy:
+Expected Agile hierarchy:
 
 ```text
 Epic -> Feature -> User Story or Bug -> Task
 ```
+
+For `AdaptiveAssetAllocation`, this is the default methodology. If legacy `Issue` items appear, treat them as existing project containers and do not silently convert or replace them.
 
 ## Normalized Data
 
@@ -379,7 +399,7 @@ Allow project-specific configuration for:
 - Azure DevOps organization, project, and team
 - default area path and iteration path
 - sprint cadence
-- work item process template: Agile, Scrum, CMMI, Basic, or custom
+- work item process template: default `Agile` for `AdaptiveAssetAllocation`; otherwise discover Agile, Scrum, CMMI, Basic, or custom from live project metadata
 - field mappings for custom fields
 - agent assignment field or tag convention
 - done states
