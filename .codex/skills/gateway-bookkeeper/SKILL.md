@@ -52,6 +52,7 @@ Treat `AdaptiveAssetAllocation` as an Azure DevOps Agile-process project unless 
    - Parent item for cross-repo or broader delivery objectives.
    - Repo-scoped Task or Bug for implementation, investigation, validation, documentation, or release work.
    - Every created work item must have a populated backlog-ordering field before it is considered tracked.
+   - Every created work item must name the agent role or roles to use and the repo or repos to use in its Description before it is considered tracked.
    - Every created or updated User Story must record touched repo scope and Story Points before it is considered tracked.
    - In `AdaptiveAssetAllocation`, default new work to Agile `Task` items unless the scope clearly requires a `User Story`.
 4. Link or record branch, worktree, commit, PR, build, release, validation evidence, blockers, and next action as they appear.
@@ -103,6 +104,19 @@ Treat repo scope and sizing as required User Story metadata, not optional notes.
 - Include touched repos, Story Points, and the estimate source in the create or update preview and in the final Bookkeeper Update.
 - If a story's repo set changes after creation, update the repo tags and description or acceptance criteria in the same bookkeeping action so tags and text do not drift.
 
+## Work Item Description Requirements
+
+Treat execution metadata in the Description as required Azure Boards data, not chat-only coordination.
+
+- When creating any User Story, Task, Bug, or other execution work item, include a Description section named `Agent roles to use:` with the exact role names expected to execute, review, validate, or bookkeep the work.
+- When creating any User Story, Task, Bug, or other execution work item, include a Description section named `Repos to use:` with every repo slug the assignee should touch or inspect.
+- For single-repo Tasks or Bugs, list the target repo in `Repos to use:` and, when relevant, include a separate `Cross-repo scope:` line naming related repos.
+- For cross-repo parent items, list all target repos in `Repos to use:` and keep the same repo set aligned with `repo:<repo-slug>` tags.
+- Use concrete repo slugs, for example `asset-allocation-jobs`; do not use vague labels such as "backend" or "all repos" when the repo set can be discovered.
+- Use concrete agent role names, for example `delivery-engineer-agent`, `qa-release-gate-agent`, `gateway-bookkeeper`, or `git-hygiene-orchestrator`; do not rely only on human names or generic owner text.
+- Re-read every created work item and verify the Description contains both `Agent roles to use:` and `Repos to use:` before reporting tracking as complete.
+- If either field cannot be populated or verified, stop with `ADO_TRACKING_BLOCKED` and name the missing agent-role or repo-scope evidence.
+
 ## Core Concepts
 
 Understand and preserve these Azure DevOps concepts:
@@ -131,6 +145,7 @@ Normalize work item data into these practical shapes before reporting. If a fiel
 WorkItem:
 - id, url, type, title, description
 - state, reason, assigned_to, assigned_agent
+- agent_roles_to_use, repos_to_use
 - area_path, iteration_path, sprint, tags
 - touched_repos, story_points_estimate_source
 - priority, severity
@@ -210,6 +225,7 @@ Detect and report:
 
 - duplicate or near-duplicate items
 - missing parent links
+- missing `Agent roles to use:` or `Repos to use:` Description sections on work items created by this skill
 - missing acceptance criteria
 - stories missing touched repo tags or repo scope in the description or acceptance criteria
 - missing story points, effort, or task estimates
@@ -480,4 +496,6 @@ The skill is working when these behaviors pass:
 7. "Prepare a daily standup digest."
    - Summarize completed items since yesterday, changed items since yesterday, blocked work, stale active work, and workload by assignee.
 8. "Create a tagged story for this repo work."
-   - Create or preview a User Story with StackRank, `repo:<repo-slug>` tags for every touched repo, the same repo list in Description or Acceptance Criteria, populated Story Points, and a verification read-back before reporting tracking as complete.
+   - Create or preview a User Story with StackRank, `repo:<repo-slug>` tags for every touched repo, `Agent roles to use:` and `Repos to use:` in the Description, the same repo list in Description or Acceptance Criteria, populated Story Points, and a verification read-back before reporting tracking as complete.
+9. "Create child tasks for this cross-repo story."
+   - Create or preview each child Task with StackRank, a parent link, `Agent roles to use:` naming the intended execution and gate roles, `Repos to use:` naming the target repo, and verification read-back before reporting tracking as complete.
