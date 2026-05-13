@@ -1,6 +1,6 @@
 ---
 name: git-hygiene-orchestrator
-description: Audit and clean Git branches, remote-tracking refs, and worktrees safely. Use when Codex is asked to inspect Git hygiene, stale branches, merged branches, remote refs, worktrees, dirty work, merge conflicts, branch cleanup, pruning, or repository cleanup commands.
+description: Audit and clean Git branches, remote-tracking refs, and worktrees safely. Use when Codex is asked to inspect Git hygiene, stale branches, merged branches, remote refs, worktrees, dirty work, merge conflicts, branch cleanup, pruning, repository cleanup commands, or when the user says "finish it" and expects validation, commit, push, pull request creation, and merge if gates allow.
 ---
 
 # Git Hygiene Orchestrator
@@ -11,9 +11,24 @@ Audit Git branches, remote-tracking refs, and worktrees before recommending or e
 
 Default to audit-first and conservative. Prefer preserving work over deleting it. Never hide uncertainty. When cleanup is safe, recommend exact commands. When cleanup is risky, explain why and require explicit approval.
 
+## Finish It Command
+
+Treat a user instruction of `finish it` as explicit authorization to run the repository finish workflow for the current task:
+
+1. Inspect status and confirm the intended work scope.
+2. Run the relevant tests, lint, contract checks, or smoke checks for the changed surface.
+3. Stage only task-owned files.
+4. Commit with a concise task-scoped message.
+5. Fetch and rebase or otherwise sync using the repo-approved safe path.
+6. Push the task branch.
+7. Open a pull request against the repo's default branch.
+8. Merge the pull request only when branch protection, required checks, required reviews, and repo policy allow it.
+
+Do not treat `finish it` as permission to bypass safety gates, force-push, merge red checks, delete user work, skip required review, or push directly to protected branches. If any step is blocked, complete all earlier safe steps and report the exact blocker and next required action.
+
 ## Intake
 
-Start every task by reading repository instructions such as `AGENTS.md`, `CONTRIBUTING.md`, `.codex/`, Azure DevOps pipeline config, and local workflow docs when present.
+Start every task by reading repository instructions such as `AGENTS.md`, `CONTRIBUTING.md`, `.codex/`, `.github/`, and local workflow docs when present.
 
 Create a work item with:
 
@@ -31,6 +46,18 @@ When the runtime and current instructions allow delegation, split independent au
 - Cleanup Executor, only after approval
 
 If delegation is unavailable or not allowed, perform those roles directly.
+
+## Task and Artifact Links
+
+For every task this skill performs, coordinates, or reports on, carry forward relevant direct links when they are available:
+
+- Azure Boards work items, Tasks, Bugs, User Stories, Features, or Epics that track the objective or repo action.
+- Pull requests, branches, commits, builds, releases, deployments, validation logs, and worktree paths that provide evidence for the task.
+- Delegated agent or task handoffs when the runtime exposes a durable task, thread, or handoff link.
+
+Resolve links through the repository's source of truth first, such as Azure DevOps for Azure Repos or GitHub for GitHub remotes. Do not fabricate URLs. Use connector or CLI-returned URLs when available, or construct Azure DevOps work item links only from confirmed organization, project, and work item IDs.
+
+Always include relevant task and artifact links in status updates and final output. If a relevant link should exist but cannot be resolved, state `link unavailable` with the exact blocker instead of omitting it.
 
 ## Hard Safety Rules
 
@@ -242,9 +269,10 @@ git status --short --branch
 
 Lead with the result. Include:
 
-1. What was cleaned.
-2. What was intentionally preserved.
-3. Remaining dirty, conflicted, or unmerged work.
-4. Commands that failed or were skipped.
-5. Exact next recommended commands, if any.
-6. Final risk assessment.
+1. Relevant task and artifact links, or `link unavailable` with the blocker.
+2. What was cleaned.
+3. What was intentionally preserved.
+4. Remaining dirty, conflicted, or unmerged work.
+5. Commands that failed or were skipped.
+6. Exact next recommended commands, if any.
+7. Final risk assessment.
