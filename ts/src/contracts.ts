@@ -6,6 +6,10 @@ export type AuthProvider = 'oidc' | 'password';
 export type JobCategory = 'data-pipeline' | 'strategy-compute' | 'operational-support';
 export type JobMetadataSource = 'tags' | 'legacy-catalog' | 'unknown';
 export type JobMetadataStatus = 'valid' | 'fallback' | 'invalid';
+export type ConsistencyStatus = 'consistent' | 'stale' | 'mismatch' | 'running' | 'unknown' | 'unavailable' | 'error';
+export type DeploymentProvenanceStatus = 'available' | 'partial' | 'unavailable' | 'error';
+export type PipelineRunLifecycleStatus = 'notStarted' | 'inProgress' | 'completed' | 'cancelling' | 'postponed' | 'unknown';
+export type PipelineRunResult = 'succeeded' | 'partiallySucceeded' | 'failed' | 'canceled' | 'skipped' | 'unknown';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleScope = 'position';
@@ -695,6 +699,66 @@ export interface RuntimeJobMetadata {
   triggerOwner: string;
   metadataSource: JobMetadataSource;
   metadataStatus: JobMetadataStatus;
+}
+
+export interface DeploymentProvenanceView {
+  checkedAt: string;
+  status: DeploymentProvenanceStatus;
+  result: ConsistencyStatus;
+  summary: DeploymentProvenanceSummary;
+  resources: ResourceDeploymentVersion[];
+  links: DeploymentProvenanceLink[];
+  warnings: string[];
+  errors: string[];
+}
+
+export interface DeploymentProvenanceSummary {
+  totalResources: number;
+  consistent: number;
+  stale: number;
+  mismatch: number;
+  running: number;
+  unknown: number;
+  unavailable: number;
+  error: number;
+}
+
+export interface ResourceDeploymentVersion {
+  resourceName: string;
+  resourceType: string;
+  environment: string;
+  repo: string;
+  artifactDigest?: string | null;
+  sourceSha?: string | null;
+  releaseRun?: PipelineRunSummary | null;
+  deployRun?: PipelineRunSummary | null;
+  latestSuccessfulRun?: PipelineRunSummary | null;
+  status: DeploymentProvenanceStatus;
+  result: ConsistencyStatus;
+  checkedAt: string;
+  links: DeploymentProvenanceLink[];
+  warnings: string[];
+}
+
+export interface PipelineRunSummary {
+  pipelineId?: number | null;
+  pipelineName: string;
+  runId?: number | null;
+  runNumber?: string | null;
+  status: PipelineRunLifecycleStatus;
+  result: PipelineRunResult;
+  sourceSha?: string | null;
+  sourceBranch?: string | null;
+  queuedAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  links: DeploymentProvenanceLink[];
+  warnings: string[];
+}
+
+export interface DeploymentProvenanceLink {
+  label: string;
+  href: string;
 }
 
 export interface ResultsReconcileResponse {

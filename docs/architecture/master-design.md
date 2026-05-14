@@ -383,7 +383,22 @@ Purpose:
 - Keep server-side filtering, sort keys, coverage flags, facets, and active filter echo aligned across control-plane and browser consumers
 - Preserve the read-only research boundary: these contracts describe screening data and metadata, not trading actions or watchlist mutation commands
 
-### 4.12 Release and Env/Config Surfaces
+### 4.12 Deployment Provenance Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/deployment_provenance.py`
+- `schemas/deployment-provenance-view.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define the shared `/api/system/status-view` deployment provenance payload consumed by UI and produced by control-plane.
+- Carry live Azure resource deployment evidence, including resource name/type, environment, repo, image digest, source SHA, release run, deploy run, latest successful run, checked time, links, warnings, and error state.
+- Keep deployed-version consistency semantics explicit with `consistent`, `stale`, `mismatch`, `running`, `unknown`, `unavailable`, and `error`.
+- Preserve the operational source-of-truth rule: live Azure resource provenance is authoritative; Azure DevOps pipeline runs are comparison evidence.
+
+### 4.13 Release and Env/Config Surfaces
 
 Owned by:
 
@@ -415,11 +430,13 @@ Purpose:
 - `python/asset_allocation_contracts/strategy_publication.py`
 - `python/asset_allocation_contracts/trade_desk.py`
 - `python/asset_allocation_contracts/ui_config.py`
+- `python/asset_allocation_contracts/deployment_provenance.py`
 - `python/asset_allocation_contracts/stock_screener.py`
 - `python/asset_allocation_contracts/finance.py`
 - `python/asset_allocation_contracts/paths.py`
 - `python/asset_allocation_contracts/market_history.py`
 - `ts/src/contracts.ts`
+- `schemas/deployment-provenance-view.schema.json`
 - `schemas/`
 
 ## 5. Execution Lifecycle
@@ -821,12 +838,14 @@ Primary files used to verify this document:
 - `python/asset_allocation_contracts/ranking.py`
 - `python/asset_allocation_contracts/regime.py`
 - `python/asset_allocation_contracts/stock_screener.py`
+- `python/asset_allocation_contracts/deployment_provenance.py`
 - `python/asset_allocation_contracts/strategy.py`
 - `python/asset_allocation_contracts/ui_config.py`
 - `python/scripts/export_schemas.py`
 - `ts/package.json`
 - `ts/src/contracts.ts`
 - `ts/src/index.ts`
+- `schemas/deployment-provenance-view.schema.json`
 - `azure-pipelines/ci.yml`
 - `azure-pipelines/security.yml`
 - `azure-pipelines/release.yml`

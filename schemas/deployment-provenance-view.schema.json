@@ -1,0 +1,462 @@
+{
+  "$defs": {
+    "DeploymentProvenanceLink": {
+      "additionalProperties": false,
+      "properties": {
+        "href": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Href",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "href"
+      ],
+      "title": "DeploymentProvenanceLink",
+      "type": "object"
+    },
+    "DeploymentProvenanceSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "consistent": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Consistent",
+          "type": "integer"
+        },
+        "error": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Error",
+          "type": "integer"
+        },
+        "mismatch": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Mismatch",
+          "type": "integer"
+        },
+        "running": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Running",
+          "type": "integer"
+        },
+        "stale": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Stale",
+          "type": "integer"
+        },
+        "totalResources": {
+          "minimum": 0,
+          "title": "Totalresources",
+          "type": "integer"
+        },
+        "unavailable": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unavailable",
+          "type": "integer"
+        },
+        "unknown": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unknown",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "totalResources"
+      ],
+      "title": "DeploymentProvenanceSummary",
+      "type": "object"
+    },
+    "PipelineRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "finishedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finishedat"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/DeploymentProvenanceLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "pipelineId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipelineid"
+        },
+        "pipelineName": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Pipelinename",
+          "type": "string"
+        },
+        "queuedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Queuedat"
+        },
+        "result": {
+          "default": "unknown",
+          "enum": [
+            "succeeded",
+            "partiallySucceeded",
+            "failed",
+            "canceled",
+            "skipped",
+            "unknown"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "runNumber": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runnumber"
+        },
+        "sourceBranch": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcebranch"
+        },
+        "sourceSha": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcesha"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startedat"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "notStarted",
+            "inProgress",
+            "completed",
+            "cancelling",
+            "postponed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pipelineName"
+      ],
+      "title": "PipelineRunSummary",
+      "type": "object"
+    },
+    "ResourceDeploymentVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "artifactDigest": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifactdigest"
+        },
+        "checkedAt": {
+          "format": "date-time",
+          "title": "Checkedat",
+          "type": "string"
+        },
+        "deployRun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineRunSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "environment": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Environment",
+          "type": "string"
+        },
+        "latestSuccessfulRun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineRunSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/DeploymentProvenanceLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "releaseRun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineRunSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "repo": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Repo",
+          "type": "string"
+        },
+        "resourceName": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Resourcename",
+          "type": "string"
+        },
+        "resourceType": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Resourcetype",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "consistent",
+            "stale",
+            "mismatch",
+            "running",
+            "unknown",
+            "unavailable",
+            "error"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "sourceSha": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcesha"
+        },
+        "status": {
+          "default": "available",
+          "enum": [
+            "available",
+            "partial",
+            "unavailable",
+            "error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "resourceName",
+        "resourceType",
+        "environment",
+        "repo",
+        "result",
+        "checkedAt"
+      ],
+      "title": "ResourceDeploymentVersion",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checkedAt": {
+      "format": "date-time",
+      "title": "Checkedat",
+      "type": "string"
+    },
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/DeploymentProvenanceLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "resources": {
+      "items": {
+        "$ref": "#/$defs/ResourceDeploymentVersion"
+      },
+      "title": "Resources",
+      "type": "array"
+    },
+    "result": {
+      "enum": [
+        "consistent",
+        "stale",
+        "mismatch",
+        "running",
+        "unknown",
+        "unavailable",
+        "error"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "partial",
+        "unavailable",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/DeploymentProvenanceSummary"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "checkedAt",
+    "status",
+    "result",
+    "summary"
+  ],
+  "title": "DeploymentProvenanceView",
+  "type": "object"
+}

@@ -52,6 +52,12 @@ from asset_allocation_contracts.broker_accounts import (
     ReconnectBrokerAccountRequest,
     RefreshBrokerAccountRequest,
 )
+from asset_allocation_contracts.deployment_provenance import (
+    DeploymentProvenanceSummary,
+    DeploymentProvenanceView,
+    PipelineRunSummary,
+    ResourceDeploymentVersion,
+)
 from asset_allocation_contracts.government_signals import (
     CongressTradeEvent,
     CongressTradeVersion,
@@ -1636,9 +1642,69 @@ def test_runtime_job_metadata_rejects_unknown_category() -> None:
         )
 
 
-def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> (
-    None
-):
+def test_deployment_provenance_view_captures_resource_consistency() -> None:
+    latest_run = PipelineRunSummary(
+        pipelineId=18,
+        pipelineName="asset-allocation-ui-deploy-prod",
+        runId=1205,
+        runNumber="20260514.5",
+        status="completed",
+        result="succeeded",
+        sourceSha="420db20a1b1a5a3d70f26c8c23e2fa82a283ca82",
+        sourceBranch="refs/heads/main",
+        finishedAt="2026-05-14T02:00:00Z",
+        links=[{"label": "Pipeline run", "href": "https://dev.azure.com/example/run/1205"}],
+    )
+    resource = ResourceDeploymentVersion(
+        resourceName="vg-aa-prod-ui",
+        resourceType="Microsoft.App/containerApps",
+        environment="prod",
+        repo="asset-allocation-ui",
+        artifactDigest="sha256:abc123",
+        sourceSha="420db20a1b1a5a3d70f26c8c23e2fa82a283ca82",
+        releaseRun=latest_run,
+        deployRun=latest_run,
+        latestSuccessfulRun=latest_run,
+        status="available",
+        result="consistent",
+        checkedAt="2026-05-14T02:05:00Z",
+    )
+    view = DeploymentProvenanceView(
+        checkedAt="2026-05-14T02:05:00Z",
+        status="available",
+        result="consistent",
+        summary=DeploymentProvenanceSummary(totalResources=1, consistent=1),
+        resources=[resource],
+    )
+    schema = DeploymentProvenanceView.model_json_schema()
+
+    assert view.resources[0].resourceName == "vg-aa-prod-ui"
+    assert view.resources[0].latestSuccessfulRun is not None
+    assert view.resources[0].latestSuccessfulRun.runId == 1205
+    assert view.summary.consistent == 1
+    assert schema["properties"]["resources"]["items"]["$ref"] == "#/$defs/ResourceDeploymentVersion"
+
+
+def test_deployment_provenance_contracts_reject_unknown_result_and_extra_fields() -> None:
+    try:
+        ResourceDeploymentVersion(
+            resourceName="vg-aa-prod-ui",
+            resourceType="Microsoft.App/containerApps",
+            environment="prod",
+            repo="asset-allocation-ui",
+            status="available",
+            result="drifted",
+            checkedAt="2026-05-14T02:05:00Z",
+            unexpected=True,
+        )
+    except Exception as exc:
+        assert "result" in str(exc)
+        assert "unexpected" in str(exc)
+    else:
+        raise AssertionError("Expected deployment provenance to reject invalid result fields.")
+
+
+def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> None:
     payload = StrategyPublicationReconcileSignalRequest(
         jobKey="regime",
         sourceFingerprint="abc123",
