@@ -23,6 +23,12 @@ Release is driven only by the `asset-allocation-contracts-ci` pipeline resource 
 
 Do not mount the host Docker socket for PR or `main` validation. Docker socket mode gives pipeline code control over the host daemon and should be reserved for explicitly trusted pipelines.
 
+## Package Prerequisites
+
+Contracts is the root shared package repo for this release train. It does not add `ContractsPrerequisite` or `RuntimeCommonPrerequisite` stages because no upstream asset-allocation package must exist before contracts CI, security, or release can run.
+
+Downstream repos should surface package prerequisites as visible stages before validation, release, or deploy work, but those stages must not change trigger ownership: repo CI/quality still triggers repo release, and repo release still triggers deploy.
+
 ## Package Feed
 
 Use the project-scoped feed `asset-allocation-packages`.

@@ -36,3 +36,14 @@ def test_release_is_triggered_by_contracts_ci_only() -> None:
 
 def test_contracts_has_no_deploy_pipeline() -> None:
     assert not (REPO_ROOT / "azure-pipelines" / "deploy-prod.yml").exists()
+
+
+def test_contracts_has_no_upstream_package_prerequisite_stage() -> None:
+    for path in (
+        "azure-pipelines/ci.yml",
+        "azure-pipelines/security.yml",
+        "azure-pipelines/release.yml",
+    ):
+        text = read(path)
+        assert "- stage: ContractsPrerequisite" not in text
+        assert "- stage: RuntimeCommonPrerequisite" not in text
