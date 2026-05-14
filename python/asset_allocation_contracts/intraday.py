@@ -9,9 +9,11 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
 IntradayRefreshBatchStatus = Literal["queued", "claimed", "completed", "failed"]
-IntradayMonitorTriggerKind = Literal["scheduled", "manual"]
+IntradayMonitorTriggerKind = Literal["scheduled", "manual", "on_demand"]
 IntradayEventSeverity = Literal["info", "warning", "error"]
-IntradaySymbolMonitorStatus = Literal["idle", "observed", "refresh_queued", "refreshed", "failed"]
+IntradaySymbolMonitorStatus = Literal[
+    "idle", "observed", "refresh_queued", "refreshed", "failed"
+]
 IntradayWatchlistSymbolAppendRunSkippedReason = Literal[
     "watchlist_disabled",
     "no_new_symbols",
@@ -48,6 +50,13 @@ def _normalize_symbols(values: object) -> list[str]:
     return normalized
 
 
+def _normalize_optional_text(value: object) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 class IntradayWatchlistSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -71,7 +80,9 @@ class IntradayWatchlistDetail(IntradayWatchlistSummary):
     symbols: list[str] = Field(default_factory=list)
     createdAt: datetime | None = None
 
-    _normalize_symbols_field = field_validator("symbols", mode="before")(_normalize_symbols)
+    _normalize_symbols_field = field_validator("symbols", mode="before")(
+        _normalize_symbols
+    )
 
 
 class IntradayWatchlistUpsertRequest(BaseModel):
@@ -86,17 +97,23 @@ class IntradayWatchlistUpsertRequest(BaseModel):
     autoRefreshEnabled: bool = True
     marketSession: IntradayMarketSession = "us_equities_regular"
 
-    _normalize_symbols_field = field_validator("symbols", mode="before")(_normalize_symbols)
+    _normalize_symbols_field = field_validator("symbols", mode="before")(
+        _normalize_symbols
+    )
 
 
 class IntradayWatchlistSymbolAppendRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    symbols: list[str] = Field(min_length=1, max_length=INTRADAY_WATCHLIST_APPEND_SYMBOLS_MAX)
+    symbols: list[str] = Field(
+        min_length=1, max_length=INTRADAY_WATCHLIST_APPEND_SYMBOLS_MAX
+    )
     queueRun: bool = True
     reason: str | None = Field(default=None, max_length=500)
 
-    _normalize_symbols_field = field_validator("symbols", mode="before")(_normalize_symbols)
+    _normalize_symbols_field = field_validator("symbols", mode="before")(
+        _normalize_symbols
+    )
 
     @field_validator("reason", mode="before")
     @classmethod
@@ -124,6 +141,74 @@ class IntradaySymbolStatus(BaseModel):
     @classmethod
     def _normalize_symbol_field(cls, value: object) -> str:
         return _normalize_symbol(value)
+
+
+class IntradayOnDemandSymbolConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str = Field(min_length=1, max_length=32)
+    enabled: bool = True
+    reason: str | None = Field(default=None, max_length=500)
+    requestedBy: str | None = Field(default=None, max_length=255)
+    createdAt: datetime | None = None
+    updatedAt: datetime | None = None
+    lastEnqueuedAt: datetime | None = None
+    lastRefreshCompletedAt: datetime | None = None
+    lastError: str | None = Field(default=None, max_length=2_000)
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def _normalize_symbol_field(cls, value: object) -> str:
+        return _normalize_symbol(value)
+
+    _normalize_reason = field_validator("reason", mode="before")(
+        _normalize_optional_text
+    )
+    _normalize_requested_by = field_validator("requestedBy", mode="before")(
+        _normalize_optional_text
+    )
+
+
+class IntradayOnDemandSymbolUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str = Field(min_length=1, max_length=32)
+    enabled: bool = True
+    reason: str | None = Field(default=None, max_length=500)
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def _normalize_symbol_field(cls, value: object) -> str:
+        return _normalize_symbol(value)
+
+    _normalize_reason = field_validator("reason", mode="before")(
+        _normalize_optional_text
+    )
+
+
+class IntradayOnDemandSymbolListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    total: int = Field(default=0, ge=0)
+    items: list[IntradayOnDemandSymbolConfig] = Field(default_factory=list)
+
+
+class IntradayOnDemandEnqueueSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    enabledSymbolCount: int = Field(default=0, ge=0)
+    enqueuedSymbolCount: int = Field(default=0, ge=0)
+    skippedSymbolCount: int = Field(default=0, ge=0)
+    batchCount: int = Field(default=0, ge=0)
+    queuedSymbols: list[str] = Field(default_factory=list)
+    skippedSymbols: list[str] = Field(default_factory=list)
+
+    _normalize_queued_symbols = field_validator("queuedSymbols", mode="before")(
+        _normalize_symbols
+    )
+    _normalize_skipped_symbols = field_validator("skippedSymbols", mode="before")(
+        _normalize_symbols
+    )
 
 
 class IntradayMonitorRunSummary(BaseModel):
@@ -156,8 +241,12 @@ class IntradayWatchlistSymbolAppendResponse(BaseModel):
     queuedRun: IntradayMonitorRunSummary | None = None
     runSkippedReason: IntradayWatchlistSymbolAppendRunSkippedReason | None = None
 
-    _normalize_added_symbols = field_validator("addedSymbols", mode="before")(_normalize_symbols)
-    _normalize_already_present_symbols = field_validator("alreadyPresentSymbols", mode="before")(_normalize_symbols)
+    _normalize_added_symbols = field_validator("addedSymbols", mode="before")(
+        _normalize_symbols
+    )
+    _normalize_already_present_symbols = field_validator(
+        "alreadyPresentSymbols", mode="before"
+    )(_normalize_symbols)
 
 
 class IntradayMonitorEvent(BaseModel):
@@ -204,7 +293,9 @@ class IntradayMonitorCompleteRequest(BaseModel):
     events: list[IntradayMonitorEvent] = Field(default_factory=list)
     refreshSymbols: list[str] = Field(default_factory=list)
 
-    _normalize_refresh_symbols = field_validator("refreshSymbols", mode="before")(_normalize_symbols)
+    _normalize_refresh_symbols = field_validator("refreshSymbols", mode="before")(
+        _normalize_symbols
+    )
 
 
 class IntradayMonitorFailRequest(BaseModel):
@@ -233,7 +324,9 @@ class IntradayRefreshBatchSummary(BaseModel):
     updatedAt: datetime | None = None
     lastError: str | None = Field(default=None, max_length=2_000)
 
-    _normalize_symbols_field = field_validator("symbols", mode="before")(_normalize_symbols)
+    _normalize_symbols_field = field_validator("symbols", mode="before")(
+        _normalize_symbols
+    )
 
 
 class IntradayRefreshClaimRequest(BaseModel):

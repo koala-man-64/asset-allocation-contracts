@@ -70,7 +70,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("risk-policy-config-summary.schema.json", strategy.RiskPolicyConfigSummary),
     ("risk-policy-config-revision.schema.json", strategy.RiskPolicyConfigRevision),
     ("risk-policy-config-detail.schema.json", strategy.RiskPolicyConfigDetailResponse),
-    ("risk-policy-config-upsert-request.schema.json", strategy.RiskPolicyConfigUpsertRequest),
+    (
+        "risk-policy-config-upsert-request.schema.json",
+        strategy.RiskPolicyConfigUpsertRequest,
+    ),
     ("exit-rule-set-config.schema.json", strategy.ExitRuleSetConfig),
     ("exit-rule-set-summary.schema.json", strategy.ExitRuleSetSummary),
     ("exit-rule-set-revision.schema.json", strategy.ExitRuleSetRevision),
@@ -87,8 +90,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("regime-policy-config.schema.json", regime.RegimePolicyConfig),
     ("regime-policy-config-summary.schema.json", regime.RegimePolicyConfigSummary),
     ("regime-policy-config-revision.schema.json", regime.RegimePolicyConfigRevision),
-    ("regime-policy-config-detail.schema.json", regime.RegimePolicyConfigDetailResponse),
-    ("regime-policy-config-upsert-request.schema.json", regime.RegimePolicyConfigUpsertRequest),
+    (
+        "regime-policy-config-detail.schema.json",
+        regime.RegimePolicyConfigDetailResponse,
+    ),
+    (
+        "regime-policy-config-upsert-request.schema.json",
+        regime.RegimePolicyConfigUpsertRequest,
+    ),
     ("regime-model-config.schema.json", regime.RegimeModelConfig),
     ("regime-snapshot.schema.json", regime.RegimeSnapshot),
     ("regime-input-row.schema.json", regime.RegimeInputRow),
@@ -120,8 +129,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("backtest-rolling-metrics.schema.json", backtest.RollingMetricsResponse),
     ("backtest-trade-list.schema.json", backtest.TradeListResponse),
     ("backtest-closed-position-list.schema.json", backtest.ClosedPositionListResponse),
-    ("backtest-policy-event-list.schema.json", backtest.BacktestPolicyEventListResponse),
-    ("backtest-data-quality-event-list.schema.json", backtest.BacktestDataQualityEventListResponse),
+    (
+        "backtest-policy-event-list.schema.json",
+        backtest.BacktestPolicyEventListResponse,
+    ),
+    (
+        "backtest-data-quality-event-list.schema.json",
+        backtest.BacktestDataQualityEventListResponse,
+    ),
     ("option-contract-identity.schema.json", options.OptionContractIdentity),
     ("option-leg.schema.json", options.OptionLeg),
     ("option-leg-group.schema.json", options.OptionLegGroup),
@@ -134,7 +149,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("option-chain-snapshot.schema.json", options.OptionChainSnapshot),
     ("option-lifecycle-event.schema.json", options.OptionLifecycleEvent),
     ("option-broker-capability.schema.json", options.OptionBrokerCapability),
-    ("option-broker-constraint-profile.schema.json", options.OptionBrokerConstraintProfile),
+    (
+        "option-broker-constraint-profile.schema.json",
+        options.OptionBrokerConstraintProfile,
+    ),
     ("option-risk-limit-set.schema.json", options.OptionRiskLimitSet),
     ("option-data-quality-gate-set.schema.json", options.OptionDataQualityGateSet),
     ("option-lifecycle-gate-set.schema.json", options.OptionLifecycleGateSet),
@@ -152,10 +170,16 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("stock-screener-response.schema.json", stock_screener.StockScreenerResponse),
     ("broker-account-detail.schema.json", broker_accounts.BrokerAccountDetail),
     ("broker-account-list.schema.json", broker_accounts.BrokerAccountListResponse),
-    ("broker-account-action-response.schema.json", broker_accounts.BrokerAccountActionResponse),
+    (
+        "broker-account-action-response.schema.json",
+        broker_accounts.BrokerAccountActionResponse,
+    ),
     ("broker-account-alert.schema.json", broker_accounts.BrokerAccountAlert),
     ("broker-account-summary.schema.json", broker_accounts.BrokerAccountSummary),
-    ("broker-account-configuration.schema.json", broker_accounts.BrokerAccountConfiguration),
+    (
+        "broker-account-configuration.schema.json",
+        broker_accounts.BrokerAccountConfiguration,
+    ),
     (
         "broker-account-onboarding-candidate.schema.json",
         broker_accounts.BrokerAccountOnboardingCandidate,
@@ -174,15 +198,30 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ),
     ("broker-trading-policy.schema.json", broker_accounts.BrokerTradingPolicy),
     ("broker-position-size-limit.schema.json", broker_accounts.BrokerPositionSizeLimit),
-    ("broker-allocation-update-request.schema.json", broker_accounts.BrokerAccountAllocationUpdateRequest),
-    ("broker-trading-policy-update-request.schema.json", broker_accounts.BrokerTradingPolicyUpdateRequest),
+    (
+        "broker-allocation-update-request.schema.json",
+        broker_accounts.BrokerAccountAllocationUpdateRequest,
+    ),
+    (
+        "broker-trading-policy-update-request.schema.json",
+        broker_accounts.BrokerTradingPolicyUpdateRequest,
+    ),
     ("broker-capability-flags.schema.json", broker_accounts.BrokerCapabilityFlags),
     ("broker-connection-health.schema.json", broker_accounts.BrokerConnectionHealth),
     ("broker-sync-run.schema.json", broker_accounts.BrokerSyncRun),
-    ("reconnect-broker-account-request.schema.json", broker_accounts.ReconnectBrokerAccountRequest),
+    (
+        "reconnect-broker-account-request.schema.json",
+        broker_accounts.ReconnectBrokerAccountRequest,
+    ),
     ("pause-broker-sync-request.schema.json", broker_accounts.PauseBrokerSyncRequest),
-    ("refresh-broker-account-request.schema.json", broker_accounts.RefreshBrokerAccountRequest),
-    ("acknowledge-broker-alert-request.schema.json", broker_accounts.AcknowledgeBrokerAlertRequest),
+    (
+        "refresh-broker-account-request.schema.json",
+        broker_accounts.RefreshBrokerAccountRequest,
+    ),
+    (
+        "acknowledge-broker-alert-request.schema.json",
+        broker_accounts.AcknowledgeBrokerAlertRequest,
+    ),
     ("trade-account-summary.schema.json", trade_desk.TradeAccountSummary),
     ("trade-account-detail.schema.json", trade_desk.TradeAccountDetail),
     ("trade-account-list.schema.json", trade_desk.TradeAccountListResponse),
@@ -203,7 +242,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("trade-order-cancel-response.schema.json", trade_desk.TradeOrderCancelResponse),
     ("trade-risk-check.schema.json", trade_desk.TradeRiskCheck),
     ("trade-desk-audit-event.schema.json", trade_desk.TradeDeskAuditEvent),
-    ("trade-desk-audit-event-list.schema.json", trade_desk.TradeDeskAuditEventListResponse),
+    (
+        "trade-desk-audit-event-list.schema.json",
+        trade_desk.TradeDeskAuditEventListResponse,
+    ),
     ("kalshi-account-snapshot.schema.json", kalshi_accounts.KalshiAccountSnapshot),
     ("kalshi-account-freshness.schema.json", kalshi_accounts.KalshiAccountFreshness),
     ("kalshi-balance.schema.json", kalshi_accounts.KalshiBalance),
@@ -213,44 +255,95 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("kalshi-account-limits.schema.json", kalshi_accounts.KalshiAccountLimits),
     ("kalshi-historical-cutoff.schema.json", kalshi_accounts.KalshiHistoricalCutoff),
     ("kalshi-lineage.schema.json", kalshi_accounts.KalshiLineage),
-    ("notification-create-request.schema.json", notifications.CreateNotificationRequest),
-    ("notification-status-response.schema.json", notifications.NotificationStatusResponse),
-    ("notification-action-detail-response.schema.json", notifications.NotificationActionDetailResponse),
-    ("notification-decision-request.schema.json", notifications.NotificationDecisionRequest),
+    (
+        "notification-create-request.schema.json",
+        notifications.CreateNotificationRequest,
+    ),
+    (
+        "notification-status-response.schema.json",
+        notifications.NotificationStatusResponse,
+    ),
+    (
+        "notification-action-detail-response.schema.json",
+        notifications.NotificationActionDetailResponse,
+    ),
+    (
+        "notification-decision-request.schema.json",
+        notifications.NotificationDecisionRequest,
+    ),
     ("portfolio-account.schema.json", portfolio.PortfolioAccount),
     ("portfolio-account-detail.schema.json", portfolio.PortfolioAccountDetailResponse),
     ("portfolio-account-list.schema.json", portfolio.PortfolioAccountListResponse),
     ("portfolio-account-revision.schema.json", portfolio.PortfolioAccountRevision),
-    ("portfolio-account-upsert-request.schema.json", portfolio.PortfolioAccountUpsertRequest),
+    (
+        "portfolio-account-upsert-request.schema.json",
+        portfolio.PortfolioAccountUpsertRequest,
+    ),
     ("portfolio-alert-list.schema.json", portfolio.PortfolioAlertListResponse),
     ("portfolio-assignment.schema.json", portfolio.PortfolioAssignment),
     ("portfolio-assignment-request.schema.json", portfolio.PortfolioAssignmentRequest),
     ("portfolio-definition.schema.json", portfolio.PortfolioDefinition),
-    ("portfolio-definition-detail.schema.json", portfolio.PortfolioDefinitionDetailResponse),
+    (
+        "portfolio-definition-detail.schema.json",
+        portfolio.PortfolioDefinitionDetailResponse,
+    ),
     ("portfolio-history.schema.json", portfolio.PortfolioHistoryResponse),
     ("portfolio-ledger-event.schema.json", portfolio.PortfolioLedgerEvent),
-    ("portfolio-ledger-event-request.schema.json", portfolio.PortfolioLedgerEventPayload),
+    (
+        "portfolio-ledger-event-request.schema.json",
+        portfolio.PortfolioLedgerEventPayload,
+    ),
     ("portfolio-list.schema.json", portfolio.PortfolioListResponse),
     ("portfolio-position-list.schema.json", portfolio.PortfolioPositionListResponse),
-    ("portfolio-rebalance-apply-request.schema.json", portfolio.PortfolioRebalanceApplyRequest),
-    ("portfolio-rebalance-preview-request.schema.json", portfolio.PortfolioRebalancePreviewRequest),
+    (
+        "portfolio-rebalance-apply-request.schema.json",
+        portfolio.PortfolioRebalanceApplyRequest,
+    ),
+    (
+        "portfolio-rebalance-preview-request.schema.json",
+        portfolio.PortfolioRebalancePreviewRequest,
+    ),
     ("portfolio-rebalance-proposal.schema.json", portfolio.RebalanceProposal),
     ("portfolio-revision.schema.json", portfolio.PortfolioRevision),
     ("portfolio-snapshot.schema.json", portfolio.PortfolioSnapshot),
     ("portfolio-upsert-request.schema.json", portfolio.PortfolioUpsertRequest),
-    ("government-signal-congress-event.schema.json", government_signals.CongressTradeEvent),
-    ("government-signal-congress-event-list.schema.json", government_signals.CongressTradeEventListResponse),
-    ("government-signal-congress-version.schema.json", government_signals.CongressTradeVersion),
-    ("government-signal-contract-event.schema.json", government_signals.GovernmentContractEvent),
+    (
+        "government-signal-congress-event.schema.json",
+        government_signals.CongressTradeEvent,
+    ),
+    (
+        "government-signal-congress-event-list.schema.json",
+        government_signals.CongressTradeEventListResponse,
+    ),
+    (
+        "government-signal-congress-version.schema.json",
+        government_signals.CongressTradeVersion,
+    ),
+    (
+        "government-signal-contract-event.schema.json",
+        government_signals.GovernmentContractEvent,
+    ),
     (
         "government-signal-contract-event-list.schema.json",
         government_signals.GovernmentContractEventListResponse,
     ),
-    ("government-signal-contract-version.schema.json", government_signals.GovernmentContractVersion),
-    ("government-signal-issuer-daily.schema.json", government_signals.IssuerGovernmentSignalDaily),
+    (
+        "government-signal-contract-version.schema.json",
+        government_signals.GovernmentContractVersion,
+    ),
+    (
+        "government-signal-issuer-daily.schema.json",
+        government_signals.IssuerGovernmentSignalDaily,
+    ),
     ("government-signal-alert.schema.json", government_signals.GovernmentSignalAlert),
-    ("government-signal-alert-list.schema.json", government_signals.GovernmentSignalAlertListResponse),
-    ("government-signal-mapping-review.schema.json", government_signals.GovernmentSignalMappingReviewResponse),
+    (
+        "government-signal-alert-list.schema.json",
+        government_signals.GovernmentSignalAlertListResponse,
+    ),
+    (
+        "government-signal-mapping-review.schema.json",
+        government_signals.GovernmentSignalMappingReviewResponse,
+    ),
     (
         "government-signal-mapping-override-request.schema.json",
         government_signals.GovernmentSignalMappingOverrideRequest,
@@ -259,7 +352,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "government-signal-mapping-override-response.schema.json",
         government_signals.GovernmentSignalMappingOverrideResponse,
     ),
-    ("government-signal-issuer-summary.schema.json", government_signals.GovernmentSignalIssuerSummaryResponse),
+    (
+        "government-signal-issuer-summary.schema.json",
+        government_signals.GovernmentSignalIssuerSummaryResponse,
+    ),
     (
         "government-signal-portfolio-exposure-request.schema.json",
         government_signals.GovernmentSignalPortfolioExposureRequest,
@@ -271,34 +367,104 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("ai-chat-request.schema.json", ai_chat.AiChatRequest),
     ("ai-chat-stream-event.schema.json", TypeAdapter(ai_chat.AiChatStreamEvent)),
     ("symbol-cleanup-work-item.schema.json", symbol_enrichment.SymbolCleanupWorkItem),
-    ("symbol-cleanup-run-summary.schema.json", symbol_enrichment.SymbolCleanupRunSummary),
-    ("symbol-enrichment-resolve-request.schema.json", symbol_enrichment.SymbolEnrichmentResolveRequest),
-    ("symbol-enrichment-resolve-response.schema.json", symbol_enrichment.SymbolEnrichmentResolveResponse),
+    (
+        "symbol-cleanup-run-summary.schema.json",
+        symbol_enrichment.SymbolCleanupRunSummary,
+    ),
+    (
+        "symbol-enrichment-resolve-request.schema.json",
+        symbol_enrichment.SymbolEnrichmentResolveRequest,
+    ),
+    (
+        "symbol-enrichment-resolve-response.schema.json",
+        symbol_enrichment.SymbolEnrichmentResolveResponse,
+    ),
     ("symbol-profile-current.schema.json", symbol_enrichment.SymbolProfileCurrent),
-    ("symbol-profile-history-entry.schema.json", symbol_enrichment.SymbolProfileHistoryEntry),
+    (
+        "symbol-profile-history-entry.schema.json",
+        symbol_enrichment.SymbolProfileHistoryEntry,
+    ),
     ("symbol-profile-override.schema.json", symbol_enrichment.SymbolProfileOverride),
-    ("symbol-enrichment-summary.schema.json", symbol_enrichment.SymbolEnrichmentSummaryResponse),
-    ("symbol-enrichment-symbol-list-item.schema.json", symbol_enrichment.SymbolEnrichmentSymbolListItem),
-    ("symbol-enrichment-symbol-detail.schema.json", symbol_enrichment.SymbolEnrichmentSymbolDetailResponse),
-    ("symbol-enrichment-enqueue-request.schema.json", symbol_enrichment.SymbolEnrichmentEnqueueRequest),
+    (
+        "symbol-enrichment-summary.schema.json",
+        symbol_enrichment.SymbolEnrichmentSummaryResponse,
+    ),
+    (
+        "symbol-enrichment-symbol-list-item.schema.json",
+        symbol_enrichment.SymbolEnrichmentSymbolListItem,
+    ),
+    (
+        "symbol-enrichment-symbol-detail.schema.json",
+        symbol_enrichment.SymbolEnrichmentSymbolDetailResponse,
+    ),
+    (
+        "symbol-enrichment-enqueue-request.schema.json",
+        symbol_enrichment.SymbolEnrichmentEnqueueRequest,
+    ),
     ("symbol-alias-rule.schema.json", symbol_identity.SymbolAliasRule),
     ("symbol-resolution-result.schema.json", symbol_identity.SymbolResolutionResult),
     ("intraday-watchlist-summary.schema.json", intraday.IntradayWatchlistSummary),
     ("intraday-watchlist-detail.schema.json", intraday.IntradayWatchlistDetail),
-    ("intraday-watchlist-upsert-request.schema.json", intraday.IntradayWatchlistUpsertRequest),
-    ("intraday-watchlist-symbol-append-request.schema.json", intraday.IntradayWatchlistSymbolAppendRequest),
-    ("intraday-watchlist-symbol-append-response.schema.json", intraday.IntradayWatchlistSymbolAppendResponse),
+    (
+        "intraday-watchlist-upsert-request.schema.json",
+        intraday.IntradayWatchlistUpsertRequest,
+    ),
+    (
+        "intraday-watchlist-symbol-append-request.schema.json",
+        intraday.IntradayWatchlistSymbolAppendRequest,
+    ),
+    (
+        "intraday-watchlist-symbol-append-response.schema.json",
+        intraday.IntradayWatchlistSymbolAppendResponse,
+    ),
     ("intraday-symbol-status.schema.json", intraday.IntradaySymbolStatus),
+    (
+        "intraday-on-demand-symbol-config.schema.json",
+        intraday.IntradayOnDemandSymbolConfig,
+    ),
+    (
+        "intraday-on-demand-symbol-upsert-request.schema.json",
+        intraday.IntradayOnDemandSymbolUpsertRequest,
+    ),
+    (
+        "intraday-on-demand-symbol-list-response.schema.json",
+        intraday.IntradayOnDemandSymbolListResponse,
+    ),
+    (
+        "intraday-on-demand-enqueue-summary.schema.json",
+        intraday.IntradayOnDemandEnqueueSummary,
+    ),
     ("intraday-monitor-run-summary.schema.json", intraday.IntradayMonitorRunSummary),
     ("intraday-monitor-event.schema.json", intraday.IntradayMonitorEvent),
-    ("intraday-monitor-claim-request.schema.json", intraday.IntradayMonitorClaimRequest),
-    ("intraday-monitor-claim-response.schema.json", intraday.IntradayMonitorClaimResponse),
-    ("intraday-monitor-complete-request.schema.json", intraday.IntradayMonitorCompleteRequest),
+    (
+        "intraday-monitor-claim-request.schema.json",
+        intraday.IntradayMonitorClaimRequest,
+    ),
+    (
+        "intraday-monitor-claim-response.schema.json",
+        intraday.IntradayMonitorClaimResponse,
+    ),
+    (
+        "intraday-monitor-complete-request.schema.json",
+        intraday.IntradayMonitorCompleteRequest,
+    ),
     ("intraday-monitor-fail-request.schema.json", intraday.IntradayMonitorFailRequest),
-    ("intraday-refresh-batch-summary.schema.json", intraday.IntradayRefreshBatchSummary),
-    ("intraday-refresh-claim-request.schema.json", intraday.IntradayRefreshClaimRequest),
-    ("intraday-refresh-claim-response.schema.json", intraday.IntradayRefreshClaimResponse),
-    ("intraday-refresh-complete-request.schema.json", intraday.IntradayRefreshCompleteRequest),
+    (
+        "intraday-refresh-batch-summary.schema.json",
+        intraday.IntradayRefreshBatchSummary,
+    ),
+    (
+        "intraday-refresh-claim-request.schema.json",
+        intraday.IntradayRefreshClaimRequest,
+    ),
+    (
+        "intraday-refresh-claim-response.schema.json",
+        intraday.IntradayRefreshClaimResponse,
+    ),
+    (
+        "intraday-refresh-complete-request.schema.json",
+        intraday.IntradayRefreshCompleteRequest,
+    ),
     ("intraday-refresh-fail-request.schema.json", intraday.IntradayRefreshFailRequest),
 ]
 
@@ -365,11 +531,23 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("BrokerPolicyAssetClass", broker_accounts.BrokerPolicyAssetClass),
     ("BrokerPositionSizeMode", broker_accounts.BrokerPositionSizeMode),
     ("BrokerAllocationMode", broker_accounts.BrokerAllocationMode),
-    ("BrokerConfigurationAuditCategory", broker_accounts.BrokerConfigurationAuditCategory),
-    ("BrokerConfigurationAuditOutcome", broker_accounts.BrokerConfigurationAuditOutcome),
+    (
+        "BrokerConfigurationAuditCategory",
+        broker_accounts.BrokerConfigurationAuditCategory,
+    ),
+    (
+        "BrokerConfigurationAuditOutcome",
+        broker_accounts.BrokerConfigurationAuditOutcome,
+    ),
     ("BrokerAccountExecutionPosture", broker_accounts.BrokerAccountExecutionPosture),
-    ("BrokerAccountOnboardingCandidateState", broker_accounts.BrokerAccountOnboardingCandidateState),
-    ("BrokerAccountOnboardingDiscoveryStatus", broker_accounts.BrokerAccountOnboardingDiscoveryStatus),
+    (
+        "BrokerAccountOnboardingCandidateState",
+        broker_accounts.BrokerAccountOnboardingCandidateState,
+    ),
+    (
+        "BrokerAccountOnboardingDiscoveryStatus",
+        broker_accounts.BrokerAccountOnboardingDiscoveryStatus,
+    ),
     ("BrokerAccountActionType", broker_accounts.BrokerAccountActionType),
     ("BrokerAccountActionStatus", broker_accounts.BrokerAccountActionStatus),
     ("TradeProvider", trade_desk.TradeProvider),
@@ -547,7 +725,9 @@ def render_typescript_contracts() -> str:
     ]
 
     for name, annotation in TS_ALIAS_EXPORTS:
-        lines.append(f"export type {name} = {_ts_type(annotation, prefer_alias_name=False)};")
+        lines.append(
+            f"export type {name} = {_ts_type(annotation, prefer_alias_name=False)};"
+        )
 
     for model in _typescript_interface_exports():
         lines.append("")
@@ -579,7 +759,9 @@ def _typescript_interface_exports() -> list[type[BaseModel]]:
     return list(seen)
 
 
-def _collect_model_types(model: type[BaseModel], seen: dict[type[BaseModel], None]) -> None:
+def _collect_model_types(
+    model: type[BaseModel], seen: dict[type[BaseModel], None]
+) -> None:
     if model in seen:
         return
 
@@ -618,7 +800,10 @@ def _walk_annotation(annotation: Any, seen: dict[type[BaseModel], None]) -> None
             _walk_annotation(args[1], seen)
         return
 
-    if origin in {types.UnionType, getattr(types, "UnionType", None)} or str(origin) == "typing.Union":
+    if (
+        origin in {types.UnionType, getattr(types, "UnionType", None)}
+        or str(origin) == "typing.Union"
+    ):
         for arg in get_args(annotation):
             _walk_annotation(arg, seen)
 
@@ -631,7 +816,9 @@ def _render_interface(model: type[BaseModel]) -> list[str]:
     for field_name, field_info in model.model_fields.items():
         property_schema = schema_properties.get(field_name, {})
         annotation = type_hints.get(field_name, field_info.annotation)
-        ts_type = FIELD_TYPE_OVERRIDES.get((model.__name__, field_name), _ts_type(annotation))
+        ts_type = FIELD_TYPE_OVERRIDES.get(
+            (model.__name__, field_name), _ts_type(annotation)
+        )
         is_optional = _field_is_optional(model.__name__, field_name, field_info)
         note = DEPRECATED_FIELD_NOTES.get((model.__name__, field_name))
 
@@ -654,7 +841,9 @@ def _field_is_optional(model_name: str, field_name: str, field_info: Any) -> boo
 
 
 def _ts_type(annotation: Any, *, prefer_alias_name: bool = True) -> str:
-    alias_name = _ALIAS_NAME_BY_ANNOTATION.get(annotation) if prefer_alias_name else None
+    alias_name = (
+        _ALIAS_NAME_BY_ANNOTATION.get(annotation) if prefer_alias_name else None
+    )
     if alias_name:
         return alias_name
 
@@ -690,7 +879,9 @@ def _ts_type(annotation: Any, *, prefer_alias_name: bool = True) -> str:
 
     if origin is dict:
         args = get_args(annotation)
-        value_type = _ts_type(args[1] if len(args) == 2 else Any, prefer_alias_name=prefer_alias_name)
+        value_type = _ts_type(
+            args[1] if len(args) == 2 else Any, prefer_alias_name=prefer_alias_name
+        )
         return f"Record<string, {value_type}>"
 
     if origin is tuple:
@@ -700,9 +891,18 @@ def _ts_type(annotation: Any, *, prefer_alias_name: bool = True) -> str:
             if " | " in item_type and not item_type.startswith("("):
                 item_type = f"({item_type})"
             return f"{item_type}[]"
-        return "[" + ", ".join(_ts_type(arg, prefer_alias_name=prefer_alias_name) for arg in args) + "]"
+        return (
+            "["
+            + ", ".join(
+                _ts_type(arg, prefer_alias_name=prefer_alias_name) for arg in args
+            )
+            + "]"
+        )
 
-    if origin in {types.UnionType, getattr(types, "UnionType", None)} or str(origin) == "typing.Union":
+    if (
+        origin in {types.UnionType, getattr(types, "UnionType", None)}
+        or str(origin) == "typing.Union"
+    ):
         members: list[str] = []
         for arg in get_args(annotation):
             member = _ts_type(arg, prefer_alias_name=prefer_alias_name)

@@ -1,0 +1,45 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "batchCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Batchcount",
+      "type": "integer"
+    },
+    "enabledSymbolCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Enabledsymbolcount",
+      "type": "integer"
+    },
+    "enqueuedSymbolCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Enqueuedsymbolcount",
+      "type": "integer"
+    },
+    "queuedSymbols": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Queuedsymbols",
+      "type": "array"
+    },
+    "skippedSymbolCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Skippedsymbolcount",
+      "type": "integer"
+    },
+    "skippedSymbols": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Skippedsymbols",
+      "type": "array"
+    }
+  },
+  "title": "IntradayOnDemandEnqueueSummary",
+  "type": "object"
+}

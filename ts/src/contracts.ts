@@ -3322,7 +3322,7 @@ export interface IntradayMonitorRunSummary {
   runId: string;
   watchlistId: string;
   watchlistName?: string | null;
-  triggerKind: 'scheduled' | 'manual';
+  triggerKind: 'scheduled' | 'manual' | 'on_demand';
   status: 'queued' | 'claimed' | 'completed' | 'failed';
   forceRefresh: boolean;
   symbolCount: number;
@@ -3347,6 +3347,38 @@ export interface IntradaySymbolStatus {
   lastRunId?: string | null;
   lastError?: string | null;
   updatedAt?: string | null;
+}
+
+export interface IntradayOnDemandSymbolConfig {
+  symbol: string;
+  enabled: boolean;
+  reason?: string | null;
+  requestedBy?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  lastEnqueuedAt?: string | null;
+  lastRefreshCompletedAt?: string | null;
+  lastError?: string | null;
+}
+
+export interface IntradayOnDemandSymbolUpsertRequest {
+  symbol: string;
+  enabled: boolean;
+  reason?: string | null;
+}
+
+export interface IntradayOnDemandSymbolListResponse {
+  total: number;
+  items: IntradayOnDemandSymbolConfig[];
+}
+
+export interface IntradayOnDemandEnqueueSummary {
+  enabledSymbolCount: number;
+  enqueuedSymbolCount: number;
+  skippedSymbolCount: number;
+  batchCount: number;
+  queuedSymbols: string[];
+  skippedSymbols: string[];
 }
 
 export interface IntradayMonitorEvent {

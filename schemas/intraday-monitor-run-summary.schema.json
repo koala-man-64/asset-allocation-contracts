@@ -129,7 +129,8 @@
       "default": "scheduled",
       "enum": [
         "scheduled",
-        "manual"
+        "manual",
+        "on_demand"
       ],
       "title": "Triggerkind",
       "type": "string"

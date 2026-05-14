@@ -67,6 +67,10 @@ from asset_allocation_contracts.intraday import (
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
     IntradayMonitorRunSummary,
+    IntradayOnDemandEnqueueSummary,
+    IntradayOnDemandSymbolConfig,
+    IntradayOnDemandSymbolListResponse,
+    IntradayOnDemandSymbolUpsertRequest,
     IntradaySymbolStatus,
     IntradayWatchlistDetail,
     IntradayWatchlistSymbolAppendRequest,
@@ -90,7 +94,11 @@ from asset_allocation_contracts.portfolio import (
     RebalanceProposal,
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
-from asset_allocation_contracts.ranking import RankingFieldReference, RankingGroup, RankingSchemaConfig
+from asset_allocation_contracts.ranking import (
+    RankingFieldReference,
+    RankingGroup,
+    RankingSchemaConfig,
+)
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
     RegimePolicy,
@@ -188,7 +196,9 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy.mode == "observe_only"
 
 
-def test_strategy_config_accepts_pinned_configuration_references_with_resolved_snapshots() -> None:
+def test_strategy_config_accepts_pinned_configuration_references_with_resolved_snapshots() -> (
+    None
+):
     payload = StrategyConfig(
         universeConfigName="large-cap-quality",
         universeConfigVersion=4,
@@ -196,7 +206,11 @@ def test_strategy_config_accepts_pinned_configuration_references_with_resolved_s
         rankingSchemaVersion=7,
         regimePolicyConfigName="observe-default",
         regimePolicyConfigVersion=2,
-        regimePolicy={"modelName": "default-regime", "modelVersion": 3, "mode": "observe_only"},
+        regimePolicy={
+            "modelName": "default-regime",
+            "modelVersion": 3,
+            "mode": "observe_only",
+        },
         riskPolicyName="balanced-risk",
         riskPolicyVersion=5,
         strategyRiskPolicy={
@@ -230,7 +244,9 @@ def test_strategy_config_rejects_version_without_matching_name() -> None:
         assert "riskPolicyVersion" in str(exc)
         assert "matching config name" in str(exc)
     else:
-        raise AssertionError("Expected pinned version without config name to fail validation.")
+        raise AssertionError(
+            "Expected pinned version without config name to fail validation."
+        )
 
 
 def test_config_revision_reference_normalizes_name() -> None:
@@ -360,7 +376,9 @@ def test_stock_screener_contract_rejects_inverted_numeric_ranges() -> None:
         assert "min_volume_pct_rank_252d" in str(exc)
         assert "max_volume_pct_rank_252d" in str(exc)
     else:
-        raise AssertionError("Expected inverted screener numeric range to fail validation.")
+        raise AssertionError(
+            "Expected inverted screener numeric range to fail validation."
+        )
 
 
 def test_stock_screener_contract_rejects_ranking_version_without_name() -> None:
@@ -370,7 +388,9 @@ def test_stock_screener_contract_rejects_ranking_version_without_name() -> None:
         assert "ranking_schema_version" in str(exc)
         assert "ranking_schema_name" in str(exc)
     else:
-        raise AssertionError("Expected ranking schema version without name to fail validation.")
+        raise AssertionError(
+            "Expected ranking schema version without name to fail validation."
+        )
 
 
 def test_config_reference_rejects_blank_name() -> None:
@@ -401,17 +421,33 @@ def test_reusable_preset_wrappers_forbid_unknown_fields() -> None:
         "groups": [
             {
                 "name": "momentum",
-                "factors": [{"name": "return_126d", "table": "market_data", "column": "return_126d"}],
+                "factors": [
+                    {
+                        "name": "return_126d",
+                        "table": "market_data",
+                        "column": "return_126d",
+                    }
+                ],
             }
         ]
     }
-    reusable_rebalance = {"cadence": "monthly", "dayRule": "last_trading_day", "anchor": "next_open"}
+    reusable_rebalance = {
+        "cadence": "monthly",
+        "dayRule": "last_trading_day",
+        "anchor": "next_open",
+    }
     regime_policy = {"modelName": "default-regime", "mode": "observe_only"}
     risk_policy = {
         "scope": "strategy",
-        "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+        "stopLoss": {
+            "thresholdPct": 8,
+            "action": "reduce_exposure",
+            "reductionPct": 50,
+        },
     }
-    exit_policy = {"exits": [{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}]}
+    exit_policy = {
+        "exits": [{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}]
+    }
     cases = [
         (UniverseConfigPreset, {"identity": identity, "config": universe}),
         (RankingSchemaPreset, {"identity": identity, "config": ranking}),
@@ -447,7 +483,9 @@ def test_config_identity_normalizes_metadata() -> None:
     assert identity.whatToMonitor == ["turnover", "slippage"]
 
 
-def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> None:
+def test_strategy_position_policy_defaults_to_equity_without_changing_legacy_configs() -> (
+    None
+):
     payload = StrategyConfig(
         universe=UniverseDefinition(
             root=UniverseGroup(
@@ -492,11 +530,15 @@ def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
 
 def test_strategy_position_policy_rejects_invalid_percentage_limit() -> None:
     try:
-        StrategyPositionPolicy(targetPositionSize={"mode": "pct_of_allocatable_capital", "value": 101})
+        StrategyPositionPolicy(
+            targetPositionSize={"mode": "pct_of_allocatable_capital", "value": 101}
+        )
     except Exception as exc:
         assert "cannot exceed 100" in str(exc)
     else:
-        raise AssertionError("Expected validation failure for oversized percentage position limit.")
+        raise AssertionError(
+            "Expected validation failure for oversized percentage position limit."
+        )
 
 
 def test_strategy_position_policy_rejects_long_only_overallocation() -> None:
@@ -510,12 +552,19 @@ def test_strategy_position_policy_rejects_long_only_overallocation() -> None:
                 )
             ),
             topN=3,
-            positionPolicy={"targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 40}},
+            positionPolicy={
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 40,
+                }
+            },
         )
     except Exception as exc:
         assert "cannot allocate more than 100%" in str(exc)
     else:
-        raise AssertionError("Expected validation failure for long-only over-allocation.")
+        raise AssertionError(
+            "Expected validation failure for long-only over-allocation."
+        )
 
 
 def test_strategy_risk_profile_config_requires_complete_position_policy() -> None:
@@ -542,7 +591,10 @@ def test_strategy_risk_profile_config_requires_complete_position_policy() -> Non
         {
             "presetClass": "balanced",
             "positionPolicy": {
-                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 5,
+                },
                 "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
                 "maxOpenPositions": 20,
             },
@@ -550,7 +602,10 @@ def test_strategy_risk_profile_config_requires_complete_position_policy() -> Non
         {
             "presetClass": "balanced",
             "positionPolicy": {
-                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 8,
+                },
                 "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
                 "maxOpenPositions": 20,
             },
@@ -559,9 +614,15 @@ def test_strategy_risk_profile_config_requires_complete_position_policy() -> Non
         try:
             StrategyRiskProfileConfig.model_validate(invalid_payload)
         except Exception as exc:
-            assert "Strategy risk profiles require targetPositionSize" in str(exc) or "share a mode" in str(exc) or "greater than or equal" in str(exc)
+            assert (
+                "Strategy risk profiles require targetPositionSize" in str(exc)
+                or "share a mode" in str(exc)
+                or "greater than or equal" in str(exc)
+            )
         else:
-            raise AssertionError("Expected validation failure for incomplete or invalid risk profile policy.")
+            raise AssertionError(
+                "Expected validation failure for incomplete or invalid risk profile policy."
+            )
 
 
 def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> None:
@@ -578,7 +639,10 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
         config={
             "presetClass": "balanced",
             "positionPolicy": {
-                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 5,
+                },
                 "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
                 "maxOpenPositions": 20,
             },
@@ -590,7 +654,9 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
     assert detail.config.positionPolicy.maxOpenPositions == 20
 
 
-def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_name_is_set() -> None:
+def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_name_is_set() -> (
+    None
+):
     try:
         StrategyConfig(
             universe=UniverseDefinition(
@@ -605,7 +671,9 @@ def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_nam
     except Exception as exc:
         assert "riskProfileName requires a positionPolicy snapshot" in str(exc)
     else:
-        raise AssertionError("Expected validation failure for incomplete risk profile strategy config.")
+        raise AssertionError(
+            "Expected validation failure for incomplete risk profile strategy config."
+        )
 
 
 def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
@@ -710,23 +778,35 @@ def test_reusable_rebalance_policy_requires_complete_calendar_fields() -> None:
     except Exception as exc:
         assert "cadence, dayRule, and anchor together" in str(exc)
     else:
-        raise AssertionError("Expected partial reusable rebalance fields to fail validation.")
+        raise AssertionError(
+            "Expected partial reusable rebalance fields to fail validation."
+        )
 
 
-def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_calendar_fields() -> None:
+def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_calendar_fields() -> (
+    None
+):
     try:
-        RebalancePolicy(cadence="weekly", dayRule="last_trading_day", anchor="next_open")
+        RebalancePolicy(
+            cadence="weekly", dayRule="last_trading_day", anchor="next_open"
+        )
     except Exception as exc:
         assert "cadence" in str(exc)
     else:
-        raise AssertionError("Expected unsupported reusable rebalance cadence to fail validation.")
+        raise AssertionError(
+            "Expected unsupported reusable rebalance cadence to fail validation."
+        )
 
     try:
-        RebalancePolicy(cadence="monthly", dayRule="middle_trading_day", anchor="next_open")
+        RebalancePolicy(
+            cadence="monthly", dayRule="middle_trading_day", anchor="next_open"
+        )
     except Exception as exc:
         assert "dayRule" in str(exc)
     else:
-        raise AssertionError("Expected unsupported reusable rebalance dayRule to fail validation.")
+        raise AssertionError(
+            "Expected unsupported reusable rebalance dayRule to fail validation."
+        )
 
     try:
         RebalancePolicy(
@@ -738,7 +818,9 @@ def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_
     except Exception as exc:
         assert "maxTurnoverPerRebalance" in str(exc)
     else:
-        raise AssertionError("Expected maxTurnoverPerRebalance above 1.0 to fail validation.")
+        raise AssertionError(
+            "Expected maxTurnoverPerRebalance above 1.0 to fail validation."
+        )
 
     try:
         RebalancePolicyPreset(
@@ -748,7 +830,9 @@ def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_
     except Exception as exc:
         assert "cadence, dayRule, and anchor" in str(exc)
     else:
-        raise AssertionError("Expected reusable rebalance preset to require calendar fields.")
+        raise AssertionError(
+            "Expected reusable rebalance preset to require calendar fields."
+        )
 
 
 def test_strategy_risk_policy_rejects_ambiguous_enabled_empty_policy() -> None:
@@ -757,7 +841,9 @@ def test_strategy_risk_policy_rejects_ambiguous_enabled_empty_policy() -> None:
     except Exception as exc:
         assert "stopLoss, takeProfit, or reentry control" in str(exc)
     else:
-        raise AssertionError("Expected enabled empty strategy risk policy to fail validation.")
+        raise AssertionError(
+            "Expected enabled empty strategy risk policy to fail validation."
+        )
 
 
 def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
@@ -770,7 +856,9 @@ def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
 
 
 def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
-    summary = RiskPolicyConfigSummary(name="balanced-risk", description="Desk balanced risk.", version=2, usageCount=4)
+    summary = RiskPolicyConfigSummary(
+        name="balanced-risk", description="Desk balanced risk.", version=2, usageCount=4
+    )
     revision = RiskPolicyConfigRevision(
         name="balanced-risk",
         version=2,
@@ -778,26 +866,36 @@ def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
         config={
             "policy": {
                 "scope": "strategy",
-                "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
             }
         },
         configHash="hash-1",
     )
-    detail = RiskPolicyConfigDetailResponse(policy=summary, activeRevision=revision, revisions=[revision])
+    detail = RiskPolicyConfigDetailResponse(
+        policy=summary, activeRevision=revision, revisions=[revision]
+    )
 
     assert detail.policy.version == 2
     assert detail.activeRevision is not None
     assert detail.activeRevision.config.policy.stopLoss is not None
 
 
-def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> None:
+def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> (
+    None
+):
     try:
         StrategyRiskPolicy(stopLoss={"thresholdPct": 8, "action": "reduce_exposure"})
     except Exception as exc:
         assert "reduce_exposure" in str(exc)
         assert "reductionPct" in str(exc)
     else:
-        raise AssertionError("Expected reduce_exposure stop-loss policy to require reductionPct.")
+        raise AssertionError(
+            "Expected reduce_exposure stop-loss policy to require reductionPct."
+        )
 
 
 def test_exit_rule_set_contracts_normalize_priorities_and_metadata() -> None:
@@ -808,9 +906,13 @@ def test_exit_rule_set_contracts_normalize_priorities_and_metadata() -> None:
             {"id": "stop-5", "type": "stop_loss_fixed", "value": 0.05},
         ],
     )
-    summary = ExitRuleSetSummary(name="standard-exits", version=3, ruleCount=len(config.exits))
+    summary = ExitRuleSetSummary(
+        name="standard-exits", version=3, ruleCount=len(config.exits)
+    )
     revision = ExitRuleSetRevision(name="standard-exits", version=3, config=config)
-    detail = ExitRuleSetDetailResponse(ruleSet=summary, activeRevision=revision, revisions=[revision])
+    detail = ExitRuleSetDetailResponse(
+        ruleSet=summary, activeRevision=revision, revisions=[revision]
+    )
 
     assert detail.ruleSet.ruleCount == 2
     assert detail.activeRevision is not None
@@ -832,18 +934,42 @@ def test_exit_rule_set_rejects_duplicate_rule_ids() -> None:
         raise AssertionError("Expected duplicate exit ids to fail validation.")
 
 
-def test_rank_decay_exit_requires_rank_threshold_and_rejects_price_stop_fields() -> None:
-    config = ExitRuleSetConfig(exits=[{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}])
+def test_rank_decay_exit_requires_rank_threshold_and_rejects_price_stop_fields() -> (
+    None
+):
+    config = ExitRuleSetConfig(
+        exits=[{"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40}]
+    )
 
     assert config.exits[0].rankThreshold == 40
     assert config.exits[0].value is None
 
     invalid_payloads = [
         {"id": "missing-threshold", "type": "rank_decay"},
-        {"id": "value-not-supported", "type": "rank_decay", "rankThreshold": 40, "value": 0.1},
-        {"id": "reference-not-supported", "type": "rank_decay", "rankThreshold": 40, "reference": "entry_price"},
-        {"id": "atr-not-supported", "type": "rank_decay", "rankThreshold": 40, "atrColumn": "atr_14"},
-        {"id": "price-not-supported", "type": "rank_decay", "rankThreshold": 40, "priceField": "close"},
+        {
+            "id": "value-not-supported",
+            "type": "rank_decay",
+            "rankThreshold": 40,
+            "value": 0.1,
+        },
+        {
+            "id": "reference-not-supported",
+            "type": "rank_decay",
+            "rankThreshold": 40,
+            "reference": "entry_price",
+        },
+        {
+            "id": "atr-not-supported",
+            "type": "rank_decay",
+            "rankThreshold": 40,
+            "atrColumn": "atr_14",
+        },
+        {
+            "id": "price-not-supported",
+            "type": "rank_decay",
+            "rankThreshold": 40,
+            "priceField": "close",
+        },
     ]
 
     for payload in invalid_payloads:
@@ -852,7 +978,9 @@ def test_rank_decay_exit_requires_rank_threshold_and_rejects_price_stop_fields()
         except Exception as exc:
             assert "rank_decay" in str(exc)
         else:
-            raise AssertionError(f"Expected invalid rank_decay payload to fail validation: {payload['id']}")
+            raise AssertionError(
+                f"Expected invalid rank_decay payload to fail validation: {payload['id']}"
+            )
 
 
 def test_price_based_exit_rules_reject_rank_threshold() -> None:
@@ -908,13 +1036,17 @@ def test_backtest_policy_event_contract_captures_policy_diagnostics() -> None:
         action="block_reentry",
         details={"cooldownBarsRemaining": 11},
     )
-    response = BacktestPolicyEventListResponse(events=[event], total=1, limit=50, offset=0)
+    response = BacktestPolicyEventListResponse(
+        events=[event], total=1, limit=50, offset=0
+    )
 
     assert response.events[0].reason_code == "cooldown_active"
     assert response.events[0].details["cooldownBarsRemaining"] == 11
 
 
-def test_backtest_data_quality_event_contract_captures_strict_mode_diagnostics() -> None:
+def test_backtest_data_quality_event_contract_captures_strict_mode_diagnostics() -> (
+    None
+):
     event = BacktestDataQualityEvent(
         run_id="run-123",
         event_seq=1,
@@ -927,7 +1059,9 @@ def test_backtest_data_quality_event_contract_captures_strict_mode_diagnostics()
         action="exclude_value",
         details={"availableAt": "2026-03-08T14:37:00Z"},
     )
-    response = BacktestDataQualityEventListResponse(events=[event], total=1, limit=50, offset=0)
+    response = BacktestDataQualityEventListResponse(
+        events=[event], total=1, limit=50, offset=0
+    )
 
     assert response.events[0].severity == "error"
     assert response.events[0].reason_code == "available_after_bar"
@@ -982,7 +1116,9 @@ def test_ranking_schema_accepts_group_payload() -> None:
 
 
 def test_universe_condition_uses_governed_field_catalog() -> None:
-    condition = UniverseCondition(field="security.sector", operator="in", values=["technology"])
+    condition = UniverseCondition(
+        field="security.sector", operator="in", values=["technology"]
+    )
 
     assert condition.field == "security.sector"
     assert any(field.id == "security.sector" for field in UNIVERSE_FIELD_DEFINITIONS)
@@ -995,14 +1131,30 @@ def test_universe_condition_accepts_us_liquid_equity_filter_fields() -> None:
             "clauses": [
                 {"field": "security.country", "operator": "eq", "value": "US"},
                 {"field": "security.primary_listing", "operator": "eq", "value": True},
-                {"field": "security.market_cap", "operator": "gte", "value": 10_000_000_000},
-                {"field": "market.dollar_volume_20d", "operator": "gte", "value": 50_000_000},
-                {"field": "security.is_price_liquidity_eligible", "operator": "eq", "value": True},
+                {
+                    "field": "security.market_cap",
+                    "operator": "gte",
+                    "value": 10_000_000_000,
+                },
+                {
+                    "field": "market.dollar_volume_20d",
+                    "operator": "gte",
+                    "value": 50_000_000,
+                },
+                {
+                    "field": "security.is_price_liquidity_eligible",
+                    "operator": "eq",
+                    "value": True,
+                },
             ],
         }
     )
 
-    used_fields = [clause.field for clause in definition.root.clauses if isinstance(clause, UniverseCondition)]
+    used_fields = [
+        clause.field
+        for clause in definition.root.clauses
+        if isinstance(clause, UniverseCondition)
+    ]
     assert used_fields == [
         "security.country",
         "security.primary_listing",
@@ -1042,11 +1194,15 @@ def test_universe_preview_response_uses_governed_field_ids() -> None:
 
 def test_universe_preview_response_rejects_unknown_field_ids() -> None:
     try:
-        UniversePreviewResponse(symbolCount=1, sampleSymbols=["AAPL"], fieldsUsed=["market_data.close"])
+        UniversePreviewResponse(
+            symbolCount=1, sampleSymbols=["AAPL"], fieldsUsed=["market_data.close"]
+        )
     except Exception as exc:
         assert "fieldsUsed" in str(exc)
     else:
-        raise AssertionError("Expected validation failure for unknown preview field id.")
+        raise AssertionError(
+            "Expected validation failure for unknown preview field id."
+        )
 
 
 def test_universe_config_draft_generation_request_normalizes_prompt_and_hints() -> None:
@@ -1064,17 +1220,23 @@ def test_universe_config_draft_generation_request_normalizes_prompt_and_hints() 
     assert payload.previewSampleLimit == 25
 
 
-def test_universe_config_draft_generation_request_rejects_blank_and_oversized_prompt() -> None:
+def test_universe_config_draft_generation_request_rejects_blank_and_oversized_prompt() -> (
+    None
+):
     for invalid_prompt in ("   ", "x" * 4001):
         try:
             UniverseConfigDraftGenerationRequest(plaintext=invalid_prompt)
         except Exception as exc:
             assert "plaintext" in str(exc)
         else:
-            raise AssertionError("Expected invalid universe draft generation prompt to fail validation.")
+            raise AssertionError(
+                "Expected invalid universe draft generation prompt to fail validation."
+            )
 
 
-def test_universe_config_draft_generation_response_wraps_valid_draft_and_preview() -> None:
+def test_universe_config_draft_generation_response_wraps_valid_draft_and_preview() -> (
+    None
+):
     payload = UniverseConfigDraftGenerationResponse(
         draft={
             "identity": {
@@ -1090,8 +1252,18 @@ def test_universe_config_draft_generation_response_wraps_valid_draft_and_preview
                     "kind": "group",
                     "operator": "and",
                     "clauses": [
-                        {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
-                        {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                        {
+                            "kind": "condition",
+                            "field": "security.country",
+                            "operator": "eq",
+                            "value": "US",
+                        },
+                        {
+                            "kind": "condition",
+                            "field": "market.close",
+                            "operator": "gt",
+                            "value": 5,
+                        },
                     ],
                 },
             },
@@ -1111,8 +1283,12 @@ def test_universe_config_draft_generation_response_wraps_valid_draft_and_preview
 
     assert payload.draft.identity.status == "draft"
     assert payload.draft.identity.version == 1
-    assert payload.explanation == "Converted the request into country and price filters."
-    assert payload.assumptions == ["Common stocks are represented by the governed catalog."]
+    assert (
+        payload.explanation == "Converted the request into country and price filters."
+    )
+    assert payload.assumptions == [
+        "Common stocks are represented by the governed catalog."
+    ]
     assert payload.fieldsUsed == ["security.country", "market.close"]
     assert payload.preview is not None
     assert payload.preview.symbolCount == 2
@@ -1145,11 +1321,17 @@ def test_universe_config_draft_generation_response_rejects_non_draft_identity() 
     except Exception as exc:
         assert "draft status" in str(exc)
     else:
-        raise AssertionError("Expected generation response to reject active identity status.")
+        raise AssertionError(
+            "Expected generation response to reject active identity status."
+        )
 
     version_payload = dict(base_payload)
     version_payload["draft"] = dict(base_payload["draft"])
-    version_payload["draft"]["identity"] = {**base_payload["draft"]["identity"], "status": "draft", "version": 2}
+    version_payload["draft"]["identity"] = {
+        **base_payload["draft"]["identity"],
+        "status": "draft",
+        "version": 2,
+    }
 
     try:
         UniverseConfigDraftGenerationResponse.model_validate(version_payload)
@@ -1193,7 +1375,9 @@ def test_ranking_schema_draft_generation_request_normalizes_prompt_and_hints() -
     assert payload.previewSampleLimit == 25
 
 
-def test_ranking_schema_draft_generation_request_rejects_blank_prompt_and_preview_half_pair() -> None:
+def test_ranking_schema_draft_generation_request_rejects_blank_prompt_and_preview_half_pair() -> (
+    None
+):
     for invalid_payload in (
         {"plaintext": "   "},
         {"plaintext": "x" * 4001},
@@ -1205,10 +1389,14 @@ def test_ranking_schema_draft_generation_request_rejects_blank_prompt_and_previe
         except Exception as exc:
             assert "plaintext" in str(exc) or "previewStrategyName" in str(exc)
         else:
-            raise AssertionError("Expected invalid ranking draft generation request to fail validation.")
+            raise AssertionError(
+                "Expected invalid ranking draft generation request to fail validation."
+            )
 
 
-def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview() -> None:
+def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview() -> (
+    None
+):
     payload = RankingSchemaDraftGenerationResponse(
         draft={
             "identity": {
@@ -1232,7 +1420,9 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
                                 "weight": 1,
                                 "direction": "desc",
                                 "missingValuePolicy": "zero",
-                                "transforms": [{"type": "percentile_rank", "params": {}}],
+                                "transforms": [
+                                    {"type": "percentile_rank", "params": {}}
+                                ],
                             }
                         ],
                         "transforms": [],
@@ -1242,7 +1432,10 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
             },
         },
         explanation="  Converted the request into a medium-term momentum factor.  ",
-        assumptions=["  Quality is not mapped because no governed field was provided.  ", ""],
+        assumptions=[
+            "  Quality is not mapped because no governed field was provided.  ",
+            "",
+        ],
         warnings=["Review factor coverage before saving."],
         fieldsUsed=[
             {
@@ -1264,8 +1457,13 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
 
     assert payload.draft.identity.status == "draft"
     assert payload.draft.identity.version == 1
-    assert payload.explanation == "Converted the request into a medium-term momentum factor."
-    assert payload.assumptions == ["Quality is not mapped because no governed field was provided."]
+    assert (
+        payload.explanation
+        == "Converted the request into a medium-term momentum factor."
+    )
+    assert payload.assumptions == [
+        "Quality is not mapped because no governed field was provided."
+    ]
     assert payload.fieldsUsed[0].table == "market_data"
     assert payload.unmappedSignals == ["quality"]
     assert payload.preview is not None
@@ -1299,7 +1497,9 @@ def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -
             },
         },
         "explanation": "Generated a candidate draft.",
-        "fieldsUsed": [{"table": "market_data", "column": "return_126d", "valueKind": "number"}],
+        "fieldsUsed": [
+            {"table": "market_data", "column": "return_126d", "valueKind": "number"}
+        ],
     }
 
     try:
@@ -1307,11 +1507,17 @@ def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -
     except Exception as exc:
         assert "draft status" in str(exc)
     else:
-        raise AssertionError("Expected generation response to reject active identity status.")
+        raise AssertionError(
+            "Expected generation response to reject active identity status."
+        )
 
     version_payload = dict(base_payload)
     version_payload["draft"] = dict(base_payload["draft"])
-    version_payload["draft"]["identity"] = {**base_payload["draft"]["identity"], "status": "draft", "version": 2}
+    version_payload["draft"]["identity"] = {
+        **base_payload["draft"]["identity"],
+        "status": "draft",
+        "version": 2,
+    }
 
     try:
         RankingSchemaDraftGenerationResponse.model_validate(version_payload)
@@ -1343,7 +1549,9 @@ def test_ui_runtime_config_rejects_unknown_auth_session_mode() -> None:
     except Exception as exc:
         assert "authSessionMode" in str(exc)
     else:
-        raise AssertionError("Expected validation failure for unknown auth session mode.")
+        raise AssertionError(
+            "Expected validation failure for unknown auth session mode."
+        )
 
 
 def test_ui_runtime_config_accepts_password_auth_provider() -> None:
@@ -1357,7 +1565,10 @@ def test_ui_runtime_config_normalizes_string_scopes() -> None:
         oidcScopes="api://asset-allocation-api/user_impersonation openid",
         oidcAudience="asset-allocation-api,asset-allocation-jobs",
     )
-    assert config.oidcScopes == ["api://asset-allocation-api/user_impersonation", "openid"]
+    assert config.oidcScopes == [
+        "api://asset-allocation-api/user_impersonation",
+        "openid",
+    ]
     assert config.oidcAudience == ["asset-allocation-api", "asset-allocation-jobs"]
 
 
@@ -1420,10 +1631,14 @@ def test_runtime_job_metadata_rejects_unknown_category() -> None:
     except Exception as exc:
         assert "jobCategory" in str(exc)
     else:
-        raise AssertionError("Expected RuntimeJobMetadata to reject legacy job categories.")
+        raise AssertionError(
+            "Expected RuntimeJobMetadata to reject legacy job categories."
+        )
 
 
-def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> None:
+def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> (
+    None
+):
     payload = StrategyPublicationReconcileSignalRequest(
         jobKey="regime",
         sourceFingerprint="abc123",
@@ -1460,7 +1675,9 @@ def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerp
         assert "historyRows" in str(exc)
         assert "unexpected" in str(exc)
     else:
-        raise AssertionError("Expected strategy publication signal request validation to reject bad inputs.")
+        raise AssertionError(
+            "Expected strategy publication signal request validation to reject bad inputs."
+        )
 
 
 def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
@@ -1497,7 +1714,9 @@ def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
             ResultsReconcileResponse.model_validate(payload)
         except Exception:
             continue
-        raise AssertionError(f"Expected results reconcile response validation to reject {payload!r}.")
+        raise AssertionError(
+            f"Expected results reconcile response validation to reject {payload!r}."
+        )
 
 
 def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:
@@ -1513,7 +1732,9 @@ def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None
     assert payload.marketSession == "us_equities_regular"
 
 
-def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_state() -> None:
+def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_state() -> (
+    None
+):
     request = IntradayWatchlistSymbolAppendRequest(
         symbols=[" aapl ", "MSFT", "AAPL"],
         reason="  operator add  ",
@@ -1547,6 +1768,47 @@ def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_st
     assert response.queuedRun is not None
     assert response.queuedRun.forceRefresh is False
     assert response.runSkippedReason is None
+
+
+def test_intraday_on_demand_contracts_normalize_symbols_and_report_enqueue_summary() -> (
+    None
+):
+    request = IntradayOnDemandSymbolUpsertRequest(
+        symbol=" aapl ",
+        enabled=True,
+        reason="  earnings desk watch  ",
+    )
+    config = IntradayOnDemandSymbolConfig(
+        symbol="msft",
+        enabled=False,
+        reason="  operator paused  ",
+        requestedBy="  analyst@example.com  ",
+    )
+    response = IntradayOnDemandSymbolListResponse(total=1, items=[config])
+    summary = IntradayOnDemandEnqueueSummary(
+        enabledSymbolCount=3,
+        enqueuedSymbolCount=2,
+        skippedSymbolCount=1,
+        batchCount=1,
+        queuedSymbols=["aapl", "MSFT", "AAPL"],
+        skippedSymbols=[" nvda "],
+    )
+    run = IntradayMonitorRunSummary(
+        runId="run-on-demand-1",
+        watchlistId="on-demand",
+        triggerKind="on_demand",
+        status="queued",
+        symbolCount=2,
+    )
+
+    assert request.symbol == "AAPL"
+    assert request.reason == "earnings desk watch"
+    assert response.items[0].symbol == "MSFT"
+    assert response.items[0].reason == "operator paused"
+    assert response.items[0].requestedBy == "analyst@example.com"
+    assert summary.queuedSymbols == ["AAPL", "MSFT"]
+    assert summary.skippedSymbols == ["NVDA"]
+    assert run.triggerKind == "on_demand"
 
 
 def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() -> None:
@@ -1652,7 +1914,9 @@ def test_default_regime_canonical_v3_config_rejects_rule_drift_and_halt_drift() 
             "signalConfigs": {
                 **canonical.model_dump(mode="python")["signalConfigs"],
                 "trending_up": {
-                    **canonical.model_dump(mode="python")["signalConfigs"]["trending_up"],
+                    **canonical.model_dump(mode="python")["signalConfigs"][
+                        "trending_up"
+                    ],
                     "displayName": "Trend Up",
                 },
             },
@@ -1677,11 +1941,15 @@ def test_default_regime_policy_rejects_legacy_fields() -> None:
         assert "legacy fields" in str(exc)
         assert "observe_only" in str(exc)
     else:
-        raise AssertionError("Expected legacy default-regime policy fields to be rejected.")
+        raise AssertionError(
+            "Expected legacy default-regime policy fields to be rejected."
+        )
 
 
 def test_regime_policy_library_contracts_reference_model_revision() -> None:
-    config = RegimePolicyConfig(modelName="default-regime", modelVersion=3, mode="observe_only")
+    config = RegimePolicyConfig(
+        modelName="default-regime", modelVersion=3, mode="observe_only"
+    )
     summary = RegimePolicyConfigSummary(
         name="observe-default",
         description="Observe default regime model.",
@@ -1698,7 +1966,9 @@ def test_regime_policy_library_contracts_reference_model_revision() -> None:
         config=config,
         configHash="hash-1",
     )
-    detail = RegimePolicyConfigDetailResponse(policy=summary, activeRevision=revision, revisions=[revision])
+    detail = RegimePolicyConfigDetailResponse(
+        policy=summary, activeRevision=revision, revisions=[revision]
+    )
     resolved = config.resolved_policy()
 
     assert detail.policy.modelVersion == 3
@@ -1724,7 +1994,9 @@ def test_backtest_run_record_response_rejects_legacy_artifact_fields() -> None:
     except Exception as exc:
         assert "output_dir" in str(exc)
     else:
-        raise AssertionError("Expected RunRecordResponse to reject legacy artifact fields.")
+        raise AssertionError(
+            "Expected RunRecordResponse to reject legacy artifact fields."
+        )
 
 
 def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
@@ -1775,7 +2047,10 @@ def test_backtest_lookup_request_requires_exactly_one_strategy_input() -> None:
     assert payload.strategyRef is not None
     assert payload.strategyConfig is None
     schema = BacktestLookupRequest.model_json_schema()
-    assert schema["oneOf"] == [{"required": ["strategyRef"]}, {"required": ["strategyConfig"]}]
+    assert schema["oneOf"] == [
+        {"required": ["strategyRef"]},
+        {"required": ["strategyConfig"]},
+    ]
 
     for invalid_payload in (
         {
@@ -1805,9 +2080,14 @@ def test_backtest_lookup_request_requires_exactly_one_strategy_input() -> None:
         try:
             BacktestLookupRequest.model_validate(invalid_payload)
         except Exception as exc:
-            assert "Exactly one of strategyRef or strategyConfig must be provided" in str(exc)
+            assert (
+                "Exactly one of strategyRef or strategyConfig must be provided"
+                in str(exc)
+            )
         else:
-            raise AssertionError("Expected BacktestLookupRequest to enforce exactly one strategy input.")
+            raise AssertionError(
+                "Expected BacktestLookupRequest to enforce exactly one strategy input."
+            )
 
 
 def test_backtest_run_response_and_lookup_response_support_links_and_summary() -> None:
@@ -1873,11 +2153,15 @@ def test_backtest_run_request_accepts_inline_strategy_config() -> None:
 
 def test_backtest_complete_request_rejects_legacy_artifact_manifest_path() -> None:
     try:
-        BacktestCompleteRequest(summary={"run_id": "run-123"}, artifactManifestPath="backtests/run-123")
+        BacktestCompleteRequest(
+            summary={"run_id": "run-123"}, artifactManifestPath="backtests/run-123"
+        )
     except Exception as exc:
         assert "artifactManifestPath" in str(exc)
     else:
-        raise AssertionError("Expected BacktestCompleteRequest to reject artifactManifestPath.")
+        raise AssertionError(
+            "Expected BacktestCompleteRequest to reject artifactManifestPath."
+        )
 
 
 def test_backtest_reconcile_response_defaults_and_payload() -> None:
@@ -1908,7 +2192,12 @@ def test_backtest_result_metadata_and_response_schema() -> None:
     assert metadata.results_schema_version == 7
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
-    assert schema["$defs"]["BacktestResultMetadata"]["properties"]["results_schema_version"]["default"] == 7
+    assert (
+        schema["$defs"]["BacktestResultMetadata"]["properties"][
+            "results_schema_version"
+        ]["default"]
+        == 7
+    )
 
 
 def test_backtest_stream_event_supports_terminal_payload() -> None:
@@ -1946,7 +2235,9 @@ def test_backtest_stream_event_supports_terminal_payload() -> None:
     assert payload.metadata.periods_per_year == 252
 
 
-def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> None:
+def test_timeseries_point_response_supports_period_return_and_daily_return_compatibility() -> (
+    None
+):
     from_daily = TimeseriesPointResponse.model_validate(
         {
             "date": "2026-03-08",
@@ -1974,7 +2265,9 @@ def test_timeseries_point_response_supports_period_return_and_daily_return_compa
     assert "period_return" in schema["properties"]
 
 
-def test_rolling_metric_point_response_supports_window_periods_and_legacy_window_days() -> None:
+def test_rolling_metric_point_response_supports_window_periods_and_legacy_window_days() -> (
+    None
+):
     from_days = RollingMetricPointResponse.model_validate(
         {
             "date": "2026-03-08",
@@ -1999,15 +2292,21 @@ def test_rolling_metric_point_response_supports_window_periods_and_legacy_window
     assert "window_periods" in schema["properties"]
 
 
-def test_backtest_response_metadata_attaches_to_timeseries_and_rolling_metrics() -> None:
+def test_backtest_response_metadata_attaches_to_timeseries_and_rolling_metrics() -> (
+    None
+):
     metadata = BacktestResultMetadata(
         results_schema_version=4,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="strategy",
     )
-    timeseries = TimeseriesResponse(metadata=metadata, points=[], total_points=0, truncated=False)
-    rolling_metrics = RollingMetricsResponse(metadata=metadata, points=[], total_points=0, truncated=True)
+    timeseries = TimeseriesResponse(
+        metadata=metadata, points=[], total_points=0, truncated=False
+    )
+    rolling_metrics = RollingMetricsResponse(
+        metadata=metadata, points=[], total_points=0, truncated=True
+    )
 
     assert timeseries.metadata is metadata
     assert rolling_metrics.metadata is metadata
@@ -2066,7 +2365,9 @@ def test_backtest_summary_supports_research_safe_v7_metadata() -> None:
     assert payload.policy_event_count == 3
 
 
-def test_trade_and_closed_position_contracts_support_position_lifecycle_fields() -> None:
+def test_trade_and_closed_position_contracts_support_position_lifecycle_fields() -> (
+    None
+):
     trade = TradeResponse.model_validate(
         {
             "execution_date": "2026-03-10T14:35:00Z",
@@ -2109,7 +2410,10 @@ def test_trade_and_closed_position_contracts_support_position_lifecycle_fields()
 
 
 def test_shared_path_rules_are_stable() -> None:
-    assert DataPaths.get_gold_finance_bucket_path("Balance Sheet", "a") == "finance/balance_sheet/buckets/A"
+    assert (
+        DataPaths.get_gold_finance_bucket_path("Balance Sheet", "a")
+        == "finance/balance_sheet/buckets/A"
+    )
     assert bucket_letter("1msft") == "M"
 
 
@@ -2153,7 +2457,9 @@ def test_portfolio_revision_requires_enabled_weights_to_sum_to_one() -> None:
     except Exception as exc:
         assert "sum to 1.0" in str(exc)
     else:
-        raise AssertionError("Expected revision validation failure when weights do not sum to 1.0.")
+        raise AssertionError(
+            "Expected revision validation failure when weights do not sum to 1.0."
+        )
 
 
 def test_portfolio_revision_accepts_notional_allocation_mode() -> None:
@@ -2229,7 +2535,9 @@ def test_portfolio_account_defaults_capture_internal_model_managed_scope() -> No
     assert request.openingCash == 1_000_000
 
 
-def test_portfolio_account_upsert_request_accepts_optional_rebalance_schedule_overrides() -> None:
+def test_portfolio_account_upsert_request_accepts_optional_rebalance_schedule_overrides() -> (
+    None
+):
     payload = PortfolioAccountUpsertRequest(
         name="Core Long Only",
         baseCurrency="usd",
@@ -2284,10 +2592,14 @@ def test_portfolio_ledger_event_separates_cash_and_trade_shapes() -> None:
     except Exception as exc:
         assert "does not accept symbol" in str(exc)
     else:
-        raise AssertionError("Expected fee event validation failure when symbol is provided.")
+        raise AssertionError(
+            "Expected fee event validation failure when symbol is provided."
+        )
 
 
-def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts() -> None:
+def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts() -> (
+    None
+):
     assignment = PortfolioAssignment(
         assignmentId="asg-001",
         accountId="acct-001",
@@ -2392,7 +2704,9 @@ def test_portfolio_snapshot_and_rebalance_proposal_capture_monitoring_contracts(
     assert upsert.allocations[1].strategy.strategyVersion == 2
 
 
-def test_portfolio_forecast_and_next_rebalance_contracts_capture_authoritative_monitoring_shapes() -> None:
+def test_portfolio_forecast_and_next_rebalance_contracts_capture_authoritative_monitoring_shapes() -> (
+    None
+):
     forecast = PortfolioForecastResponse(
         accountId="acct-001",
         asOf="2026-04-18",
@@ -2469,7 +2783,9 @@ def test_government_signal_congress_trade_validates_amount_bounds() -> None:
         raise AssertionError("Expected congress amount bounds validation failure.")
 
 
-def test_government_signal_contract_and_summary_models_accept_expected_payloads() -> None:
+def test_government_signal_contract_and_summary_models_accept_expected_payloads() -> (
+    None
+):
     contract_event = GovernmentContractEvent(
         event_id="award-1",
         source_name="usaspending",
@@ -2525,7 +2841,9 @@ def test_government_signal_contract_and_summary_models_accept_expected_payloads(
 
 
 def test_government_signal_mapping_override_and_portfolio_request_validate() -> None:
-    payload = GovernmentSignalMappingOverrideRequest(action="map", symbol="RTX", reason="Matched issuer")
+    payload = GovernmentSignalMappingOverrideRequest(
+        action="map", symbol="RTX", reason="Matched issuer"
+    )
     exposure = GovernmentSignalPortfolioExposureRequest(
         holdings=[{"symbol": "LMT", "market_value": 100_000, "portfolio_weight": 0.1}]
     )
@@ -2605,7 +2923,9 @@ def test_symbol_enrichment_operator_contracts_default_lists() -> None:
         currentProfile={"symbol": "AAPL", "sourceKind": "provider"},
     )
     summary = SymbolEnrichmentSummaryResponse()
-    override = SymbolProfileOverride(symbol="AAPL", fieldName="sector_norm", value="Technology", isLocked=True)
+    override = SymbolProfileOverride(
+        symbol="AAPL", fieldName="sector_norm", value="Technology", isLocked=True
+    )
     run = SymbolCleanupRunSummary(runId="run-1", status="queued")
 
     assert detail.overrides == []
@@ -2759,7 +3079,9 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     reconnect = ReconnectBrokerAccountRequest(reason="Operator initiated reconnect.")
     pause = PauseBrokerSyncRequest(paused=False, reason="Resume after token refresh.")
     refresh = RefreshBrokerAccountRequest(scope="full", force=True)
-    acknowledge = AcknowledgeBrokerAlertRequest(note="Connector rerouted to manual follow-up.")
+    acknowledge = AcknowledgeBrokerAlertRequest(
+        note="Connector rerouted to manual follow-up."
+    )
     action_response = BrokerAccountActionResponse(
         actionId="action-1",
         accountId="alpaca-core",
@@ -2776,7 +3098,9 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
         tradeReadiness="review",
         syncPaused=False,
     )
-    listing = BrokerAccountListResponse(accounts=[summary], generatedAt="2026-04-20T13:45:00Z")
+    listing = BrokerAccountListResponse(
+        accounts=[summary], generatedAt="2026-04-20T13:45:00Z"
+    )
 
     assert summary.accountId == "alpaca-core"
     assert summary.name == "Core Long Only"
@@ -2817,7 +3141,9 @@ def test_broker_account_contracts_accept_kalshi_vendor() -> None:
     assert summary.tradeReadiness == "ready"
 
 
-def test_broker_account_onboarding_contracts_capture_discovery_and_create_response() -> None:
+def test_broker_account_onboarding_contracts_capture_discovery_and_create_response() -> (
+    None
+):
     candidate = BrokerAccountOnboardingCandidate(
         candidateId="alpaca:paper:acct-paper",
         provider="alpaca",
@@ -2877,7 +3203,10 @@ def test_broker_account_onboarding_contracts_capture_discovery_and_create_respon
     )
 
     assert candidate.baseCurrency == "USD"
-    assert candidate_list.candidates[0].allowedExecutionPostures == ["monitor_only", "paper"]
+    assert candidate_list.candidates[0].allowedExecutionPostures == [
+        "monitor_only",
+        "paper",
+    ]
     assert candidate_list.discoveryStatus == "completed"
     assert request.reason == "Initial account onboarding for paper trading."
     assert response.audit is not None
@@ -2893,14 +3222,20 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
         configurationVersion=4,
         requestedPolicy=BrokerTradingPolicy(
             maxOpenPositions=12,
-            maxSinglePositionExposure={"mode": "pct_of_allocatable_capital", "value": 8.5},
+            maxSinglePositionExposure={
+                "mode": "pct_of_allocatable_capital",
+                "value": 8.5,
+            },
             allowedSides=["long"],
             allowedAssetClasses=["equity", "option"],
             requireOrderConfirmation=True,
         ),
         effectivePolicy=BrokerTradingPolicy(
             maxOpenPositions=10,
-            maxSinglePositionExposure={"mode": "pct_of_allocatable_capital", "value": 8.0},
+            maxSinglePositionExposure={
+                "mode": "pct_of_allocatable_capital",
+                "value": 8.0,
+            },
             allowedSides=["long"],
             allowedAssetClasses=["equity", "option"],
             requireOrderConfirmation=True,
@@ -2934,7 +3269,10 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
                 {
                     "sleeveId": "defensive",
                     "sleeveName": "Defensive",
-                    "strategy": {"strategyName": "defensive-value", "strategyVersion": 2},
+                    "strategy": {
+                        "strategyName": "defensive-value",
+                        "strategyVersion": 2,
+                    },
                     "allocationMode": "percent",
                     "targetWeightPct": 40.0,
                 },
@@ -2987,6 +3325,8 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
     assert configuration.requestedPolicy.maxSinglePositionExposure is not None
     assert configuration.requestedPolicy.maxSinglePositionExposure.value == 8.5
     assert configuration.allocation.items[0].strategy.strategyName == "quality-trend"
-    assert configuration.audit[0].grantedRoles == ["AssetAllocation.AccountPolicy.Write"]
+    assert configuration.audit[0].grantedRoles == [
+        "AssetAllocation.AccountPolicy.Write"
+    ]
     assert policy_request.expectedConfigurationVersion == 4
     assert allocation_request.items[1].targetNotionalBaseCcy == 100000.0
