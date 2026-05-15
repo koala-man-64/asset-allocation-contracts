@@ -100,6 +100,8 @@ export type TradeAuditEventType = 'preview' | 'submit' | 'cancel' | 'status_upda
 export type TradeDataFreshnessState = 'fresh' | 'stale' | 'unknown';
 export type TradeAuditSeverity = 'info' | 'warning' | 'critical';
 export type TradeBlotterEventType = 'fill' | 'order' | 'cancel' | 'fee' | 'cash_adjustment' | 'dividend' | 'interest' | 'journal' | 'settlement' | 'deposit' | 'withdrawal' | 'other';
+export type TradeMetricValueType = 'count' | 'currency';
+export type TradeMetricStatus = 'available' | 'partial' | 'unavailable';
 export type KalshiProviderEnvironment = 'demo' | 'live';
 export type KalshiOutcomeSide = 'yes' | 'no';
 export type KalshiBookSide = 'bid' | 'ask';
@@ -2181,6 +2183,45 @@ export interface TradeDeskAuditEvent {
 export interface TradeAccountListResponse {
   accounts: TradeAccountSummary[];
   generatedAt?: string | null;
+}
+
+export interface TradeMetricFeedResponse {
+  scope: string;
+  generatedAt: string;
+  metrics: TradeMetricValue[];
+  coverage: TradeMetricCoverage;
+  warnings: string[];
+}
+
+export interface TradeMetricValue {
+  metricId: string;
+  label: string;
+  value?: number | null;
+  valueType: TradeMetricValueType;
+  currency?: string | null;
+  status: TradeMetricStatus;
+  asOf?: string | null;
+  segments: TradeMetricSegmentValue[];
+  warnings: string[];
+}
+
+export interface TradeMetricSegmentValue {
+  segmentId: string;
+  environment: TradeEnvironment;
+  accountCount: number;
+  value?: number | null;
+  status: TradeMetricStatus;
+  asOf?: string | null;
+  currency?: string | null;
+}
+
+export interface TradeMetricCoverage {
+  accountCount: number;
+  includedAccountCount: number;
+  environments: TradeEnvironment[];
+  currencies: string[];
+  mixedEnvironment: boolean;
+  mixedCurrency: boolean;
 }
 
 export interface TradePosition {

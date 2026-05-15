@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "TradeMetricSegmentValue": {
+      "additionalProperties": false,
+      "properties": {
+        "accountCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Accountcount",
+          "type": "integer"
+        },
+        "asOf": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "segmentId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Segmentid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "partial",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "segmentId",
+        "environment",
+        "status"
+      ],
+      "title": "TradeMetricSegmentValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOf": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asof"
+    },
+    "currency": {
+      "anyOf": [
+        {
+          "maxLength": 3,
+          "minLength": 3,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currency"
+    },
+    "label": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "metricId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Metricid",
+      "type": "string"
+    },
+    "segments": {
+      "items": {
+        "$ref": "#/$defs/TradeMetricSegmentValue"
+      },
+      "title": "Segments",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "partial",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value"
+    },
+    "valueType": {
+      "enum": [
+        "count",
+        "currency"
+      ],
+      "title": "Valuetype",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "metricId",
+    "label",
+    "valueType",
+    "status"
+  ],
+  "title": "TradeMetricValue",
+  "type": "object"
+}

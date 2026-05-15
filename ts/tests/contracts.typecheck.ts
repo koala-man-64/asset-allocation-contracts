@@ -70,6 +70,7 @@ import type {
   TimeseriesPointResponse,
   TradeAccountSummary,
   TradeBlotterResponse,
+  TradeMetricFeedResponse,
   TradeOrderPreviewRequest,
   TradePosition,
   UiRuntimeConfig,
@@ -206,6 +207,52 @@ const optionPreview: TradeOrderPreviewRequest = {
   source: "manual",
   optionStrategyId: "long_call",
   optionLegs: [],
+};
+
+const tradeMetricFeed: TradeMetricFeedResponse = {
+  scope: "global",
+  generatedAt: "2026-05-15T15:00:00Z",
+  coverage: {
+    accountCount: 2,
+    includedAccountCount: 2,
+    environments: ["paper", "live"],
+    currencies: ["USD"],
+    mixedEnvironment: true,
+    mixedCurrency: false,
+  },
+  metrics: [
+    {
+      metricId: "open_positions",
+      label: "Open Positions",
+      value: 2,
+      valueType: "count",
+      status: "available",
+      asOf: "2026-05-15T15:00:00Z",
+      segments: [
+        {
+          segmentId: "paper",
+          environment: "paper",
+          accountCount: 1,
+          value: 1,
+          status: "available",
+          asOf: "2026-05-15T15:00:00Z",
+        },
+      ],
+      warnings: [],
+    },
+    {
+      metricId: "desk.custom.future_metric",
+      label: "Future Metric",
+      value: null,
+      valueType: "currency",
+      currency: null,
+      status: "unavailable",
+      asOf: null,
+      segments: [],
+      warnings: ["Builder unavailable."],
+    },
+  ],
+  warnings: ["Mixed execution environments are segmented."],
 };
 
 const optionBacktestResult: OptionBacktestResult = {
@@ -1115,6 +1162,7 @@ void runResponse;
 void streamEvent;
 void dataQualityEvents;
 void point;
+void tradeMetricFeed;
 void configReference;
 void configIdentity;
 void reusableComponentRefs;

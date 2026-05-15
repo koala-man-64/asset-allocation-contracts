@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Accountcount",
+      "type": "integer"
+    },
+    "currencies": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Currencies",
+      "type": "array"
+    },
+    "environments": {
+      "items": {
+        "enum": [
+          "paper",
+          "sandbox",
+          "live"
+        ],
+        "type": "string"
+      },
+      "title": "Environments",
+      "type": "array"
+    },
+    "includedAccountCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Includedaccountcount",
+      "type": "integer"
+    },
+    "mixedCurrency": {
+      "default": false,
+      "title": "Mixedcurrency",
+      "type": "boolean"
+    },
+    "mixedEnvironment": {
+      "default": false,
+      "title": "Mixedenvironment",
+      "type": "boolean"
+    }
+  },
+  "title": "TradeMetricCoverage",
+  "type": "object"
+}

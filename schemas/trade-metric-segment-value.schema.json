@@ -1,0 +1,81 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Accountcount",
+      "type": "integer"
+    },
+    "asOf": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asof"
+    },
+    "currency": {
+      "anyOf": [
+        {
+          "maxLength": 3,
+          "minLength": 3,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currency"
+    },
+    "environment": {
+      "enum": [
+        "paper",
+        "sandbox",
+        "live"
+      ],
+      "title": "Environment",
+      "type": "string"
+    },
+    "segmentId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Segmentid",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "partial",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value"
+    }
+  },
+  "required": [
+    "segmentId",
+    "environment",
+    "status"
+  ],
+  "title": "TradeMetricSegmentValue",
+  "type": "object"
+}

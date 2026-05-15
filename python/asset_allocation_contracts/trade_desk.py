@@ -58,6 +58,8 @@ TradeBlotterEventType = Literal[
     "withdrawal",
     "other",
 ]
+TradeMetricValueType = Literal["count", "currency"]
+TradeMetricStatus = Literal["available", "partial", "unavailable"]
 
 TRADE_SYMBOL_MAX_LENGTH = 128
 
@@ -216,6 +218,103 @@ class TradePnlSnapshot(BaseModel):
     grossExposure: float | None = None
     netExposure: float | None = None
     asOf: datetime | None = None
+
+
+class TradeMetricCoverage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountCount: int = Field(default=0, ge=0)
+    includedAccountCount: int = Field(default=0, ge=0)
+    environments: list[TradeEnvironment] = Field(default_factory=list)
+    currencies: list[str] = Field(default_factory=list)
+    mixedEnvironment: bool = False
+    mixedCurrency: bool = False
+
+    @field_validator("currencies", mode="before")
+    @classmethod
+    def normalize_currencies(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return sorted({_normalize_currency(currency) for currency in value})
+
+
+class TradeMetricSegmentValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    segmentId: str = Field(..., min_length=1, max_length=128)
+    environment: TradeEnvironment
+    accountCount: int = Field(default=0, ge=0)
+    value: float | None = None
+    status: TradeMetricStatus
+    asOf: datetime | None = None
+    currency: str | None = Field(default=None, min_length=3, max_length=3)
+
+    @field_validator("segmentId", mode="before")
+    @classmethod
+    def normalize_segment_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "segmentId")
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def normalize_currency(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        return _normalize_currency(value)
+
+
+class TradeMetricValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metricId: str = Field(..., min_length=1, max_length=128)
+    label: str = Field(..., min_length=1, max_length=160)
+    value: float | None = None
+    valueType: TradeMetricValueType
+    currency: str | None = Field(default=None, min_length=3, max_length=3)
+    status: TradeMetricStatus
+    asOf: datetime | None = None
+    segments: list[TradeMetricSegmentValue] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("metricId", "label", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def normalize_currency(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        return _normalize_currency(value)
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [warning for warning in (str(item).strip() for item in value) if warning]
+
+
+class TradeMetricFeedResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scope: str = Field(..., min_length=1, max_length=128)
+    generatedAt: datetime
+    metrics: list[TradeMetricValue] = Field(default_factory=list)
+    coverage: TradeMetricCoverage = Field(default_factory=TradeMetricCoverage)
+    warnings: list[str] = Field(default_factory=list)
+
+    @field_validator("scope", mode="before")
+    @classmethod
+    def normalize_scope(cls, value: object) -> str:
+        return _normalize_required_text(value, "scope")
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        return [warning for warning in (str(item).strip() for item in value) if warning]
 
 
 class TradeDeskAlert(BaseModel):

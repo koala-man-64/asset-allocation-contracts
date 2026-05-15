@@ -10,6 +10,7 @@ from asset_allocation_contracts.trade_desk import (
     TradeCapabilityFlags,
     TradeDeskAlert,
     TradeDeskAuditEvent,
+    TradeMetricFeedResponse,
     TradeOrder,
     TradeOrderCancelRequest,
     TradeOrderPlaceRequest,
@@ -123,6 +124,127 @@ def test_trade_account_contracts_accept_kalshi_provider() -> None:
     assert account.provider == "kalshi"
     assert account.environment == "live"
     assert account.freshness.balancesState == "unknown"
+
+
+def test_trade_metric_feed_accepts_extensible_metric_ids_and_v1_rows() -> None:
+    now = _now()
+    feed = TradeMetricFeedResponse(
+        scope=" global ",
+        generatedAt=now,
+        coverage={
+            "accountCount": 2,
+            "includedAccountCount": 2,
+            "environments": ["paper", "live"],
+            "currencies": ["usd"],
+            "mixedEnvironment": True,
+            "mixedCurrency": False,
+        },
+        metrics=[
+            {
+                "metricId": "open_positions",
+                "label": "Open Positions",
+                "value": 2,
+                "valueType": "count",
+                "status": "available",
+                "asOf": now,
+                "segments": [
+                    {
+                        "segmentId": "paper",
+                        "environment": "paper",
+                        "accountCount": 1,
+                        "value": 1,
+                        "status": "available",
+                        "asOf": now,
+                    },
+                    {
+                        "segmentId": "live",
+                        "environment": "live",
+                        "accountCount": 1,
+                        "value": 1,
+                        "status": "available",
+                        "asOf": now,
+                    },
+                ],
+            },
+            {
+                "metricId": "buying_power",
+                "label": "Buying Power",
+                "value": 350_000,
+                "valueType": "currency",
+                "currency": "usd",
+                "status": "available",
+                "asOf": now,
+                "segments": [
+                    {
+                        "segmentId": "paper",
+                        "environment": "paper",
+                        "accountCount": 1,
+                        "value": 200_000,
+                        "status": "available",
+                        "asOf": now,
+                        "currency": "usd",
+                    },
+                ],
+            },
+            {
+                "metricId": "total_pnl",
+                "label": "Total P/L",
+                "value": 4_260,
+                "valueType": "currency",
+                "currency": "USD",
+                "status": "available",
+                "asOf": now,
+            },
+            {
+                "metricId": "day_pnl",
+                "label": "Daily P/L",
+                "value": -15,
+                "valueType": "currency",
+                "currency": "USD",
+                "status": "available",
+                "asOf": now,
+            },
+            {
+                "metricId": "realized_pnl",
+                "label": "Realized P/L",
+                "value": 4_400,
+                "valueType": "currency",
+                "currency": "USD",
+                "status": "available",
+                "asOf": now,
+            },
+            {
+                "metricId": "unrealized_pnl",
+                "label": "Unrealized P/L",
+                "value": -140,
+                "valueType": "currency",
+                "currency": "USD",
+                "status": "available",
+                "asOf": now,
+            },
+            {
+                "metricId": "desk.custom.future_metric",
+                "label": "Future Metric",
+                "value": None,
+                "valueType": "count",
+                "status": "unavailable",
+                "warnings": ["Builder not deployed."],
+            },
+        ],
+        warnings=["Mixed execution environments are segmented."],
+    )
+
+    assert feed.scope == "global"
+    assert feed.coverage.currencies == ["USD"]
+    assert [metric.metricId for metric in feed.metrics[:6]] == [
+        "open_positions",
+        "buying_power",
+        "total_pnl",
+        "day_pnl",
+        "realized_pnl",
+        "unrealized_pnl",
+    ]
+    assert feed.metrics[-1].metricId == "desk.custom.future_metric"
 
 
 def test_trade_order_preview_request_validates_manual_intent() -> None:
