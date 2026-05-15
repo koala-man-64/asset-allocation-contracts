@@ -134,9 +134,16 @@ class BrokerTradingPolicy(BaseModel):
 
     maxOpenPositions: int | None = Field(default=None, ge=1)
     maxSinglePositionExposure: BrokerPositionSizeLimit | None = None
+    maxGrossExposurePct: float | None = Field(default=None, gt=0.0, le=500.0)
+    maxNetExposurePct: float | None = Field(default=None, gt=0.0, le=500.0)
+    maxDailyLossPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    maxAdvParticipationPct: float | None = Field(default=None, gt=0.0, le=100.0)
     allowedSides: list[BrokerPolicySide] = Field(default_factory=lambda: ["long"])
     allowedAssetClasses: list[BrokerPolicyAssetClass] = Field(default_factory=lambda: ["equity"])
+    allowLiveOrders: bool = False
     requireOrderConfirmation: bool = False
+    requireBorrowLocate: bool = True
+    reduceOnly: bool = False
 
     @field_validator("allowedSides", "allowedAssetClasses", mode="before")
     @classmethod
@@ -158,6 +165,10 @@ class BrokerTradingPolicy(BaseModel):
             raise ValueError("allowedSides must include at least one side.")
         if not self.allowedAssetClasses:
             raise ValueError("allowedAssetClasses must include at least one asset class.")
+        if "short" in self.allowedSides and not self.requireBorrowLocate:
+            raise ValueError("Short-enabled broker policies require borrow/locate enforcement.")
+        if self.allowLiveOrders and not self.requireOrderConfirmation:
+            raise ValueError("Live-order broker policies require order confirmation.")
         return self
 
 

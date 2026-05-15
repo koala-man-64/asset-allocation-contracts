@@ -134,13 +134,585 @@
       "title": "RiskPolicyConfigSummary",
       "type": "object"
     },
-    "StrategyRiskPolicy": {
+    "StrategyRiskAuditPolicy": {
       "additionalProperties": false,
       "properties": {
+        "auditRetentionDays": {
+          "default": 2555,
+          "minimum": 1,
+          "title": "Auditretentiondays",
+          "type": "integer"
+        },
+        "recordTriggeredOverlays": {
+          "default": true,
+          "title": "Recordtriggeredoverlays",
+          "type": "boolean"
+        },
+        "requirePolicySnapshotHash": {
+          "default": true,
+          "title": "Requirepolicysnapshothash",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskAuditPolicy",
+      "type": "object"
+    },
+    "StrategyRiskDataQualityGates": {
+      "additionalProperties": false,
+      "properties": {
+        "corporateActionPolicy": {
+          "default": "freeze",
+          "enum": [
+            "allow",
+            "warn",
+            "freeze"
+          ],
+          "title": "Corporateactionpolicy",
+          "type": "string"
+        },
+        "maxQuoteAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxquoteageseconds"
+        },
+        "maxSecurityMasterAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsecuritymasterageseconds"
+        },
+        "minCoveragePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mincoveragepct"
+        },
+        "minVendorQuorum": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minvendorquorum"
+        },
+        "requireSymbolIdentityLock": {
+          "default": true,
+          "title": "Requiresymbolidentitylock",
+          "type": "boolean"
+        },
+        "requiredAdjustmentStatuses": {
+          "items": {
+            "enum": [
+              "raw_allowed",
+              "split_adjusted",
+              "dividend_adjusted",
+              "corporate_action_adjusted"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredadjustmentstatuses",
+          "type": "array"
+        }
+      },
+      "title": "StrategyRiskDataQualityGates",
+      "type": "object"
+    },
+    "StrategyRiskExposureLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "dailyLossLimitPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dailylosslimitpct"
+        },
+        "drawdownBlockPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drawdownblockpct"
+        },
+        "drawdownReducePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drawdownreducepct"
+        },
+        "maxCorrelatedClusterPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcorrelatedclusterpct"
+        },
+        "maxFactorBetaAbs": {
+          "anyOf": [
+            {
+              "maximum": 5.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxfactorbetaabs"
+        },
+        "maxGrossExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxgrossexposurepct"
+        },
+        "maxLeverageMultiple": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 10.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxleveragemultiple"
+        },
+        "maxLongExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlongexposurepct"
+        },
+        "maxNetExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxnetexposurepct"
+        },
+        "maxSectorPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsectorpct"
+        },
+        "maxShortExposurePct": {
+          "anyOf": [
+            {
+              "maximum": 500.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxshortexposurepct"
+        },
+        "maxSingleNamePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsinglenamepct"
+        },
+        "maxThemePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxthemepct"
+        },
+        "weeklyLossLimitPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weeklylosslimitpct"
+        }
+      },
+      "title": "StrategyRiskExposureLimits",
+      "type": "object"
+    },
+    "StrategyRiskLiquidityLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "maxAdvParticipationPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxadvparticipationpct"
+        },
+        "maxBidAskSpreadBps": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxbidaskspreadbps"
+        },
+        "maxExitHorizonDays": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxexithorizondays"
+        },
+        "maxSlippageBps": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxslippagebps"
+        },
+        "minLiquidityScore": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minliquidityscore"
+        }
+      },
+      "title": "StrategyRiskLiquidityLimits",
+      "type": "object"
+    },
+    "StrategyRiskOverlayRule": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "warn",
+            "reduce_exposure",
+            "freeze_buys",
+            "block_new_orders",
+            "reduce_only",
+            "liquidate"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "cooldownBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
         "enabled": {
           "default": true,
           "title": "Enabled",
           "type": "boolean"
+        },
+        "exposureReductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exposurereductionpct"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "requireApproval": {
+          "default": false,
+          "title": "Requireapproval",
+          "type": "boolean"
+        },
+        "trigger": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Trigger",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "trigger",
+        "action"
+      ],
+      "title": "StrategyRiskOverlayRule",
+      "type": "object"
+    },
+    "StrategyRiskOverlaySet": {
+      "additionalProperties": false,
+      "properties": {
+        "correlationShock": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Correlationshock",
+          "type": "array"
+        },
+        "dataQuality": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Dataquality",
+          "type": "array"
+        },
+        "event": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Event",
+          "type": "array"
+        },
+        "liquidityStress": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Liquiditystress",
+          "type": "array"
+        },
+        "regime": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Regime",
+          "type": "array"
+        }
+      },
+      "title": "StrategyRiskOverlaySet",
+      "type": "object"
+    },
+    "StrategyRiskPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "audit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskAuditPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dataQualityGates": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskDataQualityGates"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "exposureLimits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskExposureLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "liquidityLimits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskLiquidityLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "operatingMode": {
+          "anyOf": [
+            {
+              "enum": [
+                "research_observe_only",
+                "paper_controlled_pilot",
+                "core_diversified_long",
+                "balanced_long_short",
+                "liquidity_constrained_smid",
+                "catalyst_event_guarded",
+                "stress_de_risk_mode"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Operatingmode"
+        },
+        "overlays": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskOverlaySet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "reentry": {
           "$ref": "#/$defs/StrategyRiskReentryPolicy"
@@ -169,6 +741,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/StrategyRiskTakeProfitPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tradingPermissions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskTradingPermissions"
             },
             {
               "type": "null"
@@ -317,6 +900,71 @@
         "thresholdPct"
       ],
       "title": "StrategyRiskTakeProfitPolicy",
+      "type": "object"
+    },
+    "StrategyRiskTradingPermissions": {
+      "additionalProperties": false,
+      "properties": {
+        "allowLiveOrders": {
+          "default": false,
+          "title": "Allowliveorders",
+          "type": "boolean"
+        },
+        "allowedAssetClasses": {
+          "items": {
+            "enum": [
+              "equity",
+              "option"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedassetclasses",
+          "type": "array"
+        },
+        "allowedSides": {
+          "items": {
+            "enum": [
+              "long",
+              "short"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedsides",
+          "type": "array"
+        },
+        "optionsMode": {
+          "default": "blocked",
+          "enum": [
+            "blocked",
+            "covered_only",
+            "defined_risk_only",
+            "approval_required"
+          ],
+          "title": "Optionsmode",
+          "type": "string"
+        },
+        "reduceOnly": {
+          "default": false,
+          "title": "Reduceonly",
+          "type": "boolean"
+        },
+        "requireBorrowLocate": {
+          "default": true,
+          "title": "Requireborrowlocate",
+          "type": "boolean"
+        },
+        "requireDifferentApprover": {
+          "default": true,
+          "title": "Requiredifferentapprover",
+          "type": "boolean"
+        },
+        "requireOrderConfirmation": {
+          "default": true,
+          "title": "Requireorderconfirmation",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskTradingPermissions",
       "type": "object"
     }
   },

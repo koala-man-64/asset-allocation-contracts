@@ -464,6 +464,11 @@
     "BrokerTradingPolicy": {
       "additionalProperties": false,
       "properties": {
+        "allowLiveOrders": {
+          "default": false,
+          "title": "Allowliveorders",
+          "type": "boolean"
+        },
         "allowedAssetClasses": {
           "items": {
             "enum": [
@@ -485,6 +490,62 @@
           },
           "title": "Allowedsides",
           "type": "array"
+        },
+        "maxAdvParticipationPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxadvparticipationpct"
+        },
+        "maxDailyLossPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxdailylosspct"
+        },
+        "maxGrossExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxgrossexposurepct"
+        },
+        "maxNetExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxnetexposurepct"
         },
         "maxOpenPositions": {
           "anyOf": [
@@ -509,6 +570,16 @@
             }
           ],
           "default": null
+        },
+        "reduceOnly": {
+          "default": false,
+          "title": "Reduceonly",
+          "type": "boolean"
+        },
+        "requireBorrowLocate": {
+          "default": true,
+          "title": "Requireborrowlocate",
+          "type": "boolean"
         },
         "requireOrderConfirmation": {
           "default": false,

@@ -173,8 +173,11 @@ from asset_allocation_contracts.strategy import (
     RiskPolicyConfigRevision,
     RiskPolicyConfigSummary,
     StrategyComponentRefs,
+    StrategyRiskExposureLimits,
+    StrategyRiskOverlaySet,
     StrategyRiskPolicy,
     StrategyRiskPolicyPreset,
+    StrategyRiskTradingPermissions,
     StrategyPositionPolicy,
     StrategyRiskProfileConfig,
     StrategyRiskProfileDetail,
@@ -871,6 +874,118 @@ def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
     assert policy.takeProfit is None
     assert policy.reentry.cooldownBars == 3
     assert policy.reentry.requireApproval is True
+
+
+def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
+    policy = StrategyRiskPolicy(
+        operatingMode="balanced_long_short",
+        exposureLimits={
+            "maxGrossExposurePct": 135,
+            "maxNetExposurePct": 65,
+            "maxSingleNamePct": 6,
+            "maxSectorPct": 25,
+            "maxCorrelatedClusterPct": 35,
+            "maxFactorBetaAbs": 1.4,
+            "dailyLossLimitPct": 2.5,
+            "weeklyLossLimitPct": 5,
+            "drawdownReducePct": 6,
+            "drawdownBlockPct": 9,
+        },
+        tradingPermissions={
+            "allowedSides": ["long", "short"],
+            "allowedAssetClasses": ["equity", "option"],
+            "optionsMode": "defined_risk_only",
+            "allowLiveOrders": False,
+            "requireOrderConfirmation": True,
+            "requireDifferentApprover": True,
+            "requireBorrowLocate": True,
+        },
+        liquidityLimits={
+            "maxAdvParticipationPct": 7.5,
+            "minLiquidityScore": 60,
+            "maxExitHorizonDays": 3,
+            "maxBidAskSpreadBps": 50,
+            "maxSlippageBps": 35,
+        },
+        overlays={
+            "regime": [
+                {
+                    "id": "high-vol-de-risk",
+                    "trigger": "regime=high_volatility",
+                    "action": "reduce_exposure",
+                    "exposureReductionPct": 35,
+                }
+            ],
+            "event": [
+                {
+                    "id": "earnings-blackout",
+                    "trigger": "earnings_within=2d",
+                    "action": "block_new_orders",
+                    "requireApproval": True,
+                }
+            ],
+        },
+        dataQualityGates={
+            "maxQuoteAgeSeconds": 900,
+            "maxSecurityMasterAgeSeconds": 86400,
+            "minVendorQuorum": 2,
+            "requireSymbolIdentityLock": True,
+            "corporateActionPolicy": "freeze",
+            "requiredAdjustmentStatuses": ["split_adjusted"],
+            "minCoveragePct": 95,
+        },
+        audit={"auditRetentionDays": 2555},
+    )
+
+    assert policy.operatingMode == "balanced_long_short"
+    assert policy.exposureLimits is not None
+    assert policy.exposureLimits.maxGrossExposurePct == 135
+    assert policy.tradingPermissions is not None
+    assert policy.tradingPermissions.allowedSides == ["long", "short"]
+    assert policy.tradingPermissions.optionsMode == "defined_risk_only"
+    assert policy.liquidityLimits is not None
+    assert policy.liquidityLimits.maxAdvParticipationPct == 7.5
+    assert policy.overlays is not None
+    assert policy.overlays.regime[0].id == "high-vol-de-risk"
+    assert policy.dataQualityGates is not None
+    assert policy.dataQualityGates.requiredAdjustmentStatuses == ["split_adjusted"]
+
+
+def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() -> None:
+    invalid_payloads = (
+        (StrategyRiskExposureLimits, {"dailyLossLimitPct": 6, "weeklyLossLimitPct": 3}, "weeklyLossLimitPct"),
+        (
+            StrategyRiskTradingPermissions,
+            {"allowedSides": ["long", "short"], "requireBorrowLocate": False},
+            "borrow/locate",
+        ),
+        (
+            StrategyRiskTradingPermissions,
+            {"allowLiveOrders": True, "requireOrderConfirmation": False},
+            "order confirmation",
+        ),
+        (
+            StrategyRiskTradingPermissions,
+            {"allowedAssetClasses": ["equity"], "optionsMode": "defined_risk_only"},
+            "option in allowedAssetClasses",
+        ),
+        (
+            StrategyRiskOverlaySet,
+            {
+                "regime": [{"id": "duplicate", "trigger": "regime=high_volatility", "action": "warn"}],
+                "event": [{"id": "duplicate", "trigger": "earnings_within=2d", "action": "warn"}],
+            },
+            "Duplicate risk overlay id",
+        ),
+    )
+
+    for model, payload, expected in invalid_payloads:
+        try:
+            model.model_validate(payload)
+        except Exception as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(f"Expected {model.__name__} to reject {payload!r}.")
 
 
 def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
@@ -3435,9 +3550,15 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
                 "mode": "pct_of_allocatable_capital",
                 "value": 8.5,
             },
+            maxGrossExposurePct=100,
+            maxNetExposurePct=80,
+            maxDailyLossPct=2.5,
+            maxAdvParticipationPct=5,
             allowedSides=["long"],
             allowedAssetClasses=["equity", "option"],
+            allowLiveOrders=False,
             requireOrderConfirmation=True,
+            reduceOnly=False,
         ),
         effectivePolicy=BrokerTradingPolicy(
             maxOpenPositions=10,
@@ -3533,9 +3654,30 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
     assert configuration.baseCurrency == "USD"
     assert configuration.requestedPolicy.maxSinglePositionExposure is not None
     assert configuration.requestedPolicy.maxSinglePositionExposure.value == 8.5
+    assert configuration.requestedPolicy.maxGrossExposurePct == 100
+    assert configuration.requestedPolicy.maxAdvParticipationPct == 5
     assert configuration.allocation.items[0].strategy.strategyName == "quality-trend"
     assert configuration.audit[0].grantedRoles == [
         "AssetAllocation.AccountPolicy.Write"
     ]
     assert policy_request.expectedConfigurationVersion == 4
     assert allocation_request.items[1].targetNotionalBaseCcy == 100000.0
+
+    for invalid_policy, expected in (
+        (
+            {"allowedSides": ["short"], "requireBorrowLocate": False},
+            "borrow/locate",
+        ),
+        (
+            {"allowLiveOrders": True, "requireOrderConfirmation": False},
+            "order confirmation",
+        ),
+    ):
+        try:
+            BrokerTradingPolicy.model_validate(invalid_policy)
+        except Exception as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(
+                f"Expected BrokerTradingPolicy to reject {invalid_policy!r}."
+            )

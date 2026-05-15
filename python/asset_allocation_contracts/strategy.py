@@ -36,6 +36,37 @@ StrategyRiskStopLossBasis = Literal["strategy_nav_drawdown", "sleeve_nav_drawdow
 StrategyRiskTakeProfitBasis = Literal["strategy_nav_gain", "sleeve_nav_gain"]
 StrategyRiskStopLossAction = Literal["reduce_exposure", "liquidate", "freeze_buys"]
 StrategyRiskTakeProfitAction = Literal["reduce_exposure", "rebalance_to_target"]
+RiskPolicyOperatingMode = Literal[
+    "research_observe_only",
+    "paper_controlled_pilot",
+    "core_diversified_long",
+    "balanced_long_short",
+    "liquidity_constrained_smid",
+    "catalyst_event_guarded",
+    "stress_de_risk_mode",
+]
+StrategyRiskSide = Literal["long", "short"]
+StrategyRiskOptionMode = Literal[
+    "blocked",
+    "covered_only",
+    "defined_risk_only",
+    "approval_required",
+]
+StrategyRiskOverlayAction = Literal[
+    "warn",
+    "reduce_exposure",
+    "freeze_buys",
+    "block_new_orders",
+    "reduce_only",
+    "liquidate",
+]
+StrategyRiskCorporateActionPolicy = Literal["allow", "warn", "freeze"]
+StrategyRiskAdjustmentStatus = Literal[
+    "raw_allowed",
+    "split_adjusted",
+    "dividend_adjusted",
+    "corporate_action_adjusted",
+]
 UniverseSource = Literal["postgres_gold"]
 UniverseGroupOperator = Literal["and", "or"]
 UniverseConditionOperator = Literal[
@@ -559,14 +590,189 @@ class StrategyRiskTakeProfitPolicy(BaseModel):
         return self
 
 
+class StrategyRiskExposureLimits(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    maxGrossExposurePct: float | None = Field(default=None, gt=0.0, le=500.0)
+    maxNetExposurePct: float | None = Field(default=None, gt=0.0, le=500.0)
+    maxLongExposurePct: float | None = Field(default=None, gt=0.0, le=500.0)
+    maxShortExposurePct: float | None = Field(default=None, ge=0.0, le=500.0)
+    maxSingleNamePct: float | None = Field(default=None, gt=0.0, le=100.0)
+    maxSectorPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    maxThemePct: float | None = Field(default=None, gt=0.0, le=100.0)
+    maxCorrelatedClusterPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    maxLeverageMultiple: float | None = Field(default=None, gt=0.0, le=10.0)
+    maxFactorBetaAbs: float | None = Field(default=None, ge=0.0, le=5.0)
+    dailyLossLimitPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    weeklyLossLimitPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    drawdownReducePct: float | None = Field(default=None, gt=0.0, le=100.0)
+    drawdownBlockPct: float | None = Field(default=None, gt=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_limits(self) -> "StrategyRiskExposureLimits":
+        if (
+            self.dailyLossLimitPct is not None
+            and self.weeklyLossLimitPct is not None
+            and self.weeklyLossLimitPct < self.dailyLossLimitPct
+        ):
+            raise ValueError("weeklyLossLimitPct must be greater than or equal to dailyLossLimitPct.")
+        if (
+            self.drawdownReducePct is not None
+            and self.drawdownBlockPct is not None
+            and self.drawdownBlockPct < self.drawdownReducePct
+        ):
+            raise ValueError("drawdownBlockPct must be greater than or equal to drawdownReducePct.")
+        return self
+
+
+class StrategyRiskTradingPermissions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    allowedSides: list[StrategyRiskSide] = Field(default_factory=lambda: ["long"])
+    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(default_factory=lambda: ["equity"])
+    optionsMode: StrategyRiskOptionMode = "blocked"
+    allowLiveOrders: bool = False
+    requireOrderConfirmation: bool = True
+    requireDifferentApprover: bool = True
+    requireBorrowLocate: bool = True
+    reduceOnly: bool = False
+
+    @field_validator("allowedSides", "allowedAssetClasses", mode="before")
+    @classmethod
+    def normalize_literal_lists(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("Expected a list.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip().lower()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_permissions(self) -> "StrategyRiskTradingPermissions":
+        if not self.allowedSides:
+            raise ValueError("allowedSides must include at least one side.")
+        if not self.allowedAssetClasses:
+            raise ValueError("allowedAssetClasses must include at least one asset class.")
+        if "short" in self.allowedSides and not self.requireBorrowLocate:
+            raise ValueError("Short-enabled risk policies require borrow/locate enforcement.")
+        if self.optionsMode != "blocked" and "option" not in self.allowedAssetClasses:
+            raise ValueError("optionsMode requires option in allowedAssetClasses.")
+        if self.allowLiveOrders and not self.requireOrderConfirmation:
+            raise ValueError("Live-order risk policies require order confirmation.")
+        if self.allowLiveOrders and not self.requireDifferentApprover:
+            raise ValueError("Live-order risk policies require a different approver.")
+        return self
+
+
+class StrategyRiskLiquidityLimits(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    maxAdvParticipationPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    minLiquidityScore: float | None = Field(default=None, ge=0.0, le=100.0)
+    maxExitHorizonDays: int | None = Field(default=None, ge=1)
+    maxBidAskSpreadBps: float | None = Field(default=None, ge=0.0)
+    maxSlippageBps: float | None = Field(default=None, ge=0.0)
+
+
+class StrategyRiskOverlayRule(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(..., min_length=1, max_length=128)
+    enabled: bool = True
+    trigger: str = Field(..., min_length=1, max_length=256)
+    action: StrategyRiskOverlayAction
+    exposureReductionPct: float | None = Field(default=None, gt=0.0, le=100.0)
+    cooldownBars: int = Field(default=0, ge=0)
+    requireApproval: bool = False
+
+    @model_validator(mode="after")
+    def validate_rule(self) -> "StrategyRiskOverlayRule":
+        if self.action == "reduce_exposure" and self.exposureReductionPct is None:
+            raise ValueError("reduce_exposure overlay rules require exposureReductionPct.")
+        if self.action != "reduce_exposure" and self.exposureReductionPct is not None:
+            raise ValueError("exposureReductionPct is only supported for reduce_exposure overlays.")
+        return self
+
+
+class StrategyRiskOverlaySet(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    regime: list[StrategyRiskOverlayRule] = Field(default_factory=list)
+    event: list[StrategyRiskOverlayRule] = Field(default_factory=list)
+    liquidityStress: list[StrategyRiskOverlayRule] = Field(default_factory=list)
+    correlationShock: list[StrategyRiskOverlayRule] = Field(default_factory=list)
+    dataQuality: list[StrategyRiskOverlayRule] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unique_rule_ids(self) -> "StrategyRiskOverlaySet":
+        seen: set[str] = set()
+        for rules in (
+            self.regime,
+            self.event,
+            self.liquidityStress,
+            self.correlationShock,
+            self.dataQuality,
+        ):
+            for rule in rules:
+                if rule.id in seen:
+                    raise ValueError(f"Duplicate risk overlay id '{rule.id}'.")
+                seen.add(rule.id)
+        return self
+
+
+class StrategyRiskDataQualityGates(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    maxQuoteAgeSeconds: int | None = Field(default=None, ge=1)
+    maxSecurityMasterAgeSeconds: int | None = Field(default=None, ge=1)
+    minVendorQuorum: int | None = Field(default=None, ge=1)
+    requireSymbolIdentityLock: bool = True
+    corporateActionPolicy: StrategyRiskCorporateActionPolicy = "freeze"
+    requiredAdjustmentStatuses: list[StrategyRiskAdjustmentStatus] = Field(default_factory=list)
+    minCoveragePct: float | None = Field(default=None, gt=0.0, le=100.0)
+
+    @field_validator("requiredAdjustmentStatuses", mode="before")
+    @classmethod
+    def normalize_adjustment_statuses(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("requiredAdjustmentStatuses must be a list.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip().lower()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized
+
+
+class StrategyRiskAuditPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    auditRetentionDays: int = Field(default=2555, ge=1)
+    requirePolicySnapshotHash: bool = True
+    recordTriggeredOverlays: bool = True
+
+
 class StrategyRiskPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     enabled: bool = True
+    operatingMode: RiskPolicyOperatingMode | None = None
     scope: StrategyRiskPolicyScope = "strategy"
     stopLoss: StrategyRiskStopLossPolicy | None = None
     takeProfit: StrategyRiskTakeProfitPolicy | None = None
     reentry: StrategyRiskReentryPolicy = Field(default_factory=StrategyRiskReentryPolicy)
+    exposureLimits: StrategyRiskExposureLimits | None = None
+    tradingPermissions: StrategyRiskTradingPermissions | None = None
+    liquidityLimits: StrategyRiskLiquidityLimits | None = None
+    overlays: StrategyRiskOverlaySet | None = None
+    dataQualityGates: StrategyRiskDataQualityGates | None = None
+    audit: StrategyRiskAuditPolicy | None = None
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskPolicy":
@@ -574,9 +780,22 @@ class StrategyRiskPolicy(BaseModel):
             enabled_stop = self.stopLoss is not None and self.stopLoss.enabled
             enabled_take = self.takeProfit is not None and self.takeProfit.enabled
             reentry_control = self.reentry.cooldownBars > 0 or self.reentry.requireApproval
-            if not enabled_stop and not enabled_take and not reentry_control:
+            complete_controls = any(
+                item is not None
+                for item in (
+                    self.operatingMode,
+                    self.exposureLimits,
+                    self.tradingPermissions,
+                    self.liquidityLimits,
+                    self.overlays,
+                    self.dataQualityGates,
+                    self.audit,
+                )
+            )
+            if not enabled_stop and not enabled_take and not reentry_control and not complete_controls:
                 raise ValueError(
-                    "Enabled strategyRiskPolicy requires an enabled stopLoss, takeProfit, or reentry control."
+                    "Enabled strategyRiskPolicy requires an enabled stopLoss, takeProfit, or reentry control, "
+                    "or complete risk policy control."
                 )
         return self
 

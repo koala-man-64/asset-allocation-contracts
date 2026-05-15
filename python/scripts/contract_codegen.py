@@ -527,6 +527,15 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("StrategyRiskTakeProfitBasis", strategy.StrategyRiskTakeProfitBasis),
     ("StrategyRiskStopLossAction", strategy.StrategyRiskStopLossAction),
     ("StrategyRiskTakeProfitAction", strategy.StrategyRiskTakeProfitAction),
+    ("RiskPolicyOperatingMode", strategy.RiskPolicyOperatingMode),
+    ("StrategyRiskSide", strategy.StrategyRiskSide),
+    ("StrategyRiskOptionMode", strategy.StrategyRiskOptionMode),
+    ("StrategyRiskOverlayAction", strategy.StrategyRiskOverlayAction),
+    (
+        "StrategyRiskCorporateActionPolicy",
+        strategy.StrategyRiskCorporateActionPolicy,
+    ),
+    ("StrategyRiskAdjustmentStatus", strategy.StrategyRiskAdjustmentStatus),
     ("RegimeCode", regime.RegimeCode),
     ("UniverseSource", strategy.UniverseSource),
     ("UniverseGroupOperator", strategy.UniverseGroupOperator),
@@ -660,6 +669,9 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RegimeModelRevision", "description"),
     ("UniverseConfigDraftGenerationRequest", "previewSampleLimit"),
     ("RankingSchemaDraftGenerationRequest", "previewSampleLimit"),
+    ("BrokerTradingPolicy", "allowLiveOrders"),
+    ("BrokerTradingPolicy", "requireBorrowLocate"),
+    ("BrokerTradingPolicy", "reduceOnly"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
@@ -673,6 +685,19 @@ FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
     ("RebalancePolicy", "dayRule"): "ReusableRebalanceDayRule | null",
     ("RebalancePolicy", "anchor"): "ReusableRebalanceAnchor | null",
     ("StrategyRiskPolicy", "scope"): "StrategyRiskPolicyScope",
+    ("StrategyRiskPolicy", "operatingMode"): "RiskPolicyOperatingMode | null",
+    ("StrategyRiskTradingPermissions", "allowedSides"): "StrategyRiskSide[]",
+    ("StrategyRiskTradingPermissions", "allowedAssetClasses"): "StrategyPositionAssetClass[]",
+    ("StrategyRiskTradingPermissions", "optionsMode"): "StrategyRiskOptionMode",
+    ("StrategyRiskOverlayRule", "action"): "StrategyRiskOverlayAction",
+    (
+        "StrategyRiskDataQualityGates",
+        "corporateActionPolicy",
+    ): "StrategyRiskCorporateActionPolicy",
+    (
+        "StrategyRiskDataQualityGates",
+        "requiredAdjustmentStatuses",
+    ): "StrategyRiskAdjustmentStatus[]",
     ("StrategyRiskStopLossPolicy", "basis"): "StrategyRiskStopLossBasis",
     ("StrategyRiskStopLossPolicy", "action"): "StrategyRiskStopLossAction",
     ("StrategyRiskTakeProfitPolicy", "basis"): "StrategyRiskTakeProfitBasis",

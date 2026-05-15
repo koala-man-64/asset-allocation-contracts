@@ -36,6 +36,12 @@ export type StrategyRiskStopLossBasis = 'strategy_nav_drawdown' | 'sleeve_nav_dr
 export type StrategyRiskTakeProfitBasis = 'strategy_nav_gain' | 'sleeve_nav_gain';
 export type StrategyRiskStopLossAction = 'reduce_exposure' | 'liquidate' | 'freeze_buys';
 export type StrategyRiskTakeProfitAction = 'reduce_exposure' | 'rebalance_to_target';
+export type RiskPolicyOperatingMode = 'research_observe_only' | 'paper_controlled_pilot' | 'core_diversified_long' | 'balanced_long_short' | 'liquidity_constrained_smid' | 'catalyst_event_guarded' | 'stress_de_risk_mode';
+export type StrategyRiskSide = 'long' | 'short';
+export type StrategyRiskOptionMode = 'blocked' | 'covered_only' | 'defined_risk_only' | 'approval_required';
+export type StrategyRiskOverlayAction = 'warn' | 'reduce_exposure' | 'freeze_buys' | 'block_new_orders' | 'reduce_only' | 'liquidate';
+export type StrategyRiskCorporateActionPolicy = 'allow' | 'warn' | 'freeze';
+export type StrategyRiskAdjustmentStatus = 'raw_allowed' | 'split_adjusted' | 'dividend_adjusted' | 'corporate_action_adjusted';
 export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'low_volatility' | 'high_volatility' | 'liquidity_stress' | 'macro_alignment' | 'unclassified';
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
@@ -248,10 +254,17 @@ export interface RebalancePolicy {
 
 export interface StrategyRiskPolicy {
   enabled: boolean;
+  operatingMode?: RiskPolicyOperatingMode | null;
   scope: StrategyRiskPolicyScope;
   stopLoss?: StrategyRiskStopLossPolicy | null;
   takeProfit?: StrategyRiskTakeProfitPolicy | null;
   reentry: StrategyRiskReentryPolicy;
+  exposureLimits?: StrategyRiskExposureLimits | null;
+  tradingPermissions?: StrategyRiskTradingPermissions | null;
+  liquidityLimits?: StrategyRiskLiquidityLimits | null;
+  overlays?: StrategyRiskOverlaySet | null;
+  dataQualityGates?: StrategyRiskDataQualityGates | null;
+  audit?: StrategyRiskAuditPolicy | null;
 }
 
 export interface StrategyRiskStopLossPolicy {
@@ -275,6 +288,76 @@ export interface StrategyRiskTakeProfitPolicy {
 export interface StrategyRiskReentryPolicy {
   cooldownBars: number;
   requireApproval: boolean;
+}
+
+export interface StrategyRiskExposureLimits {
+  maxGrossExposurePct?: number | null;
+  maxNetExposurePct?: number | null;
+  maxLongExposurePct?: number | null;
+  maxShortExposurePct?: number | null;
+  maxSingleNamePct?: number | null;
+  maxSectorPct?: number | null;
+  maxThemePct?: number | null;
+  maxCorrelatedClusterPct?: number | null;
+  maxLeverageMultiple?: number | null;
+  maxFactorBetaAbs?: number | null;
+  dailyLossLimitPct?: number | null;
+  weeklyLossLimitPct?: number | null;
+  drawdownReducePct?: number | null;
+  drawdownBlockPct?: number | null;
+}
+
+export interface StrategyRiskTradingPermissions {
+  allowedSides: StrategyRiskSide[];
+  allowedAssetClasses: StrategyPositionAssetClass[];
+  optionsMode: StrategyRiskOptionMode;
+  allowLiveOrders: boolean;
+  requireOrderConfirmation: boolean;
+  requireDifferentApprover: boolean;
+  requireBorrowLocate: boolean;
+  reduceOnly: boolean;
+}
+
+export interface StrategyRiskLiquidityLimits {
+  maxAdvParticipationPct?: number | null;
+  minLiquidityScore?: number | null;
+  maxExitHorizonDays?: number | null;
+  maxBidAskSpreadBps?: number | null;
+  maxSlippageBps?: number | null;
+}
+
+export interface StrategyRiskOverlaySet {
+  regime: StrategyRiskOverlayRule[];
+  event: StrategyRiskOverlayRule[];
+  liquidityStress: StrategyRiskOverlayRule[];
+  correlationShock: StrategyRiskOverlayRule[];
+  dataQuality: StrategyRiskOverlayRule[];
+}
+
+export interface StrategyRiskOverlayRule {
+  id: string;
+  enabled: boolean;
+  trigger: string;
+  action: StrategyRiskOverlayAction;
+  exposureReductionPct?: number | null;
+  cooldownBars: number;
+  requireApproval: boolean;
+}
+
+export interface StrategyRiskDataQualityGates {
+  maxQuoteAgeSeconds?: number | null;
+  maxSecurityMasterAgeSeconds?: number | null;
+  minVendorQuorum?: number | null;
+  requireSymbolIdentityLock: boolean;
+  corporateActionPolicy: StrategyRiskCorporateActionPolicy;
+  requiredAdjustmentStatuses: StrategyRiskAdjustmentStatus[];
+  minCoveragePct?: number | null;
+}
+
+export interface StrategyRiskAuditPolicy {
+  auditRetentionDays: number;
+  requirePolicySnapshotHash: boolean;
+  recordTriggeredOverlays: boolean;
 }
 
 export interface ExitRule {
@@ -1779,9 +1862,16 @@ export interface BrokerAccountConfiguration {
 export interface BrokerTradingPolicy {
   maxOpenPositions?: number | null;
   maxSinglePositionExposure?: BrokerPositionSizeLimit | null;
-  allowedSides: BrokerPolicySide[];
+  maxGrossExposurePct?: number | null;
+  maxNetExposurePct?: number | null;
+  maxDailyLossPct?: number | null;
+  maxAdvParticipationPct?: number | null;
+  allowedSides: StrategyRiskSide[];
   allowedAssetClasses: StrategyPositionAssetClass[];
+  allowLiveOrders?: boolean;
   requireOrderConfirmation: boolean;
+  requireBorrowLocate?: boolean;
+  reduceOnly?: boolean;
 }
 
 export interface BrokerPositionSizeLimit {
