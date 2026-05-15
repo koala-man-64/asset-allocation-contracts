@@ -226,3 +226,30 @@ stages:
                 - publish: artifacts
                   artifact: contracts-release
                   displayName: Publish retained release manifest and packages
+
+  - stage: RetryFailedDownstreamValidation
+    displayName: Retry failed downstream validation pipelines
+    dependsOn: Release
+    condition: succeeded('Release')
+    jobs:
+      - job: QueueRetries
+        displayName: Queue one retry for failed validation runs
+        steps:
+          - checkout: self
+
+          - script: |
+              set -euo pipefail
+              python scripts/retry_failed_downstream_pipelines.py \
+                --branch refs/heads/main \
+                --pipeline asset-allocation-runtime-common-ci \
+                --pipeline asset-allocation-runtime-common-security \
+                --pipeline asset-allocation-control-plane-ci \
+                --pipeline asset-allocation-control-plane-security \
+                --pipeline asset-allocation-jobs-quality \
+                --pipeline asset-allocation-jobs-security \
+                --pipeline asset-allocation-ui-ci \
+                --pipeline asset-allocation-ui-contracts-compat \
+                --pipeline asset-allocation-ui-security
+            displayName: Queue failed downstream validation retries
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
