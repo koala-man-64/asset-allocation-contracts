@@ -4,6 +4,8 @@
 
 Repo-local agents live under `.codex/skills`. Use that directory as the authoritative repo-local agent inventory for this repository.
 
+Current repo-local maintenance agents include `repoops-custodian`, an audit-first repository cleanup and maintenance skill for Git worktrees, branches, Azure DevOps PRs, branch policies, and pipeline definition hygiene.
+
 ## Service and Process Defaults
 
 Do not add feature flags, enable/disable toggles, kill switches, dry-run gates, rollout flags, or env-controlled process gates unless the user explicitly requests that control.
