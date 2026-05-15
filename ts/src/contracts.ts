@@ -10,6 +10,10 @@ export type ConsistencyStatus = 'consistent' | 'stale' | 'mismatch' | 'running' 
 export type DeploymentProvenanceStatus = 'available' | 'partial' | 'unavailable' | 'error';
 export type PipelineRunLifecycleStatus = 'notStarted' | 'inProgress' | 'completed' | 'cancelling' | 'postponed' | 'unknown';
 export type PipelineRunResult = 'succeeded' | 'partiallySucceeded' | 'failed' | 'canceled' | 'skipped' | 'unknown';
+export type PullRequestSyncViewStatus = 'available' | 'partial' | 'unavailable' | 'error';
+export type PullRequestSyncStatus = 'synced' | 'target-stale' | 'source-stale' | 'conflict' | 'unknown' | 'unavailable' | 'error';
+export type PullRequestLifecycleStatus = 'active' | 'abandoned' | 'completed' | 'unknown';
+export type PullRequestMergeStatus = 'notSet' | 'queued' | 'conflicts' | 'succeeded' | 'rejectedByPolicy' | 'failure' | 'unknown';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleScope = 'position';
@@ -759,6 +763,79 @@ export interface PipelineRunSummary {
 export interface DeploymentProvenanceLink {
   label: string;
   href: string;
+}
+
+export interface PullRequestSyncView {
+  checkedAt: string;
+  status: PullRequestSyncViewStatus;
+  result: PullRequestSyncStatus;
+  summary: PullRequestSyncSummary;
+  pullRequests: PullRequestSyncRow[];
+  links: PullRequestSyncLink[];
+  warnings: string[];
+  errors: string[];
+}
+
+export interface PullRequestSyncSummary {
+  totalPullRequests: number;
+  drafts: number;
+  ready: number;
+  synced: number;
+  targetStale: number;
+  sourceStale: number;
+  conflicts: number;
+  unknown: number;
+  unavailable: number;
+  error: number;
+}
+
+export interface PullRequestSyncRow {
+  repo: string;
+  repositoryId?: string | null;
+  pullRequestId: number;
+  title: string;
+  status: PullRequestLifecycleStatus;
+  isDraft: boolean;
+  createdByDisplayName?: string | null;
+  sourceRefName: string;
+  targetRefName: string;
+  sourceHeadSha?: string | null;
+  targetHeadSha?: string | null;
+  lastMergeSourceCommit?: string | null;
+  lastMergeTargetCommit?: string | null;
+  lastMergeCommit?: string | null;
+  mergeStatus: PullRequestMergeStatus;
+  result: PullRequestSyncStatus;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  workItems: PullRequestWorkItemRef[];
+  commits: PullRequestCommitSummary[];
+  links: PullRequestSyncLink[];
+  warnings: string[];
+  errors: string[];
+}
+
+export interface PullRequestWorkItemRef {
+  id: number;
+  title?: string | null;
+  workItemType?: string | null;
+  state?: string | null;
+  links: PullRequestSyncLink[];
+}
+
+export interface PullRequestSyncLink {
+  label: string;
+  href: string;
+}
+
+export interface PullRequestCommitSummary {
+  commitId: string;
+  comment?: string | null;
+  authorName?: string | null;
+  authorEmail?: string | null;
+  authoredAt?: string | null;
+  links: PullRequestSyncLink[];
+  warnings: string[];
 }
 
 export interface ResultsReconcileResponse {

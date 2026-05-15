@@ -12,6 +12,7 @@ from asset_allocation_contracts.market_history import *
 from asset_allocation_contracts.notifications import *
 from asset_allocation_contracts.options import *
 from asset_allocation_contracts.portfolio import *
+from asset_allocation_contracts.pull_request_sync import *
 from asset_allocation_contracts.quiver_signals import *
 from asset_allocation_contracts.paths import *
 from asset_allocation_contracts.ranking import *

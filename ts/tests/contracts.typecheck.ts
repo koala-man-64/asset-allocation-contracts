@@ -26,6 +26,7 @@ import type {
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   PauseBrokerSyncRequest,
+  PullRequestSyncView,
   OptionBacktestResult,
   OptionBrokerConstraintProfile,
   OptionPayoffProfile,
@@ -1263,6 +1264,60 @@ const runReview: SymbolCleanupRunReviewResponse = {
   items: [workReviewItem],
 };
 
+const pullRequestSync: PullRequestSyncView = {
+  checkedAt: "2026-05-15T15:00:00Z",
+  status: "available",
+  result: "target-stale",
+  summary: {
+    totalPullRequests: 1,
+    drafts: 0,
+    ready: 1,
+    synced: 0,
+    targetStale: 1,
+    sourceStale: 0,
+    conflicts: 0,
+    unknown: 0,
+    unavailable: 0,
+    error: 0,
+  },
+  pullRequests: [
+    {
+      repo: "asset-allocation-ui",
+      repositoryId: "5e10a80a-e19e-487d-bd1c-1a18e3b13e1c",
+      pullRequestId: 280,
+      title: "AB#178 Add symbol cleanup run review UI",
+      status: "active",
+      isDraft: false,
+      sourceRefName: "refs/heads/feature",
+      targetRefName: "refs/heads/main",
+      sourceHeadSha: "2a954f01717a13765a28b1050ea96997a6c6fab5",
+      targetHeadSha: "df3f6ec626b1e2f4a72f71a2b73dab1da5f022bf",
+      lastMergeSourceCommit: "2a954f01717a13765a28b1050ea96997a6c6fab5",
+      lastMergeTargetCommit: "1111111111111111111111111111111111111111",
+      lastMergeCommit: "7a78f21a7afb10aeb9b3039eb385b18b0c08aef6",
+      mergeStatus: "succeeded",
+      result: "target-stale",
+      workItems: [{ id: 178, title: "Review symbol cleanup results", workItemType: "User Story", state: "Active", links: [] }],
+      commits: [
+        {
+          commitId: "2a954f01717a13765a28b1050ea96997a6c6fab5",
+          comment: "Add review UI",
+          authorName: "rudy",
+          authoredAt: "2026-05-15T14:34:47Z",
+          links: [],
+          warnings: [],
+        },
+      ],
+      links: [],
+      warnings: ["Target branch moved after merge evaluation."],
+      errors: [],
+    },
+  ],
+  links: [],
+  warnings: [],
+  errors: [],
+};
+
 const aiEvent: AiChatStreamEvent = {
   sequenceNumber: 1,
   event: "completed",
@@ -1289,4 +1344,5 @@ void detail;
 void runSummary;
 void workReviewItem;
 void runReview;
+void pullRequestSync;
 void aiEvent;

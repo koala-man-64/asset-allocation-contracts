@@ -1,0 +1,567 @@
+{
+  "$defs": {
+    "PullRequestCommitSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "authorEmail": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authoremail"
+        },
+        "authorName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authorname"
+        },
+        "authoredAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authoredat"
+        },
+        "comment": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "commitId": {
+          "maxLength": 64,
+          "minLength": 7,
+          "pattern": "^[0-9a-fA-F]+$",
+          "title": "Commitid",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PullRequestSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "commitId"
+      ],
+      "title": "PullRequestCommitSummary",
+      "type": "object"
+    },
+    "PullRequestSyncLink": {
+      "additionalProperties": false,
+      "properties": {
+        "href": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Href",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "href"
+      ],
+      "title": "PullRequestSyncLink",
+      "type": "object"
+    },
+    "PullRequestSyncRow": {
+      "additionalProperties": false,
+      "properties": {
+        "commits": {
+          "items": {
+            "$ref": "#/$defs/PullRequestCommitSummary"
+          },
+          "title": "Commits",
+          "type": "array"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdByDisplayName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdbydisplayname"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "isDraft": {
+          "default": false,
+          "title": "Isdraft",
+          "type": "boolean"
+        },
+        "lastMergeCommit": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastmergecommit"
+        },
+        "lastMergeSourceCommit": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastmergesourcecommit"
+        },
+        "lastMergeTargetCommit": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastmergetargetcommit"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PullRequestSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "mergeStatus": {
+          "default": "unknown",
+          "enum": [
+            "notSet",
+            "queued",
+            "conflicts",
+            "succeeded",
+            "rejectedByPolicy",
+            "failure",
+            "unknown"
+          ],
+          "title": "Mergestatus",
+          "type": "string"
+        },
+        "pullRequestId": {
+          "minimum": 1,
+          "title": "Pullrequestid",
+          "type": "integer"
+        },
+        "repo": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Repo",
+          "type": "string"
+        },
+        "repositoryId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repositoryid"
+        },
+        "result": {
+          "enum": [
+            "synced",
+            "target-stale",
+            "source-stale",
+            "conflict",
+            "unknown",
+            "unavailable",
+            "error"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "sourceHeadSha": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourceheadsha"
+        },
+        "sourceRefName": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Sourcerefname",
+          "type": "string"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "active",
+            "abandoned",
+            "completed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "targetHeadSha": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targetheadsha"
+        },
+        "targetRefName": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Targetrefname",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "workItems": {
+          "items": {
+            "$ref": "#/$defs/PullRequestWorkItemRef"
+          },
+          "title": "Workitems",
+          "type": "array"
+        }
+      },
+      "required": [
+        "repo",
+        "pullRequestId",
+        "title",
+        "sourceRefName",
+        "targetRefName",
+        "result"
+      ],
+      "title": "PullRequestSyncRow",
+      "type": "object"
+    },
+    "PullRequestSyncSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "conflicts": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Conflicts",
+          "type": "integer"
+        },
+        "drafts": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Drafts",
+          "type": "integer"
+        },
+        "error": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Error",
+          "type": "integer"
+        },
+        "ready": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Ready",
+          "type": "integer"
+        },
+        "sourceStale": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Sourcestale",
+          "type": "integer"
+        },
+        "synced": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Synced",
+          "type": "integer"
+        },
+        "targetStale": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Targetstale",
+          "type": "integer"
+        },
+        "totalPullRequests": {
+          "minimum": 0,
+          "title": "Totalpullrequests",
+          "type": "integer"
+        },
+        "unavailable": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unavailable",
+          "type": "integer"
+        },
+        "unknown": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unknown",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "totalPullRequests"
+      ],
+      "title": "PullRequestSyncSummary",
+      "type": "object"
+    },
+    "PullRequestWorkItemRef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minimum": 1,
+          "title": "Id",
+          "type": "integer"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PullRequestSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "State"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "workItemType": {
+          "anyOf": [
+            {
+              "maxLength": 96,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Workitemtype"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "PullRequestWorkItemRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checkedAt": {
+      "format": "date-time",
+      "title": "Checkedat",
+      "type": "string"
+    },
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/PullRequestSyncLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "pullRequests": {
+      "items": {
+        "$ref": "#/$defs/PullRequestSyncRow"
+      },
+      "title": "Pullrequests",
+      "type": "array"
+    },
+    "result": {
+      "enum": [
+        "synced",
+        "target-stale",
+        "source-stale",
+        "conflict",
+        "unknown",
+        "unavailable",
+        "error"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "partial",
+        "unavailable",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/PullRequestSyncSummary"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "checkedAt",
+    "status",
+    "result",
+    "summary"
+  ],
+  "title": "PullRequestSyncView",
+  "type": "object"
+}

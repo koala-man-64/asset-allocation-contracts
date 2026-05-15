@@ -58,6 +58,13 @@ from asset_allocation_contracts.deployment_provenance import (
     PipelineRunSummary,
     ResourceDeploymentVersion,
 )
+from asset_allocation_contracts.pull_request_sync import (
+    PullRequestCommitSummary,
+    PullRequestSyncRow,
+    PullRequestSyncSummary,
+    PullRequestSyncView,
+    PullRequestWorkItemRef,
+)
 from asset_allocation_contracts.government_signals import (
     CongressTradeEvent,
     CongressTradeVersion,
@@ -1704,6 +1711,74 @@ def test_deployment_provenance_contracts_reject_unknown_result_and_extra_fields(
         assert "unexpected" in str(exc)
     else:
         raise AssertionError("Expected deployment provenance to reject invalid result fields.")
+
+
+def test_pull_request_sync_view_captures_commit_and_work_item_lineage() -> None:
+    commit = PullRequestCommitSummary(
+        commitId="2a954f01717a13765a28b1050ea96997a6c6fab5",
+        comment="Add symbol cleanup review panel",
+        authorName="rudy",
+        authoredAt="2026-05-15T14:34:47Z",
+        links=[{"label": "Commit", "href": "https://dev.azure.com/example/commit/2a954f0"}],
+    )
+    row = PullRequestSyncRow(
+        repo="asset-allocation-ui",
+        repositoryId="5e10a80a-e19e-487d-bd1c-1a18e3b13e1c",
+        pullRequestId=280,
+        title="AB#178 Add symbol cleanup run review UI",
+        status="active",
+        isDraft=True,
+        sourceRefName="refs/heads/agent/delivery-engineer-agent/AB178/asset-allocation-ui",
+        targetRefName="refs/heads/main",
+        sourceHeadSha="2a954f01717a13765a28b1050ea96997a6c6fab5",
+        targetHeadSha="df3f6ec626b1e2f4a72f71a2b73dab1da5f022bf",
+        lastMergeSourceCommit="2a954f01717a13765a28b1050ea96997a6c6fab5",
+        lastMergeTargetCommit="df3f6ec626b1e2f4a72f71a2b73dab1da5f022bf",
+        lastMergeCommit="7a78f21a7afb10aeb9b3039eb385b18b0c08aef6",
+        mergeStatus="succeeded",
+        result="synced",
+        workItems=[
+            PullRequestWorkItemRef(
+                id=178,
+                title="Review symbol cleanup results and exceptions",
+                workItemType="User Story",
+                state="Closed",
+            )
+        ],
+        commits=[commit],
+    )
+    view = PullRequestSyncView(
+        checkedAt="2026-05-15T15:00:00Z",
+        status="available",
+        result="synced",
+        summary=PullRequestSyncSummary(totalPullRequests=1, drafts=1, synced=1),
+        pullRequests=[row],
+    )
+    schema = PullRequestSyncView.model_json_schema()
+
+    assert view.pullRequests[0].pullRequestId == 280
+    assert view.pullRequests[0].commits[0].commitId.startswith("2a954f0")
+    assert view.pullRequests[0].workItems[0].id == 178
+    assert schema["properties"]["pullRequests"]["items"]["$ref"] == "#/$defs/PullRequestSyncRow"
+
+
+def test_pull_request_sync_contracts_reject_unknown_result_and_extra_fields() -> None:
+    try:
+        PullRequestSyncRow(
+            repo="asset-allocation-ui",
+            pullRequestId=280,
+            title="Bad PR",
+            sourceRefName="refs/heads/source",
+            targetRefName="refs/heads/main",
+            mergeStatus="succeeded",
+            result="drifted",
+            unexpected=True,
+        )
+    except Exception as exc:
+        assert "result" in str(exc)
+        assert "unexpected" in str(exc)
+    else:
+        raise AssertionError("Expected pull request sync to reject invalid result fields.")
 
 
 def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> None:
