@@ -22,6 +22,10 @@ export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
 export type ExitRuleReference = 'entry_price' | 'highest_since_entry';
 export type IntrabarConflictPolicy = 'stop_first' | 'take_profit_first' | 'priority_order';
+export type ExitRuleDiagnosticSeverity = 'info' | 'warning' | 'error';
+export type ExitRuleDiagnosticCode = 'duplicate_rule_id' | 'missing_priority' | 'duplicate_priority' | 'non_monotonic_priority' | 'missing_atr_column' | 'missing_sample_price_field' | 'intrabar_conflict_candidate' | 'unsupported_evaluator' | 'pin_revision_changed' | 'invalid_rule';
+export type ExitRulePreviewVerdict = 'pass' | 'warning' | 'block';
+export type ExitRulePinImpactChangeType = 'unchanged' | 'added' | 'removed' | 'modified' | 'reordered';
 export type StrategyPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
 export type StrategyPositionAssetClass = 'equity' | 'option';
 export type RiskTolerancePreset = 'conservative' | 'balanced' | 'aggressive';
@@ -603,6 +607,77 @@ export interface ExitRuleSetUpsertRequest {
   config: ExitRuleSetConfig;
 }
 
+export interface ExitRulePreviewRequest {
+  config: Record<string, unknown>;
+  sampleBar: Record<string, string | number | boolean | null>;
+  samplePosition: Record<string, string | number | boolean | null>;
+}
+
+export interface ExitRulePreviewResponse {
+  verdict: ExitRulePreviewVerdict;
+  normalizedConfig?: ExitRuleSetConfig | null;
+  diagnostics: ExitRuleDiagnostic[];
+  candidates: ExitRulePreviewCandidate[];
+  selectedRuleId?: string | null;
+}
+
+export interface ExitRuleDiagnostic {
+  code: ExitRuleDiagnosticCode;
+  severity: ExitRuleDiagnosticSeverity;
+  message: string;
+  ruleId?: string | null;
+  field?: string | null;
+  details: Record<string, string | number | boolean | null>;
+}
+
+export interface ExitRulePreviewCandidate {
+  ruleId: string;
+  ruleType: ExitRuleType;
+  priority?: number | null;
+  triggered: boolean;
+  action: ExitRuleAction;
+  priceField?: ExitRulePriceField | null;
+  observedValue?: number | null;
+  thresholdValue?: number | null;
+  message?: string | null;
+}
+
+export interface ExitPolicyPinImpactRequest {
+  strategyName: string;
+  strategyVersion?: number | null;
+  currentExitPolicyName?: string | null;
+  currentExitPolicyVersion?: number | null;
+  proposedExitPolicyName: string;
+  proposedExitPolicyVersion?: number | null;
+  currentConfig?: ExitRuleSetConfig | null;
+  proposedConfig: ExitRuleSetConfig;
+}
+
+export interface ExitPolicyPinImpactResponse {
+  strategyName: string;
+  strategyVersion?: number | null;
+  currentExitPolicyName?: string | null;
+  currentExitPolicyVersion?: number | null;
+  proposedExitPolicyName: string;
+  proposedExitPolicyVersion?: number | null;
+  currentConfigHash?: string | null;
+  proposedConfigHash?: string | null;
+  diagnostics: ExitRuleDiagnostic[];
+  ruleImpacts: ExitRulePinImpact[];
+  changedRuleCount: number;
+}
+
+export interface ExitRulePinImpact {
+  ruleId: string;
+  changeType: ExitRulePinImpactChangeType;
+  ruleType?: ExitRuleType | null;
+  visualKey?: ExitRuleVisualKey | null;
+  previousPriority?: number | null;
+  proposedPriority?: number | null;
+  previousDescription?: string | null;
+  proposedDescription?: string | null;
+}
+
 export interface StrategyRiskProfileConfig {
   presetClass: RiskTolerancePreset;
   positionPolicy: StrategyPositionPolicy;
@@ -1071,6 +1146,14 @@ export interface RunPinsResponse {
   universeVersion?: number | null;
   regimeModelName?: string | null;
   regimeModelVersion?: number | null;
+  regimePolicyName?: string | null;
+  regimePolicyVersion?: number | null;
+  riskPolicyName?: string | null;
+  riskPolicyVersion?: number | null;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
+  rebalancePolicyName?: string | null;
+  rebalancePolicyVersion?: number | null;
 }
 
 export interface BacktestSummary {
@@ -1259,6 +1342,30 @@ export interface ClosedPositionResponse {
   total_transaction_cost: number;
   exit_reason?: string | null;
   exit_rule_id?: string | null;
+}
+
+export interface ExitRuleAttributionResponse {
+  runId: string;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
+  exitPolicyConfigHash?: string | null;
+  rules: ExitRuleAttributionRow[];
+  unattributedExitCount: number;
+  missingRuleIds: string[];
+}
+
+export interface ExitRuleAttributionRow {
+  ruleId: string;
+  ruleType?: ExitRuleType | null;
+  description: string;
+  visualKey?: ExitRuleVisualKey | null;
+  priority?: number | null;
+  closedPositionCount: number;
+  realizedPnl: number;
+  averageRealizedReturn?: number | null;
+  winRate?: number | null;
+  averageHoldingPeriodBars?: number | null;
+  totalTransactionCost: number;
 }
 
 export interface BacktestPolicyEventListResponse {
@@ -3729,7 +3836,7 @@ export interface IntradayMonitorEvent {
   watchlistId?: string | null;
   symbol?: string | null;
   eventType: string;
-  severity: 'info' | 'warning' | 'error';
+  severity: ExitRuleDiagnosticSeverity;
   message: string;
   details: Record<string, unknown>;
   createdAt?: string | null;

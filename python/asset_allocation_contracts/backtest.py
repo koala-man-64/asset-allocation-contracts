@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from asset_allocation_contracts.options import OptionBacktestModelQuality, OptionStrategyId
-from asset_allocation_contracts.strategy import StrategyConfig
+from asset_allocation_contracts.strategy import ExitRuleType, ExitRuleVisualKey, StrategyConfig
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 RunStatus = Literal["queued", "running", "completed", "failed"]
@@ -58,6 +58,14 @@ class RunPinsResponse(BaseModel):
     universeVersion: int | None = Field(default=None, ge=1)
     regimeModelName: str | None = Field(default=None, min_length=1, max_length=128)
     regimeModelVersion: int | None = Field(default=None, ge=1)
+    regimePolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimePolicyVersion: int | None = Field(default=None, ge=1)
+    riskPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    riskPolicyVersion: int | None = Field(default=None, ge=1)
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
+    rebalancePolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    rebalancePolicyVersion: int | None = Field(default=None, ge=1)
 
 
 class RunStatusResponse(RunRecordResponse):
@@ -352,6 +360,34 @@ class ClosedPositionListResponse(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class ExitRuleAttributionRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ruleId: str = Field(..., min_length=1, max_length=128)
+    ruleType: ExitRuleType | None = None
+    description: str = Field(default="", max_length=2048)
+    visualKey: ExitRuleVisualKey | None = None
+    priority: int | None = Field(default=None, ge=0)
+    closedPositionCount: int = Field(default=0, ge=0)
+    realizedPnl: float = 0.0
+    averageRealizedReturn: float | None = None
+    winRate: float | None = None
+    averageHoldingPeriodBars: float | None = None
+    totalTransactionCost: float = 0.0
+
+
+class ExitRuleAttributionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    runId: str = Field(..., min_length=1, max_length=128)
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
+    exitPolicyConfigHash: str | None = Field(default=None, min_length=1, max_length=128)
+    rules: list[ExitRuleAttributionRow] = Field(default_factory=list)
+    unattributedExitCount: int = Field(default=0, ge=0)
+    missingRuleIds: list[str] = Field(default_factory=list)
 
 
 class BacktestPolicyEvent(BaseModel):

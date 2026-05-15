@@ -744,6 +744,33 @@
     "RunPinsResponse": {
       "additionalProperties": false,
       "properties": {
+        "exitPolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitpolicyname"
+        },
+        "exitPolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitpolicyversion"
+        },
         "rankingSchemaName": {
           "anyOf": [
             {
@@ -771,6 +798,33 @@
           "default": null,
           "title": "Rankingschemaversion"
         },
+        "rebalancePolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rebalancepolicyname"
+        },
+        "rebalancePolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rebalancepolicyversion"
+        },
         "regimeModelName": {
           "anyOf": [
             {
@@ -797,6 +851,60 @@
           ],
           "default": null,
           "title": "Regimemodelversion"
+        },
+        "regimePolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyname"
+        },
+        "regimePolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyversion"
+        },
+        "riskPolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyname"
+        },
+        "riskPolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyversion"
         },
         "strategyName": {
           "anyOf": [

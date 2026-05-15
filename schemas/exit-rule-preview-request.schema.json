@@ -1,0 +1,61 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "additionalProperties": true,
+      "title": "Config",
+      "type": "object"
+    },
+    "sampleBar": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Samplebar",
+      "type": "object"
+    },
+    "samplePosition": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Sampleposition",
+      "type": "object"
+    }
+  },
+  "required": [
+    "config"
+  ],
+  "title": "ExitRulePreviewRequest",
+  "type": "object"
+}

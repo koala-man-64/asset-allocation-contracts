@@ -1,0 +1,206 @@
+{
+  "$defs": {
+    "ExitRuleAttributionRow": {
+      "additionalProperties": false,
+      "properties": {
+        "averageHoldingPeriodBars": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Averageholdingperiodbars"
+        },
+        "averageRealizedReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Averagerealizedreturn"
+        },
+        "closedPositionCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Closedpositioncount",
+          "type": "integer"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "realizedPnl": {
+          "default": 0.0,
+          "title": "Realizedpnl",
+          "type": "number"
+        },
+        "ruleId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ruleid",
+          "type": "string"
+        },
+        "ruleType": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ruletype"
+        },
+        "totalTransactionCost": {
+          "default": 0.0,
+          "title": "Totaltransactioncost",
+          "type": "number"
+        },
+        "visualKey": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visualkey"
+        },
+        "winRate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Winrate"
+        }
+      },
+      "required": [
+        "ruleId"
+      ],
+      "title": "ExitRuleAttributionRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "exitPolicyConfigHash": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exitpolicyconfighash"
+    },
+    "exitPolicyName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exitpolicyname"
+    },
+    "exitPolicyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exitpolicyversion"
+    },
+    "missingRuleIds": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missingruleids",
+      "type": "array"
+    },
+    "rules": {
+      "items": {
+        "$ref": "#/$defs/ExitRuleAttributionRow"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "runId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Runid",
+      "type": "string"
+    },
+    "unattributedExitCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Unattributedexitcount",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "runId"
+  ],
+  "title": "ExitRuleAttributionResponse",
+  "type": "object"
+}

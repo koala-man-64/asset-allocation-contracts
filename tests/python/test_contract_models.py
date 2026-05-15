@@ -18,11 +18,13 @@ from asset_allocation_contracts.backtest import (
     BacktestSummary,
     BacktestStreamEvent,
     ClosedPositionResponse,
+    ExitRuleAttributionResponse,
     BacktestReconcileResponse,
     BacktestResultMetadata,
     RollingMetricPointResponse,
     RollingMetricsResponse,
     RunRecordResponse,
+    RunPinsResponse,
     RunStatusResponse,
     StrategyReferenceInput,
     TradeResponse,
@@ -160,7 +162,14 @@ from asset_allocation_contracts.strategy import (
     ConfigIdentity,
     ConfigReference,
     ConfigRevisionReference,
+    ExitPolicyPinImpactRequest,
+    ExitPolicyPinImpactResponse,
     ExitPolicyPreset,
+    ExitRuleDiagnostic,
+    ExitRulePinImpact,
+    ExitRulePreviewCandidate,
+    ExitRulePreviewRequest,
+    ExitRulePreviewResponse,
     ExitRuleSetConfig,
     ExitRuleSetDetailResponse,
     ExitRuleSetRevision,
@@ -1160,6 +1169,106 @@ def test_rank_decay_exit_requires_rank_threshold_and_rejects_price_stop_fields()
             raise AssertionError(
                 f"Expected invalid rank_decay payload to fail validation: {payload['id']}"
             )
+
+
+def test_exit_rule_preview_diagnostics_contracts_are_typed() -> None:
+    config = ExitRuleSetConfig(
+        exits=[
+            {
+                "id": "atr-stop",
+                "type": "trailing_stop_atr",
+                "value": 2.0,
+                "atrColumn": "atr_14",
+            },
+            {"id": "rank-decay", "type": "rank_decay", "rankThreshold": 40},
+        ]
+    )
+    request = ExitRulePreviewRequest(
+        config=config.model_dump(mode="json"),
+        sampleBar={"low": 95.0, "close": 100.0},
+        samplePosition={"entry_price": 100.0, "highest_since_entry": 110.0},
+    )
+    diagnostic = ExitRuleDiagnostic(
+        code="unsupported_evaluator",
+        severity="warning",
+        ruleId="rank-decay",
+        field="type",
+        message="rank_decay is contract-valid but not supported by the evaluator.",
+        details={"ruleType": "rank_decay"},
+    )
+    candidate = ExitRulePreviewCandidate(
+        ruleId="atr-stop",
+        ruleType="trailing_stop_atr",
+        priority=0,
+        triggered=False,
+        priceField="low",
+        observedValue=95.0,
+        thresholdValue=96.0,
+    )
+    response = ExitRulePreviewResponse(
+        verdict="warning",
+        normalizedConfig=config,
+        diagnostics=[diagnostic],
+        candidates=[candidate],
+    )
+
+    dumped = response.model_dump(mode="json")
+
+    assert request.config["exits"][0]["atrColumn"] == "atr_14"
+    assert dumped["diagnostics"][0]["code"] == "unsupported_evaluator"
+    assert dumped["candidates"][0]["ruleType"] == "trailing_stop_atr"
+
+
+def test_exit_policy_pin_impact_contract_captures_rule_revision_diff() -> None:
+    current_config = ExitRuleSetConfig(
+        exits=[{"id": "stop-5", "type": "stop_loss_fixed", "value": 0.05}]
+    )
+    proposed_config = ExitRuleSetConfig(
+        exits=[
+            {"id": "stop-5", "type": "stop_loss_fixed", "value": 0.08},
+            {"id": "target-15", "type": "take_profit_fixed", "value": 0.15},
+        ]
+    )
+    request = ExitPolicyPinImpactRequest(
+        strategyName="quality-trend",
+        strategyVersion=4,
+        currentExitPolicyName="lifecycle-exits",
+        currentExitPolicyVersion=2,
+        proposedExitPolicyName="lifecycle-exits",
+        proposedExitPolicyVersion=3,
+        currentConfig=current_config,
+        proposedConfig=proposed_config,
+    )
+    response = ExitPolicyPinImpactResponse(
+        strategyName=request.strategyName,
+        strategyVersion=request.strategyVersion,
+        currentExitPolicyName=request.currentExitPolicyName,
+        currentExitPolicyVersion=request.currentExitPolicyVersion,
+        proposedExitPolicyName=request.proposedExitPolicyName,
+        proposedExitPolicyVersion=request.proposedExitPolicyVersion,
+        ruleImpacts=[
+            ExitRulePinImpact(
+                ruleId="stop-5",
+                changeType="modified",
+                ruleType="stop_loss_fixed",
+                visualKey="stop_loss_fixed",
+                previousPriority=0,
+                proposedPriority=0,
+            ),
+            ExitRulePinImpact(
+                ruleId="target-15",
+                changeType="added",
+                ruleType="take_profit_fixed",
+                visualKey="take_profit_fixed",
+                proposedPriority=1,
+            ),
+        ],
+        changedRuleCount=2,
+    )
+
+    assert request.proposedConfig.exits[1].priority == 1
+    assert response.ruleImpacts[0].changeType == "modified"
+    assert response.changedRuleCount == 2
 
 
 def test_price_based_exit_rules_reject_rank_threshold() -> None:
@@ -2389,6 +2498,14 @@ def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
             "universeVersion": 5,
             "regimeModelName": "default-regime",
             "regimeModelVersion": 1,
+            "regimePolicyName": "default-regime-policy",
+            "regimePolicyVersion": 2,
+            "riskPolicyName": "balanced-risk",
+            "riskPolicyVersion": 3,
+            "exitPolicyName": "lifecycle-exits",
+            "exitPolicyVersion": 4,
+            "rebalancePolicyName": "monthly-rebalance",
+            "rebalancePolicyVersion": 5,
         },
     )
 
@@ -2397,6 +2514,48 @@ def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
     assert payload.results_schema_version == 4
     assert payload.pins is not None
     assert payload.pins.rankingSchemaVersion == 7
+    assert payload.pins.exitPolicyName == "lifecycle-exits"
+    assert payload.pins.rebalancePolicyVersion == 5
+
+
+def test_run_pin_and_exit_rule_attribution_contracts_are_typed() -> None:
+    pins = RunPinsResponse(
+        strategyName="quality-trend",
+        strategyVersion=4,
+        exitPolicyName="lifecycle-exits",
+        exitPolicyVersion=3,
+        riskPolicyName="balanced-risk",
+        riskPolicyVersion=2,
+        rebalancePolicyName="monthly-rebalance",
+        rebalancePolicyVersion=1,
+    )
+    attribution = ExitRuleAttributionResponse(
+        runId="run-123",
+        exitPolicyName=pins.exitPolicyName,
+        exitPolicyVersion=pins.exitPolicyVersion,
+        exitPolicyConfigHash="sha256:abc",
+        rules=[
+            {
+                "ruleId": "lifecycle-target",
+                "ruleType": "take_profit_fixed",
+                "description": "Fixed target exit.",
+                "visualKey": "take_profit_fixed",
+                "priority": 1,
+                "closedPositionCount": 3,
+                "realizedPnl": 145.5,
+                "averageRealizedReturn": 0.08,
+                "winRate": 1.0,
+                "averageHoldingPeriodBars": 12.3,
+                "totalTransactionCost": 4.25,
+            }
+        ],
+        unattributedExitCount=1,
+        missingRuleIds=["legacy-stop"],
+    )
+
+    assert pins.riskPolicyName == "balanced-risk"
+    assert attribution.rules[0].ruleType == "take_profit_fixed"
+    assert attribution.unattributedExitCount == 1
 
 
 def test_strategy_reference_input_accepts_optional_version() -> None:

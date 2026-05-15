@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -29,6 +29,22 @@ ExitAction = Literal["exit_full"]
 PriceField = Literal["open", "high", "low", "close"]
 ExitReference = Literal["entry_price", "highest_since_entry"]
 IntrabarConflictPolicy = Literal["stop_first", "take_profit_first", "priority_order"]
+ExitRuleDiagnosticSeverity = Literal["info", "warning", "error"]
+ExitRuleDiagnosticCode = Literal[
+    "duplicate_rule_id",
+    "missing_priority",
+    "duplicate_priority",
+    "non_monotonic_priority",
+    "missing_atr_column",
+    "missing_sample_price_field",
+    "intrabar_conflict_candidate",
+    "unsupported_evaluator",
+    "pin_revision_changed",
+    "invalid_rule",
+]
+ExitRulePreviewVerdict = Literal["pass", "warning", "block"]
+ExitRulePinImpactChangeType = Literal["unchanged", "added", "removed", "modified", "reordered"]
+ExitRuleDiagnosticDetail: TypeAlias = str | int | float | bool | None
 StrategyPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 StrategyPositionAssetClass = Literal["equity", "option"]
 RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
@@ -920,6 +936,91 @@ class ExitRuleSetUpsertRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=128)
     description: str = Field(default="", max_length=2048)
     config: ExitRuleSetConfig
+
+
+class ExitRuleDiagnostic(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    code: ExitRuleDiagnosticCode
+    severity: ExitRuleDiagnosticSeverity
+    message: str = Field(..., min_length=1, max_length=512)
+    ruleId: str | None = Field(default=None, min_length=1, max_length=128)
+    field: str | None = Field(default=None, min_length=1, max_length=128)
+    details: dict[str, ExitRuleDiagnosticDetail] = Field(default_factory=dict)
+
+
+class ExitRulePreviewCandidate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ruleId: str = Field(..., min_length=1, max_length=128)
+    ruleType: ExitRuleType
+    priority: int | None = Field(default=None, ge=0)
+    triggered: bool = False
+    action: ExitAction = "exit_full"
+    priceField: PriceField | None = None
+    observedValue: float | None = None
+    thresholdValue: float | None = None
+    message: str | None = Field(default=None, min_length=1, max_length=512)
+
+
+class ExitRulePreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    config: dict[str, Any]
+    sampleBar: dict[str, ExitRuleDiagnosticDetail] = Field(default_factory=dict)
+    samplePosition: dict[str, ExitRuleDiagnosticDetail] = Field(default_factory=dict)
+
+
+class ExitRulePreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    verdict: ExitRulePreviewVerdict
+    normalizedConfig: ExitRuleSetConfig | None = None
+    diagnostics: list[ExitRuleDiagnostic] = Field(default_factory=list)
+    candidates: list[ExitRulePreviewCandidate] = Field(default_factory=list)
+    selectedRuleId: str | None = Field(default=None, min_length=1, max_length=128)
+
+
+class ExitRulePinImpact(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ruleId: str = Field(..., min_length=1, max_length=128)
+    changeType: ExitRulePinImpactChangeType
+    ruleType: ExitRuleType | None = None
+    visualKey: ExitRuleVisualKey | None = None
+    previousPriority: int | None = Field(default=None, ge=0)
+    proposedPriority: int | None = Field(default=None, ge=0)
+    previousDescription: str | None = Field(default=None, max_length=2048)
+    proposedDescription: str | None = Field(default=None, max_length=2048)
+
+
+class ExitPolicyPinImpactRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    currentExitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    currentExitPolicyVersion: int | None = Field(default=None, ge=1)
+    proposedExitPolicyName: str = Field(..., min_length=1, max_length=128)
+    proposedExitPolicyVersion: int | None = Field(default=None, ge=1)
+    currentConfig: ExitRuleSetConfig | None = None
+    proposedConfig: ExitRuleSetConfig
+
+
+class ExitPolicyPinImpactResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int | None = Field(default=None, ge=1)
+    currentExitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    currentExitPolicyVersion: int | None = Field(default=None, ge=1)
+    proposedExitPolicyName: str = Field(..., min_length=1, max_length=128)
+    proposedExitPolicyVersion: int | None = Field(default=None, ge=1)
+    currentConfigHash: str | None = Field(default=None, min_length=1, max_length=128)
+    proposedConfigHash: str | None = Field(default=None, min_length=1, max_length=128)
+    diagnostics: list[ExitRuleDiagnostic] = Field(default_factory=list)
+    ruleImpacts: list[ExitRulePinImpact] = Field(default_factory=list)
+    changedRuleCount: int = Field(default=0, ge=0)
 
 
 class UniverseConfigPreset(BaseModel):

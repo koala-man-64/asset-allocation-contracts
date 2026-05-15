@@ -1,0 +1,446 @@
+{
+  "$defs": {
+    "ExitRule": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "exit_full",
+          "default": "exit_full",
+          "title": "Action",
+          "type": "string"
+        },
+        "atrColumn": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Atrcolumn"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "minHoldBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Minholdbars",
+          "type": "integer"
+        },
+        "priceField": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pricefield"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "rankThreshold": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankthreshold"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "enum": [
+                "entry_price",
+                "highest_since_entry"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference"
+        },
+        "scope": {
+          "const": "position",
+          "default": "position",
+          "title": "Scope",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "stop_loss_fixed",
+            "take_profit_fixed",
+            "trailing_stop_pct",
+            "trailing_stop_atr",
+            "time_stop",
+            "rank_decay"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "visualKey": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visualkey"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "ExitRule",
+      "type": "object"
+    },
+    "ExitRuleDiagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "duplicate_rule_id",
+            "missing_priority",
+            "duplicate_priority",
+            "non_monotonic_priority",
+            "missing_atr_column",
+            "missing_sample_price_field",
+            "intrabar_conflict_candidate",
+            "unsupported_evaluator",
+            "pin_revision_changed",
+            "invalid_rule"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Details",
+          "type": "object"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "message": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "ruleId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ruleid"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "ExitRuleDiagnostic",
+      "type": "object"
+    },
+    "ExitRulePreviewCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "exit_full",
+          "default": "exit_full",
+          "title": "Action",
+          "type": "string"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "observedValue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observedvalue"
+        },
+        "priceField": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pricefield"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "ruleId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ruleid",
+          "type": "string"
+        },
+        "ruleType": {
+          "enum": [
+            "stop_loss_fixed",
+            "take_profit_fixed",
+            "trailing_stop_pct",
+            "trailing_stop_atr",
+            "time_stop",
+            "rank_decay"
+          ],
+          "title": "Ruletype",
+          "type": "string"
+        },
+        "thresholdValue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thresholdvalue"
+        },
+        "triggered": {
+          "default": false,
+          "title": "Triggered",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ruleId",
+        "ruleType"
+      ],
+      "title": "ExitRulePreviewCandidate",
+      "type": "object"
+    },
+    "ExitRuleSetConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "exits": {
+          "items": {
+            "$ref": "#/$defs/ExitRule"
+          },
+          "title": "Exits",
+          "type": "array"
+        },
+        "intrabarConflictPolicy": {
+          "default": "stop_first",
+          "enum": [
+            "stop_first",
+            "take_profit_first",
+            "priority_order"
+          ],
+          "title": "Intrabarconflictpolicy",
+          "type": "string"
+        }
+      },
+      "title": "ExitRuleSetConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/ExitRulePreviewCandidate"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/ExitRuleDiagnostic"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "normalizedConfig": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExitRuleSetConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "selectedRuleId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selectedruleid"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "warning",
+        "block"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "verdict"
+  ],
+  "title": "ExitRulePreviewResponse",
+  "type": "object"
+}

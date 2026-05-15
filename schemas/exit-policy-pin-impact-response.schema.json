@@ -1,0 +1,340 @@
+{
+  "$defs": {
+    "ExitRuleDiagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "duplicate_rule_id",
+            "missing_priority",
+            "duplicate_priority",
+            "non_monotonic_priority",
+            "missing_atr_column",
+            "missing_sample_price_field",
+            "intrabar_conflict_candidate",
+            "unsupported_evaluator",
+            "pin_revision_changed",
+            "invalid_rule"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Details",
+          "type": "object"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "message": {
+          "maxLength": 512,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "ruleId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ruleid"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "ExitRuleDiagnostic",
+      "type": "object"
+    },
+    "ExitRulePinImpact": {
+      "additionalProperties": false,
+      "properties": {
+        "changeType": {
+          "enum": [
+            "unchanged",
+            "added",
+            "removed",
+            "modified",
+            "reordered"
+          ],
+          "title": "Changetype",
+          "type": "string"
+        },
+        "previousDescription": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previousdescription"
+        },
+        "previousPriority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previouspriority"
+        },
+        "proposedDescription": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposeddescription"
+        },
+        "proposedPriority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposedpriority"
+        },
+        "ruleId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Ruleid",
+          "type": "string"
+        },
+        "ruleType": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ruletype"
+        },
+        "visualKey": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visualkey"
+        }
+      },
+      "required": [
+        "ruleId",
+        "changeType"
+      ],
+      "title": "ExitRulePinImpact",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "changedRuleCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Changedrulecount",
+      "type": "integer"
+    },
+    "currentConfigHash": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currentconfighash"
+    },
+    "currentExitPolicyName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currentexitpolicyname"
+    },
+    "currentExitPolicyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Currentexitpolicyversion"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/ExitRuleDiagnostic"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "proposedConfigHash": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Proposedconfighash"
+    },
+    "proposedExitPolicyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Proposedexitpolicyname",
+      "type": "string"
+    },
+    "proposedExitPolicyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Proposedexitpolicyversion"
+    },
+    "ruleImpacts": {
+      "items": {
+        "$ref": "#/$defs/ExitRulePinImpact"
+      },
+      "title": "Ruleimpacts",
+      "type": "array"
+    },
+    "strategyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Strategyname",
+      "type": "string"
+    },
+    "strategyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategyversion"
+    }
+  },
+  "required": [
+    "strategyName",
+    "proposedExitPolicyName"
+  ],
+  "title": "ExitPolicyPinImpactResponse",
+  "type": "object"
+}

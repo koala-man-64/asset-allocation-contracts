@@ -51,8 +51,16 @@ import type {
   RefreshBrokerAccountRequest,
   ConfigIdentity,
   ConfigReference,
+  ExitPolicyPinImpactRequest,
+  ExitPolicyPinImpactResponse,
   ExitPolicyPreset,
+  ExitRuleAttributionResponse,
+  ExitRuleDiagnostic,
+  ExitRulePinImpact,
+  ExitRulePreviewRequest,
+  ExitRulePreviewResponse,
   ExitRule,
+  ExitRuleSetConfig,
   ExitRuleVisualKey,
   RankingFieldReference,
   RankingPreviewResponse,
@@ -657,6 +665,86 @@ const exitRuleWithMetadata: ExitRule = {
   reference: "highest_since_entry",
 };
 
+const exitRuleSetConfig: ExitRuleSetConfig = {
+  intrabarConflictPolicy: "priority_order",
+  exits: [exitRuleWithMetadata],
+};
+
+const exitRulePreviewRequest: ExitRulePreviewRequest = {
+  config: {
+    intrabarConflictPolicy: exitRuleSetConfig.intrabarConflictPolicy,
+    exits: exitRuleSetConfig.exits,
+  },
+  sampleBar: {
+    low: 93.5,
+    close: 101,
+  },
+  samplePosition: {
+    entry_price: 100,
+    highest_since_entry: 112,
+  },
+};
+
+const exitRuleDiagnostic: ExitRuleDiagnostic = {
+  code: "unsupported_evaluator",
+  severity: "warning",
+  message: "rank_decay is contract-valid but not supported by the evaluator.",
+  ruleId: "rank-decay-40",
+  field: "type",
+  details: {
+    ruleType: "rank_decay",
+  },
+};
+
+const exitRulePreviewResponse: ExitRulePreviewResponse = {
+  verdict: "warning",
+  normalizedConfig: exitRuleSetConfig,
+  diagnostics: [exitRuleDiagnostic],
+  candidates: [
+    {
+      ruleId: "trail-10pct",
+      ruleType: "trailing_stop_pct",
+      priority: 1,
+      triggered: false,
+      action: "exit_full",
+      priceField: "low",
+      observedValue: 93.5,
+      thresholdValue: 100.8,
+    },
+  ],
+};
+
+const exitRulePinImpact: ExitRulePinImpact = {
+  ruleId: "trail-10pct",
+  changeType: "modified",
+  ruleType: "trailing_stop_pct",
+  visualKey: "trailing_stop_pct",
+  previousPriority: 1,
+  proposedPriority: 0,
+};
+
+const exitPolicyPinImpactRequest: ExitPolicyPinImpactRequest = {
+  strategyName: "quality-trend",
+  strategyVersion: 4,
+  currentExitPolicyName: "lifecycle-exits",
+  currentExitPolicyVersion: 2,
+  proposedExitPolicyName: "lifecycle-exits",
+  proposedExitPolicyVersion: 3,
+  proposedConfig: exitRuleSetConfig,
+};
+
+const exitPolicyPinImpactResponse: ExitPolicyPinImpactResponse = {
+  strategyName: exitPolicyPinImpactRequest.strategyName,
+  strategyVersion: exitPolicyPinImpactRequest.strategyVersion,
+  currentExitPolicyName: "lifecycle-exits",
+  currentExitPolicyVersion: 2,
+  proposedExitPolicyName: "lifecycle-exits",
+  proposedExitPolicyVersion: 3,
+  diagnostics: [exitRuleDiagnostic],
+  ruleImpacts: [exitRulePinImpact],
+  changedRuleCount: 1,
+};
+
 const runtimeConfig: UiRuntimeConfig = {
   apiBaseUrl: "/api",
   authSessionMode: "cookie",
@@ -1063,6 +1151,38 @@ const pins: RunPinsResponse = {
   universeVersion: 5,
   regimeModelName: "default-regime",
   regimeModelVersion: 2,
+  regimePolicyName: "default-regime-policy",
+  regimePolicyVersion: 1,
+  riskPolicyName: "balanced-risk",
+  riskPolicyVersion: 3,
+  exitPolicyName: "lifecycle-exits",
+  exitPolicyVersion: 4,
+  rebalancePolicyName: "monthly-rebalance",
+  rebalancePolicyVersion: 5,
+};
+
+const exitRuleAttribution: ExitRuleAttributionResponse = {
+  runId: "run-123",
+  exitPolicyName: pins.exitPolicyName,
+  exitPolicyVersion: pins.exitPolicyVersion,
+  exitPolicyConfigHash: "sha256:abc",
+  rules: [
+    {
+      ruleId: "trail-10pct",
+      ruleType: "trailing_stop_pct",
+      description: "Trailing stop exit.",
+      visualKey: "trailing_stop_pct",
+      priority: 1,
+      closedPositionCount: 2,
+      realizedPnl: 125.5,
+      averageRealizedReturn: 0.045,
+      winRate: 1,
+      averageHoldingPeriodBars: 8.5,
+      totalTransactionCost: 3.25,
+    },
+  ],
+  unattributedExitCount: 0,
+  missingRuleIds: [],
 };
 
 const runStatus: RunStatusResponse = {
