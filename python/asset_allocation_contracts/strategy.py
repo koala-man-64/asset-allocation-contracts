@@ -16,6 +16,14 @@ ExitRuleType = Literal[
     "time_stop",
     "rank_decay",
 ]
+ExitRuleVisualKey = Literal[
+    "stop_loss_fixed",
+    "take_profit_fixed",
+    "trailing_stop_pct",
+    "trailing_stop_atr",
+    "time_stop",
+    "rank_decay",
+]
 ExitScope = Literal["position"]
 ExitAction = Literal["exit_full"]
 PriceField = Literal["open", "high", "low", "close"]
@@ -334,6 +342,8 @@ class ExitRule(BaseModel):
 
     id: str = Field(..., min_length=1, max_length=128)
     type: ExitRuleType
+    description: str = Field(default="", max_length=2048)
+    visualKey: ExitRuleVisualKey | None = None
     scope: ExitScope = "position"
     priceField: PriceField | None = None
     value: float | None = None
@@ -343,6 +353,15 @@ class ExitRule(BaseModel):
     minHoldBars: int = Field(default=0, ge=0)
     reference: ExitReference | None = None
     rankThreshold: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="before")
+    @classmethod
+    def default_visual_key(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        if "visualKey" in data or "type" not in data:
+            return data
+        return {**data, "visualKey": data["type"]}
 
     @model_validator(mode="after")
     def validate_rule(self) -> "ExitRule":

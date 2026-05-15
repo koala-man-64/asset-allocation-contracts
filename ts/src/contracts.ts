@@ -16,6 +16,7 @@ export type PullRequestLifecycleStatus = 'active' | 'abandoned' | 'completed' | 
 export type PullRequestMergeStatus = 'notSet' | 'queued' | 'conflicts' | 'succeeded' | 'rejectedByPolicy' | 'failure' | 'unknown';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
+export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleScope = 'position';
 export type ExitRuleAction = 'exit_full';
 export type ExitRulePriceField = 'open' | 'high' | 'low' | 'close';
@@ -377,6 +378,8 @@ export interface StrategyRiskAuditPolicy {
 export interface ExitRule {
   id: string;
   type: ExitRuleType;
+  description: string;
+  visualKey?: ExitRuleVisualKey | null;
   scope: ExitRuleScope;
   priceField?: ExitRulePriceField | null;
   value?: number | null;

@@ -1037,7 +1037,13 @@ def test_exit_rule_set_contracts_normalize_priorities_and_metadata() -> None:
     config = ExitRuleSetConfig(
         intrabarConflictPolicy="priority_order",
         exits=[
-            {"id": "profit-10", "type": "take_profit_fixed", "value": 0.10},
+            {
+                "id": "profit-10",
+                "type": "take_profit_fixed",
+                "description": "Exit the position when upside capture reaches the configured profit target.",
+                "visualKey": "take_profit_fixed",
+                "value": 0.10,
+            },
             {"id": "stop-5", "type": "stop_loss_fixed", "value": 0.05},
         ],
     )
@@ -1053,6 +1059,44 @@ def test_exit_rule_set_contracts_normalize_priorities_and_metadata() -> None:
     assert detail.activeRevision is not None
     assert detail.activeRevision.config.exits[0].priority == 0
     assert detail.activeRevision.config.exits[1].priority == 1
+    assert (
+        detail.activeRevision.config.exits[0].description
+        == "Exit the position when upside capture reaches the configured profit target."
+    )
+    assert detail.activeRevision.config.exits[0].visualKey == "take_profit_fixed"
+    assert detail.activeRevision.config.exits[1].description == ""
+    assert detail.activeRevision.config.exits[1].visualKey == "stop_loss_fixed"
+
+
+def test_exit_rule_visual_key_accepts_null_and_rejects_unknown_keys() -> None:
+    config = ExitRuleSetConfig(
+        exits=[
+            {
+                "id": "stop-8",
+                "type": "stop_loss_fixed",
+                "value": 0.08,
+                "visualKey": None,
+            }
+        ]
+    )
+
+    assert config.exits[0].visualKey is None
+
+    try:
+        ExitRuleSetConfig(
+            exits=[
+                {
+                    "id": "stop-8",
+                    "type": "stop_loss_fixed",
+                    "value": 0.08,
+                    "visualKey": "custom-uploaded-image",
+                }
+            ]
+        )
+    except Exception as exc:
+        assert "visualKey" in str(exc)
+    else:
+        raise AssertionError("Expected unknown exit rule visualKey to fail validation.")
 
 
 def test_exit_rule_set_rejects_duplicate_rule_ids() -> None:

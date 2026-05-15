@@ -84,6 +84,12 @@
           "default": null,
           "title": "Atrcolumn"
         },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
         "id": {
           "maxLength": 128,
           "minLength": 1,
@@ -185,6 +191,26 @@
           ],
           "default": null,
           "title": "Value"
+        },
+        "visualKey": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visualkey"
         }
       },
       "required": [

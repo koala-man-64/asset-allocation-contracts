@@ -52,6 +52,8 @@ import type {
   ConfigIdentity,
   ConfigReference,
   ExitPolicyPreset,
+  ExitRule,
+  ExitRuleVisualKey,
   RankingFieldReference,
   RankingPreviewResponse,
   RankingSchemaDraftGenerationRequest,
@@ -628,6 +630,8 @@ const exitPreset: ExitPolicyPreset = {
       {
         id: "rank-decay-40",
         type: "rank_decay",
+        description: "Close names that have decayed below the retained-rank cutoff.",
+        visualKey: "rank_decay",
         scope: "position",
         action: "exit_full",
         minHoldBars: 0,
@@ -635,6 +639,22 @@ const exitPreset: ExitPolicyPreset = {
       },
     ],
   },
+};
+
+const exitVisualKey: ExitRuleVisualKey = "trailing_stop_pct";
+const exitRuleWithMetadata: ExitRule = {
+  id: "trail-10pct",
+  type: "trailing_stop_pct",
+  description:
+    "Trail the stop below the highest achieved price to reduce giveback after favorable movement.",
+  visualKey: exitVisualKey,
+  scope: "position",
+  priceField: "low",
+  value: 0.1,
+  priority: 1,
+  action: "exit_full",
+  minHoldBars: 0,
+  reference: "highest_since_entry",
 };
 
 const runtimeConfig: UiRuntimeConfig = {
@@ -1178,6 +1198,7 @@ void rebalancePreset;
 void regimePreset;
 void riskPreset;
 void exitPreset;
+void exitRuleWithMetadata;
 const portfolioAccount: PortfolioAccount = {
   accountId: "acct-001",
   name: "Core Long Only",

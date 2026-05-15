@@ -164,6 +164,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "stop-loss-8pct",
       "type": "stop_loss_fixed",
+      "description": "Exit the position when loss from entry reaches 8%, limiting single-name drawdown before ranking or rebalance logic has another chance to act.",
+      "visualKey": "stop_loss_fixed",
       "scope": "position",
       "priceField": "low",
       "value": 0.08,
@@ -175,6 +177,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "take-profit-15pct",
       "type": "take_profit_fixed",
+      "description": "Exit the position when gain from entry reaches 15%, crystallizing upside when price moves through the configured profit target.",
+      "visualKey": "take_profit_fixed",
       "scope": "position",
       "priceField": "high",
       "value": 0.15,
@@ -186,6 +190,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "trail-10pct",
       "type": "trailing_stop_pct",
+      "description": "Trail the stop 10% below the highest achieved price so the rule tightens after favorable movement and limits late giveback.",
+      "visualKey": "trailing_stop_pct",
       "scope": "position",
       "priceField": "low",
       "value": 0.1,
@@ -197,6 +203,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "trail-2atr",
       "type": "trailing_stop_atr",
+      "description": "Trail the stop by two ATRs from the highest achieved price, widening the buffer in volatile names and tightening it as volatility contracts.",
+      "visualKey": "trailing_stop_atr",
       "scope": "position",
       "priceField": "low",
       "value": 2.0,
@@ -209,6 +217,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "time-stop-10-bars",
       "type": "time_stop",
+      "description": "Exit after 10 bars if the position has not otherwise met an exit condition, reducing stale capital and thesis drift.",
+      "visualKey": "time_stop",
       "scope": "position",
       "priceField": "close",
       "value": 10,
@@ -219,6 +229,8 @@ This example shows the three supported `UniverseCondition` patterns:
     {
       "id": "rank-decay-40",
       "type": "rank_decay",
+      "description": "Exit when the name falls below rank 40, removing positions whose score has decayed beneath the retained universe cutoff.",
+      "visualKey": "rank_decay",
       "scope": "position",
       "rankThreshold": 40,
       "priority": 5,
@@ -232,6 +244,9 @@ This example shows the three supported `UniverseCondition` patterns:
 Validation notes:
 
 - `ExitRule.id` must be unique within a strategy.
+- `ExitRule.description` and `ExitRule.visualKey` are display metadata for operators and UI previews. They are persisted with the rule set but ignored by runtime exit evaluation.
+- `ExitRule.description` defaults to `""` and is capped at `2048` characters.
+- `ExitRule.visualKey` may be omitted, in which case contracts default it to the rule `type`; persisted configs must use one of the six canonical rule-type keys and must not store image blobs, SVG markup, or external asset URLs.
 - `riskProfileName` requires an embedded `positionPolicy` snapshot so runtime and backtests never need a late-bound catalog lookup.
 - `trailing_stop_atr` requires `atrColumn`.
 - `time_stop` requires an integer `value` and only allows `priceField: "close"`.
