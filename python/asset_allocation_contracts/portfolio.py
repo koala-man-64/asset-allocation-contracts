@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from asset_allocation_contracts.regime import RegimeActivationDecision
+
 PORTFOLIO_WEIGHT_TOLERANCE = 1e-6
 
 PortfolioStatus = Literal["draft", "active", "archived"]
@@ -501,6 +503,7 @@ class StrategySliceAttribution(BaseModel):
     drawdownContribution: float = 0.0
     turnover: float | None = Field(default=None, ge=0.0)
     sinceInceptionReturn: float | None = None
+    regimeActivation: RegimeActivationDecision | None = None
 
     @field_validator("sleeveId", "strategyName", mode="before")
     @classmethod

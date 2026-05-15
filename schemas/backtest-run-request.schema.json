@@ -327,12 +327,83 @@
       "title": "RebalancePolicy",
       "type": "object"
     },
+    "RegimeActivationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedregimes",
+          "type": "array"
+        },
+        "blockWhenUnclassified": {
+          "default": true,
+          "title": "Blockwhenunclassified",
+          "type": "boolean"
+        },
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        },
+        "honorModelHalt": {
+          "default": true,
+          "title": "Honormodelhalt",
+          "type": "boolean"
+        },
+        "inactiveAction": {
+          "const": "target_zero",
+          "default": "target_zero",
+          "title": "Inactiveaction",
+          "type": "string"
+        }
+      },
+      "title": "RegimeActivationPolicy",
+      "type": "object"
+    },
     "RegimePolicy": {
       "additionalProperties": false,
       "properties": {
+        "activation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeActivationPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "mode": {
-          "const": "observe_only",
           "default": "observe_only",
+          "enum": [
+            "observe_only",
+            "activation_gate"
+          ],
           "title": "Mode",
           "type": "string"
         },

@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from datetime import date, datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 RegimeCode = Literal[
     "trending_up",
@@ -18,7 +18,19 @@ RegimeCode = Literal[
 ]
 RegimeSignalState = Literal["active", "inactive", "insufficient_data"]
 RegimeTransitionType = Literal["entered", "exited"]
-RegimePolicyMode = Literal["observe_only"]
+RegimePolicyMode = Literal["observe_only", "activation_gate"]
+RegimeInactiveAction = Literal["target_zero"]
+RegimeActivationState = Literal["active", "inactive", "unknown"]
+RegimeActivationReasonCode = Literal[
+    "observe_only",
+    "allowed_regime",
+    "model_halt",
+    "unclassified",
+    "blocked_regime",
+    "not_allowed_regime",
+    "missing_regime_snapshot",
+    "missing_active_regimes",
+]
 RegimeMetricComparison = Literal["gte", "lte", "between", "bool_true"]
 TrendState = Literal["positive", "negative", "near_zero"]
 CurveState = Literal["contango", "flat", "inverted"]
@@ -79,12 +91,59 @@ class RegimeSignalConfig(BaseModel):
     rules: list[RegimeMetricRule] = Field(default_factory=list)
 
 
+class RegimeActivationPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    allowedRegimes: list[RegimeCode] = Field(default_factory=list)
+    blockedRegimes: list[RegimeCode] = Field(default_factory=list)
+    honorModelHalt: bool = True
+    blockWhenUnclassified: bool = True
+    inactiveAction: RegimeInactiveAction = "target_zero"
+
+    @field_validator("allowedRegimes", "blockedRegimes")
+    @classmethod
+    def dedupe_regimes(cls, value: list[RegimeCode]) -> list[RegimeCode]:
+        seen: set[str] = set()
+        normalized: list[RegimeCode] = []
+        for item in value or []:
+            code = str(item or "").strip()
+            if code and code not in seen:
+                seen.add(code)
+                normalized.append(item)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_rule_sets(self) -> "RegimeActivationPolicy":
+        overlap = sorted(set(self.allowedRegimes).intersection(self.blockedRegimes))
+        if overlap:
+            joined = ", ".join(overlap)
+            raise ValueError(f"Regime activation rules cannot both allow and block: {joined}.")
+        return self
+
+
+class RegimeActivationDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    state: RegimeActivationState
+    reasonCode: RegimeActivationReasonCode
+    inactiveAction: RegimeInactiveAction | None = None
+    targetWeightMultiplier: float = Field(default=1.0, ge=0.0, le=1.0)
+    modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
+    asOfDate: date | None = None
+    effectiveFromDate: date | None = None
+    activeRegimes: list[RegimeCode] = Field(default_factory=list)
+    haltFlag: bool = False
+    haltReason: str | None = None
+
+
 class RegimePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
     modelVersion: int | None = Field(default=None, ge=1)
     mode: RegimePolicyMode = "observe_only"
+    activation: RegimeActivationPolicy | None = None
 
     @model_validator(mode="before")
     @classmethod
@@ -105,8 +164,15 @@ class RegimePolicy(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def normalize_model_name(self) -> "RegimePolicy":
+    def validate_policy_mode(self) -> "RegimePolicy":
         self.modelName = str(self.modelName or "").strip() or DEFAULT_REGIME_MODEL_NAME
+        if self.mode == "activation_gate":
+            if self.modelVersion is None:
+                raise ValueError("activation_gate regime policies require modelVersion.")
+            if self.activation is None:
+                raise ValueError("activation_gate regime policies require activation rules.")
+        elif self.activation is not None:
+            raise ValueError("observe_only regime policies must not include activation rules.")
         return self
 
 
@@ -116,14 +182,27 @@ class RegimePolicyConfig(BaseModel):
     modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
     modelVersion: int | None = Field(default=None, ge=1)
     mode: RegimePolicyMode = "observe_only"
+    activation: RegimeActivationPolicy | None = None
 
     @model_validator(mode="after")
-    def normalize_model_name(self) -> "RegimePolicyConfig":
+    def validate_policy_mode(self) -> "RegimePolicyConfig":
         self.modelName = str(self.modelName or "").strip() or DEFAULT_REGIME_MODEL_NAME
+        if self.mode == "activation_gate":
+            if self.modelVersion is None:
+                raise ValueError("activation_gate regime policy configs require modelVersion.")
+            if self.activation is None:
+                raise ValueError("activation_gate regime policy configs require activation rules.")
+        elif self.activation is not None:
+            raise ValueError("observe_only regime policy configs must not include activation rules.")
         return self
 
     def resolved_policy(self) -> RegimePolicy:
-        return RegimePolicy(modelName=self.modelName, modelVersion=self.modelVersion, mode=self.mode)
+        return RegimePolicy(
+            modelName=self.modelName,
+            modelVersion=self.modelVersion,
+            mode=self.mode,
+            activation=self.activation,
+        )
 
 
 class RegimePolicyConfigSummary(BaseModel):

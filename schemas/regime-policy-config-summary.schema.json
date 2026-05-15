@@ -13,8 +13,11 @@
       "type": "string"
     },
     "mode": {
-      "const": "observe_only",
       "default": "observe_only",
+      "enum": [
+        "observe_only",
+        "activation_gate"
+      ],
       "title": "Mode",
       "type": "string"
     },

@@ -55,7 +55,10 @@ export type RankingMissingValuePolicy = 'exclude' | 'zero';
 export type RankingCatalogValueKind = 'number' | 'boolean';
 export type RegimeSignalState = 'active' | 'inactive' | 'insufficient_data';
 export type RegimeTransitionType = 'entered' | 'exited';
-export type RegimePolicyMode = 'observe_only';
+export type RegimePolicyMode = 'observe_only' | 'activation_gate';
+export type RegimeInactiveAction = 'target_zero';
+export type RegimeActivationState = 'active' | 'inactive' | 'unknown';
+export type RegimeActivationReasonCode = 'observe_only' | 'allowed_regime' | 'model_halt' | 'unclassified' | 'blocked_regime' | 'not_allowed_regime' | 'missing_regime_snapshot' | 'missing_active_regimes';
 export type TrendState = 'positive' | 'negative' | 'near_zero';
 export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
@@ -120,7 +123,7 @@ export type BacktestLookupState = 'not_run' | 'queued' | 'running' | 'completed'
 export type BacktestStreamEventType = 'accepted' | 'status' | 'heartbeat' | 'completed' | 'failed';
 export type TradeRole = 'entry' | 'rebalance_increase' | 'rebalance_decrease' | 'exit';
 export type BacktestPolicyEventScope = 'strategy' | 'sleeve' | 'position' | 'symbol' | 'portfolio';
-export type BacktestPolicyEventType = 'rebalance' | 'strategy_risk' | 'position_exit' | 'reentry';
+export type BacktestPolicyEventType = 'rebalance' | 'strategy_risk' | 'position_exit' | 'reentry' | 'regime';
 export type BacktestPolicyDecision = 'applied' | 'skipped' | 'blocked';
 export type BacktestResearchIntegrityStatus = 'strict_passed' | 'strict_failed' | 'legacy_uncontrolled';
 export type BacktestExecutionModel = 'simple_bps';
@@ -219,6 +222,15 @@ export interface RegimePolicy {
   modelName: string;
   modelVersion?: number | null;
   mode: RegimePolicyMode;
+  activation?: RegimeActivationPolicy | null;
+}
+
+export interface RegimeActivationPolicy {
+  allowedRegimes: RegimeCode[];
+  blockedRegimes: RegimeCode[];
+  honorModelHalt: boolean;
+  blockWhenUnclassified: boolean;
+  inactiveAction: RegimeInactiveAction;
 }
 
 export interface StrategyPositionPolicy {
@@ -624,10 +636,25 @@ export interface UniverseFieldDefinition {
   operators: UniverseConditionOperator[];
 }
 
+export interface RegimeActivationDecision {
+  state: RegimeActivationState;
+  reasonCode: RegimeActivationReasonCode;
+  inactiveAction?: RegimeInactiveAction | null;
+  targetWeightMultiplier: number;
+  modelName: string;
+  modelVersion?: number | null;
+  asOfDate?: string | null;
+  effectiveFromDate?: string | null;
+  activeRegimes: RegimeCode[];
+  haltFlag: boolean;
+  haltReason?: string | null;
+}
+
 export interface RegimePolicyConfig {
   modelName: string;
   modelVersion?: number | null;
   mode: RegimePolicyMode;
+  activation?: RegimeActivationPolicy | null;
 }
 
 export interface RegimePolicyConfigSummary {
@@ -3055,6 +3082,7 @@ export interface StrategySliceAttribution {
   drawdownContribution: number;
   turnover?: number | null;
   sinceInceptionReturn?: number | null;
+  regimeActivation?: RegimeActivationDecision | null;
 }
 
 export interface PortfolioUpsertRequest {

@@ -108,6 +108,7 @@ from asset_allocation_contracts.portfolio import (
     PortfolioSnapshot,
     PortfolioUpsertRequest,
     RebalanceProposal,
+    StrategySliceAttribution,
 )
 from asset_allocation_contracts.paths import DataPaths, bucket_letter
 from asset_allocation_contracts.ranking import (
@@ -117,6 +118,7 @@ from asset_allocation_contracts.ranking import (
 )
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
+    RegimeActivationDecision,
     RegimePolicy,
     RegimePolicyConfig,
     RegimePolicyConfigDetailResponse,
@@ -2237,6 +2239,68 @@ def test_regime_policy_library_contracts_reference_model_revision() -> None:
     assert detail.activeRevision.config.mode == "observe_only"
     assert resolved.modelName == "default-regime"
     assert resolved.modelVersion == 3
+
+
+def test_regime_policy_activation_gate_requires_rules_and_revision() -> None:
+    policy = RegimePolicy.model_validate(
+        {
+            "modelName": "default-regime",
+            "modelVersion": 3,
+            "mode": "activation_gate",
+            "activation": {
+                "allowedRegimes": ["trending_up", "low_volatility", "trending_up"],
+                "blockedRegimes": ["liquidity_stress"],
+                "honorModelHalt": True,
+                "blockWhenUnclassified": True,
+                "inactiveAction": "target_zero",
+            },
+        }
+    )
+
+    assert policy.mode == "activation_gate"
+    assert policy.activation is not None
+    assert policy.activation.allowedRegimes == ["trending_up", "low_volatility"]
+    assert policy.activation.inactiveAction == "target_zero"
+
+    for payload in (
+        {"mode": "activation_gate", "activation": {"blockedRegimes": ["liquidity_stress"]}},
+        {"modelVersion": 3, "mode": "activation_gate"},
+        {"mode": "observe_only", "activation": {"blockedRegimes": ["liquidity_stress"]}},
+    ):
+        try:
+            RegimePolicy.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(f"Expected invalid regime policy payload to fail: {payload!r}")
+
+
+def test_regime_activation_decision_can_be_reported_on_portfolio_slices() -> None:
+    decision = RegimeActivationDecision(
+        state="inactive",
+        reasonCode="blocked_regime",
+        inactiveAction="target_zero",
+        targetWeightMultiplier=0.0,
+        modelName="default-regime",
+        modelVersion=3,
+        asOfDate="2026-05-15",
+        effectiveFromDate="2026-05-15",
+        activeRegimes=["liquidity_stress"],
+        haltFlag=False,
+    )
+    slice_payload = StrategySliceAttribution(
+        asOf="2026-05-15",
+        sleeveId="core-trend",
+        strategyName="quality-trend",
+        strategyVersion=4,
+        targetWeight=0.0,
+        actualWeight=0.25,
+        marketValue=25_000.0,
+        regimeActivation=decision,
+    )
+
+    assert slice_payload.regimeActivation is not None
+    assert slice_payload.regimeActivation.state == "inactive"
+    assert slice_payload.regimeActivation.targetWeightMultiplier == 0.0
 
 
 def test_backtest_claim_request_accepts_optional_execution_name() -> None:

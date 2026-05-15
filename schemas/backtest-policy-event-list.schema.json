@@ -72,7 +72,8 @@
             "rebalance",
             "strategy_risk",
             "position_exit",
-            "reentry"
+            "reentry",
+            "regime"
           ],
           "title": "Policy Type",
           "type": "string"

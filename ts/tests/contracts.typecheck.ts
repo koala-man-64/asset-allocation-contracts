@@ -58,6 +58,7 @@ import type {
   RankingSchemaDraftGenerationResponse,
   RankingSchemaPreset,
   RebalancePolicyPreset,
+  RegimeActivationDecision,
   RegimePolicyPreset,
   StrategyConfig,
   StrategyComponentRefs,
@@ -509,6 +510,39 @@ const regimePreset: RegimePolicyPreset = {
     modelName: "default-regime",
     mode: "observe_only",
   },
+};
+
+const activationRegimePreset: RegimePolicyPreset = {
+  identity: {
+    ...configIdentity,
+    name: "risk_on_activation_gate",
+    thesis: "Target-zero the strategy when the pinned regime model is outside the allowed risk-on state.",
+  },
+  config: {
+    modelName: "default-regime",
+    modelVersion: 3,
+    mode: "activation_gate",
+    activation: {
+      allowedRegimes: ["trending_up", "low_volatility"],
+      blockedRegimes: ["liquidity_stress"],
+      honorModelHalt: true,
+      blockWhenUnclassified: true,
+      inactiveAction: "target_zero",
+    },
+  },
+};
+
+const inactiveRegimeDecision: RegimeActivationDecision = {
+  state: "inactive",
+  reasonCode: "blocked_regime",
+  inactiveAction: "target_zero",
+  targetWeightMultiplier: 0,
+  modelName: "default-regime",
+  modelVersion: 3,
+  asOfDate: "2026-05-15",
+  effectiveFromDate: "2026-05-15",
+  activeRegimes: ["liquidity_stress"],
+  haltFlag: false,
 };
 
 const riskPreset: StrategyRiskPolicyPreset = {

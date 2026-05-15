@@ -1,0 +1,134 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "activeRegimes": {
+      "items": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ],
+        "type": "string"
+      },
+      "title": "Activeregimes",
+      "type": "array"
+    },
+    "asOfDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asofdate"
+    },
+    "effectiveFromDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Effectivefromdate"
+    },
+    "haltFlag": {
+      "default": false,
+      "title": "Haltflag",
+      "type": "boolean"
+    },
+    "haltReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Haltreason"
+    },
+    "inactiveAction": {
+      "anyOf": [
+        {
+          "const": "target_zero",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Inactiveaction"
+    },
+    "modelName": {
+      "default": "default-regime",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Modelname",
+      "type": "string"
+    },
+    "modelVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Modelversion"
+    },
+    "reasonCode": {
+      "enum": [
+        "observe_only",
+        "allowed_regime",
+        "model_halt",
+        "unclassified",
+        "blocked_regime",
+        "not_allowed_regime",
+        "missing_regime_snapshot",
+        "missing_active_regimes"
+      ],
+      "title": "Reasoncode",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "active",
+        "inactive",
+        "unknown"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "targetWeightMultiplier": {
+      "default": 1.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Targetweightmultiplier",
+      "type": "number"
+    }
+  },
+  "required": [
+    "state",
+    "reasonCode"
+  ],
+  "title": "RegimeActivationDecision",
+  "type": "object"
+}
