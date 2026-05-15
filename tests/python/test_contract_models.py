@@ -124,7 +124,9 @@ from asset_allocation_contracts.strategy_publication import (
     StrategyPublicationReconcileSignalRequest,
 )
 from asset_allocation_contracts.symbol_enrichment import (
+    SymbolCleanupRunReviewResponse,
     SymbolCleanupRunSummary,
+    SymbolCleanupWorkReviewItem,
     SymbolEnrichmentResolveRequest,
     SymbolEnrichmentResolveResponse,
     SymbolEnrichmentSummaryResponse,
@@ -2998,6 +3000,58 @@ def test_symbol_enrichment_operator_contracts_default_lists() -> None:
     assert summary.backlogCount == 0
     assert override.isLocked is True
     assert run.mode == "fill_missing"
+
+
+def test_symbol_cleanup_run_review_response_captures_work_item_resolution() -> None:
+    item = SymbolCleanupWorkReviewItem(
+        workId="work-1",
+        runId="run-1",
+        symbol="AAPL",
+        status="completed",
+        requestedFields=["sector_norm", "issuer_summary_short"],
+        attemptCount=2,
+        executionName="symbol-cleanup-worker",
+        createdAt="2026-05-14T06:00:00Z",
+        claimedAt="2026-05-14T06:01:00Z",
+        completedAt="2026-05-14T06:01:45Z",
+        updatedAt="2026-05-14T06:01:45Z",
+        acceptedUpdateCount=1,
+        rejectedUpdateCount=1,
+        lockedSkipCount=1,
+        overwriteCount=0,
+        result={
+            "symbol": "AAPL",
+            "profile": {
+                "sector_norm": "Technology",
+                "issuer_summary_short": "Consumer hardware and services company.",
+            },
+            "model": "gpt-5.4",
+            "confidence": 0.91,
+            "warnings": ["locked field skipped"],
+        },
+    )
+    response = SymbolCleanupRunReviewResponse(
+        run=SymbolCleanupRunSummary(
+            runId="run-1",
+            status="completed",
+            queuedCount=1,
+            completedCount=1,
+            acceptedUpdateCount=1,
+            rejectedUpdateCount=1,
+            lockedSkipCount=1,
+        ),
+        totalCount=1,
+        limit=50,
+        offset=0,
+        items=[item],
+    )
+
+    assert response.run.runId == "run-1"
+    assert response.totalCount == 1
+    assert response.items[0].attemptCount == 2
+    assert response.items[0].executionName == "symbol-cleanup-worker"
+    assert response.items[0].result is not None
+    assert response.items[0].result.profile.sector_norm == "Technology"
 
 
 def test_symbol_identity_contracts_expose_v1_massive_market_aliases() -> None:

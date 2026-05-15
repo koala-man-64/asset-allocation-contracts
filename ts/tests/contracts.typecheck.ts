@@ -38,7 +38,9 @@ import type {
   PortfolioRevision,
   PortfolioSnapshot,
   PortfolioUpsertRequest,
+  SymbolCleanupRunReviewResponse,
   SymbolCleanupRunSummary,
+  SymbolCleanupWorkReviewItem,
   SymbolEnrichmentResolveRequest,
   SymbolEnrichmentSymbolDetailResponse,
   SymbolResolutionResult,
@@ -1225,6 +1227,42 @@ const runSummary: SymbolCleanupRunSummary = {
   overwriteCount: 0,
 };
 
+const workReviewItem: SymbolCleanupWorkReviewItem = {
+  workId: "work-1",
+  runId: "run-1",
+  symbol: "AAPL",
+  status: "completed",
+  requestedFields: ["sector_norm", "issuer_summary_short"],
+  attemptCount: 2,
+  executionName: "symbol-cleanup-worker",
+  createdAt: "2026-05-14T06:00:00Z",
+  claimedAt: "2026-05-14T06:01:00Z",
+  completedAt: "2026-05-14T06:01:45Z",
+  updatedAt: "2026-05-14T06:01:45Z",
+  acceptedUpdateCount: 1,
+  rejectedUpdateCount: 1,
+  lockedSkipCount: 1,
+  overwriteCount: 0,
+  result: {
+    symbol: "AAPL",
+    profile: {
+      sector_norm: "Technology",
+      issuer_summary_short: "Consumer hardware and services company.",
+    },
+    model: "gpt-5.4",
+    confidence: 0.91,
+    warnings: ["locked field skipped"],
+  },
+};
+
+const runReview: SymbolCleanupRunReviewResponse = {
+  run: runSummary,
+  totalCount: 1,
+  limit: 50,
+  offset: 0,
+  items: [workReviewItem],
+};
+
 const aiEvent: AiChatStreamEvent = {
   sequenceNumber: 1,
   event: "completed",
@@ -1249,4 +1287,6 @@ void exposureRequest;
 void resolveRequest;
 void detail;
 void runSummary;
+void workReviewItem;
+void runReview;
 void aiEvent;

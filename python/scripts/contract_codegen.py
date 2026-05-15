@@ -377,6 +377,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         symbol_enrichment.SymbolCleanupRunSummary,
     ),
     (
+        "symbol-cleanup-work-review-item.schema.json",
+        symbol_enrichment.SymbolCleanupWorkReviewItem,
+    ),
+    (
+        "symbol-cleanup-run-review-response.schema.json",
+        symbol_enrichment.SymbolCleanupRunReviewResponse,
+    ),
+    (
         "symbol-enrichment-resolve-request.schema.json",
         symbol_enrichment.SymbolEnrichmentResolveRequest,
     ),

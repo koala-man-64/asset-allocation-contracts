@@ -3162,6 +3162,59 @@ export interface SymbolCleanupRunSummary {
   completedAt?: string | null;
 }
 
+export interface SymbolCleanupWorkReviewItem {
+  workId: string;
+  runId: string;
+  symbol: string;
+  status: 'queued' | 'claimed' | 'completed' | 'failed';
+  requestedFields: ('security_type_norm' | 'exchange_mic' | 'country_of_risk' | 'sector_norm' | 'industry_group_norm' | 'industry_norm' | 'is_adr' | 'is_etf' | 'is_cef' | 'is_preferred' | 'share_class' | 'listing_status_norm' | 'issuer_summary_short')[];
+  attemptCount: number;
+  executionName?: string | null;
+  createdAt?: string | null;
+  claimedAt?: string | null;
+  completedAt?: string | null;
+  updatedAt?: string | null;
+  lastError?: string | null;
+  acceptedUpdateCount: number;
+  rejectedUpdateCount: number;
+  lockedSkipCount: number;
+  overwriteCount: number;
+  result?: SymbolEnrichmentResolveResponse | null;
+}
+
+export interface SymbolEnrichmentResolveResponse {
+  symbol: string;
+  profile: SymbolProfileValues;
+  model?: string | null;
+  confidence?: number | null;
+  sourceFingerprint?: string | null;
+  warnings: string[];
+}
+
+export interface SymbolProfileValues {
+  security_type_norm?: string | null;
+  exchange_mic?: string | null;
+  country_of_risk?: string | null;
+  sector_norm?: string | null;
+  industry_group_norm?: string | null;
+  industry_norm?: string | null;
+  is_adr?: boolean | null;
+  is_etf?: boolean | null;
+  is_cef?: boolean | null;
+  is_preferred?: boolean | null;
+  share_class?: string | null;
+  listing_status_norm?: string | null;
+  issuer_summary_short?: string | null;
+}
+
+export interface SymbolCleanupRunReviewResponse {
+  run: SymbolCleanupRunSummary;
+  totalCount: number;
+  limit: number;
+  offset: number;
+  items: SymbolCleanupWorkReviewItem[];
+}
+
 export interface SymbolEnrichmentResolveRequest {
   symbol: string;
   overwriteMode: 'fill_missing' | 'full_reconcile';
@@ -3187,31 +3240,6 @@ export interface SymbolProviderFacts {
   sourceNasdaq?: boolean | null;
   sourceMassive?: boolean | null;
   sourceAlphaVantage?: boolean | null;
-}
-
-export interface SymbolProfileValues {
-  security_type_norm?: string | null;
-  exchange_mic?: string | null;
-  country_of_risk?: string | null;
-  sector_norm?: string | null;
-  industry_group_norm?: string | null;
-  industry_norm?: string | null;
-  is_adr?: boolean | null;
-  is_etf?: boolean | null;
-  is_cef?: boolean | null;
-  is_preferred?: boolean | null;
-  share_class?: string | null;
-  listing_status_norm?: string | null;
-  issuer_summary_short?: string | null;
-}
-
-export interface SymbolEnrichmentResolveResponse {
-  symbol: string;
-  profile: SymbolProfileValues;
-  model?: string | null;
-  confidence?: number | null;
-  sourceFingerprint?: string | null;
-  warnings: string[];
 }
 
 export interface SymbolProfileCurrent {

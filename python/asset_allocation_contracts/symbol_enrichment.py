@@ -120,6 +120,38 @@ class SymbolEnrichmentResolveResponse(BaseModel):
     warnings: list[str] = []
 
 
+class SymbolCleanupWorkReviewItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    workId: str = Field(min_length=1, max_length=64)
+    runId: str = Field(min_length=1, max_length=64)
+    symbol: str = Field(min_length=1, max_length=32)
+    status: SymbolWorkStatus
+    requestedFields: list[SymbolEnrichmentField]
+    attemptCount: int = Field(default=0, ge=0)
+    executionName: str | None = Field(default=None, max_length=255)
+    createdAt: datetime | None = None
+    claimedAt: datetime | None = None
+    completedAt: datetime | None = None
+    updatedAt: datetime | None = None
+    lastError: str | None = Field(default=None, max_length=2_000)
+    acceptedUpdateCount: int = Field(default=0, ge=0)
+    rejectedUpdateCount: int = Field(default=0, ge=0)
+    lockedSkipCount: int = Field(default=0, ge=0)
+    overwriteCount: int = Field(default=0, ge=0)
+    result: SymbolEnrichmentResolveResponse | None = None
+
+
+class SymbolCleanupRunReviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run: SymbolCleanupRunSummary
+    totalCount: int = Field(..., ge=0)
+    limit: int = Field(..., ge=1)
+    offset: int = Field(..., ge=0)
+    items: list[SymbolCleanupWorkReviewItem]
+
+
 class SymbolProfileCurrent(SymbolProfileValues):
     model_config = ConfigDict(extra="forbid")
 

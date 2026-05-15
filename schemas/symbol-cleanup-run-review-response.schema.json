@@ -1,0 +1,574 @@
+{
+  "$defs": {
+    "SymbolCleanupRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Acceptedupdatecount",
+          "type": "integer"
+        },
+        "claimedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Claimedcount",
+          "type": "integer"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "completedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Completedcount",
+          "type": "integer"
+        },
+        "failedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Failedcount",
+          "type": "integer"
+        },
+        "lockedSkipCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Lockedskipcount",
+          "type": "integer"
+        },
+        "mode": {
+          "default": "fill_missing",
+          "enum": [
+            "fill_missing",
+            "full_reconcile"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "overwriteCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Overwritecount",
+          "type": "integer"
+        },
+        "queuedCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Queuedcount",
+          "type": "integer"
+        },
+        "rejectedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rejectedupdatecount",
+          "type": "integer"
+        },
+        "runId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startedat"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "status"
+      ],
+      "title": "SymbolCleanupRunSummary",
+      "type": "object"
+    },
+    "SymbolCleanupWorkReviewItem": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Acceptedupdatecount",
+          "type": "integer"
+        },
+        "attemptCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Attemptcount",
+          "type": "integer"
+        },
+        "claimedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claimedat"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completedat"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "executionName": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executionname"
+        },
+        "lastError": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lasterror"
+        },
+        "lockedSkipCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Lockedskipcount",
+          "type": "integer"
+        },
+        "overwriteCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Overwritecount",
+          "type": "integer"
+        },
+        "rejectedUpdateCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rejectedupdatecount",
+          "type": "integer"
+        },
+        "requestedFields": {
+          "items": {
+            "enum": [
+              "security_type_norm",
+              "exchange_mic",
+              "country_of_risk",
+              "sector_norm",
+              "industry_group_norm",
+              "industry_norm",
+              "is_adr",
+              "is_etf",
+              "is_cef",
+              "is_preferred",
+              "share_class",
+              "listing_status_norm",
+              "issuer_summary_short"
+            ],
+            "type": "string"
+          },
+          "title": "Requestedfields",
+          "type": "array"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SymbolEnrichmentResolveResponse"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "runId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Runid",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "queued",
+            "claimed",
+            "completed",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "workId": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Workid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "workId",
+        "runId",
+        "symbol",
+        "status",
+        "requestedFields"
+      ],
+      "title": "SymbolCleanupWorkReviewItem",
+      "type": "object"
+    },
+    "SymbolEnrichmentResolveResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "profile": {
+          "$ref": "#/$defs/SymbolProfileValues"
+        },
+        "sourceFingerprint": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcefingerprint"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbol",
+        "profile"
+      ],
+      "title": "SymbolEnrichmentResolveResponse",
+      "type": "object"
+    },
+    "SymbolProfileValues": {
+      "additionalProperties": false,
+      "properties": {
+        "country_of_risk": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Country Of Risk"
+        },
+        "exchange_mic": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exchange Mic"
+        },
+        "industry_group_norm": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Industry Group Norm"
+        },
+        "industry_norm": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Industry Norm"
+        },
+        "is_adr": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Adr"
+        },
+        "is_cef": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Cef"
+        },
+        "is_etf": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Etf"
+        },
+        "is_preferred": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Preferred"
+        },
+        "issuer_summary_short": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer Summary Short"
+        },
+        "listing_status_norm": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Listing Status Norm"
+        },
+        "sector_norm": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sector Norm"
+        },
+        "security_type_norm": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Security Type Norm"
+        },
+        "share_class": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Share Class"
+        }
+      },
+      "title": "SymbolProfileValues",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/SymbolCleanupWorkReviewItem"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "limit": {
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "offset": {
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "run": {
+      "$ref": "#/$defs/SymbolCleanupRunSummary"
+    },
+    "totalCount": {
+      "minimum": 0,
+      "title": "Totalcount",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "run",
+    "totalCount",
+    "limit",
+    "offset",
+    "items"
+  ],
+  "title": "SymbolCleanupRunReviewResponse",
+  "type": "object"
+}
