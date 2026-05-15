@@ -33,6 +33,7 @@ from asset_allocation_contracts.broker_accounts import (
     AcknowledgeBrokerAlertRequest,
     BrokerAccountAllocationUpdateRequest,
     BrokerAccountActionResponse,
+    BrokerAccountActionType,
     BrokerAccountConfiguration,
     BrokerAccountDetail,
     BrokerAccountListResponse,
@@ -50,6 +51,8 @@ from asset_allocation_contracts.broker_accounts import (
     BrokerSyncRun,
     PauseBrokerSyncRequest,
     ReconnectBrokerAccountRequest,
+    RemoveBrokerAccountRequest,
+    RemoveBrokerAccountResponse,
     RefreshBrokerAccountRequest,
 )
 from asset_allocation_contracts.deployment_provenance import (
@@ -3277,6 +3280,13 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     acknowledge = AcknowledgeBrokerAlertRequest(
         note="Connector rerouted to manual follow-up."
     )
+    remove = RemoveBrokerAccountRequest(reason="Remove duplicate paper account.")
+    remove_response = RemoveBrokerAccountResponse(
+        accountId=" alpaca-core ",
+        removed=True,
+        message="Broker account removed.",
+        generatedAt="2026-04-20T13:46:00Z",
+    )
     action_response = BrokerAccountActionResponse(
         actionId="action-1",
         accountId="alpaca-core",
@@ -3308,6 +3318,10 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     assert pause.paused is False
     assert refresh.force is True
     assert acknowledge.note == "Connector rerouted to manual follow-up."
+    assert remove.reason == "Remove duplicate paper account."
+    assert remove_response.accountId == "alpaca-core"
+    assert remove_response.removed is True
+    assert TypeAdapter(BrokerAccountActionType).validate_python("remove_account") == "remove_account"
     assert action_response.resultingConnectionHealth is not None
     assert action_response.resultingConnectionHealth.syncStatus == "syncing"
     assert listing.accounts[0].tradeReadiness == "blocked"

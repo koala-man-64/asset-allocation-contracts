@@ -229,6 +229,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "acknowledge-broker-alert-request.schema.json",
         broker_accounts.AcknowledgeBrokerAlertRequest,
     ),
+    (
+        "remove-broker-account-request.schema.json",
+        broker_accounts.RemoveBrokerAccountRequest,
+    ),
+    (
+        "remove-broker-account-response.schema.json",
+        broker_accounts.RemoveBrokerAccountResponse,
+    ),
     ("trade-account-summary.schema.json", trade_desk.TradeAccountSummary),
     ("trade-account-detail.schema.json", trade_desk.TradeAccountDetail),
     ("trade-account-list.schema.json", trade_desk.TradeAccountListResponse),

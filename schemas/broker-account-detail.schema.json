@@ -22,6 +22,7 @@
             "resume_sync",
             "refresh",
             "acknowledge_alert",
+            "remove_account",
             "update_trading_policy",
             "update_allocation"
           ],

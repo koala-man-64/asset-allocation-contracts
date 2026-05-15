@@ -1,0 +1,39 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "generatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generatedat"
+    },
+    "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+    },
+    "removed": {
+      "default": true,
+      "title": "Removed",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "accountId"
+  ],
+  "title": "RemoveBrokerAccountResponse",
+  "type": "object"
+}

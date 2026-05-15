@@ -43,6 +43,7 @@ BrokerAccountActionType = Literal[
     "resume_sync",
     "refresh",
     "acknowledge_alert",
+    "remove_account",
     "update_trading_policy",
     "update_allocation",
 ]
@@ -612,6 +613,36 @@ class AcknowledgeBrokerAlertRequest(BaseModel):
     @field_validator("note", mode="before")
     @classmethod
     def normalize_note(cls, value: object) -> str:
+        return str(value or "").strip()
+
+
+class RemoveBrokerAccountRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(..., min_length=1, max_length=500)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def normalize_reason(cls, value: object) -> str:
+        return _normalize_required_text(value, "reason")
+
+
+class RemoveBrokerAccountResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    removed: bool = True
+    message: str = ""
+    generatedAt: datetime | None = None
+
+    @field_validator("accountId", mode="before")
+    @classmethod
+    def normalize_account_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "accountId")
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def normalize_message(cls, value: object) -> str:
         return str(value or "").strip()
 
 
