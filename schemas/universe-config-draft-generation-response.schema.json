@@ -243,6 +243,18 @@
     "UniversePreviewResponse": {
       "additionalProperties": false,
       "properties": {
+        "asOf": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asof"
+        },
         "fieldsUsed": {
           "items": {
             "enum": [
@@ -267,6 +279,25 @@
           "title": "Fieldsused",
           "type": "array"
         },
+        "previewLimit": {
+          "default": 25,
+          "minimum": 1,
+          "title": "Previewlimit",
+          "type": "integer"
+        },
+        "rowCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Rowcount",
+          "type": "integer"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/UniversePreviewRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
         "sampleSymbols": {
           "items": {
             "type": "string"
@@ -285,6 +316,11 @@
           "title": "Symbolcount",
           "type": "integer"
         },
+        "truncated": {
+          "default": false,
+          "title": "Truncated",
+          "type": "boolean"
+        },
         "warnings": {
           "items": {
             "type": "string"
@@ -297,6 +333,95 @@
         "symbolCount"
       ],
       "title": "UniversePreviewResponse",
+      "type": "object"
+    },
+    "UniversePreviewRow": {
+      "additionalProperties": false,
+      "properties": {
+        "close": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Close"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Country"
+        },
+        "industry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Industry"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "sector": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sector"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Volume"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "title": "UniversePreviewRow",
       "type": "object"
     }
   },

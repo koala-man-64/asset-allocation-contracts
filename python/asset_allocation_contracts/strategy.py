@@ -297,6 +297,18 @@ class UniverseCatalogResponse(BaseModel):
     fields: list[UniverseFieldDefinition] = Field(default_factory=list)
 
 
+class UniversePreviewRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str = Field(..., min_length=1, max_length=32)
+    name: str | None = None
+    sector: str | None = None
+    industry: str | None = None
+    country: str | None = None
+    close: float | None = None
+    volume: int | None = Field(default=None, ge=0)
+
+
 class UniversePreviewResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -305,6 +317,11 @@ class UniversePreviewResponse(BaseModel):
     sampleSymbols: list[str] = Field(default_factory=list)
     fieldsUsed: list[UniverseFieldId] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    rows: list[UniversePreviewRow] = Field(default_factory=list)
+    rowCount: int = Field(default=0, ge=0)
+    previewLimit: int = Field(default=25, ge=1)
+    truncated: bool = False
+    asOf: str | None = None
 
 
 UniverseGroup.model_rebuild()

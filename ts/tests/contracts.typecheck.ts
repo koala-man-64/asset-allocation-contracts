@@ -356,6 +356,21 @@ const preview: UniversePreviewResponse = {
   sampleSymbols: ["AAPL", "MSFT"],
   fieldsUsed: ["market.close", "quality.piotroski_f_score"],
   warnings: [],
+  rows: [
+    {
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      sector: "Technology",
+      industry: "Consumer Electronics",
+      country: "US",
+      close: 182.31,
+      volume: 1300000,
+    },
+  ],
+  rowCount: 2,
+  previewLimit: 25,
+  truncated: false,
+  asOf: "2026-05-16",
 };
 
 const strategy: StrategyConfig = {

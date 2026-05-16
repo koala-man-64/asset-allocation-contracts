@@ -1474,16 +1474,37 @@ def test_universe_preview_response_uses_governed_field_ids() -> None:
         symbolCount=2,
         sampleSymbols=["AAPL", "MSFT"],
         fieldsUsed=["market.close", "quality.piotroski_f_score"],
+        rows=[
+            {
+                "symbol": "AAPL",
+                "name": "Apple Inc.",
+                "sector": "Technology",
+                "industry": "Consumer Electronics",
+                "country": "US",
+                "close": 182.31,
+                "volume": 1300000,
+            }
+        ],
+        rowCount=2,
+        previewLimit=25,
+        truncated=False,
+        asOf="2026-05-16",
     )
 
     assert payload.fieldsUsed == ["market.close", "quality.piotroski_f_score"]
     assert payload.warnings == []
+    assert payload.rows[0].symbol == "AAPL"
+    assert payload.rowCount == 2
 
 
 def test_universe_preview_response_rejects_unknown_field_ids() -> None:
     try:
         UniversePreviewResponse(
-            symbolCount=1, sampleSymbols=["AAPL"], fieldsUsed=["market_data.close"]
+            symbolCount=1,
+            sampleSymbols=["AAPL"],
+            fieldsUsed=["market_data.close"],
+            rowCount=1,
+            previewLimit=25,
         )
     except Exception as exc:
         assert "fieldsUsed" in str(exc)

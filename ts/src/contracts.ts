@@ -438,6 +438,21 @@ export interface UniversePreviewResponse {
   sampleSymbols: string[];
   fieldsUsed: UniverseFieldId[];
   warnings: string[];
+  rows: UniversePreviewRow[];
+  rowCount: number;
+  previewLimit: number;
+  truncated: boolean;
+  asOf?: string | null;
+}
+
+export interface UniversePreviewRow {
+  symbol: string;
+  name?: string | null;
+  sector?: string | null;
+  industry?: string | null;
+  country?: string | null;
+  close?: number | null;
+  volume?: number | null;
 }
 
 export interface RankingFieldReference {
