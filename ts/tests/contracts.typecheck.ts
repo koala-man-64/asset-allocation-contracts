@@ -9,6 +9,7 @@ import type {
   BacktestLookupRequest,
   BacktestLookupResponse,
   BacktestFailRequest,
+  BacktestPolicyEventListResponse,
   BacktestResultLinks,
   BacktestRunRequest,
   BacktestRunResponse,
@@ -38,6 +39,7 @@ import type {
   PortfolioAccount,
   PortfolioRevision,
   PortfolioSnapshot,
+  TradeResponse,
   PortfolioUpsertRequest,
   SymbolCleanupRunReviewResponse,
   SymbolCleanupRunSummary,
@@ -1213,6 +1215,8 @@ const links: BacktestResultLinks = {
   metricsRollingUrl: "/api/backtests/run-123/metrics/rolling",
   tradesUrl: "/api/backtests/run-123/trades",
   closedPositionsUrl: "/api/backtests/run-123/positions/closed",
+  policyEventsUrl: "/api/backtests/run-123/policy-events",
+  dataQualityEventsUrl: "/api/backtests/run-123/data-quality-events",
 };
 
 const lookupResponse: BacktestLookupResponse = {
@@ -1222,6 +1226,8 @@ const lookupResponse: BacktestLookupResponse = {
   result: {
     run_id: "run-123",
     total_return: 0.12,
+    requested_residual_cash_weight: 0,
+    executed_residual_cash_weight: 0.15,
   },
   links,
 };
@@ -1239,6 +1245,8 @@ const streamEvent: BacktestStreamEvent = {
   summary: {
     run_id: "run-123",
     total_return: 0.12,
+    requested_residual_cash_weight: 0,
+    executed_residual_cash_weight: 0.15,
   },
   metadata: {
     results_schema_version: 4,
@@ -1269,6 +1277,42 @@ const dataQualityEvents: BacktestDataQualityEventListResponse = {
   total: 1,
   limit: 50,
   offset: 0,
+};
+
+const policyEvents: BacktestPolicyEventListResponse = {
+  events: [
+    {
+      run_id: "run-123",
+      event_seq: 1,
+      bar_ts: "2026-03-08T14:31:00Z",
+      scope: "strategy",
+      policy_type: "rebalance",
+      decision: "applied",
+      reason_code: "residual_cash_reserved",
+      action: "reserve_cash",
+      requested_target_weight: 0.5,
+      executed_target_weight: 0.35,
+      requested_residual_cash_weight: 0,
+      executed_residual_cash_weight: 0.15,
+      details: {},
+    },
+  ],
+  total: 1,
+  limit: 50,
+  offset: 0,
+};
+
+const trade: TradeResponse = {
+  execution_date: "2026-03-08T10:00:00Z",
+  symbol: "MSFT",
+  quantity: 10,
+  price: 100,
+  notional: 1000,
+  commission: 1,
+  slippage_cost: 0.5,
+  cash_after: 98998.5,
+  requested_target_weight: 0.5,
+  executed_target_weight: 0.35,
 };
 
 const point: TimeseriesPointResponse = {
@@ -1316,7 +1360,9 @@ void lookupResponse;
 void runResponse;
 void streamEvent;
 void dataQualityEvents;
+void policyEvents;
 void point;
+void trade;
 void tradeMetricFeed;
 void configReference;
 void configIdentity;

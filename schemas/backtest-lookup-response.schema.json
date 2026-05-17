@@ -8,6 +8,19 @@
           "title": "Closedpositionsurl",
           "type": "string"
         },
+        "dataQualityEventsUrl": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dataqualityeventsurl"
+        },
         "metricsRollingUrl": {
           "minLength": 1,
           "title": "Metricsrollingurl",
@@ -17,6 +30,19 @@
           "minLength": 1,
           "title": "Metricstimeseriesurl",
           "type": "string"
+        },
+        "policyEventsUrl": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policyeventsurl"
         },
         "summaryUrl": {
           "minLength": 1,
@@ -237,6 +263,20 @@
           ],
           "default": null,
           "title": "End Date"
+        },
+        "executed_residual_cash_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executed Residual Cash Weight"
         },
         "execution_model": {
           "anyOf": [
@@ -526,6 +566,20 @@
           ],
           "default": null,
           "title": "Profit Factor"
+        },
+        "requested_residual_cash_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Residual Cash Weight"
         },
         "research_integrity_status": {
           "anyOf": [

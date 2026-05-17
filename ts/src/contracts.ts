@@ -1212,6 +1212,8 @@ export interface BacktestSummary {
   approval_readiness?: BacktestApprovalReadiness | null;
   data_quality_event_count?: number | null;
   policy_event_count?: number | null;
+  requested_residual_cash_weight?: number | null;
+  executed_residual_cash_weight?: number | null;
   option_strategy_id?: OptionStrategyId | null;
   option_chain_snapshot_count?: number | null;
   option_quote_missing_count?: number | null;
@@ -1232,6 +1234,8 @@ export interface BacktestResultLinks {
   metricsRollingUrl: string;
   tradesUrl: string;
   closedPositionsUrl: string;
+  policyEventsUrl?: string | null;
+  dataQualityEventsUrl?: string | null;
 }
 
 export interface BacktestRunRequest {
@@ -1331,6 +1335,8 @@ export interface TradeResponse {
   cash_after: number;
   position_id?: string | null;
   trade_role?: TradeRole | null;
+  requested_target_weight?: number | null;
+  executed_target_weight?: number | null;
 }
 
 export interface ClosedPositionListResponse {
@@ -1404,6 +1410,10 @@ export interface BacktestPolicyEvent {
   observed_value?: number | null;
   threshold_value?: number | null;
   action?: string | null;
+  requested_target_weight?: number | null;
+  executed_target_weight?: number | null;
+  requested_residual_cash_weight?: number | null;
+  executed_residual_cash_weight?: number | null;
   details: Record<string, unknown>;
 }
 

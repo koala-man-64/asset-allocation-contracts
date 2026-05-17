@@ -11,6 +11,20 @@
           "title": "Commission",
           "type": "number"
         },
+        "executed_target_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executed Target Weight"
+        },
         "execution_date": {
           "title": "Execution Date",
           "type": "string"
@@ -38,6 +52,20 @@
         "quantity": {
           "title": "Quantity",
           "type": "number"
+        },
+        "requested_target_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Target Weight"
         },
         "slippage_cost": {
           "title": "Slippage Cost",

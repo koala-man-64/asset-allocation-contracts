@@ -91,6 +91,8 @@ class BacktestResultLinks(BaseModel):
     metricsRollingUrl: str = Field(..., min_length=1)
     tradesUrl: str = Field(..., min_length=1)
     closedPositionsUrl: str = Field(..., min_length=1)
+    policyEventsUrl: str | None = Field(default=None, min_length=1)
+    dataQualityEventsUrl: str | None = Field(default=None, min_length=1)
 
 
 class _BacktestRequestBase(BaseModel):
@@ -190,6 +192,8 @@ class BacktestSummary(BaseModel):
     approval_readiness: BacktestApprovalReadiness | None = None
     data_quality_event_count: int | None = Field(default=None, ge=0)
     policy_event_count: int | None = Field(default=None, ge=0)
+    requested_residual_cash_weight: float | None = Field(default=None, ge=0, le=1)
+    executed_residual_cash_weight: float | None = Field(default=None, ge=0, le=1)
     option_strategy_id: OptionStrategyId | None = None
     option_chain_snapshot_count: int | None = Field(default=None, ge=0)
     option_quote_missing_count: int | None = Field(default=None, ge=0)
@@ -206,7 +210,7 @@ class BacktestSummary(BaseModel):
 class BacktestResultMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    results_schema_version: int = Field(default=7, ge=1)
+    results_schema_version: int = Field(default=8, ge=1)
     bar_size: str = Field(..., min_length=1, max_length=32)
     periods_per_year: int = Field(..., ge=1)
     strategy_scope: str = Field(..., min_length=1, max_length=128)
@@ -321,6 +325,8 @@ class TradeResponse(BaseModel):
     cash_after: float
     position_id: str | None = None
     trade_role: TradeRole | None = None
+    requested_target_weight: float | None = Field(default=None, ge=0, le=1)
+    executed_target_weight: float | None = Field(default=None, ge=0, le=1)
 
 
 class TradeListResponse(BaseModel):
@@ -406,6 +412,10 @@ class BacktestPolicyEvent(BaseModel):
     observed_value: float | None = None
     threshold_value: float | None = None
     action: str | None = Field(default=None, min_length=1, max_length=128)
+    requested_target_weight: float | None = Field(default=None, ge=0, le=1)
+    executed_target_weight: float | None = Field(default=None, ge=0, le=1)
+    requested_residual_cash_weight: float | None = Field(default=None, ge=0, le=1)
+    executed_residual_cash_weight: float | None = Field(default=None, ge=0, le=1)
     details: dict[str, Any] = Field(default_factory=dict)
 
 

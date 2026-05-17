@@ -41,6 +41,34 @@
           "title": "Event Seq",
           "type": "integer"
         },
+        "executed_residual_cash_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executed Residual Cash Weight"
+        },
+        "executed_target_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executed Target Weight"
+        },
         "observed_value": {
           "anyOf": [
             {
@@ -97,6 +125,34 @@
           "minLength": 1,
           "title": "Reason Code",
           "type": "string"
+        },
+        "requested_residual_cash_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Residual Cash Weight"
+        },
+        "requested_target_weight": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Target Weight"
         },
         "run_id": {
           "title": "Run Id",

@@ -1322,6 +1322,10 @@ def test_backtest_policy_event_contract_captures_policy_diagnostics() -> None:
         observed_value=1,
         threshold_value=12,
         action="block_reentry",
+        requested_target_weight=0.5,
+        executed_target_weight=0.35,
+        requested_residual_cash_weight=0.0,
+        executed_residual_cash_weight=0.15,
         details={"cooldownBarsRemaining": 11},
     )
     response = BacktestPolicyEventListResponse(
@@ -1330,6 +1334,7 @@ def test_backtest_policy_event_contract_captures_policy_diagnostics() -> None:
 
     assert response.events[0].reason_code == "cooldown_active"
     assert response.events[0].details["cooldownBarsRemaining"] == 11
+    assert response.events[0].executed_target_weight == 0.35
 
 
 def test_backtest_data_quality_event_contract_captures_strict_mode_diagnostics() -> (
@@ -2653,8 +2658,14 @@ def test_backtest_run_response_and_lookup_response_support_links_and_summary() -
         metricsRollingUrl="/api/backtests/run-123/metrics/rolling",
         tradesUrl="/api/backtests/run-123/trades",
         closedPositionsUrl="/api/backtests/run-123/positions/closed",
+        policyEventsUrl="/api/backtests/run-123/policy-events",
+        dataQualityEventsUrl="/api/backtests/run-123/data-quality-events",
     )
-    summary = BacktestSummary(total_return=0.12)
+    summary = BacktestSummary(
+        total_return=0.12,
+        requested_residual_cash_weight=0.0,
+        executed_residual_cash_weight=0.15,
+    )
 
     lookup = BacktestLookupResponse(
         found=True,
@@ -2672,8 +2683,10 @@ def test_backtest_run_response_and_lookup_response_support_links_and_summary() -
 
     assert lookup.links is not None
     assert lookup.links.closedPositionsUrl.endswith("/positions/closed")
+    assert lookup.links.dataQualityEventsUrl is not None
     assert lookup.result is not None
     assert lookup.result.total_return == 0.12
+    assert lookup.result.executed_residual_cash_weight == 0.15
     assert run_response.streamUrl.endswith("/events")
 
 
@@ -2731,21 +2744,21 @@ def test_backtest_reconcile_response_defaults_and_payload() -> None:
 
 def test_backtest_result_metadata_and_response_schema() -> None:
     metadata = BacktestResultMetadata(
-        results_schema_version=7,
+        results_schema_version=8,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="portfolio",
     )
     schema = TimeseriesResponse.model_json_schema()
 
-    assert metadata.results_schema_version == 7
+    assert metadata.results_schema_version == 8
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
     assert (
         schema["$defs"]["BacktestResultMetadata"]["properties"][
             "results_schema_version"
         ]["default"]
-        == 7
+        == 8
     )
 
 
@@ -2929,6 +2942,8 @@ def test_trade_and_closed_position_contracts_support_position_lifecycle_fields()
             "cash_after": 98998.5,
             "position_id": "pos-123",
             "trade_role": "entry",
+            "requested_target_weight": 0.5,
+            "executed_target_weight": 0.35,
         }
     )
     closed = ClosedPositionResponse.model_validate(
@@ -2954,6 +2969,7 @@ def test_trade_and_closed_position_contracts_support_position_lifecycle_fields()
 
     assert trade.trade_role == "entry"
     assert trade.position_id == "pos-123"
+    assert trade.executed_target_weight == 0.35
     assert closed.realized_return == 0.063
     assert closed.exit_rule_id == "tp-1"
 
