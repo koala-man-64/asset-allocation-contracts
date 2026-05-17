@@ -6,7 +6,12 @@ from typing import Any, Literal, TypeAlias
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from asset_allocation_contracts.ranking import RankingFieldReference, RankingPreviewResponse, RankingSchemaConfig
-from asset_allocation_contracts.regime import RegimePolicy
+from asset_allocation_contracts.regime import (
+    DEFAULT_REGIME_MODEL_NAME,
+    RegimeGate,
+    RegimePolicy,
+    RegimeSourceRef,
+)
 
 ExitRuleType = Literal[
     "stop_loss_fixed",
@@ -568,6 +573,7 @@ class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
 class RebalancePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    regimeGate: RegimeGate | None = None
     frequency: RebalanceFrequency = "every_bar"
     executionTiming: RebalanceExecutionTiming = "next_bar_open"
     cadence: ReusableRebalanceCadence | None = None
@@ -855,6 +861,7 @@ class StrategyRiskPolicy(BaseModel):
 class RiskPolicyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    regimeGate: RegimeGate | None = None
     policy: StrategyRiskPolicy
 
 
@@ -900,6 +907,7 @@ class RiskPolicyConfigUpsertRequest(BaseModel):
 class ExitRuleSetConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    regimeGate: RegimeGate | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
@@ -1203,13 +1211,6 @@ class RebalancePolicyPreset(BaseModel):
         return self
 
 
-class RegimePolicyPreset(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    identity: ConfigIdentity
-    config: RegimePolicy
-
-
 class StrategyRiskPolicyPreset(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -1239,6 +1240,7 @@ class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     componentRefs: StrategyComponentRefs | None = None
+    regimeSource: RegimeSourceRef | None = None
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
     universeConfigVersion: int | None = Field(default=None, ge=1)
     universe: UniverseDefinition | None = None
@@ -1256,11 +1258,13 @@ class StrategyConfig(BaseModel):
     riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyVersion: int | None = Field(default=None, ge=1)
+    riskRegimeGate: RegimeGate | None = None
     positionPolicy: StrategyPositionPolicy | None = None
     rebalancePolicy: RebalancePolicy | None = None
     strategyRiskPolicy: StrategyRiskPolicy | None = None
     exitRuleSetName: str | None = Field(default=None, min_length=1, max_length=128)
     exitRuleSetVersion: int | None = Field(default=None, ge=1)
+    exitRegimeGate: RegimeGate | None = None
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
@@ -1279,6 +1283,11 @@ class StrategyConfig(BaseModel):
             else:
                 normalized_policy.pop("enabled", None)
                 payload["regimePolicy"] = normalized_policy
+                if payload.get("regimeSource") in (None, {}):
+                    payload["regimeSource"] = {
+                        "modelName": normalized_policy.get("modelName") or DEFAULT_REGIME_MODEL_NAME,
+                        "modelVersion": normalized_policy.get("modelVersion"),
+                    }
 
         raw_exits = payload.get("exits")
         if isinstance(raw_exits, list):
@@ -1330,6 +1339,11 @@ class StrategyConfig(BaseModel):
     def normalize_exits(self) -> "StrategyConfig":
         if not self.universeConfigName and self.universe is None and not self._component_ref("universe"):
             raise ValueError("componentRefs.universe, universeConfigName, or universe is required.")
+        if self.regimeSource is None and self.regimePolicy is not None:
+            self.regimeSource = RegimeSourceRef(
+                modelName=self.regimePolicy.modelName,
+                modelVersion=self.regimePolicy.modelVersion,
+            )
         self._validate_pin_pair("universeConfigVersion", self.universeConfigName, self.universeConfigVersion)
         self._validate_pin_pair("rankingSchemaVersion", self.rankingSchemaName, self.rankingSchemaVersion)
         self._validate_pin_pair(
@@ -1339,6 +1353,12 @@ class StrategyConfig(BaseModel):
         )
         self._validate_pin_pair("riskPolicyVersion", self.riskPolicyName, self.riskPolicyVersion)
         self._validate_pin_pair("exitRuleSetVersion", self.exitRuleSetName, self.exitRuleSetVersion)
+        if self.rebalancePolicy is not None and self.rebalancePolicy.regimeGate is not None and self.regimeSource is None:
+            raise ValueError("rebalancePolicy.regimeGate requires regimeSource.")
+        if self.riskRegimeGate is not None and self.regimeSource is None:
+            raise ValueError("riskRegimeGate requires regimeSource.")
+        if self.exitRegimeGate is not None and self.regimeSource is None:
+            raise ValueError("exitRegimeGate requires regimeSource.")
         if not self.longOnly:
             raise ValueError("Strategy position policy v1 only supports longOnly=true.")
         if self.riskProfileName and self.positionPolicy is None:

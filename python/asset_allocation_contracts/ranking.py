@@ -5,6 +5,8 @@ from typing import Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from asset_allocation_contracts.regime import RegimeGate
+
 RankingTransformType = Literal[
     "percentile_rank",
     "zscore",
@@ -147,6 +149,7 @@ class RankingSchemaConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimeGate: RegimeGate | None = None
     groups: list[RankingGroup] = Field(..., min_length=1)
     overallTransforms: list[RankingTransform] = Field(default_factory=list)
 

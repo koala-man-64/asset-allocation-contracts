@@ -9,7 +9,6 @@ from asset_allocation_contracts.regime import (
 from asset_allocation_contracts.strategy import (
     ExitPolicyPreset,
     RebalancePolicyPreset,
-    RegimePolicyPreset,
     StrategyConfig,
     StrategyRiskPolicyPreset,
     StrategyRiskProfileDetail,
@@ -95,10 +94,7 @@ def test_documented_strategy_example_is_valid() -> None:
             "costModel": "default",
             "rankingSchemaName": "quality-momentum-v1",
             "riskProfileName": "balanced",
-            "regimePolicy": {
-                "modelName": "default-regime",
-                "mode": "observe_only",
-            },
+            "regimeSource": {"modelName": "default-regime", "modelVersion": 1},
             "positionPolicy": {
                 "targetPositionSize": {
                     "mode": "pct_of_allocatable_capital",
@@ -180,7 +176,7 @@ def test_documented_strategy_example_is_valid() -> None:
         }
     )
 
-    assert payload.regimePolicy is not None
+    assert payload.regimeSource is not None
     assert payload.riskProfileName == "balanced"
     assert len(payload.exits) == 6
 
@@ -192,10 +188,10 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
                 "universe": {"name": "us_large_liquid", "version": 1},
                 "ranking": {"name": "quality_momentum", "version": 1},
                 "rebalance": {"name": "monthly_last_trading_day", "version": 1},
-                "regimePolicy": {"name": "observe_only_default", "version": 1},
                 "riskPolicy": {"name": "balanced_long_only", "version": 1},
                 "exitPolicy": {"name": "rank_decay_exit", "version": 1},
             },
+            "regimeSource": {"modelName": "default-regime", "modelVersion": 1},
             "rebalance": "monthly",
             "longOnly": True,
             "topN": 20,
@@ -229,11 +225,10 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
             "rebalancePolicy": {
                 "frequency": "monthly",
                 "executionTiming": "next_bar_open",
+                "regimeGate": {"activeInRegimes": ["trending_up"]},
             },
-            "regimePolicy": {
-                "modelName": "default-regime",
-                "mode": "observe_only",
-            },
+            "regimeSource": {"modelName": "default-regime", "modelVersion": 1},
+            "riskRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]},
             "strategyRiskPolicy": {
                 "scope": "strategy",
                 "stopLoss": {
@@ -299,12 +294,6 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
             },
         }
     )
-    regime_preset = RegimePolicyPreset.model_validate(
-        {
-            "identity": {**identity, "name": "observe_only_default"},
-            "config": {"modelName": "default-regime", "mode": "observe_only"},
-        }
-    )
     risk_preset = StrategyRiskPolicyPreset.model_validate(
         {
             "identity": {**identity, "name": "balanced_long_only"},
@@ -326,7 +315,6 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
 
     assert universe_preset.identity.name == "us_large_liquid"
     assert rebalance_preset.config.cadence == "monthly"
-    assert regime_preset.config.mode == "observe_only"
     assert risk_preset.config.stopLoss is not None
     assert exit_preset.config.exits[0].rankThreshold == 40
 

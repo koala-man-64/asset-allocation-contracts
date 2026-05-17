@@ -137,6 +137,50 @@ class RegimeActivationDecision(BaseModel):
     haltReason: str | None = None
 
 
+class RegimeSourceRef(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    modelName: str = Field(..., min_length=1, max_length=128)
+    modelVersion: int | None = Field(default=None, ge=1)
+
+    @field_validator("modelName", mode="before")
+    @classmethod
+    def normalize_model_name(cls, value: object) -> str:
+        normalized = str(value or "").strip()
+        if not normalized:
+            raise ValueError("modelName is required.")
+        return normalized
+
+
+class RegimeGate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    activeInRegimes: list[RegimeCode] | None = None
+    inactiveInRegimes: list[RegimeCode] | None = None
+
+    @field_validator("activeInRegimes", "inactiveInRegimes")
+    @classmethod
+    def dedupe_regimes(cls, value: list[RegimeCode] | None) -> list[RegimeCode] | None:
+        if value is None:
+            return None
+        seen: set[str] = set()
+        normalized: list[RegimeCode] = []
+        for item in value or []:
+            code = str(item or "").strip()
+            if code and code not in seen:
+                seen.add(code)
+                normalized.append(item)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_gate_sets(self) -> "RegimeGate":
+        overlap = sorted(set(self.activeInRegimes or []).intersection(self.inactiveInRegimes or []))
+        if overlap:
+            joined = ", ".join(overlap)
+            raise ValueError(f"Regime gates cannot both activate and deactivate: {joined}.")
+        return self
+
+
 class RegimePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -174,77 +218,6 @@ class RegimePolicy(BaseModel):
         elif self.activation is not None:
             raise ValueError("observe_only regime policies must not include activation rules.")
         return self
-
-
-class RegimePolicyConfig(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
-    modelVersion: int | None = Field(default=None, ge=1)
-    mode: RegimePolicyMode = "observe_only"
-    activation: RegimeActivationPolicy | None = None
-
-    @model_validator(mode="after")
-    def validate_policy_mode(self) -> "RegimePolicyConfig":
-        self.modelName = str(self.modelName or "").strip() or DEFAULT_REGIME_MODEL_NAME
-        if self.mode == "activation_gate":
-            if self.modelVersion is None:
-                raise ValueError("activation_gate regime policy configs require modelVersion.")
-            if self.activation is None:
-                raise ValueError("activation_gate regime policy configs require activation rules.")
-        elif self.activation is not None:
-            raise ValueError("observe_only regime policy configs must not include activation rules.")
-        return self
-
-    def resolved_policy(self) -> RegimePolicy:
-        return RegimePolicy(
-            modelName=self.modelName,
-            modelVersion=self.modelVersion,
-            mode=self.mode,
-            activation=self.activation,
-        )
-
-
-class RegimePolicyConfigSummary(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(..., min_length=1, max_length=128)
-    description: str = Field(default="", max_length=2048)
-    version: int = Field(default=1, ge=1)
-    archived: bool = False
-    usageCount: int = Field(default=0, ge=0)
-    modelName: str = Field(default=DEFAULT_REGIME_MODEL_NAME, min_length=1, max_length=128)
-    modelVersion: int | None = Field(default=None, ge=1)
-    mode: RegimePolicyMode = "observe_only"
-    updatedAt: datetime | None = None
-
-
-class RegimePolicyConfigRevision(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(..., min_length=1, max_length=128)
-    version: int = Field(..., ge=1)
-    description: str = Field(default="", max_length=2048)
-    config: RegimePolicyConfig
-    configHash: str | None = None
-    createdAt: datetime | None = None
-    createdBy: str | None = None
-
-
-class RegimePolicyConfigDetailResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    policy: RegimePolicyConfigSummary
-    activeRevision: RegimePolicyConfigRevision | None = None
-    revisions: list[RegimePolicyConfigRevision] = Field(default_factory=list)
-
-
-class RegimePolicyConfigUpsertRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(..., min_length=1, max_length=128)
-    description: str = Field(default="", max_length=2048)
-    config: RegimePolicyConfig
 
 
 class RegimeModelConfig(BaseModel):

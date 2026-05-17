@@ -121,11 +121,9 @@ from asset_allocation_contracts.ranking import (
 from asset_allocation_contracts.regime import (
     CANONICAL_DEFAULT_REGIME_VERSION,
     RegimeActivationDecision,
+    RegimeGate,
     RegimePolicy,
-    RegimePolicyConfig,
-    RegimePolicyConfigDetailResponse,
-    RegimePolicyConfigSummary,
-    RegimePolicyConfigRevision,
+    RegimeSourceRef,
     RegimeSignal,
     RegimeSnapshot,
     canonical_default_regime_config_errors,
@@ -179,7 +177,7 @@ from asset_allocation_contracts.strategy import (
     RankingSchemaDraftGenerationResponse,
     RebalancePolicy,
     RebalancePolicyPreset,
-    RegimePolicyPreset,
+    RiskPolicyConfig,
     RiskPolicyConfigDetailResponse,
     RiskPolicyConfigRevision,
     RiskPolicyConfigSummary,
@@ -226,6 +224,8 @@ def test_strategy_contract_accepts_regime_policy() -> None:
     assert payload.regimePolicy is not None
     assert payload.regimePolicy.modelName == "default-regime"
     assert payload.regimePolicy.mode == "observe_only"
+    assert payload.regimeSource is not None
+    assert payload.regimeSource.modelName == "default-regime"
 
 
 def test_strategy_config_accepts_pinned_configuration_references_with_resolved_snapshots() -> (
@@ -290,11 +290,11 @@ def test_config_revision_reference_normalizes_name() -> None:
 
 def test_strategy_config_accepts_component_refs_as_canonical_pins() -> None:
     payload = StrategyConfig(
+        regimeSource={"modelName": "default-regime", "modelVersion": 3},
         componentRefs={
             "universe": {"name": "us-large-liquid", "version": 1},
             "ranking": {"name": "quality-momentum", "version": 2},
             "rebalance": {"name": "monthly-last-trading-day", "version": 1},
-            "regimePolicy": {"name": "observe-only-default", "version": 1},
             "riskPolicy": {"name": "balanced-long-only", "version": 1},
             "exitPolicy": {"name": "rank-decay-exit", "version": 1},
         }
@@ -305,6 +305,136 @@ def test_strategy_config_accepts_component_refs_as_canonical_pins() -> None:
     assert payload.componentRefs.universe.name == "us-large-liquid"
     assert payload.componentRefs.ranking is not None
     assert payload.componentRefs.ranking.version == 2
+    assert payload.regimeSource is not None
+    assert payload.regimeSource.modelVersion == 3
+
+
+def test_strategy_config_accepts_legacy_regime_policy_component_ref_for_compatibility() -> None:
+    payload = StrategyConfig(
+        componentRefs={
+            "universe": {"name": "us-large-liquid", "version": 1},
+            "regimePolicy": {"name": "observe-only-default", "version": 1},
+        }
+    )
+
+    assert payload.componentRefs is not None
+    assert payload.componentRefs.regimePolicy is not None
+    assert payload.componentRefs.regimePolicy.name == "observe-only-default"
+
+
+def test_regime_source_ref_requires_model_name() -> None:
+    source = RegimeSourceRef(modelName="  default-regime  ", modelVersion=3)
+
+    assert source.modelName == "default-regime"
+    assert source.modelVersion == 3
+
+    try:
+        RegimeSourceRef(modelName="   ")
+    except Exception as exc:
+        assert "modelName" in str(exc)
+    else:
+        raise AssertionError("Expected blank regime source model name to fail validation.")
+
+
+def test_regime_gate_dedupes_and_rejects_overlap() -> None:
+    gate = RegimeGate(
+        activeInRegimes=["trending_up", "trending_up", "low_volatility"],
+        inactiveInRegimes=["liquidity_stress", "liquidity_stress"],
+    )
+
+    assert gate.activeInRegimes == ["trending_up", "low_volatility"]
+    assert gate.inactiveInRegimes == ["liquidity_stress"]
+
+    try:
+        RegimeGate(activeInRegimes=["trending_up"], inactiveInRegimes=["trending_up"])
+    except Exception as exc:
+        assert "activate and deactivate" in str(exc)
+    else:
+        raise AssertionError("Expected overlapping regime gate lists to fail validation.")
+
+
+def test_component_configs_accept_regime_gates() -> None:
+    ranking = RankingSchemaConfig(
+        universeConfigName="us-large-liquid",
+        regimeGate={"activeInRegimes": ["trending_up"]},
+        groups=[
+            {
+                "name": "momentum",
+                "factors": [
+                    {
+                        "name": "return_126d",
+                        "table": "market",
+                        "column": "return_126d",
+                        "direction": "desc",
+                        "weight": 1,
+                    }
+                ],
+            }
+        ],
+    )
+    rebalance = RebalancePolicy(regimeGate={"inactiveInRegimes": ["high_volatility"]})
+    risk = RiskPolicyConfig(
+        regimeGate={"activeInRegimes": ["trending_up"]},
+        policy={
+            "scope": "strategy",
+            "stopLoss": {
+                "thresholdPct": 8,
+                "action": "reduce_exposure",
+                "reductionPct": 50,
+            },
+        },
+    )
+    exits = ExitRuleSetConfig(
+        regimeGate={"inactiveInRegimes": ["liquidity_stress"]},
+        exits=[{"id": "stop-8", "type": "stop_loss_fixed", "value": 0.08}],
+    )
+
+    assert ranking.regimeGate is not None
+    assert ranking.regimeGate.activeInRegimes == ["trending_up"]
+    assert rebalance.regimeGate is not None
+    assert rebalance.regimeGate.inactiveInRegimes == ["high_volatility"]
+    assert risk.regimeGate is not None
+    assert risk.regimeGate.activeInRegimes == ["trending_up"]
+    assert exits.regimeGate is not None
+    assert exits.regimeGate.inactiveInRegimes == ["liquidity_stress"]
+
+
+def test_strategy_config_requires_regime_source_for_inline_component_gates() -> None:
+    base_payload = {
+        "universe": {
+            "root": {
+                "clauses": [{"field": "market.close", "operator": "gt", "value": 0}],
+            }
+        }
+    }
+
+    for payload in (
+        {**base_payload, "rebalancePolicy": {"regimeGate": {"activeInRegimes": ["trending_up"]}}},
+        {**base_payload, "riskRegimeGate": {"activeInRegimes": ["trending_up"]}},
+        {**base_payload, "exitRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]}},
+    ):
+        try:
+            StrategyConfig.model_validate(payload)
+        except Exception as exc:
+            assert "regimeSource" in str(exc)
+        else:
+            raise AssertionError(f"Expected missing regime source to fail for {payload!r}")
+
+    resolved = StrategyConfig.model_validate(
+        {
+            **base_payload,
+            "regimeSource": {"modelName": "default-regime", "modelVersion": 3},
+            "rebalancePolicy": {"regimeGate": {"activeInRegimes": ["trending_up"]}},
+            "riskRegimeGate": {"activeInRegimes": ["trending_up"]},
+            "exitRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]},
+        }
+    )
+
+    assert resolved.regimeSource is not None
+    assert resolved.rebalancePolicy is not None
+    assert resolved.rebalancePolicy.regimeGate is not None
+    assert resolved.riskRegimeGate is not None
+    assert resolved.exitRegimeGate is not None
 
 
 def test_config_reference_requires_integer_version() -> None:
@@ -468,7 +598,6 @@ def test_reusable_preset_wrappers_forbid_unknown_fields() -> None:
         "dayRule": "last_trading_day",
         "anchor": "next_open",
     }
-    regime_policy = {"modelName": "default-regime", "mode": "observe_only"}
     risk_policy = {
         "scope": "strategy",
         "stopLoss": {
@@ -484,7 +613,6 @@ def test_reusable_preset_wrappers_forbid_unknown_fields() -> None:
         (UniverseConfigPreset, {"identity": identity, "config": universe}),
         (RankingSchemaPreset, {"identity": identity, "config": ranking}),
         (RebalancePolicyPreset, {"identity": identity, "config": reusable_rebalance}),
-        (RegimePolicyPreset, {"identity": identity, "config": regime_policy}),
         (StrategyRiskPolicyPreset, {"identity": identity, "config": risk_policy}),
         (ExitPolicyPreset, {"identity": identity, "config": exit_policy}),
     ]
@@ -2387,38 +2515,6 @@ def test_default_regime_policy_rejects_legacy_fields() -> None:
         raise AssertionError(
             "Expected legacy default-regime policy fields to be rejected."
         )
-
-
-def test_regime_policy_library_contracts_reference_model_revision() -> None:
-    config = RegimePolicyConfig(
-        modelName="default-regime", modelVersion=3, mode="observe_only"
-    )
-    summary = RegimePolicyConfigSummary(
-        name="observe-default",
-        description="Observe default regime model.",
-        version=2,
-        usageCount=5,
-        modelName=config.modelName,
-        modelVersion=config.modelVersion,
-        mode=config.mode,
-    )
-    revision = RegimePolicyConfigRevision(
-        name="observe-default",
-        version=2,
-        description="Observe default regime model.",
-        config=config,
-        configHash="hash-1",
-    )
-    detail = RegimePolicyConfigDetailResponse(
-        policy=summary, activeRevision=revision, revisions=[revision]
-    )
-    resolved = config.resolved_policy()
-
-    assert detail.policy.modelVersion == 3
-    assert detail.activeRevision is not None
-    assert detail.activeRevision.config.mode == "observe_only"
-    assert resolved.modelName == "default-regime"
-    assert resolved.modelVersion == 3
 
 
 def test_regime_policy_activation_gate_requires_rules_and_revision() -> None:

@@ -71,7 +71,9 @@ import type {
   RankingSchemaPreset,
   RebalancePolicyPreset,
   RegimeActivationDecision,
-  RegimePolicyPreset,
+  RegimeGate,
+  RegimeSourceRef,
+  RiskPolicyConfig,
   StrategyConfig,
   StrategyComponentRefs,
   StrategyRiskPolicyPreset,
@@ -375,7 +377,18 @@ const preview: UniversePreviewResponse = {
   asOf: "2026-05-16",
 };
 
+const regimeSource: RegimeSourceRef = {
+  modelName: "default-regime",
+  modelVersion: 3,
+};
+
+const trendingGate: RegimeGate = {
+  activeInRegimes: ["trending_up", "low_volatility"],
+  inactiveInRegimes: ["liquidity_stress"],
+};
+
 const strategy: StrategyConfig = {
+  regimeSource,
   componentRefs: {
     universe: {
       name: "us_large_liquid",
@@ -387,10 +400,6 @@ const strategy: StrategyConfig = {
     },
     rebalance: {
       name: "monthly_last_trading_day",
-      version: 1,
-    },
-    regimePolicy: {
-      name: "observe_only_default",
       version: 1,
     },
     riskPolicy: {
@@ -409,6 +418,8 @@ const strategy: StrategyConfig = {
   lookbackWindow: 63,
   holdingPeriod: 21,
   costModel: "default",
+  riskRegimeGate: trendingGate,
+  exitRegimeGate: { inactiveInRegimes: ["high_volatility"] },
   intrabarConflictPolicy: "priority_order",
   exits: [],
 };
@@ -432,7 +443,6 @@ const reusableComponentRefs: StrategyComponentRefs = {
   universe: configReference,
   ranking: { name: "momentum_12_1", version: 1 },
   rebalance: { name: "quarterly_last_trading_day", version: 1 },
-  regimePolicy: { name: "observe_only_default", version: 1 },
   riskPolicy: { name: "balanced_long_only", version: 1 },
   exitPolicy: { name: "rebalance_only", version: 1 },
 };
@@ -494,6 +504,7 @@ const rankingPreset: RankingSchemaPreset = {
   },
   config: {
     universeConfigName: "us_large_liquid",
+    regimeGate: trendingGate,
     groups: [
       {
         name: "momentum",
@@ -559,6 +570,7 @@ const rebalancePreset: RebalancePolicyPreset = {
     thesis: "Weekly close signal with next-open execution.",
   },
   config: {
+    regimeGate: { inactiveInRegimes: ["high_volatility"] },
     frequency: "weekly",
     executionTiming: "next_bar_open",
     cadence: "weekly",
@@ -571,38 +583,6 @@ const rebalancePreset: RebalancePolicyPreset = {
     cashBufferPct: 1,
     allowPartialRebalance: true,
     closeRemovedPositions: true,
-  },
-};
-
-const regimePreset: RegimePolicyPreset = {
-  identity: {
-    ...configIdentity,
-    name: "observe_only_default",
-    thesis: "Tag market state without changing exposures.",
-  },
-  config: {
-    modelName: "default-regime",
-    mode: "observe_only",
-  },
-};
-
-const activationRegimePreset: RegimePolicyPreset = {
-  identity: {
-    ...configIdentity,
-    name: "risk_on_activation_gate",
-    thesis: "Target-zero the strategy when the pinned regime model is outside the allowed risk-on state.",
-  },
-  config: {
-    modelName: "default-regime",
-    modelVersion: 3,
-    mode: "activation_gate",
-    activation: {
-      allowedRegimes: ["trending_up", "low_volatility"],
-      blockedRegimes: ["liquidity_stress"],
-      honorModelHalt: true,
-      blockWhenUnclassified: true,
-      inactiveAction: "target_zero",
-    },
   },
 };
 
@@ -641,6 +621,29 @@ const riskPreset: StrategyRiskPolicyPreset = {
       requireApproval: false,
     },
   },
+};
+
+const riskPolicyConfig: RiskPolicyConfig = {
+  regimeGate: trendingGate,
+  policy: riskPreset.config,
+};
+
+const gatedExitRuleSetConfig: ExitRuleSetConfig = {
+  regimeGate: { inactiveInRegimes: ["liquidity_stress"] },
+  intrabarConflictPolicy: "priority_order",
+  exits: [
+    {
+      id: "rank-decay-2",
+      type: "rank_decay",
+      description: "Close names that decay below the retained-rank cutoff.",
+      visualKey: "rank_decay",
+      scope: "position",
+      action: "exit_full",
+      minHoldBars: 0,
+      rankThreshold: 2,
+      priority: 1,
+    },
+  ],
 };
 
 const exitPreset: ExitPolicyPreset = {
@@ -1376,7 +1379,6 @@ void rankingDraftGenerationRequest;
 void rankingPreview;
 void rankingDraftGenerationResponse;
 void rebalancePreset;
-void regimePreset;
 void riskPreset;
 void exitPreset;
 void exitRuleWithMetadata;

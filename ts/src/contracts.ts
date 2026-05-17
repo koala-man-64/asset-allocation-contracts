@@ -166,6 +166,7 @@ export type UniverseNode = UniverseGroup | UniverseCondition;
 
 export interface StrategyConfig {
   componentRefs?: StrategyComponentRefs | null;
+  regimeSource?: RegimeSourceRef | null;
   universeConfigName?: string | null;
   universeConfigVersion?: number | null;
   universe?: UniverseDefinition | null;
@@ -183,11 +184,13 @@ export interface StrategyConfig {
   riskProfileName?: string | null;
   riskPolicyName?: string | null;
   riskPolicyVersion?: number | null;
+  riskRegimeGate?: RegimeGate | null;
   positionPolicy?: StrategyPositionPolicy | null;
   rebalancePolicy?: RebalancePolicy | null;
   strategyRiskPolicy?: StrategyRiskPolicy | null;
   exitRuleSetName?: string | null;
   exitRuleSetVersion?: number | null;
+  exitRegimeGate?: RegimeGate | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
@@ -204,6 +207,11 @@ export interface StrategyComponentRefs {
 export interface ConfigReference {
   name: string;
   version: number;
+}
+
+export interface RegimeSourceRef {
+  modelName: string;
+  modelVersion?: number | null;
 }
 
 export interface UniverseDefinition {
@@ -240,6 +248,11 @@ export interface RegimeActivationPolicy {
   inactiveAction: RegimeInactiveAction;
 }
 
+export interface RegimeGate {
+  activeInRegimes?: RegimeCode[] | null;
+  inactiveInRegimes?: RegimeCode[] | null;
+}
+
 export interface StrategyPositionPolicy {
   targetPositionSize?: StrategyPositionSizeLimit | null;
   maxPositionSize?: StrategyPositionSizeLimit | null;
@@ -254,6 +267,7 @@ export interface StrategyPositionSizeLimit {
 }
 
 export interface RebalancePolicy {
+  regimeGate?: RegimeGate | null;
   frequency: RebalanceFrequency;
   executionTiming: RebalanceExecutionTiming;
   cadence?: ReusableRebalanceCadence | null;
@@ -469,6 +483,7 @@ export interface RankingSchemaPreset {
 
 export interface RankingSchemaConfig {
   universeConfigName?: string | null;
+  regimeGate?: RegimeGate | null;
   groups: RankingGroup[];
   overallTransforms: RankingTransform[];
 }
@@ -535,11 +550,6 @@ export interface RebalancePolicyPreset {
   config: RebalancePolicy;
 }
 
-export interface RegimePolicyPreset {
-  identity: ConfigIdentity;
-  config: RegimePolicy;
-}
-
 export interface StrategyRiskPolicyPreset {
   identity: ConfigIdentity;
   config: StrategyRiskPolicy;
@@ -551,11 +561,13 @@ export interface ExitPolicyPreset {
 }
 
 export interface ExitRuleSetConfig {
+  regimeGate?: RegimeGate | null;
   intrabarConflictPolicy: IntrabarConflictPolicy;
   exits: ExitRule[];
 }
 
 export interface RiskPolicyConfig {
+  regimeGate?: RegimeGate | null;
   policy: StrategyRiskPolicy;
 }
 
@@ -743,47 +755,6 @@ export interface RegimeActivationDecision {
   activeRegimes: RegimeCode[];
   haltFlag: boolean;
   haltReason?: string | null;
-}
-
-export interface RegimePolicyConfig {
-  modelName: string;
-  modelVersion?: number | null;
-  mode: RegimePolicyMode;
-  activation?: RegimeActivationPolicy | null;
-}
-
-export interface RegimePolicyConfigSummary {
-  name: string;
-  description: string;
-  version: number;
-  archived: boolean;
-  usageCount: number;
-  modelName: string;
-  modelVersion?: number | null;
-  mode: RegimePolicyMode;
-  updatedAt?: string | null;
-}
-
-export interface RegimePolicyConfigRevision {
-  name: string;
-  version: number;
-  description: string;
-  config: RegimePolicyConfig;
-  configHash?: string | null;
-  createdAt?: string | null;
-  createdBy?: string | null;
-}
-
-export interface RegimePolicyConfigDetailResponse {
-  policy: RegimePolicyConfigSummary;
-  activeRevision?: RegimePolicyConfigRevision | null;
-  revisions: RegimePolicyConfigRevision[];
-}
-
-export interface RegimePolicyConfigUpsertRequest {
-  name: string;
-  description: string;
-  config: RegimePolicyConfig;
 }
 
 export interface RegimeModelConfig {

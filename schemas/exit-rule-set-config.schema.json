@@ -158,6 +158,63 @@
       ],
       "title": "ExitRule",
       "type": "object"
+    },
+    "RegimeGate": {
+      "additionalProperties": false,
+      "properties": {
+        "activeInRegimes": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "trending_up",
+                  "trending_down",
+                  "mean_reverting",
+                  "low_volatility",
+                  "high_volatility",
+                  "liquidity_stress",
+                  "macro_alignment",
+                  "unclassified"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activeinregimes"
+        },
+        "inactiveInRegimes": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "trending_up",
+                  "trending_down",
+                  "mean_reverting",
+                  "low_volatility",
+                  "high_volatility",
+                  "liquidity_stress",
+                  "macro_alignment",
+                  "unclassified"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inactiveinregimes"
+        }
+      },
+      "title": "RegimeGate",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -178,6 +235,17 @@
       ],
       "title": "Intrabarconflictpolicy",
       "type": "string"
+    },
+    "regimeGate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RegimeGate"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "title": "ExitRuleSetConfig",
