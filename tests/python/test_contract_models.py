@@ -1586,6 +1586,31 @@ def test_universe_condition_accepts_us_liquid_equity_filter_fields() -> None:
     ]
 
 
+def test_universe_condition_accepts_qmom_research_fields() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "and",
+            "clauses": [
+                {"field": "qmom.daily_research_score", "operator": "gte", "value": 70},
+                {"field": "qmom.breakout_close_above_20d_high", "operator": "eq", "value": 1},
+                {"field": "qmom.trend_filter", "operator": "eq", "value": 1},
+            ],
+        }
+    )
+
+    used_fields = [
+        clause.field
+        for clause in definition.root.clauses
+        if isinstance(clause, UniverseCondition)
+    ]
+    assert used_fields == [
+        "qmom.daily_research_score",
+        "qmom.breakout_close_above_20d_high",
+        "qmom.trend_filter",
+    ]
+    assert any(field.id == "qmom.adr_pct_20d" for field in UNIVERSE_FIELD_DEFINITIONS)
+
+
 def test_universe_condition_rejects_unknown_field() -> None:
     try:
         UniverseCondition(field="market_data.close", operator="gt", value=0)
