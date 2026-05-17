@@ -1611,6 +1611,31 @@ def test_universe_condition_accepts_qmom_research_fields() -> None:
     assert any(field.id == "qmom.adr_pct_20d" for field in UNIVERSE_FIELD_DEFINITIONS)
 
 
+def test_universe_condition_accepts_runner_discovery_fields() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "and",
+            "clauses": [
+                {"field": "runner.distance_to_20d_high_pct", "operator": "gte", "value": -0.03},
+                {"field": "runner.volume_dryup_10d_50d", "operator": "lte", "value": 0.7},
+                {"field": "runner.breakout_hold_1d", "operator": "eq", "value": 1},
+            ],
+        }
+    )
+
+    used_fields = [
+        clause.field
+        for clause in definition.root.clauses
+        if isinstance(clause, UniverseCondition)
+    ]
+    assert used_fields == [
+        "runner.distance_to_20d_high_pct",
+        "runner.volume_dryup_10d_50d",
+        "runner.breakout_hold_1d",
+    ]
+    assert any(field.id == "runner.failed_breakout_1d" for field in UNIVERSE_FIELD_DEFINITIONS)
+
+
 def test_universe_condition_rejects_unknown_field() -> None:
     try:
         UniverseCondition(field="market_data.close", operator="gt", value=0)
