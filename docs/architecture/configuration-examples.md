@@ -350,6 +350,8 @@ Rebalance:
 
 | name | version | `RebalancePolicy` |
 | --- | ---: | --- |
+| `daily_last_trading_day` | 1 | `cadence: daily`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
+| `weekly_last_trading_day` | 1 | `cadence: weekly`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
 | `monthly_last_trading_day` | 1 | `cadence: monthly`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
 | `quarterly_last_trading_day` | 1 | `cadence: quarterly`, `dayRule: last_trading_day`, `anchor: next_open`, `tradeDelayBars: 0` |
 
@@ -380,12 +382,12 @@ First matrix:
 | --- | --- |
 | universe | `us_large_liquid`, `us_mid_large_liquid` |
 | ranking | `momentum_12_1`, `quality_momentum`, `value_quality_momentum` |
-| rebalance | `monthly_last_trading_day`, `quarterly_last_trading_day` |
+| rebalance | `daily_last_trading_day`, `weekly_last_trading_day`, `monthly_last_trading_day`, `quarterly_last_trading_day` |
 | risk | `balanced_long_only` |
 | exits | `rebalance_only`, `rank_decay_exit` |
 | regime | `observe_only_default` |
 
-This produces `2 universes x 3 rankings x 2 rebalances x 1 risk x 2 exits x 1 regime = 24` first-pass runs.
+This produces `2 universes x 3 rankings x 4 rebalances x 1 risk x 2 exits x 1 regime = 48` first-pass runs.
 
 ### Reusable preset wrapper example
 

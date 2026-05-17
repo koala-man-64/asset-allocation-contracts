@@ -555,13 +555,13 @@ const rankingDraftGenerationResponse: RankingSchemaDraftGenerationResponse = {
 const rebalancePreset: RebalancePolicyPreset = {
   identity: {
     ...configIdentity,
-    name: "monthly_last_trading_day",
-    thesis: "Monthly close signal with next-open execution.",
+    name: "weekly_last_trading_day",
+    thesis: "Weekly close signal with next-open execution.",
   },
   config: {
-    frequency: "monthly",
+    frequency: "weekly",
     executionTiming: "next_bar_open",
-    cadence: "monthly",
+    cadence: "weekly",
     dayRule: "last_trading_day",
     anchor: "next_open",
     tradeDelayBars: 0,

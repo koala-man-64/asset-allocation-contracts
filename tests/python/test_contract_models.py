@@ -792,18 +792,19 @@ def test_rebalance_policy_requires_interval_only_for_every_n_bars() -> None:
 
 
 def test_reusable_rebalance_policy_requires_complete_calendar_fields() -> None:
-    policy = RebalancePolicy(
-        cadence="monthly",
-        dayRule="last_trading_day",
-        anchor="next_open",
-        tradeDelayBars=1,
-        driftThresholdBps=50,
-        maxTurnoverPerRebalance=0.35,
-    )
+    for cadence in ("daily", "weekly", "monthly", "quarterly"):
+        policy = RebalancePolicy(
+            cadence=cadence,
+            dayRule="last_trading_day",
+            anchor="next_open",
+            tradeDelayBars=1,
+            driftThresholdBps=50,
+            maxTurnoverPerRebalance=0.35,
+        )
 
-    assert policy.cadence == "monthly"
-    assert policy.dayRule == "last_trading_day"
-    assert policy.anchor == "next_open"
+        assert policy.cadence == cadence
+        assert policy.dayRule == "last_trading_day"
+        assert policy.anchor == "next_open"
 
     try:
         RebalancePolicy(cadence="monthly")
@@ -820,7 +821,7 @@ def test_reusable_rebalance_policy_rejects_invalid_turnover_and_presets_require_
 ):
     try:
         RebalancePolicy(
-            cadence="weekly", dayRule="last_trading_day", anchor="next_open"
+            cadence="annual", dayRule="last_trading_day", anchor="next_open"
         )
     except Exception as exc:
         assert "cadence" in str(exc)

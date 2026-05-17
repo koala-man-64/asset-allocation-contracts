@@ -26,6 +26,8 @@
       "anyOf": [
         {
           "enum": [
+            "daily",
+            "weekly",
             "monthly",
             "quarterly"
           ],
