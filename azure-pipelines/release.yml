@@ -7,11 +7,11 @@ resources:
   pipelines:
     - pipeline: contractsCi
       source: asset-allocation-contracts-ci
-      branch: main
+      branch: refs/heads/main
       trigger:
         branches:
           include:
-            - main
+            - refs/heads/main
 
 pool:
   # Release publishes packages and stays hosted until the local Docker pool has
