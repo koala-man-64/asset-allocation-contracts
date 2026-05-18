@@ -336,27 +336,28 @@ def test_regime_source_ref_requires_model_name() -> None:
         raise AssertionError("Expected blank regime source model name to fail validation.")
 
 
-def test_regime_gate_dedupes_and_rejects_overlap() -> None:
+def test_regime_gate_normalizes_blocked_lists_and_rejects_legacy_active_shape() -> None:
     gate = RegimeGate(
-        activeInRegimes=["trending_up", "trending_up", "low_volatility"],
-        inactiveInRegimes=["liquidity_stress", "liquidity_stress"],
+        blockedRegimes=["liquidity_stress", "liquidity_stress", "high_volatility"],
     )
 
-    assert gate.activeInRegimes == ["trending_up", "low_volatility"]
-    assert gate.inactiveInRegimes == ["liquidity_stress"]
+    assert gate.blockedRegimes == ["liquidity_stress", "high_volatility"]
+
+    legacy_inactive = RegimeGate(inactiveInRegimes=["liquidity_stress", "liquidity_stress"])
+    assert legacy_inactive.blockedRegimes == ["liquidity_stress"]
 
     try:
-        RegimeGate(activeInRegimes=["trending_up"], inactiveInRegimes=["trending_up"])
+        RegimeGate(activeInRegimes=["trending_up"])
     except Exception as exc:
-        assert "activate and deactivate" in str(exc)
+        assert "blockedRegimes only" in str(exc)
     else:
-        raise AssertionError("Expected overlapping regime gate lists to fail validation.")
+        raise AssertionError("Expected legacy activeInRegimes gates to fail validation.")
 
 
 def test_component_configs_accept_regime_gates() -> None:
     ranking = RankingSchemaConfig(
         universeConfigName="us-large-liquid",
-        regimeGate={"activeInRegimes": ["trending_up"]},
+        regimeGate={"blockedRegimes": ["liquidity_stress"]},
         groups=[
             {
                 "name": "momentum",
@@ -372,9 +373,9 @@ def test_component_configs_accept_regime_gates() -> None:
             }
         ],
     )
-    rebalance = RebalancePolicy(regimeGate={"inactiveInRegimes": ["high_volatility"]})
+    rebalance = RebalancePolicy(regimeGate={"blockedRegimes": ["high_volatility"]})
     risk = RiskPolicyConfig(
-        regimeGate={"activeInRegimes": ["trending_up"]},
+        regimeGate={"blockedRegimes": ["liquidity_stress"]},
         policy={
             "scope": "strategy",
             "stopLoss": {
@@ -385,18 +386,18 @@ def test_component_configs_accept_regime_gates() -> None:
         },
     )
     exits = ExitRuleSetConfig(
-        regimeGate={"inactiveInRegimes": ["liquidity_stress"]},
+        regimeGate={"blockedRegimes": ["liquidity_stress"]},
         exits=[{"id": "stop-8", "type": "stop_loss_fixed", "value": 0.08}],
     )
 
     assert ranking.regimeGate is not None
-    assert ranking.regimeGate.activeInRegimes == ["trending_up"]
+    assert ranking.regimeGate.blockedRegimes == ["liquidity_stress"]
     assert rebalance.regimeGate is not None
-    assert rebalance.regimeGate.inactiveInRegimes == ["high_volatility"]
+    assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
     assert risk.regimeGate is not None
-    assert risk.regimeGate.activeInRegimes == ["trending_up"]
+    assert risk.regimeGate.blockedRegimes == ["liquidity_stress"]
     assert exits.regimeGate is not None
-    assert exits.regimeGate.inactiveInRegimes == ["liquidity_stress"]
+    assert exits.regimeGate.blockedRegimes == ["liquidity_stress"]
 
 
 def test_strategy_config_requires_regime_source_for_inline_component_gates() -> None:
@@ -409,9 +410,9 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
     }
 
     for payload in (
-        {**base_payload, "rebalancePolicy": {"regimeGate": {"activeInRegimes": ["trending_up"]}}},
-        {**base_payload, "riskRegimeGate": {"activeInRegimes": ["trending_up"]}},
-        {**base_payload, "exitRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]}},
+        {**base_payload, "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}}},
+        {**base_payload, "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
+        {**base_payload, "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
     ):
         try:
             StrategyConfig.model_validate(payload)
@@ -424,9 +425,9 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
         {
             **base_payload,
             "regimeSource": {"modelName": "default-regime", "modelVersion": 3},
-            "rebalancePolicy": {"regimeGate": {"activeInRegimes": ["trending_up"]}},
-            "riskRegimeGate": {"activeInRegimes": ["trending_up"]},
-            "exitRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]},
+            "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}},
+            "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
+            "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
         }
     )
 

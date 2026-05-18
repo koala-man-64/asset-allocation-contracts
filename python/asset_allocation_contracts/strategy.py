@@ -487,6 +487,14 @@ class ConfigIdentity(ConfigReference):
         return [str(item).strip() for item in value if str(item).strip()]
 
 
+class ReusableConfigSummaryBase(ConfigIdentity):
+    model_config = ConfigDict(extra="forbid")
+
+    archived: bool = False
+    usageCount: int = Field(default=0, ge=0)
+    updatedAt: datetime | None = None
+
+
 class ExitRule(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -977,23 +985,13 @@ class RiskPolicyConfig(BaseModel):
     policy: StrategyRiskPolicy
 
 
-class RiskPolicyConfigSummary(BaseModel):
+class RiskPolicyConfigSummary(ReusableConfigSummaryBase):
+    regimeGate: RegimeGate | None = None
+
+
+class RiskPolicyConfigRevision(ConfigIdentity):
     model_config = ConfigDict(extra="forbid")
 
-    name: str = Field(..., min_length=1, max_length=128)
-    description: str = Field(default="", max_length=2048)
-    version: int = Field(default=1, ge=1)
-    archived: bool = False
-    usageCount: int = Field(default=0, ge=0)
-    updatedAt: datetime | None = None
-
-
-class RiskPolicyConfigRevision(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(..., min_length=1, max_length=128)
-    version: int = Field(..., ge=1)
-    description: str = Field(default="", max_length=2048)
     config: RiskPolicyConfig
     configHash: str | None = None
     createdAt: datetime | None = None
@@ -1013,6 +1011,10 @@ class RiskPolicyConfigUpsertRequest(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=128)
     description: str = Field(default="", max_length=2048)
+    status: ReusableConfigStatus = "active"
+    intendedUse: ReusableConfigIntendedUse = "research"
+    thesis: str = Field(default="", max_length=4096)
+    whatToMonitor: list[str] = Field(default_factory=list)
     config: RiskPolicyConfig
 
 
@@ -1035,24 +1037,14 @@ class ExitRuleSetConfig(BaseModel):
         return self
 
 
-class ExitRuleSetSummary(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str = Field(..., min_length=1, max_length=128)
-    description: str = Field(default="", max_length=2048)
-    version: int = Field(default=1, ge=1)
-    archived: bool = False
-    usageCount: int = Field(default=0, ge=0)
+class ExitRuleSetSummary(ReusableConfigSummaryBase):
+    regimeGate: RegimeGate | None = None
     ruleCount: int = Field(default=0, ge=0)
-    updatedAt: datetime | None = None
 
 
-class ExitRuleSetRevision(BaseModel):
+class ExitRuleSetRevision(ConfigIdentity):
     model_config = ConfigDict(extra="forbid")
 
-    name: str = Field(..., min_length=1, max_length=128)
-    version: int = Field(..., ge=1)
-    description: str = Field(default="", max_length=2048)
     config: ExitRuleSetConfig
     configHash: str | None = None
     createdAt: datetime | None = None
@@ -1072,6 +1064,10 @@ class ExitRuleSetUpsertRequest(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=128)
     description: str = Field(default="", max_length=2048)
+    status: ReusableConfigStatus = "active"
+    intendedUse: ReusableConfigIntendedUse = "research"
+    thesis: str = Field(default="", max_length=4096)
+    whatToMonitor: list[str] = Field(default_factory=list)
     config: ExitRuleSetConfig
 
 
@@ -1227,6 +1223,39 @@ class UniverseConfigDraftGenerationResponse(BaseModel):
         return self
 
 
+class RankingSchemaSummary(ReusableConfigSummaryBase):
+    regimeGate: RegimeGate | None = None
+
+
+class RankingSchemaRevision(ConfigIdentity):
+    model_config = ConfigDict(extra="forbid")
+
+    config: RankingSchemaConfig
+    configHash: str | None = None
+    createdAt: datetime | None = None
+    createdBy: str | None = None
+
+
+class RankingSchemaDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rankingSchema: RankingSchemaSummary
+    activeRevision: RankingSchemaRevision | None = None
+    revisions: list[RankingSchemaRevision] = Field(default_factory=list)
+
+
+class RankingSchemaUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    status: ReusableConfigStatus = "active"
+    intendedUse: ReusableConfigIntendedUse = "research"
+    thesis: str = Field(default="", max_length=4096)
+    whatToMonitor: list[str] = Field(default_factory=list)
+    config: RankingSchemaConfig
+
+
 class RankingSchemaPreset(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -1308,6 +1337,42 @@ class RankingSchemaDraftGenerationResponse(BaseModel):
         if self.draft.identity.version != 1:
             raise ValueError("Generated ranking schema drafts must use version 1.")
         return self
+
+
+class RebalancePolicySummary(ReusableConfigSummaryBase):
+    regimeGate: RegimeGate | None = None
+    cadence: ReusableRebalanceCadence | None = None
+    dayRule: ReusableRebalanceDayRule | None = None
+    anchor: ReusableRebalanceAnchor | None = None
+
+
+class RebalancePolicyRevision(ConfigIdentity):
+    model_config = ConfigDict(extra="forbid")
+
+    config: RebalancePolicy
+    configHash: str | None = None
+    createdAt: datetime | None = None
+    createdBy: str | None = None
+
+
+class RebalancePolicyDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    policy: RebalancePolicySummary
+    activeRevision: RebalancePolicyRevision | None = None
+    revisions: list[RebalancePolicyRevision] = Field(default_factory=list)
+
+
+class RebalancePolicyUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    description: str = Field(default="", max_length=2048)
+    status: ReusableConfigStatus = "active"
+    intendedUse: ReusableConfigIntendedUse = "research"
+    thesis: str = Field(default="", max_length=4096)
+    whatToMonitor: list[str] = Field(default_factory=list)
+    config: RebalancePolicy
 
 
 class RebalancePolicyPreset(BaseModel):

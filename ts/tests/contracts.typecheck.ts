@@ -383,8 +383,7 @@ const regimeSource: RegimeSourceRef = {
 };
 
 const trendingGate: RegimeGate = {
-  activeInRegimes: ["trending_up", "low_volatility"],
-  inactiveInRegimes: ["liquidity_stress"],
+  blockedRegimes: ["liquidity_stress"],
 };
 
 const strategy: StrategyConfig = {
@@ -419,7 +418,7 @@ const strategy: StrategyConfig = {
   holdingPeriod: 21,
   costModel: "default",
   riskRegimeGate: trendingGate,
-  exitRegimeGate: { inactiveInRegimes: ["high_volatility"] },
+  exitRegimeGate: { blockedRegimes: ["high_volatility"] },
   intrabarConflictPolicy: "priority_order",
   exits: [],
 };
@@ -570,7 +569,7 @@ const rebalancePreset: RebalancePolicyPreset = {
     thesis: "Weekly close signal with next-open execution.",
   },
   config: {
-    regimeGate: { inactiveInRegimes: ["high_volatility"] },
+    regimeGate: { blockedRegimes: ["high_volatility"] },
     frequency: "weekly",
     executionTiming: "next_bar_open",
     cadence: "weekly",
@@ -629,7 +628,7 @@ const riskPolicyConfig: RiskPolicyConfig = {
 };
 
 const gatedExitRuleSetConfig: ExitRuleSetConfig = {
-  regimeGate: { inactiveInRegimes: ["liquidity_stress"] },
+  regimeGate: { blockedRegimes: ["liquidity_stress"] },
   intrabarConflictPolicy: "priority_order",
   exits: [
     {

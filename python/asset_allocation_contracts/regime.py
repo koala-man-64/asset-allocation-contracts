@@ -155,14 +155,30 @@ class RegimeSourceRef(BaseModel):
 class RegimeGate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    activeInRegimes: list[RegimeCode] | None = None
-    inactiveInRegimes: list[RegimeCode] | None = None
+    blockedRegimes: list[RegimeCode] = Field(default_factory=list)
 
-    @field_validator("activeInRegimes", "inactiveInRegimes")
+    @model_validator(mode="before")
     @classmethod
-    def dedupe_regimes(cls, value: list[RegimeCode] | None) -> list[RegimeCode] | None:
-        if value is None:
-            return None
+    def normalize_legacy_gate_shape(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+
+        payload = dict(value)
+        blocked = payload.get("blockedRegimes")
+        legacy_active = payload.pop("activeInRegimes", None)
+        legacy_inactive = payload.pop("inactiveInRegimes", None)
+
+        if blocked is None and legacy_inactive is not None:
+            payload["blockedRegimes"] = legacy_inactive
+
+        if legacy_active not in (None, [], ()):
+            raise ValueError("activeInRegimes is no longer supported. Use blockedRegimes only.")
+
+        return payload
+
+    @field_validator("blockedRegimes")
+    @classmethod
+    def dedupe_regimes(cls, value: list[RegimeCode]) -> list[RegimeCode]:
         seen: set[str] = set()
         normalized: list[RegimeCode] = []
         for item in value or []:
@@ -171,14 +187,6 @@ class RegimeGate(BaseModel):
                 seen.add(code)
                 normalized.append(item)
         return normalized
-
-    @model_validator(mode="after")
-    def validate_gate_sets(self) -> "RegimeGate":
-        overlap = sorted(set(self.activeInRegimes or []).intersection(self.inactiveInRegimes or []))
-        if overlap:
-            joined = ", ".join(overlap)
-            raise ValueError(f"Regime gates cannot both activate and deactivate: {joined}.")
-        return self
 
 
 class RegimePolicy(BaseModel):

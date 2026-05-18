@@ -1,0 +1,490 @@
+{
+  "$defs": {
+    "RebalancePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowPartialRebalance": {
+          "default": true,
+          "title": "Allowpartialrebalance",
+          "type": "boolean"
+        },
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "close",
+                "next_open"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "cadence": {
+          "anyOf": [
+            {
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "quarterly"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cadence"
+        },
+        "cashBufferPct": {
+          "default": 0.0,
+          "exclusiveMaximum": 100.0,
+          "minimum": 0.0,
+          "title": "Cashbufferpct",
+          "type": "number"
+        },
+        "closeRemovedPositions": {
+          "default": true,
+          "title": "Closeremovedpositions",
+          "type": "boolean"
+        },
+        "dayRule": {
+          "anyOf": [
+            {
+              "enum": [
+                "first_trading_day",
+                "last_trading_day"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dayrule"
+        },
+        "driftThresholdBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdbps"
+        },
+        "driftThresholdPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdpct"
+        },
+        "executionTiming": {
+          "const": "next_bar_open",
+          "default": "next_bar_open",
+          "title": "Executiontiming",
+          "type": "string"
+        },
+        "frequency": {
+          "default": "every_bar",
+          "enum": [
+            "every_bar",
+            "daily",
+            "weekly",
+            "monthly",
+            "quarterly",
+            "every_n_bars",
+            "manual"
+          ],
+          "title": "Frequency",
+          "type": "string"
+        },
+        "intervalBars": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intervalbars"
+        },
+        "maxTurnoverPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverpct"
+        },
+        "maxTurnoverPerRebalance": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverperrebalance"
+        },
+        "minTradeNotional": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Mintradenotional",
+          "type": "number"
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tradeDelayBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tradedelaybars",
+          "type": "integer"
+        }
+      },
+      "title": "RebalancePolicy",
+      "type": "object"
+    },
+    "RebalancePolicyRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/RebalancePolicy"
+        },
+        "configHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confighash"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdby"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "config"
+      ],
+      "title": "RebalancePolicyRevision",
+      "type": "object"
+    },
+    "RebalancePolicySummary": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "close",
+                "next_open"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "archived": {
+          "default": false,
+          "title": "Archived",
+          "type": "boolean"
+        },
+        "cadence": {
+          "anyOf": [
+            {
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "quarterly"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cadence"
+        },
+        "dayRule": {
+          "anyOf": [
+            {
+              "enum": [
+                "first_trading_day",
+                "last_trading_day"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dayrule"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "usageCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Usagecount",
+          "type": "integer"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "RebalancePolicySummary",
+      "type": "object"
+    },
+    "RegimeGate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeGate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RebalancePolicyRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "policy": {
+      "$ref": "#/$defs/RebalancePolicySummary"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/RebalancePolicyRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "policy"
+  ],
+  "title": "RebalancePolicyDetailResponse",
+  "type": "object"
+}

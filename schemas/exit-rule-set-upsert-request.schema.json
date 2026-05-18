@@ -197,55 +197,22 @@
     "RegimeGate": {
       "additionalProperties": false,
       "properties": {
-        "activeInRegimes": {
-          "anyOf": [
-            {
-              "items": {
-                "enum": [
-                  "trending_up",
-                  "trending_down",
-                  "mean_reverting",
-                  "low_volatility",
-                  "high_volatility",
-                  "liquidity_stress",
-                  "macro_alignment",
-                  "unclassified"
-                ],
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Activeinregimes"
-        },
-        "inactiveInRegimes": {
-          "anyOf": [
-            {
-              "items": {
-                "enum": [
-                  "trending_up",
-                  "trending_down",
-                  "mean_reverting",
-                  "low_volatility",
-                  "high_volatility",
-                  "liquidity_stress",
-                  "macro_alignment",
-                  "unclassified"
-                ],
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Inactiveinregimes"
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
         }
       },
       "title": "RegimeGate",
@@ -263,11 +230,44 @@
       "title": "Description",
       "type": "string"
     },
+    "intendedUse": {
+      "default": "research",
+      "enum": [
+        "research",
+        "validation",
+        "production_candidate"
+      ],
+      "title": "Intendeduse",
+      "type": "string"
+    },
     "name": {
       "maxLength": 128,
       "minLength": 1,
       "title": "Name",
       "type": "string"
+    },
+    "status": {
+      "default": "active",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "thesis": {
+      "default": "",
+      "maxLength": 4096,
+      "title": "Thesis",
+      "type": "string"
+    },
+    "whatToMonitor": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Whattomonitor",
+      "type": "array"
     }
   },
   "required": [

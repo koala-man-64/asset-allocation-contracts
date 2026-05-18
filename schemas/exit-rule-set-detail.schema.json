@@ -243,16 +243,49 @@
           "title": "Description",
           "type": "string"
         },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
         "name": {
           "maxLength": 128,
           "minLength": 1,
           "title": "Name",
           "type": "string"
         },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
         "version": {
           "minimum": 1,
           "title": "Version",
           "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
         }
       },
       "required": [
@@ -277,17 +310,54 @@
           "title": "Description",
           "type": "string"
         },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
         "name": {
           "maxLength": 128,
           "minLength": 1,
           "title": "Name",
           "type": "string"
         },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "ruleCount": {
           "default": 0,
           "minimum": 0,
           "title": "Rulecount",
           "type": "integer"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
         },
         "updatedAt": {
           "anyOf": [
@@ -309,14 +379,21 @@
           "type": "integer"
         },
         "version": {
-          "default": 1,
           "minimum": 1,
           "title": "Version",
           "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
         }
       },
       "required": [
-        "name"
+        "name",
+        "version"
       ],
       "title": "ExitRuleSetSummary",
       "type": "object"
@@ -324,55 +401,22 @@
     "RegimeGate": {
       "additionalProperties": false,
       "properties": {
-        "activeInRegimes": {
-          "anyOf": [
-            {
-              "items": {
-                "enum": [
-                  "trending_up",
-                  "trending_down",
-                  "mean_reverting",
-                  "low_volatility",
-                  "high_volatility",
-                  "liquidity_stress",
-                  "macro_alignment",
-                  "unclassified"
-                ],
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Activeinregimes"
-        },
-        "inactiveInRegimes": {
-          "anyOf": [
-            {
-              "items": {
-                "enum": [
-                  "trending_up",
-                  "trending_down",
-                  "mean_reverting",
-                  "low_volatility",
-                  "high_volatility",
-                  "liquidity_stress",
-                  "macro_alignment",
-                  "unclassified"
-                ],
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Inactiveinregimes"
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
         }
       },
       "title": "RegimeGate",

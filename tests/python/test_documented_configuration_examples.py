@@ -225,10 +225,10 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
             "rebalancePolicy": {
                 "frequency": "monthly",
                 "executionTiming": "next_bar_open",
-                "regimeGate": {"activeInRegimes": ["trending_up"]},
+                "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
             },
             "regimeSource": {"modelName": "default-regime", "modelVersion": 1},
-            "riskRegimeGate": {"inactiveInRegimes": ["liquidity_stress"]},
+            "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
             "strategyRiskPolicy": {
                 "scope": "strategy",
                 "stopLoss": {

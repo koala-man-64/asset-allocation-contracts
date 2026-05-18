@@ -1,0 +1,454 @@
+{
+  "$defs": {
+    "RankingFactor": {
+      "additionalProperties": false,
+      "properties": {
+        "column": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Column",
+          "type": "string"
+        },
+        "direction": {
+          "default": "desc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "missingValuePolicy": {
+          "default": "exclude",
+          "enum": [
+            "exclude",
+            "zero"
+          ],
+          "title": "Missingvaluepolicy",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "table": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Table",
+          "type": "string"
+        },
+        "transforms": {
+          "items": {
+            "$ref": "#/$defs/RankingTransform"
+          },
+          "title": "Transforms",
+          "type": "array"
+        },
+        "weight": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "table",
+        "column"
+      ],
+      "title": "RankingFactor",
+      "type": "object"
+    },
+    "RankingGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "factors": {
+          "items": {
+            "$ref": "#/$defs/RankingFactor"
+          },
+          "minItems": 1,
+          "title": "Factors",
+          "type": "array"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "transforms": {
+          "items": {
+            "$ref": "#/$defs/RankingTransform"
+          },
+          "title": "Transforms",
+          "type": "array"
+        },
+        "weight": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "factors"
+      ],
+      "title": "RankingGroup",
+      "type": "object"
+    },
+    "RankingSchemaConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/RankingGroup"
+          },
+          "minItems": 1,
+          "title": "Groups",
+          "type": "array"
+        },
+        "overallTransforms": {
+          "items": {
+            "$ref": "#/$defs/RankingTransform"
+          },
+          "title": "Overalltransforms",
+          "type": "array"
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "universeConfigName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universeconfigname"
+        }
+      },
+      "required": [
+        "groups"
+      ],
+      "title": "RankingSchemaConfig",
+      "type": "object"
+    },
+    "RankingSchemaRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/RankingSchemaConfig"
+        },
+        "configHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confighash"
+        },
+        "createdAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdat"
+        },
+        "createdBy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Createdby"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "config"
+      ],
+      "title": "RankingSchemaRevision",
+      "type": "object"
+    },
+    "RankingSchemaSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "archived": {
+          "default": false,
+          "title": "Archived",
+          "type": "boolean"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "updatedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Updatedat"
+        },
+        "usageCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Usagecount",
+          "type": "integer"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "RankingSchemaSummary",
+      "type": "object"
+    },
+    "RankingTransform": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "type": {
+          "enum": [
+            "percentile_rank",
+            "zscore",
+            "minmax",
+            "clip",
+            "winsorize",
+            "coalesce",
+            "log1p",
+            "negate",
+            "abs"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "RankingTransform",
+      "type": "object"
+    },
+    "RegimeGate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeGate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "activeRevision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RankingSchemaRevision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rankingSchema": {
+      "$ref": "#/$defs/RankingSchemaSummary"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/RankingSchemaRevision"
+      },
+      "title": "Revisions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "rankingSchema"
+  ],
+  "title": "RankingSchemaDetailResponse",
+  "type": "object"
+}

@@ -253,8 +253,7 @@ export interface RegimeActivationPolicy {
 }
 
 export interface RegimeGate {
-  activeInRegimes?: RegimeCode[] | null;
-  inactiveInRegimes?: RegimeCode[] | null;
+  blockedRegimes: RegimeCode[];
 }
 
 export interface StrategyPositionPolicy {
@@ -480,9 +479,32 @@ export interface RankingFieldReference {
   valueKind: RankingCatalogValueKind;
 }
 
-export interface RankingSchemaPreset {
-  identity: ConfigIdentity;
+export interface RankingSchemaSummary {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  archived: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
+}
+
+export interface RankingSchemaRevision {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   config: RankingSchemaConfig;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
 }
 
 export interface RankingSchemaConfig {
@@ -512,6 +534,27 @@ export interface RankingFactor {
 export interface RankingTransform {
   type: RankingTransformType;
   params: Record<string, string | number | boolean | null>;
+}
+
+export interface RankingSchemaDetailResponse {
+  rankingSchema: RankingSchemaSummary;
+  activeRevision?: RankingSchemaRevision | null;
+  revisions: RankingSchemaRevision[];
+}
+
+export interface RankingSchemaUpsertRequest {
+  name: string;
+  description: string;
+  status: ReusableConfigStatus;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  config: RankingSchemaConfig;
+}
+
+export interface RankingSchemaPreset {
+  identity: ConfigIdentity;
+  config: RankingSchemaConfig;
 }
 
 export interface RankingSchemaDraftGenerationRequest {
@@ -549,6 +592,53 @@ export interface RankingPreviewRow {
   score: number;
 }
 
+export interface RebalancePolicySummary {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  archived: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
+  cadence?: ReusableRebalanceCadence | null;
+  dayRule?: ReusableRebalanceDayRule | null;
+  anchor?: ReusableRebalanceAnchor | null;
+}
+
+export interface RebalancePolicyRevision {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  config: RebalancePolicy;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface RebalancePolicyDetailResponse {
+  policy: RebalancePolicySummary;
+  activeRevision?: RebalancePolicyRevision | null;
+  revisions: RebalancePolicyRevision[];
+}
+
+export interface RebalancePolicyUpsertRequest {
+  name: string;
+  description: string;
+  status: ReusableConfigStatus;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  config: RebalancePolicy;
+}
+
 export interface RebalancePolicyPreset {
   identity: ConfigIdentity;
   config: RebalancePolicy;
@@ -577,17 +667,26 @@ export interface RiskPolicyConfig {
 
 export interface RiskPolicyConfigSummary {
   name: string;
-  description: string;
   version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   archived: boolean;
   usageCount: number;
   updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
 }
 
 export interface RiskPolicyConfigRevision {
   name: string;
   version: number;
+  status: ReusableConfigStatus;
   description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   config: RiskPolicyConfig;
   configHash?: string | null;
   createdAt?: string | null;
@@ -603,23 +702,36 @@ export interface RiskPolicyConfigDetailResponse {
 export interface RiskPolicyConfigUpsertRequest {
   name: string;
   description: string;
+  status: ReusableConfigStatus;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   config: RiskPolicyConfig;
 }
 
 export interface ExitRuleSetSummary {
   name: string;
-  description: string;
   version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   archived: boolean;
   usageCount: number;
-  ruleCount: number;
   updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
+  ruleCount: number;
 }
 
 export interface ExitRuleSetRevision {
   name: string;
   version: number;
+  status: ReusableConfigStatus;
   description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   config: ExitRuleSetConfig;
   configHash?: string | null;
   createdAt?: string | null;
@@ -635,6 +747,10 @@ export interface ExitRuleSetDetailResponse {
 export interface ExitRuleSetUpsertRequest {
   name: string;
   description: string;
+  status: ReusableConfigStatus;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
   config: ExitRuleSetConfig;
 }
 
