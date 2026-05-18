@@ -8,6 +8,7 @@ from asset_allocation_contracts.backtest import (
     BacktestCompleteRequest,
     BacktestDataQualityEvent,
     BacktestDataQualityEventListResponse,
+    BacktestExecutionSettings,
     BacktestLookupRequest,
     BacktestLookupResponse,
     BacktestPolicyEvent,
@@ -307,6 +308,36 @@ def test_strategy_config_accepts_component_refs_as_canonical_pins() -> None:
     assert payload.componentRefs.ranking.version == 2
     assert payload.regimeSource is not None
     assert payload.regimeSource.modelVersion == 3
+
+
+def test_strategy_config_rejects_mismatched_component_ref_and_legacy_pin() -> None:
+    try:
+        StrategyConfig(
+            componentRefs={"universe": {"name": "us-large-liquid", "version": 1}},
+            universeConfigName="different-universe",
+        )
+    except Exception as exc:
+        assert "componentRefs.universe" in str(exc)
+        assert "config name" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected mismatched componentRefs.universe and universeConfigName to fail validation."
+        )
+
+    try:
+        StrategyConfig(
+            componentRefs={"ranking": {"name": "quality-momentum", "version": 2}},
+            universeConfigName="us-large-liquid",
+            rankingSchemaName="quality-momentum",
+            rankingSchemaVersion=3,
+        )
+    except Exception as exc:
+        assert "componentRefs.ranking" in str(exc)
+        assert "config version" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected mismatched componentRefs.ranking and rankingSchemaVersion to fail validation."
+        )
 
 
 def test_strategy_config_accepts_legacy_regime_policy_component_ref_for_compatibility() -> None:
@@ -2761,12 +2792,19 @@ def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
             "regimeModelVersion": 1,
             "regimePolicyName": "default-regime-policy",
             "regimePolicyVersion": 2,
+            "riskProfileName": "balanced-long-only",
             "riskPolicyName": "balanced-risk",
             "riskPolicyVersion": 3,
             "exitPolicyName": "lifecycle-exits",
             "exitPolicyVersion": 4,
             "rebalancePolicyName": "monthly-rebalance",
             "rebalancePolicyVersion": 5,
+        },
+        executionSettings={
+            "initialCapital": 1_000_000,
+            "executionModel": "simple_bps",
+            "commissionBps": 2.5,
+            "slippageBps": 4.0,
         },
     )
 
@@ -2775,8 +2813,12 @@ def test_backtest_run_status_response_accepts_frozen_pin_metadata() -> None:
     assert payload.results_schema_version == 4
     assert payload.pins is not None
     assert payload.pins.rankingSchemaVersion == 7
+    assert payload.pins.riskProfileName == "balanced-long-only"
     assert payload.pins.exitPolicyName == "lifecycle-exits"
     assert payload.pins.rebalancePolicyVersion == 5
+    assert payload.executionSettings is not None
+    assert payload.executionSettings.executionModel == "simple_bps"
+    assert payload.executionSettings.commissionBps == 2.5
 
 
 def test_run_pin_and_exit_rule_attribution_contracts_are_typed() -> None:
@@ -2840,6 +2882,8 @@ def test_backtest_lookup_request_requires_exactly_one_strategy_input() -> None:
         {"required": ["strategyRef"]},
         {"required": ["strategyConfig"]},
     ]
+    assert "executionSettings" in schema["properties"]
+    assert "assumptions" not in schema["properties"]
 
     for invalid_payload in (
         {
@@ -2943,9 +2987,108 @@ def test_backtest_run_request_accepts_inline_strategy_config() -> None:
         endTs="2026-03-09T00:00:00Z",
         barSize="1d",
         runName="run-smoke",
+        executionSettings={
+            "initialCapital": 500_000,
+            "executionModel": "simple_bps",
+            "commissionBps": 1.5,
+            "slippageBps": 3.0,
+        },
     )
     assert payload.strategyConfig is not None
     assert payload.strategyRef is None
+    assert payload.executionSettings is not None
+    assert payload.executionSettings.initialCapital == 500_000
+
+
+def test_backtest_request_accepts_legacy_assumptions_alias_and_normalizes_cost_model() -> (
+    None
+):
+    payload = BacktestLookupRequest.model_validate(
+        {
+            "strategyRef": {"strategyName": "quality-trend", "strategyVersion": 4},
+            "startTs": "2026-03-08T00:00:00Z",
+            "endTs": "2026-03-09T00:00:00Z",
+            "barSize": "1d",
+            "assumptions": {
+                "initialCapital": 250000,
+                "benchmarkSymbol": "SPY",
+                "costModel": "default",
+                "commissionBps": 1.0,
+            },
+        }
+    )
+
+    assert payload.executionSettings is not None
+    assert payload.assumptions is payload.executionSettings
+    assert payload.executionSettings.executionModel == "simple_bps"
+    assert payload.executionSettings.benchmarkSymbol == "SPY"
+
+
+def test_backtest_execution_settings_reject_unsupported_execution_model() -> None:
+    try:
+        BacktestExecutionSettings(executionModel="high_touch")
+    except Exception as exc:
+        assert "simple_bps" in str(exc)
+    else:
+        raise AssertionError("Expected unsupported backtest execution model to fail validation.")
+
+
+def test_backtest_run_request_rejects_unsupported_inline_backtest_fields() -> None:
+    invalid_payloads = [
+        (
+            {
+                "strategyConfig": {
+                    "universeConfigName": "large-cap-quality",
+                    "rankingSchemaName": "quality",
+                    "costModel": "high_touch",
+                    "exits": [],
+                },
+                "startTs": "2026-03-08T00:00:00Z",
+                "endTs": "2026-03-09T00:00:00Z",
+                "barSize": "1d",
+            },
+            "strategyConfig.costModel='default'",
+        ),
+        (
+            {
+                "strategyConfig": {
+                    "universeConfigName": "large-cap-quality",
+                    "rankingSchemaName": "quality",
+                    "rebalancePolicy": {"frequency": "manual"},
+                    "exits": [],
+                },
+                "startTs": "2026-03-08T00:00:00Z",
+                "endTs": "2026-03-09T00:00:00Z",
+                "barSize": "1d",
+            },
+            "rebalancePolicy.frequency='manual'",
+        ),
+        (
+            {
+                "strategyConfig": {
+                    "universeConfigName": "large-cap-quality",
+                    "rankingSchemaName": "quality",
+                    "regimePolicyConfigName": "observe-default",
+                    "regimePolicyConfigVersion": 2,
+                    "exits": [],
+                },
+                "startTs": "2026-03-08T00:00:00Z",
+                "endTs": "2026-03-09T00:00:00Z",
+                "barSize": "1d",
+            },
+            "normalize to regimeSource",
+        ),
+    ]
+
+    for invalid_payload, expected_error in invalid_payloads:
+        try:
+            BacktestRunRequest.model_validate(invalid_payload)
+        except Exception as exc:
+            assert expected_error in str(exc)
+        else:
+            raise AssertionError(
+                f"Expected backtest submission to reject unsupported payload: {expected_error}"
+            )
 
 
 def test_backtest_complete_request_rejects_legacy_artifact_manifest_path() -> None:

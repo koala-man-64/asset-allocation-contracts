@@ -1,5 +1,77 @@
 {
   "$defs": {
+    "BacktestExecutionSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmarkSymbol": {
+          "anyOf": [
+            {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmarksymbol"
+        },
+        "commissionBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commissionbps"
+        },
+        "executionModel": {
+          "const": "simple_bps",
+          "default": "simple_bps",
+          "title": "Executionmodel",
+          "type": "string"
+        },
+        "initialCapital": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Initialcapital"
+        },
+        "notes": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Notes",
+          "type": "string"
+        },
+        "slippageBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slippagebps"
+        }
+      },
+      "title": "BacktestExecutionSettings",
+      "type": "object"
+    },
     "RunPinsResponse": {
       "additionalProperties": false,
       "properties": {
@@ -165,6 +237,20 @@
           "default": null,
           "title": "Riskpolicyversion"
         },
+        "riskProfileName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskprofilename"
+        },
         "strategyName": {
           "anyOf": [
             {
@@ -276,6 +362,17 @@
           ],
           "default": null,
           "title": "Error"
+        },
+        "executionSettings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BacktestExecutionSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "execution_name": {
           "anyOf": [

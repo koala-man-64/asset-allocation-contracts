@@ -1562,6 +1562,36 @@ class StrategyConfig(BaseModel):
         )
         self._validate_pin_pair("riskPolicyVersion", self.riskPolicyName, self.riskPolicyVersion)
         self._validate_pin_pair("exitRuleSetVersion", self.exitRuleSetName, self.exitRuleSetVersion)
+        self._validate_component_pin(
+            "universe",
+            self._component_ref("universe"),
+            self.universeConfigName,
+            self.universeConfigVersion,
+        )
+        self._validate_component_pin(
+            "ranking",
+            self._component_ref("ranking"),
+            self.rankingSchemaName,
+            self.rankingSchemaVersion,
+        )
+        self._validate_component_pin(
+            "regimePolicy",
+            self._component_ref("regimePolicy"),
+            self.regimePolicyConfigName,
+            self.regimePolicyConfigVersion,
+        )
+        self._validate_component_pin(
+            "riskPolicy",
+            self._component_ref("riskPolicy"),
+            self.riskPolicyName,
+            self.riskPolicyVersion,
+        )
+        self._validate_component_pin(
+            "exitPolicy",
+            self._component_ref("exitPolicy"),
+            self.exitRuleSetName,
+            self.exitRuleSetVersion,
+        )
         if self.rebalancePolicy is not None and self.rebalancePolicy.regimeGate is not None and self.regimeSource is None:
             raise ValueError("rebalancePolicy.regimeGate requires regimeSource.")
         if self.riskRegimeGate is not None and self.regimeSource is None:
@@ -1602,6 +1632,24 @@ class StrategyConfig(BaseModel):
     def _validate_pin_pair(field_name: str, name: str | None, version: int | None) -> None:
         if version is not None and not name:
             raise ValueError(f"{field_name} requires the matching config name.")
+
+    @staticmethod
+    def _validate_component_pin(
+        field_name: str,
+        ref: ConfigReference | None,
+        name: str | None,
+        version: int | None,
+    ) -> None:
+        if ref is None or name is None:
+            return
+        if ref.name != name:
+            raise ValueError(
+                f"componentRefs.{field_name} must match the corresponding config name when both are provided."
+            )
+        if version is not None and ref.version != version:
+            raise ValueError(
+                f"componentRefs.{field_name} must match the corresponding config version when both are provided."
+            )
 
     def _component_ref(self, field_name: str) -> ConfigReference | None:
         if self.componentRefs is None:

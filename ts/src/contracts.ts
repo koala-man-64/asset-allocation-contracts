@@ -1276,11 +1276,21 @@ export interface BacktestLookupRequest {
   endTs: string;
   barSize: string;
   runName?: string | null;
+  executionSettings?: BacktestExecutionSettings | null;
 }
 
 export interface StrategyReferenceInput {
   strategyName: string;
   strategyVersion?: number | null;
+}
+
+export interface BacktestExecutionSettings {
+  initialCapital?: number | null;
+  benchmarkSymbol?: string | null;
+  executionModel: BacktestExecutionModel;
+  commissionBps?: number | null;
+  slippageBps?: number | null;
+  notes: string;
 }
 
 export interface BacktestLookupResponse {
@@ -1308,6 +1318,7 @@ export interface RunStatusResponse {
   results_ready_at?: string | null;
   results_schema_version?: number | null;
   pins?: RunPinsResponse | null;
+  executionSettings?: BacktestExecutionSettings | null;
 }
 
 export interface RunPinsResponse {
@@ -1321,6 +1332,7 @@ export interface RunPinsResponse {
   regimeModelVersion?: number | null;
   regimePolicyName?: string | null;
   regimePolicyVersion?: number | null;
+  riskProfileName?: string | null;
   riskPolicyName?: string | null;
   riskPolicyVersion?: number | null;
   exitPolicyName?: string | null;
@@ -1403,6 +1415,7 @@ export interface BacktestRunRequest {
   endTs: string;
   barSize: string;
   runName?: string | null;
+  executionSettings?: BacktestExecutionSettings | null;
 }
 
 export interface BacktestRunResponse {

@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from asset_allocation_contracts.options import OptionBacktestModelQuality, OptionStrategyId
 from asset_allocation_contracts.strategy import ExitRuleType, ExitRuleVisualKey, StrategyConfig
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 RunStatus = Literal["queued", "running", "completed", "failed"]
 BacktestLookupState = Literal["not_run", "queued", "running", "completed", "failed"]
@@ -47,6 +47,41 @@ class RunListResponse(BaseModel):
     offset: int
 
 
+class BacktestExecutionSettings(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    initialCapital: float | None = Field(default=None, gt=0)
+    benchmarkSymbol: str | None = Field(default=None, min_length=1, max_length=32)
+    executionModel: BacktestExecutionModel = "simple_bps"
+    commissionBps: float | None = Field(default=None, ge=0)
+    slippageBps: float | None = Field(default=None, ge=0)
+    notes: str = Field(default="", max_length=2000)
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_legacy_cost_model(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+        payload = dict(value)
+        if "executionModel" not in payload and "costModel" in payload:
+            legacy_cost_model = str(payload.get("costModel") or "").strip().lower()
+            if legacy_cost_model:
+                payload["executionModel"] = "simple_bps" if legacy_cost_model == "default" else legacy_cost_model
+        payload.pop("costModel", None)
+        return payload
+
+    @model_validator(mode="after")
+    def validate_supported_execution_model(self) -> "BacktestExecutionSettings":
+        if self.executionModel != "simple_bps":
+            raise ValueError(
+                "Backtests currently only support executionSettings.executionModel='simple_bps'."
+            )
+        return self
+
+
+BacktestExecutionAssumptions = BacktestExecutionSettings
+
+
 class RunPinsResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -60,6 +95,7 @@ class RunPinsResponse(BaseModel):
     regimeModelVersion: int | None = Field(default=None, ge=1)
     regimePolicyName: str | None = Field(default=None, min_length=1, max_length=128)
     regimePolicyVersion: int | None = Field(default=None, ge=1)
+    riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyVersion: int | None = Field(default=None, ge=1)
     exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
@@ -74,6 +110,7 @@ class RunStatusResponse(RunRecordResponse):
     results_ready_at: datetime | None = None
     results_schema_version: int | None = Field(default=None, ge=1)
     pins: RunPinsResponse | None = None
+    executionSettings: BacktestExecutionSettings | None = None
 
 
 class StrategyReferenceInput(BaseModel):
@@ -95,6 +132,27 @@ class BacktestResultLinks(BaseModel):
     dataQualityEventsUrl: str | None = Field(default=None, min_length=1)
 
 
+def _has_legacy_regime_reference(strategy_config: StrategyConfig) -> bool:
+    component_refs = strategy_config.componentRefs
+    return (
+        strategy_config.regimePolicyConfigName is not None
+        or strategy_config.regimePolicyConfigVersion is not None
+        or (component_refs is not None and component_refs.regimePolicy is not None)
+    )
+
+
+def _validate_inline_backtest_support(strategy_config: StrategyConfig) -> None:
+    if strategy_config.costModel != "default":
+        raise ValueError("Backtests currently only support strategyConfig.costModel='default'.")
+    rebalance_policy = strategy_config.rebalancePolicy
+    if rebalance_policy is not None and rebalance_policy.frequency == "manual":
+        raise ValueError("Backtests do not support rebalancePolicy.frequency='manual'.")
+    if strategy_config.regimeSource is None and _has_legacy_regime_reference(strategy_config):
+        raise ValueError(
+            "Legacy regime policy references must normalize to regimeSource before backtest submission."
+        )
+
+
 class _BacktestRequestBase(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -112,6 +170,14 @@ class _BacktestRequestBase(BaseModel):
     endTs: datetime
     barSize: str = Field(..., min_length=1, max_length=32)
     runName: str | None = Field(default=None, max_length=255)
+    executionSettings: BacktestExecutionSettings | None = Field(
+        default=None,
+        validation_alias=AliasChoices("executionSettings", "assumptions"),
+    )
+
+    @property
+    def assumptions(self) -> BacktestExecutionSettings | None:
+        return self.executionSettings
 
     @model_validator(mode="after")
     def validate_strategy_input(self) -> "_BacktestRequestBase":
@@ -119,6 +185,8 @@ class _BacktestRequestBase(BaseModel):
         has_strategy_config = self.strategyConfig is not None
         if has_strategy_ref == has_strategy_config:
             raise ValueError("Exactly one of strategyRef or strategyConfig must be provided.")
+        if self.strategyConfig is not None:
+            _validate_inline_backtest_support(self.strategyConfig)
         return self
 
 
