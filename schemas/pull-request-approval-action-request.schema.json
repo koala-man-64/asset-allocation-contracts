@@ -1,0 +1,36 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "pullRequestId": {
+      "minimum": 1,
+      "title": "Pullrequestid",
+      "type": "integer"
+    },
+    "repositoryId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Repositoryid",
+      "type": "string"
+    },
+    "reviewerUniqueName": {
+      "anyOf": [
+        {
+          "maxLength": 320,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Revieweruniquename"
+    }
+  },
+  "required": [
+    "repositoryId",
+    "pullRequestId"
+  ],
+  "title": "PullRequestApprovalActionRequest",
+  "type": "object"
+}

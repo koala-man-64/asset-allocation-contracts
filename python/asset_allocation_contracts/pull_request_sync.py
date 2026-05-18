@@ -26,6 +26,25 @@ PullRequestMergeStatus = Literal[
     "failure",
     "unknown",
 ]
+PullRequestSyncActionKind = Literal["approve", "retry-stage", "open"]
+PullRequestApprovalVote = Literal[
+    "approved",
+    "approved-with-suggestions",
+    "rejected",
+    "waiting",
+    "not-voted",
+    "unknown",
+]
+PullRequestStageLifecycleStatus = Literal[
+    "succeeded",
+    "failed",
+    "canceled",
+    "skipped",
+    "running",
+    "pending",
+    "unknown",
+]
+PullRequestActionResponseStatus = Literal["accepted", "completed"]
 
 
 class PullRequestSyncLink(BaseModel):
@@ -57,6 +76,42 @@ class PullRequestCommitSummary(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class PullRequestSyncAction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: PullRequestSyncActionKind
+    label: str = Field(min_length=1, max_length=96)
+    href: str | None = Field(default=None, min_length=1, max_length=2048)
+    disabledReason: str | None = Field(default=None, min_length=1, max_length=512)
+    links: list[PullRequestSyncLink] = Field(default_factory=list)
+
+
+class PullRequestApprovalStatus(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    requiresUserApproval: bool = False
+    reviewerDisplayName: str | None = Field(default=None, min_length=1, max_length=160)
+    reviewerUniqueName: str | None = Field(default=None, min_length=1, max_length=320)
+    vote: PullRequestApprovalVote | None = None
+    reason: str | None = Field(default=None, min_length=1, max_length=512)
+    action: PullRequestSyncAction | None = None
+    links: list[PullRequestSyncLink] = Field(default_factory=list)
+
+
+class PullRequestPipelineStage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=160)
+    status: PullRequestStageLifecycleStatus = "unknown"
+    result: PullRequestStageLifecycleStatus | None = None
+    runId: int | None = Field(default=None, ge=1)
+    runName: str | None = Field(default=None, min_length=1, max_length=160)
+    pipelineName: str | None = Field(default=None, min_length=1, max_length=160)
+    action: PullRequestSyncAction | None = None
+    links: list[PullRequestSyncLink] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class PullRequestSyncRow(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -80,6 +135,8 @@ class PullRequestSyncRow(BaseModel):
     updatedAt: datetime | None = None
     workItems: list[PullRequestWorkItemRef] = Field(default_factory=list)
     commits: list[PullRequestCommitSummary] = Field(default_factory=list)
+    approval: PullRequestApprovalStatus | None = None
+    stages: list[PullRequestPipelineStage] | None = None
     links: list[PullRequestSyncLink] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
@@ -98,6 +155,8 @@ class PullRequestSyncSummary(BaseModel):
     unknown: int = Field(default=0, ge=0)
     unavailable: int = Field(default=0, ge=0)
     error: int = Field(default=0, ge=0)
+    approvalRequired: int | None = Field(default=None, ge=0)
+    failedStages: int | None = Field(default=None, ge=0)
 
 
 class PullRequestSyncView(BaseModel):
@@ -111,3 +170,34 @@ class PullRequestSyncView(BaseModel):
     links: list[PullRequestSyncLink] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
+
+
+class PullRequestApprovalActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    repositoryId: str = Field(min_length=1, max_length=128)
+    pullRequestId: int = Field(ge=1)
+    reviewerUniqueName: str | None = Field(default=None, min_length=1, max_length=320)
+
+
+class PullRequestRetryStageActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    repositoryId: str = Field(min_length=1, max_length=128)
+    pullRequestId: int = Field(ge=1)
+    runId: int = Field(ge=1)
+
+
+class PullRequestActionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    repositoryId: str = Field(min_length=1, max_length=128)
+    pullRequestId: int = Field(ge=1)
+    action: PullRequestSyncActionKind
+    status: PullRequestActionResponseStatus = "completed"
+    message: str = Field(min_length=1, max_length=512)
+    reviewerUniqueName: str | None = Field(default=None, min_length=1, max_length=320)
+    runId: int | None = Field(default=None, ge=1)
+    runName: str | None = Field(default=None, min_length=1, max_length=160)
+    links: list[PullRequestSyncLink] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)

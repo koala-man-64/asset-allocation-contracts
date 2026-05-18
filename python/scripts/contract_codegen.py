@@ -112,6 +112,18 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         deployment_provenance.DeploymentProvenanceView,
     ),
     ("pull-request-sync-view.schema.json", pull_request_sync.PullRequestSyncView),
+    (
+        "pull-request-approval-action-request.schema.json",
+        pull_request_sync.PullRequestApprovalActionRequest,
+    ),
+    (
+        "pull-request-retry-stage-action-request.schema.json",
+        pull_request_sync.PullRequestRetryStageActionRequest,
+    ),
+    (
+        "pull-request-action-response.schema.json",
+        pull_request_sync.PullRequestActionResponse,
+    ),
     ("results-reconcile-response.schema.json", results.ResultsReconcileResponse),
     (
         "strategy-publication-reconcile-signal-request.schema.json",
@@ -510,6 +522,13 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("PullRequestSyncStatus", pull_request_sync.PullRequestSyncStatus),
     ("PullRequestLifecycleStatus", pull_request_sync.PullRequestLifecycleStatus),
     ("PullRequestMergeStatus", pull_request_sync.PullRequestMergeStatus),
+    ("PullRequestSyncActionKind", pull_request_sync.PullRequestSyncActionKind),
+    ("PullRequestApprovalVote", pull_request_sync.PullRequestApprovalVote),
+    ("PullRequestStageLifecycleStatus", pull_request_sync.PullRequestStageLifecycleStatus),
+    (
+        "PullRequestActionResponseStatus",
+        pull_request_sync.PullRequestActionResponseStatus,
+    ),
     ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleVisualKey", strategy.ExitRuleVisualKey),

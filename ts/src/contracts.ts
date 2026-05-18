@@ -14,6 +14,10 @@ export type PullRequestSyncViewStatus = 'available' | 'partial' | 'unavailable' 
 export type PullRequestSyncStatus = 'synced' | 'target-stale' | 'source-stale' | 'conflict' | 'unknown' | 'unavailable' | 'error';
 export type PullRequestLifecycleStatus = 'active' | 'abandoned' | 'completed' | 'unknown';
 export type PullRequestMergeStatus = 'notSet' | 'queued' | 'conflicts' | 'succeeded' | 'rejectedByPolicy' | 'failure' | 'unknown';
+export type PullRequestSyncActionKind = 'approve' | 'retry-stage' | 'open';
+export type PullRequestApprovalVote = 'approved' | 'approved-with-suggestions' | 'rejected' | 'waiting' | 'not-voted' | 'unknown';
+export type PullRequestStageLifecycleStatus = 'succeeded' | 'failed' | 'canceled' | 'skipped' | 'running' | 'pending' | 'unknown';
+export type PullRequestActionResponseStatus = 'accepted' | 'completed';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -963,6 +967,8 @@ export interface PullRequestSyncSummary {
   unknown: number;
   unavailable: number;
   error: number;
+  approvalRequired?: number | null;
+  failedStages?: number | null;
 }
 
 export interface PullRequestSyncRow {
@@ -986,6 +992,8 @@ export interface PullRequestSyncRow {
   updatedAt?: string | null;
   workItems: PullRequestWorkItemRef[];
   commits: PullRequestCommitSummary[];
+  approval?: PullRequestApprovalStatus | null;
+  stages?: PullRequestPipelineStage[] | null;
   links: PullRequestSyncLink[];
   warnings: string[];
   errors: string[];
@@ -1010,6 +1018,61 @@ export interface PullRequestCommitSummary {
   authorName?: string | null;
   authorEmail?: string | null;
   authoredAt?: string | null;
+  links: PullRequestSyncLink[];
+  warnings: string[];
+}
+
+export interface PullRequestApprovalStatus {
+  requiresUserApproval: boolean;
+  reviewerDisplayName?: string | null;
+  reviewerUniqueName?: string | null;
+  vote?: PullRequestApprovalVote | null;
+  reason?: string | null;
+  action?: PullRequestSyncAction | null;
+  links: PullRequestSyncLink[];
+}
+
+export interface PullRequestSyncAction {
+  kind: PullRequestSyncActionKind;
+  label: string;
+  href?: string | null;
+  disabledReason?: string | null;
+  links: PullRequestSyncLink[];
+}
+
+export interface PullRequestPipelineStage {
+  name: string;
+  status: PullRequestStageLifecycleStatus;
+  result?: PullRequestStageLifecycleStatus | null;
+  runId?: number | null;
+  runName?: string | null;
+  pipelineName?: string | null;
+  action?: PullRequestSyncAction | null;
+  links: PullRequestSyncLink[];
+  warnings: string[];
+}
+
+export interface PullRequestApprovalActionRequest {
+  repositoryId: string;
+  pullRequestId: number;
+  reviewerUniqueName?: string | null;
+}
+
+export interface PullRequestRetryStageActionRequest {
+  repositoryId: string;
+  pullRequestId: number;
+  runId: number;
+}
+
+export interface PullRequestActionResponse {
+  repositoryId: string;
+  pullRequestId: number;
+  action: PullRequestSyncActionKind;
+  status: PullRequestActionResponseStatus;
+  message: string;
+  reviewerUniqueName?: string | null;
+  runId?: number | null;
+  runName?: string | null;
   links: PullRequestSyncLink[];
   warnings: string[];
 }
