@@ -12,6 +12,8 @@ QuiverDatasetFamily = Literal[
     "lobbying",
     "etf_holdings",
     "congress_holdings",
+    "wall_street_bets",
+    "patents",
 ]
 
 QUIVER_DATASET_FAMILIES: tuple[QuiverDatasetFamily, ...] = (
@@ -24,6 +26,8 @@ QUIVER_DATASET_FAMILIES: tuple[QuiverDatasetFamily, ...] = (
     "lobbying",
     "etf_holdings",
     "congress_holdings",
+    "wall_street_bets",
+    "patents",
 )
 
 QUIVER_GOLD_FEATURE_DATASETS: tuple[QuiverDatasetFamily, ...] = (
@@ -31,6 +35,9 @@ QUIVER_GOLD_FEATURE_DATASETS: tuple[QuiverDatasetFamily, ...] = (
     "government_contracts",
     "insider_trading",
     "institutional_holding_changes",
+    "wall_street_bets",
+    "patents",
+    "congress_holdings",
 )
 
 QUIVER_BRONZE_SILVER_ONLY_DATASETS: tuple[QuiverDatasetFamily, ...] = (
@@ -38,7 +45,6 @@ QUIVER_BRONZE_SILVER_ONLY_DATASETS: tuple[QuiverDatasetFamily, ...] = (
     "institutional_holdings",
     "lobbying",
     "etf_holdings",
-    "congress_holdings",
 )
 
 QUIVER_PUBLIC_AVAILABILITY_FIELDS: dict[QuiverDatasetFamily, str] = {
@@ -51,6 +57,8 @@ QUIVER_PUBLIC_AVAILABILITY_FIELDS: dict[QuiverDatasetFamily, str] = {
     "lobbying": "Date",
     "etf_holdings": "",
     "congress_holdings": "",
+    "wall_street_bets": "Time",
+    "patents": "Date",
 }
 
 QUIVER_EVENT_TIME_FIELDS: dict[QuiverDatasetFamily, str] = {
@@ -63,6 +71,8 @@ QUIVER_EVENT_TIME_FIELDS: dict[QuiverDatasetFamily, str] = {
     "lobbying": "Date",
     "etf_holdings": "",
     "congress_holdings": "",
+    "wall_street_bets": "Time",
+    "patents": "Date",
 }
 
 QUIVER_SYMBOL_FIELD_HINTS: dict[QuiverDatasetFamily, tuple[str, ...]] = {
@@ -75,6 +85,15 @@ QUIVER_SYMBOL_FIELD_HINTS: dict[QuiverDatasetFamily, tuple[str, ...]] = {
     "lobbying": ("Ticker",),
     "etf_holdings": ("Holding Symbol", "ETF Symbol"),
     "congress_holdings": (),
+    "wall_street_bets": ("Ticker",),
+    "patents": ("Ticker",),
+}
+
+QUIVER_GOLD_DATASET_BLOCKERS: dict[QuiverDatasetFamily, str] = {
+    "congress_holdings": (
+        "Provider schema does not expose a ticker or event/public-availability timestamp. "
+        "The official live congress holdings response only includes Politician, Holdings, and Type."
+    ),
 }
 
 QUIVER_FORWARD_LOOKING_COLUMNS: frozenset[str] = frozenset(
@@ -102,6 +121,20 @@ def quiver_event_time_field(dataset: str) -> str:
 def quiver_symbol_field_hints(dataset: str) -> tuple[str, ...]:
     key = normalize_quiver_dataset(dataset)
     return QUIVER_SYMBOL_FIELD_HINTS[key]
+
+
+def quiver_gold_dataset_blocker(dataset: str) -> str:
+    key = normalize_quiver_dataset(dataset)
+    return str(QUIVER_GOLD_DATASET_BLOCKERS.get(key, "") or "")
+
+
+def validate_quiver_gold_dataset(dataset: str) -> None:
+    key = normalize_quiver_dataset(dataset)
+    if key not in QUIVER_GOLD_FEATURE_DATASETS:
+        raise ValueError(f"Unsupported Quiver gold dataset family: {dataset!r}.")
+    blocker = quiver_gold_dataset_blocker(key)
+    if blocker:
+        raise ValueError(f"Quiver gold dataset {key!r} is blocked: {blocker}")
 
 
 def normalize_quiver_dataset(dataset: str) -> QuiverDatasetFamily:

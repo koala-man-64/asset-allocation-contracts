@@ -1,25 +1,58 @@
 from asset_allocation_contracts.paths import DataPaths
 from asset_allocation_contracts.quiver_signals import (
+    QUIVER_BRONZE_SILVER_ONLY_DATASETS,
+    QUIVER_GOLD_FEATURE_DATASETS,
     QUIVER_FORWARD_LOOKING_COLUMNS,
     filter_quiver_feature_columns,
     normalize_quiver_dataset,
+    quiver_gold_dataset_blocker,
     quiver_event_time_field,
     quiver_public_availability_field,
     quiver_symbol_field_hints,
+    validate_quiver_gold_dataset,
 )
 
 
 def test_quiver_dataset_normalization() -> None:
     assert normalize_quiver_dataset("Political Trading") == "political_trading"
     assert normalize_quiver_dataset("government-contracts") == "government_contracts"
+    assert normalize_quiver_dataset("wall street bets") == "wall_street_bets"
+    assert normalize_quiver_dataset("patents") == "patents"
 
 
 def test_quiver_public_availability_rules() -> None:
     assert quiver_public_availability_field("political_trading") == "ReportDate"
     assert quiver_public_availability_field("insider_trading") == "uploaded"
     assert quiver_public_availability_field("government_contracts_all") == "action_date"
+    assert quiver_public_availability_field("wall_street_bets") == "Time"
+    assert quiver_public_availability_field("patents") == "Date"
     assert quiver_event_time_field("institutional_holding_changes") == "ReportPeriod"
+    assert quiver_event_time_field("wall_street_bets") == "Time"
     assert quiver_symbol_field_hints("etf_holdings") == ("Holding Symbol", "ETF Symbol")
+    assert quiver_symbol_field_hints("patents") == ("Ticker",)
+
+
+def test_quiver_gold_dataset_contracts_promote_supported_families_and_block_congress_holdings() -> None:
+    assert "wall_street_bets" in QUIVER_GOLD_FEATURE_DATASETS
+    assert "patents" in QUIVER_GOLD_FEATURE_DATASETS
+    assert "congress_holdings" in QUIVER_GOLD_FEATURE_DATASETS
+    assert "congress_holdings" not in QUIVER_BRONZE_SILVER_ONLY_DATASETS
+    assert quiver_gold_dataset_blocker("wall_street_bets") == ""
+    assert "official live congress holdings response" in quiver_gold_dataset_blocker("congress_holdings").lower()
+    validate_quiver_gold_dataset("wall_street_bets")
+    validate_quiver_gold_dataset("patents")
+
+
+def test_quiver_gold_dataset_validation_fails_when_provider_schema_lacks_symbol_and_time_fields() -> None:
+    try:
+        validate_quiver_gold_dataset("congress_holdings")
+    except ValueError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("Expected congress_holdings validation to fail.")
+
+    assert "blocked" in message
+    assert "Politician, Holdings, and Type" in message
 
 
 def test_quiver_paths_use_shared_domain_roots() -> None:
