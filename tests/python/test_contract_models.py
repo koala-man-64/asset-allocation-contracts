@@ -678,6 +678,10 @@ def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
             "maxPositionSize": {"mode": "notional_base_ccy", "value": 25_000},
             "maxOpenPositions": 4,
             "allowedAssetClasses": ["equity", "option", "equity"],
+            "positionVolatilityTolerance": {
+                "metric": "atr_14d_pct_of_close",
+                "maxPct": 12,
+            },
             "requireOrderConfirmation": True,
         },
     )
@@ -686,6 +690,8 @@ def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
     assert payload.positionPolicy.targetPositionSize is not None
     assert payload.positionPolicy.targetPositionSize.value == 5
     assert payload.positionPolicy.allowedAssetClasses == ["equity", "option"]
+    assert payload.positionPolicy.positionVolatilityTolerance is not None
+    assert payload.positionPolicy.positionVolatilityTolerance.metric == "atr_14d_pct_of_close"
     assert payload.positionPolicy.requireOrderConfirmation is True
 
 
@@ -699,6 +705,22 @@ def test_strategy_position_policy_rejects_invalid_percentage_limit() -> None:
     else:
         raise AssertionError(
             "Expected validation failure for oversized percentage position limit."
+        )
+
+
+def test_strategy_position_policy_rejects_non_positive_volatility_tolerance() -> None:
+    try:
+        StrategyPositionPolicy(
+            positionVolatilityTolerance={
+                "metric": "realized_vol_20d",
+                "maxPct": 0,
+            }
+        )
+    except Exception as exc:
+        assert "maxPct" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected validation failure for non-positive volatility tolerance."
         )
 
 
@@ -806,6 +828,10 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
                 },
                 "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
                 "maxOpenPositions": 20,
+                "positionVolatilityTolerance": {
+                    "metric": "realized_vol_20d",
+                    "maxPct": 18,
+                },
             },
         },
     )
@@ -813,6 +839,8 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
     assert detail.name == "balanced"
     assert detail.isSystem is True
     assert detail.config.positionPolicy.maxOpenPositions == 20
+    assert detail.config.positionPolicy.positionVolatilityTolerance is not None
+    assert detail.config.positionPolicy.positionVolatilityTolerance.maxPct == 18
 
 
 def test_strategy_config_requires_position_policy_snapshot_when_risk_profile_name_is_set() -> (
@@ -851,11 +879,17 @@ def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
             "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
             "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
             "maxOpenPositions": 20,
+            "positionVolatilityTolerance": {
+                "metric": "realized_vol_60d",
+                "maxPct": 22,
+            },
         },
     )
 
     assert payload.riskProfileName == "balanced"
     assert payload.positionPolicy is not None
+    assert payload.positionPolicy.positionVolatilityTolerance is not None
+    assert payload.positionPolicy.positionVolatilityTolerance.metric == "realized_vol_60d"
 
 
 def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
@@ -885,6 +919,14 @@ def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
                 "action": "reduce_exposure",
                 "reductionPct": 50,
             },
+            "strategyVolatilityTolerance": {
+                "metric": "realized_vol_20d",
+                "maxPct": 16,
+            },
+            "exposureLimits": {
+                "drawdownReducePct": 8,
+                "drawdownBlockPct": 12,
+            },
             "takeProfit": {
                 "thresholdPct": 15,
                 "action": "rebalance_to_target",
@@ -901,6 +943,8 @@ def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
     assert payload.strategyRiskPolicy is not None
     assert payload.strategyRiskPolicy.stopLoss is not None
     assert payload.strategyRiskPolicy.stopLoss.thresholdPct == 8
+    assert payload.strategyRiskPolicy.strategyVolatilityTolerance is not None
+    assert payload.strategyRiskPolicy.strategyVolatilityTolerance.metric == "realized_vol_20d"
     assert payload.strategyRiskPolicy.reentry.cooldownBars == 12
 
 
@@ -1020,6 +1064,11 @@ def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
 def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
     policy = StrategyRiskPolicy(
         operatingMode="balanced_long_short",
+        stopLoss={
+            "thresholdPct": 6,
+            "action": "reduce_exposure",
+            "reductionPct": 35,
+        },
         exposureLimits={
             "maxGrossExposurePct": 135,
             "maxNetExposurePct": 65,
@@ -1031,6 +1080,10 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
             "weeklyLossLimitPct": 5,
             "drawdownReducePct": 6,
             "drawdownBlockPct": 9,
+        },
+        strategyVolatilityTolerance={
+            "metric": "realized_vol_60d",
+            "maxPct": 14,
         },
         tradingPermissions={
             "allowedSides": ["long", "short"],
@@ -1079,8 +1132,12 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
     )
 
     assert policy.operatingMode == "balanced_long_short"
+    assert policy.stopLoss is not None
+    assert policy.stopLoss.thresholdPct == 6
     assert policy.exposureLimits is not None
     assert policy.exposureLimits.maxGrossExposurePct == 135
+    assert policy.strategyVolatilityTolerance is not None
+    assert policy.strategyVolatilityTolerance.metric == "realized_vol_60d"
     assert policy.tradingPermissions is not None
     assert policy.tradingPermissions.allowedSides == ["long", "short"]
     assert policy.tradingPermissions.optionsMode == "defined_risk_only"
@@ -1117,6 +1174,36 @@ def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() ->
                 "event": [{"id": "duplicate", "trigger": "earnings_within=2d", "action": "warn"}],
             },
             "Duplicate risk overlay id",
+        ),
+        (
+            StrategyRiskPolicy,
+            {
+                "strategyVolatilityTolerance": {
+                    "metric": "atr_14d_pct_of_close",
+                    "maxPct": 12,
+                },
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
+            },
+            "strategyVolatilityTolerance.metric",
+        ),
+        (
+            StrategyRiskPolicy,
+            {
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
+                "exposureLimits": {
+                    "drawdownReducePct": 6,
+                    "drawdownBlockPct": 9,
+                },
+            },
+            "drawdownReducePct",
         ),
     )
 

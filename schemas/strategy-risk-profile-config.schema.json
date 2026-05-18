@@ -38,6 +38,17 @@
           ],
           "default": null
         },
+        "positionVolatilityTolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VolatilityTolerance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "requireOrderConfirmation": {
           "default": false,
           "title": "Requireorderconfirmation",
@@ -80,6 +91,31 @@
         "value"
       ],
       "title": "StrategyPositionSizeLimit",
+      "type": "object"
+    },
+    "VolatilityTolerance": {
+      "additionalProperties": false,
+      "properties": {
+        "maxPct": {
+          "exclusiveMinimum": 0.0,
+          "title": "Maxpct",
+          "type": "number"
+        },
+        "metric": {
+          "enum": [
+            "realized_vol_20d",
+            "realized_vol_60d",
+            "atr_14d_pct_of_close"
+          ],
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "maxPct"
+      ],
+      "title": "VolatilityTolerance",
       "type": "object"
     }
   },

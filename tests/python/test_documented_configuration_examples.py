@@ -104,7 +104,11 @@ def test_documented_strategy_example_is_valid() -> None:
                     "mode": "pct_of_allocatable_capital",
                     "value": 8
                 },
-                "maxOpenPositions": 20
+                "maxOpenPositions": 20,
+                "positionVolatilityTolerance": {
+                    "metric": "realized_vol_20d",
+                    "maxPct": 18
+                }
             },
             "intrabarConflictPolicy": "priority_order",
             "exits": [
@@ -178,6 +182,8 @@ def test_documented_strategy_example_is_valid() -> None:
 
     assert payload.regimeSource is not None
     assert payload.riskProfileName == "balanced"
+    assert payload.positionPolicy is not None
+    assert payload.positionPolicy.positionVolatilityTolerance is not None
     assert len(payload.exits) == 6
 
 
@@ -236,6 +242,14 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
                     "action": "reduce_exposure",
                     "reductionPct": 50,
                 },
+                "strategyVolatilityTolerance": {
+                    "metric": "realized_vol_20d",
+                    "maxPct": 16
+                },
+                "exposureLimits": {
+                    "drawdownReducePct": 8,
+                    "drawdownBlockPct": 12
+                },
             },
             "exits": [
                 {"id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40},
@@ -248,6 +262,8 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
     assert reusable_strategy.componentRefs.exitPolicy.name == "rank_decay_exit"
     assert inline_scratch.universe is not None
     assert inline_scratch.exits[0].rankThreshold == 40
+    assert inline_scratch.strategyRiskPolicy is not None
+    assert inline_scratch.strategyRiskPolicy.strategyVolatilityTolerance is not None
 
 
 def test_documented_reusable_preset_examples_are_valid() -> None:
@@ -300,6 +316,14 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
             "config": {
                 "scope": "strategy",
                 "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
+                "strategyVolatilityTolerance": {
+                    "metric": "realized_vol_60d",
+                    "maxPct": 14
+                },
+                "exposureLimits": {
+                    "drawdownReducePct": 8,
+                    "drawdownBlockPct": 12
+                },
             },
         }
     )
@@ -339,13 +363,18 @@ def test_documented_strategy_risk_profile_example_is_valid() -> None:
                         "mode": "pct_of_allocatable_capital",
                         "value": 8
                     },
-                    "maxOpenPositions": 20
+                    "maxOpenPositions": 20,
+                    "positionVolatilityTolerance": {
+                        "metric": "realized_vol_20d",
+                        "maxPct": 18
+                    }
                 }
             }
         }
     )
 
     assert payload.config.positionPolicy.maxOpenPositions == 20
+    assert payload.config.positionPolicy.positionVolatilityTolerance is not None
     assert payload.isSystem is True
 
 

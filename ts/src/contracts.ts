@@ -48,6 +48,7 @@ export type StrategyRiskTakeProfitAction = 'reduce_exposure' | 'rebalance_to_tar
 export type RiskPolicyOperatingMode = 'research_observe_only' | 'paper_controlled_pilot' | 'core_diversified_long' | 'balanced_long_short' | 'liquidity_constrained_smid' | 'catalyst_event_guarded' | 'stress_de_risk_mode';
 export type StrategyRiskSide = 'long' | 'short';
 export type StrategyRiskOptionMode = 'blocked' | 'covered_only' | 'defined_risk_only' | 'approval_required';
+export type StrategyVolatilityMetric = 'realized_vol_20d' | 'realized_vol_60d' | 'atr_14d_pct_of_close';
 export type StrategyRiskOverlayAction = 'warn' | 'reduce_exposure' | 'freeze_buys' | 'block_new_orders' | 'reduce_only' | 'liquidate';
 export type StrategyRiskCorporateActionPolicy = 'allow' | 'warn' | 'freeze';
 export type StrategyRiskAdjustmentStatus = 'raw_allowed' | 'split_adjusted' | 'dividend_adjusted' | 'corporate_action_adjusted';
@@ -261,12 +262,18 @@ export interface StrategyPositionPolicy {
   maxPositionSize?: StrategyPositionSizeLimit | null;
   maxOpenPositions?: number | null;
   allowedAssetClasses: StrategyPositionAssetClass[];
+  positionVolatilityTolerance?: VolatilityTolerance | null;
   requireOrderConfirmation: boolean;
 }
 
 export interface StrategyPositionSizeLimit {
   mode: StrategyPositionSizeMode;
   value: number;
+}
+
+export interface VolatilityTolerance {
+  metric: StrategyVolatilityMetric;
+  maxPct: number;
 }
 
 export interface RebalancePolicy {
@@ -296,6 +303,7 @@ export interface StrategyRiskPolicy {
   takeProfit?: StrategyRiskTakeProfitPolicy | null;
   reentry: StrategyRiskReentryPolicy;
   exposureLimits?: StrategyRiskExposureLimits | null;
+  strategyVolatilityTolerance?: VolatilityTolerance | null;
   tradingPermissions?: StrategyRiskTradingPermissions | null;
   liquidityLimits?: StrategyRiskLiquidityLimits | null;
   overlays?: StrategyRiskOverlaySet | null;

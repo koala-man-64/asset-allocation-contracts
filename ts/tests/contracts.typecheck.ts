@@ -77,6 +77,7 @@ import type {
   StrategyConfig,
   StrategyComponentRefs,
   StrategyRiskPolicyPreset,
+  StrategyVolatilityMetric,
   UniverseConfigPreset,
   UniverseConfigDraftGenerationRequest,
   UniverseConfigDraftGenerationResponse,
@@ -90,6 +91,7 @@ import type {
   UiRuntimeConfig,
   UniverseCondition,
   UniversePreviewResponse,
+  VolatilityTolerance,
 } from "../src/contracts";
 import {
   GOLD_MARKET_SILVER_SOURCE_COLUMNS,
@@ -598,6 +600,12 @@ const inactiveRegimeDecision: RegimeActivationDecision = {
   haltFlag: false,
 };
 
+const strategyVolatilityMetric: StrategyVolatilityMetric = "realized_vol_20d";
+const strategyVolatilityTolerance: VolatilityTolerance = {
+  metric: strategyVolatilityMetric,
+  maxPct: 16,
+};
+
 const riskPreset: StrategyRiskPolicyPreset = {
   identity: {
     ...configIdentity,
@@ -614,6 +622,11 @@ const riskPreset: StrategyRiskPolicyPreset = {
       thresholdPct: 8,
       action: "reduce_exposure",
       reductionPct: 50,
+    },
+    strategyVolatilityTolerance,
+    exposureLimits: {
+      drawdownReducePct: 8,
+      drawdownBlockPct: 12,
     },
     reentry: {
       cooldownBars: 0,

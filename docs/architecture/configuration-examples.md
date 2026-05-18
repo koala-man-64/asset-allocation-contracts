@@ -310,6 +310,14 @@ Inline scratch configs remain valid for research notes, one-off experiments, and
       "thresholdPct": 8,
       "action": "reduce_exposure",
       "reductionPct": 50
+    },
+    "strategyVolatilityTolerance": {
+      "metric": "realized_vol_20d",
+      "maxPct": 16
+    },
+    "exposureLimits": {
+      "drawdownReducePct": 8,
+      "drawdownBlockPct": 12
     }
   },
   "exits": [
@@ -441,7 +449,11 @@ This produces `2 universes x 3 rankings x 4 rebalances x 1 risk x 2 exits x 1 re
         "mode": "pct_of_allocatable_capital",
         "value": 8
       },
-      "maxOpenPositions": 20
+      "maxOpenPositions": 20,
+      "positionVolatilityTolerance": {
+        "metric": "realized_vol_20d",
+        "maxPct": 18
+      }
     }
   }
 }
@@ -452,6 +464,7 @@ Validation notes:
 - `presetClass` is a governed posture label: `conservative`, `balanced`, or `aggressive`.
 - Reusable risk profiles require `targetPositionSize`, `maxPositionSize`, and `maxOpenPositions`.
 - `targetPositionSize` and `maxPositionSize` must share the same sizing mode, and `maxPositionSize` cannot be smaller than `targetPositionSize`.
+- `positionVolatilityTolerance.metric` supports `realized_vol_20d`, `realized_vol_60d`, and `atr_14d_pct_of_close`; `maxPct` must be greater than zero.
 
 ## Ranking Schema
 

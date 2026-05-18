@@ -72,6 +72,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("strategy-risk-policy-preset.schema.json", strategy.StrategyRiskPolicyPreset),
     ("exit-policy-preset.schema.json", strategy.ExitPolicyPreset),
     ("strategy-position-size-limit.schema.json", strategy.StrategyPositionSizeLimit),
+    ("strategy-volatility-tolerance.schema.json", strategy.VolatilityTolerance),
     ("strategy-position-policy.schema.json", strategy.StrategyPositionPolicy),
     ("strategy-rebalance-policy.schema.json", strategy.RebalancePolicy),
     ("strategy-risk-policy.schema.json", strategy.StrategyRiskPolicy),
@@ -567,6 +568,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("RiskPolicyOperatingMode", strategy.RiskPolicyOperatingMode),
     ("StrategyRiskSide", strategy.StrategyRiskSide),
     ("StrategyRiskOptionMode", strategy.StrategyRiskOptionMode),
+    ("StrategyVolatilityMetric", strategy.StrategyVolatilityMetric),
     ("StrategyRiskOverlayAction", strategy.StrategyRiskOverlayAction),
     (
         "StrategyRiskCorporateActionPolicy",

@@ -81,6 +81,11 @@ StrategyRiskOptionMode = Literal[
     "defined_risk_only",
     "approval_required",
 ]
+StrategyVolatilityMetric = Literal[
+    "realized_vol_20d",
+    "realized_vol_60d",
+    "atr_14d_pct_of_close",
+]
 StrategyRiskOverlayAction = Literal[
     "warn",
     "reduce_exposure",
@@ -618,6 +623,13 @@ class StrategyPositionSizeLimit(BaseModel):
         return self
 
 
+class VolatilityTolerance(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metric: StrategyVolatilityMetric
+    maxPct: float = Field(..., gt=0.0)
+
+
 class StrategyPositionPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -625,6 +637,7 @@ class StrategyPositionPolicy(BaseModel):
     maxPositionSize: StrategyPositionSizeLimit | None = None
     maxOpenPositions: int | None = Field(default=None, ge=1)
     allowedAssetClasses: list[StrategyPositionAssetClass] = Field(default_factory=lambda: ["equity"])
+    positionVolatilityTolerance: VolatilityTolerance | None = None
     requireOrderConfirmation: bool = False
 
     @field_validator("allowedAssetClasses", mode="before")
@@ -946,6 +959,7 @@ class StrategyRiskPolicy(BaseModel):
     takeProfit: StrategyRiskTakeProfitPolicy | None = None
     reentry: StrategyRiskReentryPolicy = Field(default_factory=StrategyRiskReentryPolicy)
     exposureLimits: StrategyRiskExposureLimits | None = None
+    strategyVolatilityTolerance: VolatilityTolerance | None = None
     tradingPermissions: StrategyRiskTradingPermissions | None = None
     liquidityLimits: StrategyRiskLiquidityLimits | None = None
     overlays: StrategyRiskOverlaySet | None = None
@@ -954,6 +968,23 @@ class StrategyRiskPolicy(BaseModel):
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskPolicy":
+        if (
+            self.strategyVolatilityTolerance is not None
+            and self.strategyVolatilityTolerance.metric == "atr_14d_pct_of_close"
+        ):
+            raise ValueError(
+                "strategyVolatilityTolerance.metric only supports realized_vol_20d or realized_vol_60d."
+            )
+        if (
+            self.stopLoss is not None
+            and self.stopLoss.enabled
+            and self.exposureLimits is not None
+            and self.exposureLimits.drawdownReducePct is not None
+            and self.stopLoss.thresholdPct != self.exposureLimits.drawdownReducePct
+        ):
+            raise ValueError(
+                "stopLoss.thresholdPct must match exposureLimits.drawdownReducePct when stopLoss is enabled."
+            )
         if self.enabled:
             enabled_stop = self.stopLoss is not None and self.stopLoss.enabled
             enabled_take = self.takeProfit is not None and self.takeProfit.enabled
@@ -963,6 +994,7 @@ class StrategyRiskPolicy(BaseModel):
                 for item in (
                     self.operatingMode,
                     self.exposureLimits,
+                    self.strategyVolatilityTolerance,
                     self.tradingPermissions,
                     self.liquidityLimits,
                     self.overlays,
