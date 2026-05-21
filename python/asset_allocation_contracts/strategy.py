@@ -634,6 +634,7 @@ class VolatilityTolerance(BaseModel):
 class StrategyPositionPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    regimeGate: RegimeGate | None = None
     targetPositionSize: StrategyPositionSizeLimit | None = None
     maxPositionSize: StrategyPositionSizeLimit | None = None
     maxOpenPositions: int | None = Field(default=None, ge=1)
@@ -698,6 +699,7 @@ class StrategyRiskProfileSummary(BaseModel):
     isSystem: bool = False
     usageCount: int = Field(default=0, ge=0)
     updatedAt: datetime | None = None
+    regimeGate: RegimeGate | None = None
 
 
 class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
@@ -1666,6 +1668,8 @@ class StrategyConfig(BaseModel):
         )
         if self.rebalancePolicy is not None and self.rebalancePolicy.regimeGate is not None and self.regimeSource is None:
             raise ValueError("rebalancePolicy.regimeGate requires regimeSource.")
+        if self.positionPolicy is not None and self.positionPolicy.regimeGate is not None and self.regimeSource is None:
+            raise ValueError("positionPolicy.regimeGate requires regimeSource.")
         if self.riskRegimeGate is not None and self.regimeSource is None:
             raise ValueError("riskRegimeGate requires regimeSource.")
         if self.exitRegimeGate is not None and self.regimeSource is None:

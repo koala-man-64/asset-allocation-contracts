@@ -450,10 +450,13 @@ def test_component_configs_accept_regime_gates() -> None:
         regimeGate={"blockedRegimes": ["liquidity_stress"]},
         exits=[{"id": "stop-8", "type": "stop_loss_fixed", "value": 0.08}],
     )
+    position = StrategyPositionPolicy(regimeGate={"blockedRegimes": ["trending_down"]})
 
     assert ranking.universeConfigName == "us-large-liquid"
     assert rebalance.regimeGate is not None
     assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
+    assert position.regimeGate is not None
+    assert position.regimeGate.blockedRegimes == ["trending_down"]
     assert risk.regimeGate is not None
     assert risk.regimeGate.blockedRegimes == ["liquidity_stress"]
     assert exits.regimeGate is not None
@@ -552,6 +555,15 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
 
     for payload in (
         {**base_payload, "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}}},
+        {
+            **base_payload,
+            "positionPolicy": {
+                "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 10,
+            },
+        },
         {**base_payload, "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
         {**base_payload, "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
     ):
@@ -567,6 +579,12 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
             **base_payload,
             "regimeSource": {"modelName": "default-regime", "modelVersion": 3},
             "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}},
+            "positionPolicy": {
+                "regimeGate": {"blockedRegimes": ["trending_down"]},
+                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
+                "maxOpenPositions": 10,
+            },
             "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
             "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
         }
@@ -575,6 +593,8 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
     assert resolved.regimeSource is not None
     assert resolved.rebalancePolicy is not None
     assert resolved.rebalancePolicy.regimeGate is not None
+    assert resolved.positionPolicy is not None
+    assert resolved.positionPolicy.regimeGate is not None
     assert resolved.riskRegimeGate is not None
     assert resolved.exitRegimeGate is not None
 
@@ -957,6 +977,7 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
         version=2,
         isSystem=True,
         usageCount=14,
+        regimeGate={"blockedRegimes": ["high_volatility"]},
     )
     detail = StrategyRiskProfileDetail(
         **summary.model_dump(),
@@ -979,6 +1000,8 @@ def test_strategy_risk_profile_summary_and_detail_support_usage_metadata() -> No
 
     assert detail.name == "balanced"
     assert detail.isSystem is True
+    assert detail.regimeGate is not None
+    assert detail.regimeGate.blockedRegimes == ["high_volatility"]
     assert detail.config.positionPolicy.maxOpenPositions == 20
     assert detail.config.positionPolicy.positionVolatilityTolerance is not None
     assert detail.config.positionPolicy.positionVolatilityTolerance.maxPct == 18

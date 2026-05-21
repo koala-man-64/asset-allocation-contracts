@@ -287,6 +287,7 @@ export interface RegimeGate {
 }
 
 export interface StrategyPositionPolicy {
+  regimeGate?: RegimeGate | null;
   targetPositionSize?: StrategyPositionSizeLimit | null;
   maxPositionSize?: StrategyPositionSizeLimit | null;
   maxOpenPositions?: number | null;
@@ -873,6 +874,7 @@ export interface StrategyRiskProfileSummary {
   isSystem: boolean;
   usageCount: number;
   updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
 }
 
 export interface StrategyRiskProfileDetail {
@@ -883,6 +885,7 @@ export interface StrategyRiskProfileDetail {
   isSystem: boolean;
   usageCount: number;
   updatedAt?: string | null;
+  regimeGate?: RegimeGate | null;
   config: StrategyRiskProfileConfig;
 }
 

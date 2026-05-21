@@ -1,5 +1,29 @@
 {
   "$defs": {
+    "RegimeGate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeGate",
+      "type": "object"
+    },
     "StrategyPositionPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -42,6 +66,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/VolatilityTolerance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
             },
             {
               "type": "null"
@@ -172,6 +207,17 @@
       ],
       "title": "Presetclass",
       "type": "string"
+    },
+    "regimeGate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RegimeGate"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "updatedAt": {
       "anyOf": [

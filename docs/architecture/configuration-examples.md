@@ -248,6 +248,7 @@ Validation notes:
 - `ExitRule.description` defaults to `""` and is capped at `2048` characters.
 - `ExitRule.visualKey` may be omitted, in which case contracts default it to the rule `type`; persisted configs must use one of the six canonical rule-type keys and must not store image blobs, SVG markup, or external asset URLs.
 - `riskProfileName` requires an embedded `positionPolicy` snapshot so runtime and backtests never need a late-bound catalog lookup.
+- `StrategyPositionPolicy.regimeGate` blocks new positions and size increases in matching regimes; reductions and exits remain allowed.
 - `trailing_stop_atr` requires `atrColumn`.
 - `time_stop` requires an integer `value` and only allows `priceField: "close"`.
 - `rank_decay` requires `rankThreshold` and does not accept `value`, `reference`, `atrColumn`, or `priceField`.

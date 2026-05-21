@@ -1089,6 +1089,17 @@
           ],
           "default": null
         },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "requireOrderConfirmation": {
           "default": false,
           "title": "Requireorderconfirmation",
