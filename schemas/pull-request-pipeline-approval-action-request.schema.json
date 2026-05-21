@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approvalId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Approvalid",
+      "type": "string"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "pullRequestId": {
+      "minimum": 1,
+      "title": "Pullrequestid",
+      "type": "integer"
+    },
+    "repositoryId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Repositoryid",
+      "type": "string"
+    },
+    "runId": {
+      "minimum": 1,
+      "title": "Runid",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "repositoryId",
+    "pullRequestId",
+    "runId",
+    "approvalId"
+  ],
+  "title": "PullRequestPipelineApprovalActionRequest",
+  "type": "object"
+}

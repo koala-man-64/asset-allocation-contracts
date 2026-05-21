@@ -178,6 +178,108 @@
       "title": "PullRequestCommitSummary",
       "type": "object"
     },
+    "PullRequestPipelineApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PullRequestSyncAction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approvalId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Approvalid",
+          "type": "string"
+        },
+        "approverDisplayName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approverdisplayname"
+        },
+        "approverUniqueName": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approveruniquename"
+        },
+        "instructions": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instructions"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PullRequestSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "skipped",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approvalId"
+      ],
+      "title": "PullRequestPipelineApproval",
+      "type": "object"
+    },
     "PullRequestPipelineStage": {
       "additionalProperties": false,
       "properties": {
@@ -185,6 +287,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/PullRequestSyncAction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PullRequestPipelineApproval"
             },
             {
               "type": "null"
@@ -330,6 +443,7 @@
           "enum": [
             "approve",
             "retry-stage",
+            "approve-check",
             "open"
           ],
           "title": "Kind",
@@ -702,6 +816,19 @@
           ],
           "default": null,
           "title": "Failedstages"
+        },
+        "pendingApprovals": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pendingapprovals"
         },
         "ready": {
           "default": 0,

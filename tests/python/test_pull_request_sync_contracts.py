@@ -5,6 +5,7 @@ import pytest
 from asset_allocation_contracts.pull_request_sync import (
     PullRequestActionResponse,
     PullRequestApprovalActionRequest,
+    PullRequestPipelineApprovalActionRequest,
     PullRequestRetryStageActionRequest,
     PullRequestSyncRow,
     PullRequestSyncSummary,
@@ -48,6 +49,30 @@ def test_pull_request_sync_contract_accepts_approval_and_retry_fields() -> None:
                     "label": "Retry validation run",
                 },
                 "warnings": ["Typecheck failed."],
+            },
+            {
+                "name": "deploy approval",
+                "status": "pending",
+                "result": "pending",
+                "runId": 1960,
+                "runName": "ui-deploy-20260517.3",
+                "pipelineName": "asset-allocation-ui-deploy",
+                "approval": {
+                    "approvalId": "b2d2ab90-b959-4cc1-a63b-663965c445d2",
+                    "status": "pending",
+                    "approverDisplayName": "Rudy Prokes",
+                    "approverUniqueName": "rdprokes@example.com",
+                    "instructions": "Approve the environment gate.",
+                    "reason": "Deploy validation is waiting for owner approval.",
+                    "action": {
+                        "kind": "approve-check",
+                        "label": "Approve pipeline gate",
+                    },
+                },
+                "action": {
+                    "kind": "approve-check",
+                    "label": "Approve pipeline gate",
+                },
             }
         ],
     )
@@ -64,6 +89,7 @@ def test_pull_request_sync_contract_accepts_approval_and_retry_fields() -> None:
         error=1,
         approvalRequired=1,
         failedStages=1,
+        pendingApprovals=1,
     )
 
     assert row.approval is not None
@@ -73,11 +99,18 @@ def test_pull_request_sync_contract_accepts_approval_and_retry_fields() -> None:
     assert row.stages[0].runId == 1958
     assert row.stages[0].action is not None
     assert row.stages[0].action.kind == "retry-stage"
+    assert row.stages[1].approval is not None
+    assert row.stages[1].approval.approvalId == "b2d2ab90-b959-4cc1-a63b-663965c445d2"
+    assert row.stages[1].approval.action is not None
+    assert row.stages[1].approval.action.kind == "approve-check"
+    assert row.stages[1].action is not None
+    assert row.stages[1].action.kind == "approve-check"
     assert summary.approvalRequired == 1
     assert summary.failedStages == 1
+    assert summary.pendingApprovals == 1
 
 
-def test_pull_request_action_contracts_capture_approve_and_retry_requests() -> None:
+def test_pull_request_action_contracts_capture_approve_retry_and_check_requests() -> None:
     approve = PullRequestApprovalActionRequest(
         repositoryId="repo-ui",
         pullRequestId=280,
@@ -88,21 +121,34 @@ def test_pull_request_action_contracts_capture_approve_and_retry_requests() -> N
         pullRequestId=280,
         runId=1958,
     )
+    approve_check = PullRequestPipelineApprovalActionRequest(
+        repositoryId="repo-ui",
+        pullRequestId=280,
+        runId=1960,
+        approvalId="b2d2ab90-b959-4cc1-a63b-663965c445d2",
+        comment="Approved from System Status.",
+    )
     response = PullRequestActionResponse(
         repositoryId="repo-ui",
         pullRequestId=280,
-        action="retry-stage",
+        action="approve-check",
         status="accepted",
-        message="Queued a new validation run.",
+        message="Approved the pipeline gate.",
         runId=1960,
         runName="asset-allocation-ui-ci-20260517.3",
+        approvalId="b2d2ab90-b959-4cc1-a63b-663965c445d2",
+        approvalStatus="approved",
     )
 
     assert approve.reviewerUniqueName == "rdprokes@example.com"
     assert retry.runId == 1958
-    assert response.action == "retry-stage"
+    assert approve_check.approvalId == "b2d2ab90-b959-4cc1-a63b-663965c445d2"
+    assert approve_check.comment == "Approved from System Status."
+    assert response.action == "approve-check"
     assert response.status == "accepted"
     assert response.runId == 1960
+    assert response.approvalId == "b2d2ab90-b959-4cc1-a63b-663965c445d2"
+    assert response.approvalStatus == "approved"
 
 
 def test_pull_request_action_contracts_forbid_unknown_fields() -> None:

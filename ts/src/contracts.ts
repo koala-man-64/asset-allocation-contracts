@@ -14,9 +14,10 @@ export type PullRequestSyncViewStatus = 'available' | 'partial' | 'unavailable' 
 export type PullRequestSyncStatus = 'synced' | 'target-stale' | 'source-stale' | 'conflict' | 'unknown' | 'unavailable' | 'error';
 export type PullRequestLifecycleStatus = 'active' | 'abandoned' | 'completed' | 'unknown';
 export type PullRequestMergeStatus = 'notSet' | 'queued' | 'conflicts' | 'succeeded' | 'rejectedByPolicy' | 'failure' | 'unknown';
-export type PullRequestSyncActionKind = 'approve' | 'retry-stage' | 'open';
+export type PullRequestSyncActionKind = 'approve' | 'retry-stage' | 'approve-check' | 'open';
 export type PullRequestApprovalVote = 'approved' | 'approved-with-suggestions' | 'rejected' | 'waiting' | 'not-voted' | 'unknown';
 export type PullRequestStageLifecycleStatus = 'succeeded' | 'failed' | 'canceled' | 'skipped' | 'running' | 'pending' | 'unknown';
+export type PullRequestPipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skipped' | 'unknown';
 export type PullRequestActionResponseStatus = 'accepted' | 'completed';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -1093,6 +1094,7 @@ export interface PullRequestSyncSummary {
   error: number;
   approvalRequired?: number | null;
   failedStages?: number | null;
+  pendingApprovals?: number | null;
 }
 
 export interface PullRequestSyncRow {
@@ -1171,9 +1173,21 @@ export interface PullRequestPipelineStage {
   runId?: number | null;
   runName?: string | null;
   pipelineName?: string | null;
+  approval?: PullRequestPipelineApproval | null;
   action?: PullRequestSyncAction | null;
   links: PullRequestSyncLink[];
   warnings: string[];
+}
+
+export interface PullRequestPipelineApproval {
+  approvalId: string;
+  status: PullRequestPipelineApprovalStatus;
+  approverDisplayName?: string | null;
+  approverUniqueName?: string | null;
+  instructions?: string | null;
+  reason?: string | null;
+  action?: PullRequestSyncAction | null;
+  links: PullRequestSyncLink[];
 }
 
 export interface PullRequestApprovalActionRequest {
@@ -1188,6 +1202,14 @@ export interface PullRequestRetryStageActionRequest {
   runId: number;
 }
 
+export interface PullRequestPipelineApprovalActionRequest {
+  repositoryId: string;
+  pullRequestId: number;
+  runId: number;
+  approvalId: string;
+  comment?: string | null;
+}
+
 export interface PullRequestActionResponse {
   repositoryId: string;
   pullRequestId: number;
@@ -1197,6 +1219,8 @@ export interface PullRequestActionResponse {
   reviewerUniqueName?: string | null;
   runId?: number | null;
   runName?: string | null;
+  approvalId?: string | null;
+  approvalStatus?: PullRequestPipelineApprovalStatus | null;
   links: PullRequestSyncLink[];
   warnings: string[];
 }

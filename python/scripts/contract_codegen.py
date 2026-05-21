@@ -130,6 +130,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         pull_request_sync.PullRequestRetryStageActionRequest,
     ),
     (
+        "pull-request-pipeline-approval-action-request.schema.json",
+        pull_request_sync.PullRequestPipelineApprovalActionRequest,
+    ),
+    (
         "pull-request-action-response.schema.json",
         pull_request_sync.PullRequestActionResponse,
     ),
@@ -534,6 +538,10 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("PullRequestSyncActionKind", pull_request_sync.PullRequestSyncActionKind),
     ("PullRequestApprovalVote", pull_request_sync.PullRequestApprovalVote),
     ("PullRequestStageLifecycleStatus", pull_request_sync.PullRequestStageLifecycleStatus),
+    (
+        "PullRequestPipelineApprovalStatus",
+        pull_request_sync.PullRequestPipelineApprovalStatus,
+    ),
     (
         "PullRequestActionResponseStatus",
         pull_request_sync.PullRequestActionResponseStatus,
