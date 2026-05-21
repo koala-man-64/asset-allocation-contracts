@@ -523,6 +523,62 @@
       "title": "RegimeSourceRef",
       "type": "object"
     },
+    "RegimeStrategyPredicate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockWhenUnclassified": {
+          "default": true,
+          "title": "Blockwhenunclassified",
+          "type": "boolean"
+        },
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        },
+        "honorModelHalt": {
+          "default": true,
+          "title": "Honormodelhalt",
+          "type": "boolean"
+        },
+        "requireAllRequired": {
+          "default": false,
+          "title": "Requireallrequired",
+          "type": "boolean"
+        },
+        "requiredRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeStrategyPredicate",
+      "type": "object"
+    },
     "StrategyComponentRefs": {
       "additionalProperties": false,
       "properties": {
@@ -687,6 +743,46 @@
         "value"
       ],
       "title": "StrategyPositionSizeLimit",
+      "type": "object"
+    },
+    "StrategyRegimeAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyRef": {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "strategyRef",
+        "weight"
+      ],
+      "title": "StrategyRegimeAllocation",
+      "type": "object"
+    },
+    "StrategyRegimeGatePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/StrategyRegimeAllocation"
+          },
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "when": {
+          "$ref": "#/$defs/RegimeStrategyPredicate"
+        }
+      },
+      "required": [
+        "allocations"
+      ],
+      "title": "StrategyRegimeGatePlan",
       "type": "object"
     },
     "StrategyRiskAuditPolicy": {
@@ -1884,6 +1980,13 @@
         }
       ],
       "default": null
+    },
+    "regimeGates": {
+      "additionalProperties": {
+        "$ref": "#/$defs/StrategyRegimeGatePlan"
+      },
+      "title": "Regimegates",
+      "type": "object"
     },
     "regimePolicy": {
       "anyOf": [

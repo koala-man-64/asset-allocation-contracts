@@ -252,6 +252,8 @@ Validation notes:
 - `time_stop` requires an integer `value` and only allows `priceField: "close"`.
 - `rank_decay` requires `rankThreshold` and does not accept `value`, `reference`, `atrColumn`, or `priceField`.
 - `StrategyPositionPolicy.targetPositionSize` percentage sizing still cannot allocate more than `100%` across the selected long-only basket.
+- `StrategyConfig.regimeGates` is the canonical strategy-level regime playbook. Gate names map to predicates and saved strategy revision allocations; allocation weights are positive relative weights that the runtime normalizes across active gates.
+- If no `regimeGates` entry is active, execution targets zero. A catch-all allocation must be authored explicitly when always-on behavior is intended.
 - The Python model still strips legacy `enabled` toggles from `regimePolicy` and `exits` for compatibility, but the canonical schema does not model those fields.
 
 ### Reusable strategy component refs
@@ -267,6 +269,21 @@ Reusable backtests should pin all six component families with `StrategyConfig.co
     "regimePolicy": { "name": "observe_only_default", "version": 1 },
     "riskPolicy": { "name": "balanced_long_only", "version": 1 },
     "exitPolicy": { "name": "rank_decay_exit", "version": 1 }
+  },
+  "regimeSource": { "modelName": "default-regime", "modelVersion": 1 },
+  "regimeGates": {
+    "risk-on-growth": {
+      "when": {
+        "requiredRegimes": ["trending_up"],
+        "blockedRegimes": ["liquidity_stress"],
+        "honorModelHalt": true,
+        "blockWhenUnclassified": true
+      },
+      "allocations": [
+        { "strategyRef": { "name": "quality_momentum_growth", "version": 3 }, "weight": 2 },
+        { "strategyRef": { "name": "defensive_quality", "version": 1 }, "weight": 1 }
+      ]
+    }
   },
   "rebalance": "monthly",
   "longOnly": true,
@@ -475,6 +492,8 @@ Source of truth:
 - `ts/src/contracts.ts`
 
 ### Ranking schema example
+
+Ranking schemas are pure scoring definitions. Regime routing belongs on `StrategyConfig.regimeGates`, not on ranking schema payloads.
 
 ```json
 {

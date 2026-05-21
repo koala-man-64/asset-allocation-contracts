@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from asset_allocation_contracts.ranking import RankingFieldReference, RankingPreviewResponse, RankingSchemaConfig
 from asset_allocation_contracts.regime import (
     DEFAULT_REGIME_MODEL_NAME,
+    RegimeCode,
     RegimeGate,
     RegimePolicy,
     RegimeSourceRef,
@@ -1256,7 +1257,7 @@ class UniverseConfigDraftGenerationResponse(BaseModel):
 
 
 class RankingSchemaSummary(ReusableConfigSummaryBase):
-    regimeGate: RegimeGate | None = None
+    pass
 
 
 class RankingSchemaRevision(ConfigIdentity):
@@ -1445,11 +1446,56 @@ class StrategyComponentRefs(BaseModel):
     exitPolicy: ConfigReference | None = None
 
 
+class RegimeStrategyPredicate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    requiredRegimes: list[RegimeCode] = Field(default_factory=list)
+    blockedRegimes: list[RegimeCode] = Field(default_factory=list)
+    requireAllRequired: bool = False
+    honorModelHalt: bool = True
+    blockWhenUnclassified: bool = True
+
+    @field_validator("requiredRegimes", "blockedRegimes")
+    @classmethod
+    def dedupe_regimes(cls, value: list[RegimeCode]) -> list[RegimeCode]:
+        seen: set[str] = set()
+        normalized: list[RegimeCode] = []
+        for item in value or []:
+            code = str(item or "").strip()
+            if code and code not in seen:
+                seen.add(code)
+                normalized.append(item)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_rule_sets(self) -> "RegimeStrategyPredicate":
+        overlap = sorted(set(self.requiredRegimes).intersection(self.blockedRegimes))
+        if overlap:
+            joined = ", ".join(overlap)
+            raise ValueError(f"Regime strategy predicate cannot both require and block: {joined}.")
+        return self
+
+
+class StrategyRegimeAllocation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyRef: ConfigReference
+    weight: float = Field(..., gt=0)
+
+
+class StrategyRegimeGatePlan(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    when: RegimeStrategyPredicate = Field(default_factory=RegimeStrategyPredicate)
+    allocations: list[StrategyRegimeAllocation] = Field(..., min_length=1)
+
+
 class StrategyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     componentRefs: StrategyComponentRefs | None = None
     regimeSource: RegimeSourceRef | None = None
+    regimeGates: dict[str, StrategyRegimeGatePlan] = Field(default_factory=dict)
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
     universeConfigVersion: int | None = Field(default=None, ge=1)
     universe: UniverseDefinition | None = None
@@ -1512,6 +1558,32 @@ class StrategyConfig(BaseModel):
                 normalized_exits.append(normalized_rule)
             payload["exits"] = normalized_exits
 
+        return payload
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_regime_gate_names(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+
+        payload = dict(value)
+        raw_gates = payload.get("regimeGates")
+        if raw_gates is None:
+            return payload
+        if not isinstance(raw_gates, dict):
+            raise ValueError("regimeGates must be a dictionary keyed by gate name.")
+
+        normalized_gates: dict[str, object] = {}
+        for raw_name, gate_plan in raw_gates.items():
+            name = str(raw_name or "").strip()
+            if not name:
+                raise ValueError("regimeGates keys must be non-empty gate names.")
+            if len(name) > 128:
+                raise ValueError("regimeGates keys must be 128 characters or fewer.")
+            if name in normalized_gates:
+                raise ValueError(f"Duplicate regimeGates key after normalization: {name}.")
+            normalized_gates[name] = gate_plan
+        payload["regimeGates"] = normalized_gates
         return payload
 
     @field_validator("universeConfigName", mode="before")
@@ -1598,6 +1670,8 @@ class StrategyConfig(BaseModel):
             raise ValueError("riskRegimeGate requires regimeSource.")
         if self.exitRegimeGate is not None and self.regimeSource is None:
             raise ValueError("exitRegimeGate requires regimeSource.")
+        if self.regimeGates and self.regimeSource is None:
+            raise ValueError("regimeGates requires regimeSource.")
         if not self.longOnly:
             raise ValueError("Strategy position policy v1 only supports longOnly=true.")
         if self.riskProfileName and self.positionPolicy is None:

@@ -173,6 +173,7 @@ export type UniverseNode = UniverseGroup | UniverseCondition;
 export interface StrategyConfig {
   componentRefs?: StrategyComponentRefs | null;
   regimeSource?: RegimeSourceRef | null;
+  regimeGates: Record<string, StrategyRegimeGatePlan>;
   universeConfigName?: string | null;
   universeConfigVersion?: number | null;
   universe?: UniverseDefinition | null;
@@ -218,6 +219,24 @@ export interface ConfigReference {
 export interface RegimeSourceRef {
   modelName: string;
   modelVersion?: number | null;
+}
+
+export interface StrategyRegimeGatePlan {
+  when: RegimeStrategyPredicate;
+  allocations: StrategyRegimeAllocation[];
+}
+
+export interface RegimeStrategyPredicate {
+  requiredRegimes: RegimeCode[];
+  blockedRegimes: RegimeCode[];
+  requireAllRequired: boolean;
+  honorModelHalt: boolean;
+  blockWhenUnclassified: boolean;
+}
+
+export interface StrategyRegimeAllocation {
+  strategyRef: ConfigReference;
+  weight: number;
 }
 
 export interface UniverseDefinition {
@@ -499,7 +518,6 @@ export interface RankingSchemaSummary {
   archived: boolean;
   usageCount: number;
   updatedAt?: string | null;
-  regimeGate?: RegimeGate | null;
 }
 
 export interface RankingSchemaRevision {
@@ -518,7 +536,6 @@ export interface RankingSchemaRevision {
 
 export interface RankingSchemaConfig {
   universeConfigName?: string | null;
-  regimeGate?: RegimeGate | null;
   groups: RankingGroup[];
   overallTransforms: RankingTransform[];
 }

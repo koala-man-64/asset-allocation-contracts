@@ -390,6 +390,26 @@ const trendingGate: RegimeGate = {
 
 const strategy: StrategyConfig = {
   regimeSource,
+  regimeGates: {
+    "risk-on": {
+      when: {
+        requiredRegimes: ["trending_up"],
+        blockedRegimes: ["liquidity_stress"],
+        honorModelHalt: true,
+        blockWhenUnclassified: true,
+        requireAllRequired: false,
+      },
+      allocations: [
+        {
+          strategyRef: {
+            name: "quality_momentum",
+            version: 3,
+          },
+          weight: 2,
+        },
+      ],
+    },
+  },
   componentRefs: {
     universe: {
       name: "us_large_liquid",
@@ -505,7 +525,6 @@ const rankingPreset: RankingSchemaPreset = {
   },
   config: {
     universeConfigName: "us_large_liquid",
-    regimeGate: trendingGate,
     groups: [
       {
         name: "momentum",

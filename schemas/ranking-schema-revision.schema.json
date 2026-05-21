@@ -119,17 +119,6 @@
           "title": "Overalltransforms",
           "type": "array"
         },
-        "regimeGate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RegimeGate"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
         "universeConfigName": {
           "anyOf": [
             {
@@ -197,30 +186,6 @@
         "type"
       ],
       "title": "RankingTransform",
-      "type": "object"
-    },
-    "RegimeGate": {
-      "additionalProperties": false,
-      "properties": {
-        "blockedRegimes": {
-          "items": {
-            "enum": [
-              "trending_up",
-              "trending_down",
-              "mean_reverting",
-              "low_volatility",
-              "high_volatility",
-              "liquidity_stress",
-              "macro_alignment",
-              "unclassified"
-            ],
-            "type": "string"
-          },
-          "title": "Blockedregimes",
-          "type": "array"
-        }
-      },
-      "title": "RegimeGate",
       "type": "object"
     }
   },

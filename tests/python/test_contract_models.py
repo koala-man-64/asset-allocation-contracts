@@ -182,11 +182,14 @@ from asset_allocation_contracts.strategy import (
     RiskPolicyConfigDetailResponse,
     RiskPolicyConfigRevision,
     RiskPolicyConfigSummary,
+    RegimeStrategyPredicate,
     StrategyComponentRefs,
     StrategyRiskExposureLimits,
     StrategyRiskOverlaySet,
     StrategyRiskPolicy,
     StrategyRiskPolicyPreset,
+    StrategyRegimeAllocation,
+    StrategyRegimeGatePlan,
     StrategyRiskTradingPermissions,
     StrategyPositionPolicy,
     StrategyRiskProfileConfig,
@@ -385,10 +388,37 @@ def test_regime_gate_normalizes_blocked_lists_and_rejects_legacy_active_shape() 
         raise AssertionError("Expected legacy activeInRegimes gates to fail validation.")
 
 
+def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
+    try:
+        RankingSchemaConfig.model_validate(
+            {
+                "universeConfigName": "us-large-liquid",
+                "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
+                "groups": [
+                    {
+                        "name": "momentum",
+                        "factors": [
+                            {
+                                "name": "return_126d",
+                                "table": "market",
+                                "column": "return_126d",
+                                "direction": "desc",
+                                "weight": 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+    except Exception as exc:
+        assert "regimeGate" in str(exc)
+    else:
+        raise AssertionError("Expected ranking schema regimeGate authoring to fail validation.")
+
+
 def test_component_configs_accept_regime_gates() -> None:
     ranking = RankingSchemaConfig(
         universeConfigName="us-large-liquid",
-        regimeGate={"blockedRegimes": ["liquidity_stress"]},
         groups=[
             {
                 "name": "momentum",
@@ -421,14 +451,94 @@ def test_component_configs_accept_regime_gates() -> None:
         exits=[{"id": "stop-8", "type": "stop_loss_fixed", "value": 0.08}],
     )
 
-    assert ranking.regimeGate is not None
-    assert ranking.regimeGate.blockedRegimes == ["liquidity_stress"]
+    assert ranking.universeConfigName == "us-large-liquid"
     assert rebalance.regimeGate is not None
     assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
     assert risk.regimeGate is not None
     assert risk.regimeGate.blockedRegimes == ["liquidity_stress"]
     assert exits.regimeGate is not None
     assert exits.regimeGate.blockedRegimes == ["liquidity_stress"]
+
+
+def test_strategy_config_accepts_weighted_regime_strategy_playbook() -> None:
+    payload = StrategyConfig(
+        universe=UniverseDefinition(
+            root=UniverseGroup(
+                clauses=[
+                    UniverseCondition(field="market.close", operator="gt", value=0),
+                ]
+            )
+        ),
+        regimeSource={"modelName": "default-regime", "modelVersion": 3},
+        regimeGates={
+            "risk-on": {
+                "when": {
+                    "requiredRegimes": ["trending_up", "trending_up"],
+                    "blockedRegimes": ["liquidity_stress"],
+                },
+                "allocations": [
+                    {"strategyRef": {"name": "quality-momentum", "version": 7}, "weight": 2},
+                    {"strategyRef": {"name": "defensive-value", "version": 3}, "weight": 1},
+                ],
+            }
+        },
+    )
+
+    assert isinstance(payload.regimeGates["risk-on"], StrategyRegimeGatePlan)
+    assert payload.regimeGates["risk-on"].when.requiredRegimes == ["trending_up"]
+    assert payload.regimeGates["risk-on"].allocations[0].strategyRef.name == "quality-momentum"
+    assert payload.regimeGates["risk-on"].allocations[0].weight == 2
+
+
+def test_strategy_config_requires_regime_source_for_weighted_regime_playbook() -> None:
+    try:
+        StrategyConfig(
+            universe=UniverseDefinition(
+                root=UniverseGroup(
+                    clauses=[
+                        UniverseCondition(field="market.close", operator="gt", value=0),
+                    ]
+                )
+            ),
+            regimeGates={
+                "risk-on": {
+                    "when": {"requiredRegimes": ["trending_up"]},
+                    "allocations": [
+                        {"strategyRef": {"name": "quality-momentum", "version": 7}, "weight": 1},
+                    ],
+                }
+            },
+        )
+    except Exception as exc:
+        assert "regimeGates requires regimeSource" in str(exc)
+    else:
+        raise AssertionError("Expected regimeGates without regimeSource to fail validation.")
+
+
+def test_weighted_regime_playbook_rejects_invalid_entries() -> None:
+    try:
+        RegimeStrategyPredicate(requiredRegimes=["trending_up"], blockedRegimes=["trending_up"])
+    except Exception as exc:
+        assert "both require and block" in str(exc)
+    else:
+        raise AssertionError("Expected overlapping required and blocked regimes to fail validation.")
+
+    try:
+        StrategyRegimeAllocation(strategyRef={"name": "quality-momentum", "version": 7}, weight=0)
+    except Exception as exc:
+        assert "weight" in str(exc)
+    else:
+        raise AssertionError("Expected non-positive allocation weight to fail validation.")
+
+    try:
+        StrategyRegimeGatePlan(
+            when={"requiredRegimes": ["trending_up"]},
+            allocations=[],
+        )
+    except Exception as exc:
+        assert "allocations" in str(exc)
+    else:
+        raise AssertionError("Expected empty regime gate allocations to fail validation.")
 
 
 def test_strategy_config_requires_regime_source_for_inline_component_gates() -> None:

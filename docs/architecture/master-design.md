@@ -168,6 +168,7 @@ Purpose:
 - Define exit-rule configuration semantics
 - Define reusable versioned configuration library contracts for regime policies, risk policies, and exit rule sets
 - Define exact revision pin fields that let strategy assembly reference reusable library objects by name and version
+- Define `StrategyConfig.regimeGates`, the strategy-level weighted regime playbook that maps named regime predicates to saved strategy revision allocations
 - Preserve temporary compatibility behavior such as legacy toggle stripping at the API boundary
 
 Key design note:
@@ -175,6 +176,8 @@ Key design note:
 `StrategyConfig` currently strips legacy `enabled` toggles from `regimePolicy` and `exits` before final validation. That is compatibility behavior, not a new canonical modeling direction, and it should remain explicit if retained.
 
 Reusable strategy configuration libraries are database-backed and revisioned outside the strategy document. Strategy assembly pins exact revisions with `universeConfigVersion`, `rankingSchemaVersion`, `regimePolicyConfigVersion`, `riskPolicyVersion`, and `exitRuleSetVersion`; execution continues to read resolved snapshots such as `regimePolicy`, `strategyRiskPolicy`, `intrabarConflictPolicy`, and `exits` from immutable strategy revisions. No runtime should resolve "latest by name" during execution.
+
+Weighted regime routing is strategy-level, not ranking-schema-level. `StrategyConfig.regimeGates` is a dictionary keyed by gate name; each entry contains a regime predicate and one or more saved strategy revision allocations with positive relative weights. Runtimes normalize active allocation weights at evaluation time. If no gate is active, execution should target zero rather than carrying forward a prior strategy. Ranking schemas remain pure scoring and universe-selection definitions.
 
 Plaintext-to-universe generation is a draft-only contract family. `UniverseConfigDraftGenerationRequest` carries the user's plaintext intent and optional editor hints; `UniverseConfigDraftGenerationResponse` returns a candidate `UniverseConfigPreset`, explanation, assumptions, warnings, fields used, and optional preview. The generated universe is not a saved reusable config. Control-plane owns prompt construction, Azure OpenAI calls, validation, preview, and persistence separation; this repo owns only the shared envelope and embedded `UniverseDefinition` semantics.
 
@@ -192,6 +195,7 @@ Purpose:
 
 - Define ranking factors, groups, transforms, and output-summary shapes
 - Enforce naming, transform-parameter, and uniqueness rules centrally
+- Exclude regime routing. New ranking schema documents must not author regime gates; legacy rows with ranking-level gates are compatibility input for downstream adapters only.
 
 ### 4.3 Regime Contracts
 
