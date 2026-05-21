@@ -19,6 +19,15 @@ export type PullRequestApprovalVote = 'approved' | 'approved-with-suggestions' |
 export type PullRequestStageLifecycleStatus = 'succeeded' | 'failed' | 'canceled' | 'skipped' | 'running' | 'pending' | 'unknown';
 export type PullRequestPipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skipped' | 'unknown';
 export type PullRequestActionResponseStatus = 'accepted' | 'completed';
+export type PipelineSyncViewStatus = 'available' | 'partial' | 'unavailable' | 'error';
+export type PipelineSyncResult = 'healthy' | 'attention' | 'blocked' | 'running' | 'unknown' | 'unavailable' | 'error';
+export type PipelineDefinitionType = 'ci' | 'security' | 'release' | 'deploy' | 'rollback' | 'compatibility' | 'governance' | 'other';
+export type PipelineSyncRunLifecycleStatus = 'notStarted' | 'inProgress' | 'completed' | 'cancelling' | 'postponed' | 'unknown';
+export type PipelineSyncRunResult = 'succeeded' | 'partiallySucceeded' | 'failed' | 'canceled' | 'skipped' | 'unknown';
+export type PipelineStageLifecycleStatus = 'succeeded' | 'failed' | 'canceled' | 'skipped' | 'running' | 'pending' | 'unknown';
+export type PipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skipped' | 'unknown';
+export type PipelineSyncActionKind = 'queue' | 'cancel' | 'retry-run' | 'retry-stage' | 'approve-check' | 'open';
+export type PipelineActionResponseStatus = 'accepted' | 'completed';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -1205,6 +1214,143 @@ export interface PullRequestPipelineApproval {
   reason?: string | null;
   action?: PullRequestSyncAction | null;
   links: PullRequestSyncLink[];
+}
+
+export interface PipelineSyncView {
+  checkedAt: string;
+  status: PipelineSyncViewStatus;
+  result: PipelineSyncResult;
+  summary: PipelineSyncSummary;
+  pipelines: PipelineSyncRow[];
+  links: PipelineSyncLink[];
+  warnings: string[];
+  errors: string[];
+}
+
+export interface PipelineSyncSummary {
+  totalPipelines: number;
+  healthy: number;
+  running: number;
+  failed: number;
+  pendingApprovals: number;
+  blocked: number;
+  unknown: number;
+  unavailable: number;
+  error: number;
+}
+
+export interface PipelineSyncRow {
+  repo: string;
+  pipelineId?: number | null;
+  pipelineName: string;
+  pipelineType: PipelineDefinitionType;
+  definitionPath?: string | null;
+  defaultBranch?: string | null;
+  latestRun?: PipelineSyncRunSummary | null;
+  activeRuns: PipelineSyncRunSummary[];
+  failedStages: PipelineStageSummary[];
+  pendingApprovals: PipelineApproval[];
+  actions: PipelineSyncAction[];
+  links: PipelineSyncLink[];
+  warnings: string[];
+  errors: string[];
+}
+
+export interface PipelineSyncRunSummary {
+  pipelineId?: number | null;
+  pipelineName: string;
+  runId?: number | null;
+  runNumber?: string | null;
+  status: PipelineSyncRunLifecycleStatus;
+  result: PipelineSyncRunResult;
+  reason?: string | null;
+  sourceSha?: string | null;
+  sourceBranch?: string | null;
+  queuedAt?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  links: PipelineSyncLink[];
+  warnings: string[];
+}
+
+export interface PipelineSyncLink {
+  label: string;
+  href: string;
+}
+
+export interface PipelineStageSummary {
+  name: string;
+  status: PipelineStageLifecycleStatus;
+  result?: PipelineStageLifecycleStatus | null;
+  runId?: number | null;
+  runName?: string | null;
+  pipelineName?: string | null;
+  approval?: PipelineApproval | null;
+  action?: PipelineSyncAction | null;
+  links: PipelineSyncLink[];
+  warnings: string[];
+}
+
+export interface PipelineApproval {
+  approvalId: string;
+  status: PipelineApprovalStatus;
+  approverDisplayName?: string | null;
+  approverUniqueName?: string | null;
+  instructions?: string | null;
+  reason?: string | null;
+  action?: PipelineSyncAction | null;
+  links: PipelineSyncLink[];
+}
+
+export interface PipelineSyncAction {
+  kind: PipelineSyncActionKind;
+  label: string;
+  href?: string | null;
+  disabledReason?: string | null;
+  pipelineId?: number | null;
+  runId?: number | null;
+  stageName?: string | null;
+  approvalId?: string | null;
+  links: PipelineSyncLink[];
+}
+
+export interface PipelineQueueActionRequest {
+  pipelineId: number;
+  sourceBranch?: string | null;
+}
+
+export interface PipelineRunActionRequest {
+  pipelineId: number;
+  runId: number;
+}
+
+export interface PipelineStageRetryActionRequest {
+  pipelineId: number;
+  runId: number;
+  stageName?: string | null;
+}
+
+export interface PipelineApprovalActionRequest {
+  pipelineId: number;
+  runId: number;
+  approvalId: string;
+  comment?: string | null;
+}
+
+export interface PipelineActionResponse {
+  pipelineId: number;
+  pipelineName?: string | null;
+  action: PipelineSyncActionKind;
+  status: PipelineActionResponseStatus;
+  message: string;
+  runId?: number | null;
+  runName?: string | null;
+  stageName?: string | null;
+  approvalId?: string | null;
+  approvalStatus?: PipelineApprovalStatus | null;
+  details: Record<string, unknown>;
+  links: PipelineSyncLink[];
+  warnings: string[];
 }
 
 export interface PullRequestApprovalActionRequest {

@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "pipelineId": {
+      "minimum": 1,
+      "title": "Pipelineid",
+      "type": "integer"
+    },
+    "runId": {
+      "minimum": 1,
+      "title": "Runid",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "pipelineId",
+    "runId"
+  ],
+  "title": "PipelineRunActionRequest",
+  "type": "object"
+}

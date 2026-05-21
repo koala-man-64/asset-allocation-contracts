@@ -1,0 +1,825 @@
+{
+  "$defs": {
+    "PipelineApproval": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineSyncAction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approvalId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Approvalid",
+          "type": "string"
+        },
+        "approverDisplayName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approverdisplayname"
+        },
+        "approverUniqueName": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approveruniquename"
+        },
+        "instructions": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instructions"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "skipped",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approvalId"
+      ],
+      "title": "PipelineApproval",
+      "type": "object"
+    },
+    "PipelineStageSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineSyncAction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineApproval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "name": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "pipelineName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipelinename"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "enum": [
+                "succeeded",
+                "failed",
+                "canceled",
+                "skipped",
+                "running",
+                "pending",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "runName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runname"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "succeeded",
+            "failed",
+            "canceled",
+            "skipped",
+            "running",
+            "pending",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PipelineStageSummary",
+      "type": "object"
+    },
+    "PipelineSyncAction": {
+      "additionalProperties": false,
+      "properties": {
+        "approvalId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approvalid"
+        },
+        "disabledReason": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Disabledreason"
+        },
+        "href": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Href"
+        },
+        "kind": {
+          "enum": [
+            "queue",
+            "cancel",
+            "retry-run",
+            "retry-stage",
+            "approve-check",
+            "open"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "pipelineId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipelineid"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "stageName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stagename"
+        }
+      },
+      "required": [
+        "kind",
+        "label"
+      ],
+      "title": "PipelineSyncAction",
+      "type": "object"
+    },
+    "PipelineSyncLink": {
+      "additionalProperties": false,
+      "properties": {
+        "href": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Href",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "href"
+      ],
+      "title": "PipelineSyncLink",
+      "type": "object"
+    },
+    "PipelineSyncRow": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "activeRuns": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncRunSummary"
+          },
+          "title": "Activeruns",
+          "type": "array"
+        },
+        "defaultBranch": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Defaultbranch"
+        },
+        "definitionPath": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Definitionpath"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Errors",
+          "type": "array"
+        },
+        "failedStages": {
+          "items": {
+            "$ref": "#/$defs/PipelineStageSummary"
+          },
+          "title": "Failedstages",
+          "type": "array"
+        },
+        "latestRun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineSyncRunSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "pendingApprovals": {
+          "items": {
+            "$ref": "#/$defs/PipelineApproval"
+          },
+          "title": "Pendingapprovals",
+          "type": "array"
+        },
+        "pipelineId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipelineid"
+        },
+        "pipelineName": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Pipelinename",
+          "type": "string"
+        },
+        "pipelineType": {
+          "default": "other",
+          "enum": [
+            "ci",
+            "security",
+            "release",
+            "deploy",
+            "rollback",
+            "compatibility",
+            "governance",
+            "other"
+          ],
+          "title": "Pipelinetype",
+          "type": "string"
+        },
+        "repo": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Repo",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "repo",
+        "pipelineName"
+      ],
+      "title": "PipelineSyncRow",
+      "type": "object"
+    },
+    "PipelineSyncRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "finishedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finishedat"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/PipelineSyncLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "pipelineId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipelineid"
+        },
+        "pipelineName": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Pipelinename",
+          "type": "string"
+        },
+        "queuedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Queuedat"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "result": {
+          "default": "unknown",
+          "enum": [
+            "succeeded",
+            "partiallySucceeded",
+            "failed",
+            "canceled",
+            "skipped",
+            "unknown"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runid"
+        },
+        "runNumber": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runnumber"
+        },
+        "sourceBranch": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcebranch"
+        },
+        "sourceSha": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 7,
+              "pattern": "^[0-9a-fA-F]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourcesha"
+        },
+        "startedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Startedat"
+        },
+        "status": {
+          "default": "unknown",
+          "enum": [
+            "notStarted",
+            "inProgress",
+            "completed",
+            "cancelling",
+            "postponed",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pipelineName"
+      ],
+      "title": "PipelineSyncRunSummary",
+      "type": "object"
+    },
+    "PipelineSyncSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Blocked",
+          "type": "integer"
+        },
+        "error": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Error",
+          "type": "integer"
+        },
+        "failed": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Failed",
+          "type": "integer"
+        },
+        "healthy": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Healthy",
+          "type": "integer"
+        },
+        "pendingApprovals": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Pendingapprovals",
+          "type": "integer"
+        },
+        "running": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Running",
+          "type": "integer"
+        },
+        "totalPipelines": {
+          "minimum": 0,
+          "title": "Totalpipelines",
+          "type": "integer"
+        },
+        "unavailable": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unavailable",
+          "type": "integer"
+        },
+        "unknown": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Unknown",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "totalPipelines"
+      ],
+      "title": "PipelineSyncSummary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checkedAt": {
+      "format": "date-time",
+      "title": "Checkedat",
+      "type": "string"
+    },
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/PipelineSyncLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "pipelines": {
+      "items": {
+        "$ref": "#/$defs/PipelineSyncRow"
+      },
+      "title": "Pipelines",
+      "type": "array"
+    },
+    "result": {
+      "enum": [
+        "healthy",
+        "attention",
+        "blocked",
+        "running",
+        "unknown",
+        "unavailable",
+        "error"
+      ],
+      "title": "Result",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "available",
+        "partial",
+        "unavailable",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/PipelineSyncSummary"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "checkedAt",
+    "status",
+    "result",
+    "summary"
+  ],
+  "title": "PipelineSyncView",
+  "type": "object"
+}

@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approvalId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Approvalid",
+      "type": "string"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "pipelineId": {
+      "minimum": 1,
+      "title": "Pipelineid",
+      "type": "integer"
+    },
+    "runId": {
+      "minimum": 1,
+      "title": "Runid",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "pipelineId",
+    "runId",
+    "approvalId"
+  ],
+  "title": "PipelineApprovalActionRequest",
+  "type": "object"
+}

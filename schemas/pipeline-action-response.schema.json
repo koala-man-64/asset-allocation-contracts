@@ -1,0 +1,176 @@
+{
+  "$defs": {
+    "PipelineSyncLink": {
+      "additionalProperties": false,
+      "properties": {
+        "href": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Href",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "href"
+      ],
+      "title": "PipelineSyncLink",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "enum": [
+        "queue",
+        "cancel",
+        "retry-run",
+        "retry-stage",
+        "approve-check",
+        "open"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "approvalId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approvalid"
+    },
+    "approvalStatus": {
+      "anyOf": [
+        {
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "skipped",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approvalstatus"
+    },
+    "details": {
+      "additionalProperties": true,
+      "title": "Details",
+      "type": "object"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/PipelineSyncLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "message": {
+      "maxLength": 512,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "pipelineId": {
+      "minimum": 1,
+      "title": "Pipelineid",
+      "type": "integer"
+    },
+    "pipelineName": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pipelinename"
+    },
+    "runId": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Runid"
+    },
+    "runName": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Runname"
+    },
+    "stageName": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stagename"
+    },
+    "status": {
+      "default": "completed",
+      "enum": [
+        "accepted",
+        "completed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "pipelineId",
+    "action",
+    "message"
+  ],
+  "title": "PipelineActionResponse",
+  "type": "object"
+}

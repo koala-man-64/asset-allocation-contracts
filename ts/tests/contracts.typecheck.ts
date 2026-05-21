@@ -26,6 +26,9 @@ import type {
   CongressTradeEventListResponse,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
+  PipelineActionResponse,
+  PipelineQueueActionRequest,
+  PipelineSyncView,
   PauseBrokerSyncRequest,
   PullRequestSyncView,
   OptionBacktestResult,
@@ -1635,6 +1638,120 @@ const pullRequestSync: PullRequestSyncView = {
   errors: [],
 };
 
+const pipelineSync: PipelineSyncView = {
+  checkedAt: "2026-05-21T12:00:00Z",
+  status: "available",
+  result: "attention",
+  summary: {
+    totalPipelines: 1,
+    healthy: 0,
+    running: 1,
+    failed: 1,
+    pendingApprovals: 1,
+    blocked: 0,
+    unknown: 0,
+    unavailable: 0,
+    error: 0,
+  },
+  pipelines: [
+    {
+      repo: "asset-allocation-ui",
+      pipelineId: 18,
+      pipelineName: "asset-allocation-ui-deploy-prod",
+      pipelineType: "deploy",
+      definitionPath: "azure-pipelines/deploy-prod.yml",
+      defaultBranch: "refs/heads/main",
+      latestRun: {
+        pipelineId: 18,
+        pipelineName: "asset-allocation-ui-deploy-prod",
+        runId: 5132,
+        runNumber: "ui-deploy-20260521.1",
+        status: "completed",
+        result: "failed",
+        sourceBranch: "refs/heads/main",
+        sourceSha: "abcdef1234567890abcdef1234567890abcdef12",
+        links: [],
+        warnings: [],
+      },
+      activeRuns: [
+        {
+          pipelineId: 18,
+          pipelineName: "asset-allocation-ui-deploy-prod",
+          runId: 5133,
+          runNumber: "ui-deploy-20260521.2",
+          status: "inProgress",
+          result: "unknown",
+          links: [],
+          warnings: [],
+        },
+      ],
+      failedStages: [
+        {
+          name: "Deploy / Verify",
+          status: "failed",
+          result: "failed",
+          runId: 5132,
+          action: {
+            kind: "retry-stage",
+            label: "Retry Deploy / Verify",
+            pipelineId: 18,
+            runId: 5132,
+            stageName: "Deploy / Verify",
+            links: [],
+          },
+          links: [],
+          warnings: ["Smoke verification failed."],
+        },
+      ],
+      pendingApprovals: [
+        {
+          approvalId: "approval-1",
+          status: "pending",
+          approverDisplayName: "Rudy Prokes",
+          action: {
+            kind: "approve-check",
+            label: "Approve deploy gate",
+            pipelineId: 18,
+            runId: 5133,
+            approvalId: "approval-1",
+            links: [],
+          },
+          links: [],
+        },
+      ],
+      actions: [
+        { kind: "queue", label: "Queue pipeline", pipelineId: 18, links: [] },
+        { kind: "cancel", label: "Cancel active run", pipelineId: 18, runId: 5133, links: [] },
+      ],
+      links: [],
+      warnings: [],
+      errors: [],
+    },
+  ],
+  links: [],
+  warnings: [],
+  errors: [],
+};
+
+const pipelineQueue: PipelineQueueActionRequest = {
+  pipelineId: 18,
+  sourceBranch: "refs/heads/main",
+};
+
+const pipelineAction: PipelineActionResponse = {
+  pipelineId: 18,
+  pipelineName: "asset-allocation-ui-deploy-prod",
+  action: "approve-check",
+  status: "completed",
+  message: "Approved pipeline gate.",
+  runId: 5133,
+  approvalId: "approval-1",
+  approvalStatus: "approved",
+  details: {},
+  links: [],
+  warnings: [],
+};
+
 const aiEvent: AiChatStreamEvent = {
   sequenceNumber: 1,
   event: "completed",
@@ -1662,4 +1779,7 @@ void runSummary;
 void workReviewItem;
 void runReview;
 void pullRequestSync;
+void pipelineSync;
+void pipelineQueue;
+void pipelineAction;
 void aiEvent;

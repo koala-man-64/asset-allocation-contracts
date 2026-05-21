@@ -1,0 +1,29 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "pipelineId": {
+      "minimum": 1,
+      "title": "Pipelineid",
+      "type": "integer"
+    },
+    "sourceBranch": {
+      "anyOf": [
+        {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sourcebranch"
+    }
+  },
+  "required": [
+    "pipelineId"
+  ],
+  "title": "PipelineQueueActionRequest",
+  "type": "object"
+}

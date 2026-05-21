@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "pipelineId": {
+      "minimum": 1,
+      "title": "Pipelineid",
+      "type": "integer"
+    },
+    "runId": {
+      "minimum": 1,
+      "title": "Runid",
+      "type": "integer"
+    },
+    "stageName": {
+      "anyOf": [
+        {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stagename"
+    }
+  },
+  "required": [
+    "pipelineId",
+    "runId"
+  ],
+  "title": "PipelineStageRetryActionRequest",
+  "type": "object"
+}
