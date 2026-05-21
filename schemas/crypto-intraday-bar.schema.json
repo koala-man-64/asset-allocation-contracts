@@ -1,0 +1,78 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "close": {
+      "title": "Close",
+      "type": "number"
+    },
+    "high": {
+      "title": "High",
+      "type": "number"
+    },
+    "low": {
+      "title": "Low",
+      "type": "number"
+    },
+    "open": {
+      "title": "Open",
+      "type": "number"
+    },
+    "providerTimestampMs": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providertimestampms"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "transactions": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transactions"
+    },
+    "volume": {
+      "title": "Volume",
+      "type": "number"
+    },
+    "vwap": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vwap"
+    }
+  },
+  "required": [
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+  ],
+  "title": "CryptoIntradayBar",
+  "type": "object"
+}

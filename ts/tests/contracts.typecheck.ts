@@ -24,6 +24,9 @@ import type {
   BrokerAccountOnboardingResponse,
   BrokerAccountSummary,
   CongressTradeEventListResponse,
+  CryptoIntradayBar,
+  CryptoIntradayBarInterval,
+  CryptoIntradayBarsResponse,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   PipelineActionResponse,
@@ -126,6 +129,30 @@ const symbolResolution: SymbolResolutionResult = {
   canonicalSymbol: "^VIX",
   providerSymbol: "I:VIX",
   mappingVersion: "symbol-alias-v1",
+};
+
+const cryptoInterval: CryptoIntradayBarInterval = "1m";
+const cryptoBar: CryptoIntradayBar = {
+  timestamp: "2026-05-20T00:00:00Z",
+  open: 101000,
+  high: 101250,
+  low: 100900,
+  close: 101200,
+  volume: 12.5,
+  vwap: 101125.25,
+  transactions: 42,
+  providerTimestampMs: 1779235200000,
+};
+
+const cryptoBars: CryptoIntradayBarsResponse = {
+  symbol: "BTC",
+  providerSymbol: "X:BTCUSD",
+  quoteCurrency: "USD",
+  interval: cryptoInterval,
+  from: "2026-05-20T00:00:00Z",
+  to: "2026-05-20T00:15:00Z",
+  rowCount: 1,
+  rows: [cryptoBar],
 };
 
 const coveredCallTemplate: OptionStrategyTemplate = {
@@ -1378,6 +1405,9 @@ const condition: UniverseCondition = {
 void strategy;
 void runtimeConfig;
 void authProvider;
+void cryptoInterval;
+void cryptoBar;
+void cryptoBars;
 void authSession;
 void brokerSummary;
 void brokerList;

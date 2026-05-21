@@ -475,6 +475,11 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ),
     ("symbol-alias-rule.schema.json", symbol_identity.SymbolAliasRule),
     ("symbol-resolution-result.schema.json", symbol_identity.SymbolResolutionResult),
+    ("crypto-intraday-bar.schema.json", intraday.CryptoIntradayBar),
+    (
+        "crypto-intraday-bars-response.schema.json",
+        intraday.CryptoIntradayBarsResponse,
+    ),
     ("intraday-watchlist-summary.schema.json", intraday.IntradayWatchlistSummary),
     ("intraday-watchlist-detail.schema.json", intraday.IntradayWatchlistDetail),
     (
@@ -574,6 +579,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("PipelineApprovalStatus", pipeline_sync.PipelineApprovalStatus),
     ("PipelineSyncActionKind", pipeline_sync.PipelineSyncActionKind),
     ("PipelineActionResponseStatus", pipeline_sync.PipelineActionResponseStatus),
+    ("CryptoIntradayBarInterval", intraday.CryptoIntradayBarInterval),
     ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleVisualKey", strategy.ExitRuleVisualKey),
@@ -980,7 +986,12 @@ def _render_interface(model: type[BaseModel]) -> list[str]:
     type_hints = get_type_hints(model, include_extras=True)
 
     for field_name, field_info in model.model_fields.items():
-        property_schema = schema_properties.get(field_name, {})
+        property_name = (
+            field_info.serialization_alias or field_info.alias or field_name
+        )
+        property_schema = schema_properties.get(
+            property_name, schema_properties.get(field_name, {})
+        )
         annotation = type_hints.get(field_name, field_info.annotation)
         ts_type = FIELD_TYPE_OVERRIDES.get(
             (model.__name__, field_name), _ts_type(annotation)
@@ -991,7 +1002,7 @@ def _render_interface(model: type[BaseModel]) -> list[str]:
         if property_schema.get("deprecated"):
             lines.append(f"  /** @deprecated{f' {note}' if note else ''} */")
 
-        lines.append(f"  {field_name}{'?' if is_optional else ''}: {ts_type};")
+        lines.append(f"  {property_name}{'?' if is_optional else ''}: {ts_type};")
 
     if model.model_config.get("extra") == "allow":
         lines.append("  [key: string]: unknown;")

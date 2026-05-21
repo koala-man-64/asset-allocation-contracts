@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from pydantic import TypeAdapter
 
 from asset_allocation_contracts.ai_chat import AiChatRequest, AiChatStreamEvent
@@ -82,6 +85,9 @@ from asset_allocation_contracts.government_signals import (
     IssuerGovernmentSignalDaily,
 )
 from asset_allocation_contracts.intraday import (
+    CryptoIntradayBar,
+    CryptoIntradayBarInterval,
+    CryptoIntradayBarsResponse,
     IntradayMonitorClaimResponse,
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
@@ -2627,6 +2633,131 @@ def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
         raise AssertionError(
             f"Expected results reconcile response validation to reject {payload!r}."
         )
+
+
+def test_crypto_intraday_bars_contract_normalizes_symbol_and_provider_fields() -> (
+    None
+):
+    payload = CryptoIntradayBarsResponse(
+        symbol=" btcusd ",
+        providerSymbol="btc",
+        quoteCurrency="usd",
+        interval="5m",
+        from_="2026-05-20T00:00:00Z",
+        to="2026-05-20T00:15:00-05:00",
+        rowCount=2,
+        rows=[
+            CryptoIntradayBar(
+                timestamp="2026-05-20T00:00:00Z",
+                open=101000.0,
+                high=101250.0,
+                low=100900.0,
+                close=101200.0,
+                volume=12.5,
+                vwap=101125.25,
+                transactions=42,
+                providerTimestampMs=1779235200000,
+            ),
+            {
+                "timestamp": "2026-05-20T00:05:00",
+                "open": 101200.0,
+                "high": 101350.0,
+                "low": 101000.0,
+                "close": 101250.0,
+                "volume": 7.25,
+            },
+        ],
+    )
+
+    assert payload.symbol == "BTC"
+    assert payload.providerSymbol == "X:BTCUSD"
+    assert payload.quoteCurrency == "USD"
+    assert payload.interval == "5m"
+    assert payload.from_.isoformat() == "2026-05-20T00:00:00+00:00"
+    assert payload.to.isoformat() == "2026-05-20T05:15:00+00:00"
+    assert payload.rows[0].vwap == 101125.25
+    assert payload.rows[0].transactions == 42
+    assert payload.rows[0].providerTimestampMs == 1779235200000
+    assert payload.rows[1].timestamp.isoformat() == "2026-05-20T00:05:00+00:00"
+    assert payload.rows[1].vwap is None
+    assert payload.rows[1].transactions is None
+
+    dumped = payload.model_dump(mode="json", by_alias=True)
+    assert dumped["from"] == "2026-05-20T00:00:00Z"
+    assert "from_" not in dumped
+
+
+def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
+    adapter = TypeAdapter(CryptoIntradayBarInterval)
+
+    assert adapter.validate_python("1m") == "1m"
+    assert adapter.validate_python("5m") == "5m"
+    assert adapter.validate_python("15m") == "15m"
+
+    for invalid_interval in ("30m", "1h"):
+        try:
+            adapter.validate_python(invalid_interval)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected interval validation to reject {invalid_interval!r}."
+        )
+
+    invalid_payloads = (
+        {
+            "symbol": "BTC",
+            "providerSymbol": "X:ETHUSD",
+            "interval": "1m",
+            "from": "2026-05-20T00:00:00Z",
+            "to": "2026-05-20T00:01:00Z",
+            "rowCount": 0,
+            "rows": [],
+        },
+        {
+            "symbol": "BTC",
+            "providerSymbol": "X:BTCUSD",
+            "quoteCurrency": "EUR",
+            "interval": "1m",
+            "from": "2026-05-20T00:00:00Z",
+            "to": "2026-05-20T00:01:00Z",
+            "rowCount": 0,
+            "rows": [],
+        },
+        {
+            "symbol": "BTC",
+            "providerSymbol": "BTCUSD",
+            "interval": "1m",
+            "from": "2026-05-20T00:00:00Z",
+            "to": "2026-05-20T00:01:00Z",
+            "rowCount": 1,
+            "rows": [],
+        },
+    )
+    for payload in invalid_payloads:
+        try:
+            CryptoIntradayBarsResponse.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected crypto intraday response validation to reject {payload!r}."
+        )
+
+
+def test_crypto_intraday_artifacts_include_schema_and_typescript_exports() -> None:
+    root = Path(__file__).resolve().parents[2]
+    schema_path = root / "schemas" / "crypto-intraday-bars-response.schema.json"
+    type_path = root / "ts" / "src" / "contracts.ts"
+
+    response_schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    assert "CryptoIntradayBar" in response_schema["$defs"]
+    assert response_schema["properties"]["from"]["format"] == "date-time"
+    assert response_schema["properties"]["interval"]["enum"] == ["1m", "5m", "15m"]
+
+    generated_types = type_path.read_text(encoding="utf-8")
+    assert "export interface CryptoIntradayBar" in generated_types
+    assert "export interface CryptoIntradayBarsResponse" in generated_types
+    assert "interval: CryptoIntradayBarInterval;" in generated_types
+    assert "from: string;" in generated_types
 
 
 def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:
