@@ -8,17 +8,26 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from typing import Any, Protocol
 
 
 DEFAULT_BRANCH = "refs/heads/main"
+DEFAULT_LOOKBACK_HOURS = 24
+DEFAULT_MAX_RUNS_PER_PIPELINE = 10
 
 
 class AzureDevOpsClient(Protocol):
     def get_definition_id(self, pipeline_name: str) -> int:
         ...
 
-    def get_latest_run(self, definition_id: int, branch: str) -> dict[str, Any] | None:
+    def get_recent_runs(
+        self,
+        definition_id: int,
+        branch: str,
+        min_time: datetime,
+        top: int,
+    ) -> list[dict[str, Any]]:
         ...
 
     def queue_run(
@@ -68,20 +77,26 @@ class RestAzureDevOpsClient:
             raise ValueError(f"Pipeline definition is missing an integer id: {pipeline_name}")
         return definition_id
 
-    def get_latest_run(self, definition_id: int, branch: str) -> dict[str, Any] | None:
+    def get_recent_runs(
+        self,
+        definition_id: int,
+        branch: str,
+        min_time: datetime,
+        top: int,
+    ) -> list[dict[str, Any]]:
         data = self._request_json(
             "GET",
             "build/builds",
             {
                 "definitions": str(definition_id),
                 "branchName": branch,
+                "minTime": _format_utc_timestamp(min_time),
                 "queryOrder": "queueTimeDescending",
-                "$top": "1",
+                "$top": str(top),
                 "api-version": self.api_version,
             },
         )
-        runs = data.get("value", [])
-        return runs[0] if runs else None
+        return list(data.get("value") or [])
 
     def queue_run(
         self,
@@ -134,22 +149,38 @@ def retry_failed_pipelines(
     release_build_id: str,
     release_build_number: str,
     release_source_version: str,
+    lookback_hours: int = DEFAULT_LOOKBACK_HOURS,
+    max_runs_per_pipeline: int = DEFAULT_MAX_RUNS_PER_PIPELINE,
+    current_time: datetime | None = None,
 ) -> list[RetryDecision]:
+    if lookback_hours <= 0:
+        raise ValueError("lookback_hours must be greater than zero.")
+    if max_runs_per_pipeline <= 0:
+        raise ValueError("max_runs_per_pipeline must be greater than zero.")
+
+    now = current_time or datetime.now(timezone.utc)
+    min_time = now - timedelta(hours=lookback_hours)
     decisions: list[RetryDecision] = []
     for pipeline_name in pipeline_names:
         definition_id = client.get_definition_id(pipeline_name)
-        latest_run = client.get_latest_run(definition_id, branch)
-        if latest_run is None:
+        recent_runs = client.get_recent_runs(
+            definition_id,
+            branch,
+            min_time,
+            max_runs_per_pipeline,
+        )
+        if not recent_runs:
             decisions.append(
                 RetryDecision(
                     pipeline_name=pipeline_name,
                     definition_id=definition_id,
                     action="skipped",
-                    reason=f"no runs found on {branch}",
+                    reason=f"no runs found on {branch} in the last {lookback_hours} hours",
                 )
             )
             continue
 
+        latest_run = recent_runs[0]
         run_id = _optional_int(latest_run.get("id"))
         status = str(latest_run.get("status") or "")
         result = str(latest_run.get("result") or "")
@@ -191,7 +222,7 @@ def retry_failed_pipelines(
                 pipeline_name=pipeline_name,
                 definition_id=definition_id,
                 action="queued",
-                reason=f"latest completed run {run_id} failed",
+                reason=f"latest run {run_id} failed within the last {lookback_hours} hours",
                 latest_run_id=run_id,
                 queued_run_id=_optional_int(queued_run.get("id")),
             )
@@ -201,12 +232,18 @@ def retry_failed_pipelines(
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Queue one retry for downstream Azure Pipelines whose latest main run failed."
+        description="Queue one retry for downstream Azure Pipelines with recent failed main runs."
     )
     parser.add_argument("--organization", default=os.environ.get("SYSTEM_COLLECTIONURI"))
     parser.add_argument("--project", default=os.environ.get("SYSTEM_TEAMPROJECT"))
     parser.add_argument("--branch", default=DEFAULT_BRANCH)
     parser.add_argument("--api-version", default="7.1")
+    parser.add_argument("--lookback-hours", type=_positive_int, default=DEFAULT_LOOKBACK_HOURS)
+    parser.add_argument(
+        "--max-runs-per-pipeline",
+        type=_positive_int,
+        default=DEFAULT_MAX_RUNS_PER_PIPELINE,
+    )
     parser.add_argument("--pipeline", dest="pipelines", action="append", required=True)
     return parser.parse_args(argv)
 
@@ -236,6 +273,8 @@ def main(argv: list[str] | None = None) -> int:
         release_build_id=os.environ.get("BUILD_BUILDID", ""),
         release_build_number=os.environ.get("BUILD_BUILDNUMBER", ""),
         release_source_version=os.environ.get("BUILD_SOURCEVERSION", ""),
+        lookback_hours=args.lookback_hours,
+        max_runs_per_pipeline=args.max_runs_per_pipeline,
     )
     for decision in decisions:
         print(
@@ -254,6 +293,19 @@ def main(argv: list[str] | None = None) -> int:
 
 def _optional_int(value: object) -> int | None:
     return value if isinstance(value, int) else None
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("value must be greater than zero")
+    return parsed
+
+
+def _format_utc_timestamp(value: datetime) -> str:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 if __name__ == "__main__":

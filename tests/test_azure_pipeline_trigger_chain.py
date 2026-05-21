@@ -7,6 +7,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 MAIN_PIPELINE_TRIGGER = (
     "      trigger:\n        branches:\n          include:\n            - main"
 )
+MAIN_PIPELINE_TRIGGER_REF = (
+    "      trigger:\n        branches:\n          include:\n            - refs/heads/main"
+)
 
 
 def read(path: str) -> str:
@@ -27,11 +30,18 @@ def test_release_is_triggered_by_contracts_ci_only() -> None:
     release = read("azure-pipelines/release.yml")
 
     assert "\ntrigger: none\npr: none\n" in release
-    assert release.count(MAIN_PIPELINE_TRIGGER) == 1
+    main_trigger_count = release.count(MAIN_PIPELINE_TRIGGER) + release.count(
+        MAIN_PIPELINE_TRIGGER_REF
+    )
+    assert main_trigger_count == 1
     assert "source: asset-allocation-contracts-ci" in pipeline_resource_block(
         release, "contractsCi"
     )
-    assert MAIN_PIPELINE_TRIGGER in pipeline_resource_block(release, "contractsCi")
+    contracts_ci_resource = pipeline_resource_block(release, "contractsCi")
+    assert (
+        MAIN_PIPELINE_TRIGGER in contracts_ci_resource
+        or MAIN_PIPELINE_TRIGGER_REF in contracts_ci_resource
+    )
 
 
 def test_contracts_has_no_deploy_pipeline() -> None:

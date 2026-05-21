@@ -21,6 +21,8 @@ The release pipeline intentionally stays hosted because package publication shou
 
 Release is driven only by the `asset-allocation-contracts-ci` pipeline resource after successful `main` CI. It keeps top-level YAML and PR triggers disabled.
 
+After a successful package publish, release queues one retry for each configured sibling-repo CI, security, quality, compatibility, or release pipeline whose most recent `main` run failed in the last 24 hours. The retry hook intentionally excludes deploy-prod and rollback pipelines so contracts publication cannot silently promote downstream applications.
+
 Do not mount the host Docker socket for PR or `main` validation. Docker socket mode gives pipeline code control over the host daemon and should be reserved for explicitly trusted pipelines.
 
 ## Package Prerequisites

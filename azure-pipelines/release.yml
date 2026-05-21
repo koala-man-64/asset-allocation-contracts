@@ -241,14 +241,20 @@ stages:
               set -euo pipefail
               python scripts/retry_failed_downstream_pipelines.py \
                 --branch refs/heads/main \
+                --lookback-hours 24 \
+                --max-runs-per-pipeline 10 \
                 --pipeline asset-allocation-runtime-common-ci \
+                --pipeline asset-allocation-runtime-common-release \
                 --pipeline asset-allocation-runtime-common-security \
                 --pipeline asset-allocation-control-plane-ci \
+                --pipeline asset-allocation-control-plane-release \
                 --pipeline asset-allocation-control-plane-security \
                 --pipeline asset-allocation-jobs-quality \
+                --pipeline asset-allocation-jobs-release \
                 --pipeline asset-allocation-jobs-security \
                 --pipeline asset-allocation-ui-ci \
                 --pipeline asset-allocation-ui-contracts-compat \
+                --pipeline asset-allocation-ui-release \
                 --pipeline asset-allocation-ui-security
             displayName: Queue failed downstream validation retries
             env:
