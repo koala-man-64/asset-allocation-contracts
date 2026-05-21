@@ -200,6 +200,7 @@ from asset_allocation_contracts.strategy import (
     UniverseConfigDraftGenerationResponse,
     UniverseConfigPreset,
     UniverseCatalogResponse,
+    UNIVERSE_FIELD_DEFINITION_BY_ID,
     UNIVERSE_FIELD_DEFINITIONS,
     UniverseCondition,
     UniverseDefinition,
@@ -1886,6 +1887,42 @@ def test_universe_condition_accepts_runner_discovery_fields() -> None:
         "runner.breakout_hold_1d",
     ]
     assert any(field.id == "runner.failed_breakout_1d" for field in UNIVERSE_FIELD_DEFINITIONS)
+
+
+def test_universe_condition_accepts_alternative_data_observed_fields() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "or",
+            "clauses": [
+                {"field": "alternative.wall_street_bets_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.insider_trading_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.congressional_trading_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.government_contract_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.institutional_holding_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.patent_observed_date", "operator": "is_not_null"},
+                {"field": "alternative.congress_holding_observed_date", "operator": "is_not_null"},
+            ],
+        }
+    )
+
+    used_fields = [
+        clause.field
+        for clause in definition.root.clauses
+        if isinstance(clause, UniverseCondition)
+    ]
+    assert used_fields == [
+        "alternative.wall_street_bets_observed_date",
+        "alternative.insider_trading_observed_date",
+        "alternative.congressional_trading_observed_date",
+        "alternative.government_contract_observed_date",
+        "alternative.institutional_holding_observed_date",
+        "alternative.patent_observed_date",
+        "alternative.congress_holding_observed_date",
+    ]
+    assert all(
+        UNIVERSE_FIELD_DEFINITION_BY_ID[field].valueKind == "date"
+        for field in used_fields
+    )
 
 
 def test_universe_condition_rejects_unknown_field() -> None:
