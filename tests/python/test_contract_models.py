@@ -85,9 +85,9 @@ from asset_allocation_contracts.government_signals import (
     IssuerGovernmentSignalDaily,
 )
 from asset_allocation_contracts.intraday import (
-    CryptoIntradayBar,
-    CryptoIntradayBarInterval,
-    CryptoIntradayBarsResponse,
+    CurrencyIntradayBar,
+    CurrencyIntradayBarInterval,
+    CurrencyIntradayBarsResponse,
     IntradayMonitorClaimResponse,
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
@@ -2635,19 +2635,19 @@ def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
         )
 
 
-def test_crypto_intraday_bars_contract_normalizes_symbol_and_provider_fields() -> (
+def test_currency_intraday_bars_contract_normalizes_pair_and_provider_fields() -> (
     None
 ):
-    payload = CryptoIntradayBarsResponse(
+    payload = CurrencyIntradayBarsResponse(
         symbol=" btcusd ",
-        providerSymbol="btc",
+        providerSymbol="x:btcusd",
         quoteCurrency="usd",
         interval="5m",
         from_="2026-05-20T00:00:00Z",
         to="2026-05-20T00:15:00-05:00",
         rowCount=2,
         rows=[
-            CryptoIntradayBar(
+            CurrencyIntradayBar(
                 timestamp="2026-05-20T00:00:00Z",
                 open=101000.0,
                 high=101250.0,
@@ -2669,7 +2669,8 @@ def test_crypto_intraday_bars_contract_normalizes_symbol_and_provider_fields() -
         ],
     )
 
-    assert payload.symbol == "BTC"
+    assert payload.symbol == "BTCUSD"
+    assert payload.baseCurrency == "BTC"
     assert payload.providerSymbol == "X:BTCUSD"
     assert payload.quoteCurrency == "USD"
     assert payload.interval == "5m"
@@ -2687,8 +2688,8 @@ def test_crypto_intraday_bars_contract_normalizes_symbol_and_provider_fields() -
     assert "from_" not in dumped
 
 
-def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
-    adapter = TypeAdapter(CryptoIntradayBarInterval)
+def test_currency_intraday_bars_contract_rejects_unsupported_shapes() -> None:
+    adapter = TypeAdapter(CurrencyIntradayBarInterval)
 
     assert adapter.validate_python("1m") == "1m"
     assert adapter.validate_python("5m") == "5m"
@@ -2705,7 +2706,7 @@ def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
 
     invalid_payloads = (
         {
-            "symbol": "BTC",
+            "symbol": "BTCUSD",
             "providerSymbol": "X:ETHUSD",
             "interval": "1m",
             "from": "2026-05-20T00:00:00Z",
@@ -2714,9 +2715,9 @@ def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
             "rows": [],
         },
         {
-            "symbol": "BTC",
+            "symbol": "BTCUSD",
             "providerSymbol": "X:BTCUSD",
-            "quoteCurrency": "EUR",
+            "baseCurrency": "ETH",
             "interval": "1m",
             "from": "2026-05-20T00:00:00Z",
             "to": "2026-05-20T00:01:00Z",
@@ -2724,7 +2725,7 @@ def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
             "rows": [],
         },
         {
-            "symbol": "BTC",
+            "symbol": "BTCUSD",
             "providerSymbol": "BTCUSD",
             "interval": "1m",
             "from": "2026-05-20T00:00:00Z",
@@ -2735,29 +2736,48 @@ def test_crypto_intraday_bars_contract_rejects_unsupported_shapes() -> None:
     )
     for payload in invalid_payloads:
         try:
-            CryptoIntradayBarsResponse.model_validate(payload)
+            CurrencyIntradayBarsResponse.model_validate(payload)
         except Exception:
             continue
         raise AssertionError(
-            f"Expected crypto intraday response validation to reject {payload!r}."
+            f"Expected currency intraday response validation to reject {payload!r}."
         )
 
 
-def test_crypto_intraday_artifacts_include_schema_and_typescript_exports() -> None:
+def test_currency_intraday_artifacts_include_schema_and_typescript_exports() -> None:
     root = Path(__file__).resolve().parents[2]
-    schema_path = root / "schemas" / "crypto-intraday-bars-response.schema.json"
+    schema_path = root / "schemas" / "currency-intraday-bars-response.schema.json"
     type_path = root / "ts" / "src" / "contracts.ts"
 
     response_schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    assert "CryptoIntradayBar" in response_schema["$defs"]
+    assert "CurrencyIntradayBar" in response_schema["$defs"]
     assert response_schema["properties"]["from"]["format"] == "date-time"
     assert response_schema["properties"]["interval"]["enum"] == ["1m", "5m", "15m"]
 
     generated_types = type_path.read_text(encoding="utf-8")
-    assert "export interface CryptoIntradayBar" in generated_types
-    assert "export interface CryptoIntradayBarsResponse" in generated_types
-    assert "interval: CryptoIntradayBarInterval;" in generated_types
+    assert "export interface CurrencyIntradayBar" in generated_types
+    assert "export interface CurrencyIntradayBarsResponse" in generated_types
+    assert "interval: CurrencyIntradayBarInterval;" in generated_types
     assert "from: string;" in generated_types
+
+
+def test_currency_intraday_paths_use_shared_domain_root() -> None:
+    assert (
+        DataPaths.get_bronze_currency_intraday_run_path("run-123")
+        == "currency-intraday/runs/run-123"
+    )
+    assert (
+        DataPaths.get_silver_currency_intraday_bucket_path("1m", "b")
+        == "currency-intraday/1m/buckets/B"
+    )
+    assert (
+        DataPaths.get_gold_currency_intraday_features_bucket_path("15m", "x")
+        == "currency-intraday/features/15m/buckets/X"
+    )
+    assert (
+        DataPaths.get_gold_currency_intraday_features_domain_path("5m")
+        == "currency-intraday/features/5m"
+    )
 
 
 def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None:

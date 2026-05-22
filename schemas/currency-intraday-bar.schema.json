@@ -73,6 +73,6 @@
     "close",
     "volume"
   ],
-  "title": "CryptoIntradayBar",
+  "title": "CurrencyIntradayBar",
   "type": "object"
 }

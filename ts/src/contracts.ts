@@ -28,7 +28,7 @@ export type PipelineStageLifecycleStatus = 'succeeded' | 'failed' | 'canceled' |
 export type PipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skipped' | 'unknown';
 export type PipelineSyncActionKind = 'queue' | 'cancel' | 'retry-run' | 'retry-stage' | 'approve-check' | 'open';
 export type PipelineActionResponseStatus = 'accepted' | 'completed';
-export type CryptoIntradayBarInterval = '1m' | '5m' | '15m';
+export type CurrencyIntradayBarInterval = '1m' | '5m' | '15m';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -4097,7 +4097,7 @@ export interface SymbolResolutionError {
   inputSymbol?: string | null;
 }
 
-export interface CryptoIntradayBar {
+export interface CurrencyIntradayBar {
   timestamp: string;
   open: number;
   high: number;
@@ -4109,15 +4109,16 @@ export interface CryptoIntradayBar {
   providerTimestampMs?: number | null;
 }
 
-export interface CryptoIntradayBarsResponse {
+export interface CurrencyIntradayBarsResponse {
   symbol: string;
+  baseCurrency: string;
   providerSymbol: string;
   quoteCurrency: string;
-  interval: CryptoIntradayBarInterval;
+  interval: CurrencyIntradayBarInterval;
   from: string;
   to: string;
   rowCount: number;
-  rows: CryptoIntradayBar[];
+  rows: CurrencyIntradayBar[];
 }
 
 export interface IntradayWatchlistSummary {

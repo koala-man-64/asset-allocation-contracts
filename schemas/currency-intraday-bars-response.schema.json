@@ -1,6 +1,6 @@
 {
   "$defs": {
-    "CryptoIntradayBar": {
+    "CurrencyIntradayBar": {
       "additionalProperties": false,
       "properties": {
         "close": {
@@ -75,12 +75,18 @@
         "close",
         "volume"
       ],
-      "title": "CryptoIntradayBar",
+      "title": "CurrencyIntradayBar",
       "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
+    "baseCurrency": {
+      "maxLength": 16,
+      "minLength": 1,
+      "title": "Basecurrency",
+      "type": "string"
+    },
     "from": {
       "format": "date-time",
       "title": "From",
@@ -113,7 +119,7 @@
     },
     "rows": {
       "items": {
-        "$ref": "#/$defs/CryptoIntradayBar"
+        "$ref": "#/$defs/CurrencyIntradayBar"
       },
       "title": "Rows",
       "type": "array"
@@ -132,12 +138,13 @@
   },
   "required": [
     "symbol",
+    "baseCurrency",
     "providerSymbol",
     "interval",
     "from",
     "to",
     "rowCount"
   ],
-  "title": "CryptoIntradayBarsResponse",
+  "title": "CurrencyIntradayBarsResponse",
   "type": "object"
 }

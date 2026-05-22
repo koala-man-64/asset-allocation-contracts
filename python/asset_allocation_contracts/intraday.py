@@ -6,7 +6,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-CryptoIntradayBarInterval = Literal["1m", "5m", "15m"]
+CurrencyIntradayBarInterval = Literal["1m", "5m", "15m"]
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
 IntradayRefreshBatchStatus = Literal["queued", "claimed", "completed", "failed"]
@@ -34,39 +34,82 @@ def _normalize_symbol(value: object) -> str:
     return symbol
 
 
-def _normalize_crypto_symbol(value: object) -> str:
+_COMMON_QUOTE_CURRENCIES = (
+    "USD",
+    "EUR",
+    "JPY",
+    "GBP",
+    "CHF",
+    "CAD",
+    "AUD",
+    "NZD",
+)
+
+
+def _strip_provider_currency_prefix(symbol: str) -> str:
+    if len(symbol) > 2 and symbol[1] == ":":
+        return symbol[2:]
+    return symbol
+
+
+def _normalize_currency_code(value: object, *, field_name: str) -> str:
+    code = str(value or "").strip().upper()
+    if not code:
+        raise ValueError(f"{field_name} must be non-empty.")
+    if not code.isalnum():
+        raise ValueError(f"{field_name} must be alphanumeric.")
+    if len(code) > 16:
+        raise ValueError(f"{field_name} must be 16 characters or fewer.")
+    return code
+
+
+def _normalize_currency_pair_symbol(value: object) -> str:
     symbol = _normalize_symbol(value)
-    if symbol.startswith("X:"):
-        if not symbol.endswith("USD"):
-            raise ValueError("Crypto provider symbols must be USD pairs.")
-        symbol = symbol[2:]
-    if symbol.endswith("USD") and len(symbol) > 3:
-        symbol = symbol[:-3]
+    symbol = _strip_provider_currency_prefix(symbol)
+    symbol = symbol.replace("/", "").replace("-", "").replace("_", "")
+    if len(symbol) > 32:
+        raise ValueError("Currency pair symbols must be 32 characters or fewer.")
     return _normalize_symbol(symbol)
 
 
-def _normalize_crypto_provider_symbol(value: object) -> str:
-    symbol = _normalize_symbol(value)
-    if symbol.startswith("X:"):
-        if not symbol.endswith("USD"):
-            raise ValueError("Crypto provider symbols must be USD pairs.")
-        provider_symbol = symbol
-    else:
-        provider_symbol = f"X:{symbol}"
-
-    if not provider_symbol.endswith("USD"):
-        provider_symbol = f"{provider_symbol}USD"
-
-    if not provider_symbol.startswith("X:") or len(provider_symbol) <= len("X:USD"):
-        raise ValueError("Crypto provider symbols must resolve to an X:{base}USD pair.")
-    return provider_symbol
+def _split_currency_pair(
+    symbol: object,
+    *,
+    default_quote_currency: object = "USD",
+) -> tuple[str, str]:
+    normalized = _normalize_currency_pair_symbol(symbol)
+    default_quote = _normalize_currency_code(
+        default_quote_currency,
+        field_name="quoteCurrency",
+    )
+    for quote in _COMMON_QUOTE_CURRENCIES:
+        if normalized.endswith(quote) and len(normalized) > len(quote):
+            base = normalized[: -len(quote)]
+            return (
+                _normalize_currency_code(base, field_name="baseCurrency"),
+                quote,
+            )
+    return (
+        _normalize_currency_code(normalized, field_name="baseCurrency"),
+        default_quote,
+    )
 
 
 def _normalize_quote_currency(value: object) -> str:
-    quote_currency = str(value or "").strip().upper()
-    if quote_currency != "USD":
-        raise ValueError("Crypto intraday bars currently support USD quote pairs only.")
-    return quote_currency
+    return _normalize_currency_code(value, field_name="quoteCurrency")
+
+
+def _normalize_base_currency(value: object) -> str:
+    return _normalize_currency_code(value, field_name="baseCurrency")
+
+
+def _normalize_provider_symbol(value: object) -> str:
+    provider_symbol = str(value or "").strip().upper()
+    if not provider_symbol:
+        raise ValueError("providerSymbol must be non-empty.")
+    if len(provider_symbol) > 64:
+        raise ValueError("providerSymbol must be 64 characters or fewer.")
+    return provider_symbol
 
 
 def _normalize_utc_datetime(value: datetime) -> datetime:
@@ -99,7 +142,7 @@ def _normalize_optional_text(value: object) -> str | None:
     return text or None
 
 
-class CryptoIntradayBar(BaseModel):
+class CurrencyIntradayBar(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     timestamp: datetime
@@ -117,23 +160,27 @@ class CryptoIntradayBar(BaseModel):
     )
 
 
-class CryptoIntradayBarsResponse(BaseModel):
+class CurrencyIntradayBarsResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     symbol: str = Field(min_length=1, max_length=32)
+    baseCurrency: str = Field(min_length=1, max_length=16)
     providerSymbol: str = Field(min_length=1, max_length=64)
     quoteCurrency: str = "USD"
-    interval: CryptoIntradayBarInterval
+    interval: CurrencyIntradayBarInterval
     from_: datetime = Field(alias="from")
     to: datetime
     rowCount: int = Field(ge=0)
-    rows: list[CryptoIntradayBar] = Field(default_factory=list)
+    rows: list[CurrencyIntradayBar] = Field(default_factory=list)
 
     _normalize_symbol_field = field_validator("symbol", mode="before")(
-        _normalize_crypto_symbol
+        _normalize_currency_pair_symbol
+    )
+    _normalize_base_currency = field_validator("baseCurrency", mode="before")(
+        _normalize_base_currency
     )
     _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
-        _normalize_crypto_provider_symbol
+        _normalize_provider_symbol
     )
     _normalize_quote_currency = field_validator("quoteCurrency", mode="before")(
         _normalize_quote_currency
@@ -141,11 +188,36 @@ class CryptoIntradayBarsResponse(BaseModel):
     _normalize_from = field_validator("from_", mode="after")(_normalize_utc_datetime)
     _normalize_to = field_validator("to", mode="after")(_normalize_utc_datetime)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_pair_fields(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+
+        data = dict(raw)
+        quote_currency = data.get("quoteCurrency") or "USD"
+        if data.get("baseCurrency") is None:
+            base_currency, inferred_quote = _split_currency_pair(
+                data.get("symbol"),
+                default_quote_currency=quote_currency,
+            )
+            data["baseCurrency"] = base_currency
+            data["quoteCurrency"] = data.get("quoteCurrency") or inferred_quote
+        else:
+            data["baseCurrency"] = _normalize_base_currency(data["baseCurrency"])
+            data["quoteCurrency"] = _normalize_quote_currency(quote_currency)
+
+        data["symbol"] = f"{data['baseCurrency']}{data['quoteCurrency']}"
+        data["providerSymbol"] = data.get("providerSymbol") or data["symbol"]
+        return data
+
     @model_validator(mode="after")
-    def _validate_row_count(self) -> "CryptoIntradayBarsResponse":
-        provider_base = self.providerSymbol[2:-3]
-        if provider_base != self.symbol:
-            raise ValueError("providerSymbol must match the canonical symbol.")
+    def _validate_response(self) -> "CurrencyIntradayBarsResponse":
+        if self.symbol != f"{self.baseCurrency}{self.quoteCurrency}":
+            raise ValueError("symbol must match baseCurrency plus quoteCurrency.")
+        provider_pair = _normalize_currency_pair_symbol(self.providerSymbol)
+        if provider_pair != self.symbol:
+            raise ValueError("providerSymbol must resolve to the canonical pair.")
         if self.rowCount != len(self.rows):
             raise ValueError("rowCount must match the number of rows.")
         return self

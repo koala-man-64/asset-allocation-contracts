@@ -24,9 +24,9 @@ import type {
   BrokerAccountOnboardingResponse,
   BrokerAccountSummary,
   CongressTradeEventListResponse,
-  CryptoIntradayBar,
-  CryptoIntradayBarInterval,
-  CryptoIntradayBarsResponse,
+  CurrencyIntradayBar,
+  CurrencyIntradayBarInterval,
+  CurrencyIntradayBarsResponse,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   PipelineActionResponse,
@@ -131,8 +131,8 @@ const symbolResolution: SymbolResolutionResult = {
   mappingVersion: "symbol-alias-v1",
 };
 
-const cryptoInterval: CryptoIntradayBarInterval = "1m";
-const cryptoBar: CryptoIntradayBar = {
+const currencyInterval: CurrencyIntradayBarInterval = "1m";
+const currencyBar: CurrencyIntradayBar = {
   timestamp: "2026-05-20T00:00:00Z",
   open: 101000,
   high: 101250,
@@ -144,15 +144,16 @@ const cryptoBar: CryptoIntradayBar = {
   providerTimestampMs: 1779235200000,
 };
 
-const cryptoBars: CryptoIntradayBarsResponse = {
-  symbol: "BTC",
+const currencyBars: CurrencyIntradayBarsResponse = {
+  symbol: "BTCUSD",
+  baseCurrency: "BTC",
   providerSymbol: "X:BTCUSD",
   quoteCurrency: "USD",
-  interval: cryptoInterval,
+  interval: currencyInterval,
   from: "2026-05-20T00:00:00Z",
   to: "2026-05-20T00:15:00Z",
   rowCount: 1,
-  rows: [cryptoBar],
+  rows: [currencyBar],
 };
 
 const coveredCallTemplate: OptionStrategyTemplate = {
@@ -1405,9 +1406,9 @@ const condition: UniverseCondition = {
 void strategy;
 void runtimeConfig;
 void authProvider;
-void cryptoInterval;
-void cryptoBar;
-void cryptoBars;
+void currencyInterval;
+void currencyBar;
+void currencyBars;
 void authSession;
 void brokerSummary;
 void brokerList;

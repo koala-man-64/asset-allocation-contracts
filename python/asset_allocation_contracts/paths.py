@@ -11,6 +11,7 @@ FINANCE_ALPHA26_SUBDOMAINS: tuple[str, ...] = (
 )
 QUIVER_DOMAIN_SLUG: str = "quiver"
 QUIVER_SILVER_DOMAIN_SLUG: str = "quiver-data"
+CURRENCY_INTRADAY_DOMAIN_SLUG: str = "currency-intraday"
 
 
 def normalize_finance_folder(folder: str) -> str:
@@ -19,6 +20,13 @@ def normalize_finance_folder(folder: str) -> str:
 
 def normalize_quiver_folder(folder: str) -> str:
     return str(folder or "").strip().lower().replace(" ", "_").replace("-", "_")
+
+
+def normalize_currency_intraday_interval(interval: str) -> str:
+    normalized = str(interval or "").strip().lower()
+    if normalized not in {"1m", "5m", "15m"}:
+        raise ValueError("Currency intraday interval must be one of 1m, 5m, or 15m.")
+    return normalized
 
 
 def bucket_letter(symbol: str) -> str:
@@ -101,3 +109,34 @@ class DataPaths:
     def get_gold_quiver_domain_path(folder: str) -> str:
         clean_folder = normalize_quiver_folder(folder)
         return f"{QUIVER_DOMAIN_SLUG}/{clean_folder}"
+
+    @staticmethod
+    def get_bronze_currency_intraday_run_path(run_id: str) -> str:
+        clean_run_id = str(run_id or "").strip()
+        if not clean_run_id:
+            raise ValueError("run_id must be non-empty.")
+        return f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/runs/{clean_run_id}"
+
+    @staticmethod
+    def get_silver_currency_intraday_bucket_path(interval: str, bucket: str) -> str:
+        clean_interval = normalize_currency_intraday_interval(interval)
+        return (
+            f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/{clean_interval}/buckets/"
+            f"{str(bucket).strip().upper()}"
+        )
+
+    @staticmethod
+    def get_gold_currency_intraday_features_bucket_path(
+        interval: str,
+        bucket: str,
+    ) -> str:
+        clean_interval = normalize_currency_intraday_interval(interval)
+        return (
+            f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/features/{clean_interval}/buckets/"
+            f"{str(bucket).strip().upper()}"
+        )
+
+    @staticmethod
+    def get_gold_currency_intraday_features_domain_path(interval: str) -> str:
+        clean_interval = normalize_currency_intraday_interval(interval)
+        return f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/features/{clean_interval}"
