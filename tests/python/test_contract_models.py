@@ -404,7 +404,6 @@ def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
     try:
         RankingSchemaConfig.model_validate(
             {
-                "universeConfigName": "us-large-liquid",
                 "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
                 "groups": [
                     {
@@ -430,7 +429,6 @@ def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
 
 def test_component_configs_accept_regime_gates() -> None:
     ranking = RankingSchemaConfig(
-        universeConfigName="us-large-liquid",
         groups=[
             {
                 "name": "momentum",
@@ -464,7 +462,6 @@ def test_component_configs_accept_regime_gates() -> None:
     )
     position = StrategyPositionPolicy(regimeGate={"blockedRegimes": ["trending_down"]})
 
-    assert ranking.universeConfigName == "us-large-liquid"
     assert rebalance.regimeGate is not None
     assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
     assert position.regimeGate is not None
@@ -633,6 +630,8 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
         sort="ranking_score",
         ranking_schema_name="  quality-momentum  ",
         ranking_schema_version=2,
+        universe_name="  core-us-equities  ",
+        universe_version=4,
     )
     response = StockScreenerResponse(
         asOf="2026-05-04",
@@ -691,6 +690,8 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
     assert request.q == "ms"
     assert request.ranking_schema_name == "quality-momentum"
     assert request.ranking_schema_version == 2
+    assert request.universe_name == "core-us-equities"
+    assert request.universe_version == 4
     assert request.sectors == ["Technology", "Healthcare"]
     assert request.countries == ["US", "CA"]
     assert response.rows[0].symbol == "MSFT"
@@ -727,6 +728,22 @@ def test_stock_screener_contract_rejects_ranking_version_without_name() -> None:
         raise AssertionError(
             "Expected ranking schema version without name to fail validation."
         )
+
+
+def test_stock_screener_contract_rejects_ranked_requests_without_universe_pin() -> None:
+    for invalid_payload in (
+        {"ranking_schema_name": "quality-momentum"},
+        {"ranking_schema_name": "quality-momentum", "universe_name": "core-us-equities"},
+        {"ranking_schema_name": "quality-momentum", "universe_version": 2},
+    ):
+        try:
+            StockScreenerRequest.model_validate(invalid_payload)
+        except Exception as exc:
+            assert "universe_name" in str(exc) or "universe_version" in str(exc)
+        else:
+            raise AssertionError(
+                "Expected ranked screener requests without a universe pin to fail validation."
+            )
 
 
 def test_config_reference_rejects_blank_name() -> None:
@@ -1816,7 +1833,6 @@ def test_ranking_schema_requires_groups() -> None:
 
 def test_ranking_schema_accepts_group_payload() -> None:
     payload = RankingSchemaConfig(
-        universeConfigName="core-universe",
         groups=[
             RankingGroup(
                 name="quality",
@@ -2261,7 +2277,6 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
                 "intendedUse": "research",
             },
             "config": {
-                "universeConfigName": "us-large-liquid",
                 "groups": [
                     {
                         "name": "momentum",
@@ -2335,7 +2350,6 @@ def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -
                 "intendedUse": "research",
             },
             "config": {
-                "universeConfigName": "us-large-liquid",
                 "groups": [
                     {
                         "name": "momentum",

@@ -504,7 +504,6 @@ Ranking schemas are pure scoring definitions. Regime routing belongs on `Strateg
 
 ```json
 {
-  "universeConfigName": "core-us-equities",
   "groups": [
     {
       "name": "quality",

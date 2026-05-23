@@ -354,6 +354,8 @@ const stockScreenerRequest: StockScreenerRequest = {
   direction: "desc",
   ranking_schema_name: "quality_momentum",
   ranking_schema_version: 2,
+  universe_name: "core_us_equities",
+  universe_version: 4,
   sectors: ["Technology"],
   has_silver: true,
   min_volume_pct_rank_252d: 0.6,
@@ -594,7 +596,6 @@ const rankingPreset: RankingSchemaPreset = {
     thesis: "Pair durable quality with medium-term price strength.",
   },
   config: {
-    universeConfigName: "us_large_liquid",
     groups: [
       {
         name: "momentum",

@@ -712,6 +712,32 @@
           ],
           "title": "Sort",
           "type": "string"
+        },
+        "universe_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universe Name"
+        },
+        "universe_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universe Version"
         }
       },
       "title": "StockScreenerRequest",

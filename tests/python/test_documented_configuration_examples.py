@@ -386,7 +386,6 @@ def test_documented_strategy_risk_profile_example_is_valid() -> None:
 def test_documented_ranking_examples_are_valid() -> None:
     schema = RankingSchemaConfig.model_validate(
         {
-            "universeConfigName": "core-us-equities",
             "groups": [
                 {
                     "name": "quality",

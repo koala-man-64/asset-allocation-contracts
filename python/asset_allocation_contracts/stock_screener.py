@@ -72,6 +72,8 @@ class StockScreenerRequest(BaseModel):
     direction: StockScreenerSortDirection = "desc"
     ranking_schema_name: str | None = Field(default=None, max_length=128)
     ranking_schema_version: int | None = Field(default=None, ge=1)
+    universe_name: str | None = Field(default=None, max_length=128)
+    universe_version: int | None = Field(default=None, ge=1)
     sectors: list[str] | None = None
     industries: list[str] | None = None
     countries: list[str] | None = None
@@ -112,6 +114,7 @@ class StockScreenerRequest(BaseModel):
 
     _normalize_query = field_validator("q", mode="before")(_normalize_optional_text)
     _normalize_ranking_schema_name = field_validator("ranking_schema_name", mode="before")(_normalize_optional_text)
+    _normalize_universe_name = field_validator("universe_name", mode="before")(_normalize_optional_text)
     _normalize_sectors = field_validator("sectors", mode="before")(_normalize_filter_values)
     _normalize_industries = field_validator("industries", mode="before")(_normalize_filter_values)
     _normalize_countries = field_validator("countries", mode="before")(_normalize_filter_values)
@@ -120,6 +123,12 @@ class StockScreenerRequest(BaseModel):
     def _validate_numeric_ranges(self) -> StockScreenerRequest:
         if self.ranking_schema_version is not None and self.ranking_schema_name is None:
             raise ValueError("ranking_schema_version requires ranking_schema_name.")
+        if self.universe_version is not None and self.universe_name is None:
+            raise ValueError("universe_version requires universe_name.")
+        if self.ranking_schema_name is not None and (
+            self.universe_name is None or self.universe_version is None
+        ):
+            raise ValueError("ranking_schema_name requires universe_name and universe_version.")
 
         for minimum_name, maximum_name in (
             ("min_close", "max_close"),
