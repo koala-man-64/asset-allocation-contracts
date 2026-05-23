@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "default": "market",
+      "enum": [
+        "market",
+        "currency"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
+    "symbols": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Symbols",
+      "type": "array"
+    }
+  },
+  "required": [
+    "symbols"
+  ],
+  "title": "IntradayRefreshRequest",
+  "type": "object"
+}

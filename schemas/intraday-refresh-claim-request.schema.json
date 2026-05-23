@@ -1,6 +1,22 @@
 {
   "additionalProperties": false,
   "properties": {
+    "domain": {
+      "anyOf": [
+        {
+          "enum": [
+            "market",
+            "currency"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Domain"
+    },
     "executionName": {
       "anyOf": [
         {

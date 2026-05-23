@@ -29,6 +29,10 @@ import type {
   CurrencyIntradayBarsResponse,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
+  IntradayMonitorCompleteRequest,
+  IntradayRefreshClaimRequest,
+  IntradayRefreshDomain,
+  IntradayWatchlistUpsertRequest,
   PipelineActionResponse,
   PipelineQueueActionRequest,
   PipelineSyncView,
@@ -154,6 +158,32 @@ const currencyBars: CurrencyIntradayBarsResponse = {
   to: "2026-05-20T00:15:00Z",
   rowCount: 1,
   rows: [currencyBar],
+};
+
+const intradayRefreshDomain: IntradayRefreshDomain = "currency";
+const intradayWatchlist: IntradayWatchlistUpsertRequest = {
+  name: "Desk Watchlist",
+  enabled: true,
+  symbols: ["AAPL", "MSFT"],
+  pollIntervalMinutes: 5,
+  refreshCooldownMinutes: 15,
+  autoRefreshEnabled: true,
+  refreshDomains: ["market", intradayRefreshDomain],
+  marketSession: "us_equities_regular",
+};
+const intradayMonitorComplete: IntradayMonitorCompleteRequest = {
+  claimToken: "claim-1",
+  symbolStatuses: [],
+  events: [],
+  refreshRequests: [
+    { domain: "market", symbols: ["AAPL"] },
+    { domain: "currency", symbols: ["EURUSD"] },
+  ],
+  refreshSymbols: ["AAPL"],
+};
+const intradayRefreshClaim: IntradayRefreshClaimRequest = {
+  executionName: "intraday-currency-refresh-job",
+  domain: intradayRefreshDomain,
 };
 
 const coveredCallTemplate: OptionStrategyTemplate = {

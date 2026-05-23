@@ -96,6 +96,8 @@ from asset_allocation_contracts.intraday import (
     IntradayOnDemandSymbolConfig,
     IntradayOnDemandSymbolListResponse,
     IntradayOnDemandSymbolUpsertRequest,
+    IntradayRefreshClaimRequest,
+    IntradayRefreshRequest,
     IntradaySymbolStatus,
     IntradayWatchlistDetail,
     IntradayWatchlistSymbolAppendRequest,
@@ -2792,19 +2794,19 @@ def test_currency_intraday_artifacts_include_schema_and_typescript_exports() -> 
 def test_currency_intraday_paths_use_shared_domain_root() -> None:
     assert (
         DataPaths.get_bronze_currency_intraday_run_path("run-123")
-        == "currency-intraday/runs/run-123"
+        == "currency/intraday/runs/run-123"
     )
     assert (
         DataPaths.get_silver_currency_intraday_bucket_path("1m", "b")
-        == "currency-intraday/1m/buckets/B"
+        == "currency/intraday/1m/buckets/B"
     )
     assert (
         DataPaths.get_gold_currency_intraday_features_bucket_path("15m", "x")
-        == "currency-intraday/features/15m/buckets/X"
+        == "currency/intraday/features/15m/buckets/X"
     )
     assert (
         DataPaths.get_gold_currency_intraday_features_domain_path("5m")
-        == "currency-intraday/features/5m"
+        == "currency/intraday/features/5m"
     )
 
 
@@ -2818,7 +2820,18 @@ def test_intraday_watchlist_upsert_normalizes_and_deduplicates_symbols() -> None
     assert payload.symbols == ["AAPL", "MSFT"]
     assert payload.pollIntervalMinutes == 5
     assert payload.refreshCooldownMinutes == 15
+    assert payload.refreshDomains == ["market"]
     assert payload.marketSession == "us_equities_regular"
+
+
+def test_intraday_watchlist_upsert_normalizes_refresh_domains() -> None:
+    payload = IntradayWatchlistUpsertRequest(
+        name="Cross Asset Refresh",
+        symbols=["aapl"],
+        refreshDomains=["currency", "market", "currency"],
+    )
+
+    assert payload.refreshDomains == ["currency", "market"]
 
 
 def test_intraday_watchlist_symbol_append_contract_normalizes_and_reports_run_state() -> (
@@ -2918,11 +2931,13 @@ def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() ->
             description="operator list",
             enabled=True,
             symbolCount=2,
+            refreshDomains=["market", "currency"],
             symbols=["AAPL", "MSFT"],
         ),
         currentSymbolStatuses=[
             IntradaySymbolStatus(
                 symbol="aapl",
+                domain="market",
                 monitorStatus="observed",
                 lastObservedPrice=213.42,
             )
@@ -2934,7 +2949,9 @@ def test_intraday_monitor_claim_response_supports_nested_watchlist_contract() ->
     assert payload.run.forceRefresh is True
     assert payload.watchlist is not None
     assert payload.watchlist.symbols == ["AAPL", "MSFT"]
+    assert payload.watchlist.refreshDomains == ["market", "currency"]
     assert payload.currentSymbolStatuses[0].symbol == "AAPL"
+    assert payload.currentSymbolStatuses[0].domain == "market"
 
 
 def test_intraday_monitor_complete_request_accepts_statuses_and_events() -> None:
@@ -2943,6 +2960,7 @@ def test_intraday_monitor_complete_request_accepts_statuses_and_events() -> None
         symbolStatuses=[
             IntradaySymbolStatus(
                 symbol="aapl",
+                domain="currency",
                 monitorStatus="refresh_queued",
                 lastObservedPrice=213.42,
             )
@@ -2959,8 +2977,32 @@ def test_intraday_monitor_complete_request_accepts_statuses_and_events() -> None
     )
 
     assert payload.symbolStatuses[0].symbol == "AAPL"
+    assert payload.symbolStatuses[0].domain == "currency"
     assert payload.events[0].details["source"] == "massive"
     assert payload.refreshSymbols == ["AAPL", "MSFT"]
+    assert payload.refreshRequests == [
+        IntradayRefreshRequest(domain="market", symbols=["AAPL", "MSFT"])
+    ]
+
+
+def test_intraday_monitor_complete_request_supports_domain_refresh_requests() -> None:
+    payload = IntradayMonitorCompleteRequest(
+        claimToken="claim-1",
+        refreshRequests=[
+            IntradayRefreshRequest(domain="currency", symbols=["eurusd", "GBPUSD"]),
+            IntradayRefreshRequest(domain="market", symbols=["aapl", "AAPL"]),
+        ],
+    )
+
+    assert payload.refreshRequests[0].domain == "currency"
+    assert payload.refreshRequests[0].symbols == ["EURUSD", "GBPUSD"]
+    assert payload.refreshSymbols == ["AAPL"]
+
+
+def test_intraday_refresh_claim_request_can_scope_domain() -> None:
+    request = IntradayRefreshClaimRequest(executionName="job-1", domain="currency")
+
+    assert request.domain == "currency"
 
 
 def test_regime_snapshot_and_model_config_validate() -> None:

@@ -107,9 +107,45 @@
       "title": "IntradayMonitorEvent",
       "type": "object"
     },
+    "IntradayRefreshRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "default": "market",
+          "enum": [
+            "market",
+            "currency"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "symbols": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Symbols",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbols"
+      ],
+      "title": "IntradayRefreshRequest",
+      "type": "object"
+    },
     "IntradaySymbolStatus": {
       "additionalProperties": false,
       "properties": {
+        "domain": {
+          "default": "market",
+          "enum": [
+            "market",
+            "currency"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
         "lastError": {
           "anyOf": [
             {
@@ -174,6 +210,19 @@
           ],
           "default": null,
           "title": "Lastsuccessfulmarketrefreshat"
+        },
+        "lastSuccessfulRefreshAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsuccessfulrefreshat"
         },
         "monitorStatus": {
           "default": "idle",
@@ -241,6 +290,13 @@
         "$ref": "#/$defs/IntradayMonitorEvent"
       },
       "title": "Events",
+      "type": "array"
+    },
+    "refreshRequests": {
+      "items": {
+        "$ref": "#/$defs/IntradayRefreshRequest"
+      },
+      "title": "Refreshrequests",
       "type": "array"
     },
     "refreshSymbols": {

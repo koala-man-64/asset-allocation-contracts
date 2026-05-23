@@ -1,6 +1,15 @@
 {
   "additionalProperties": false,
   "properties": {
+    "domain": {
+      "default": "market",
+      "enum": [
+        "market",
+        "currency"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
     "lastError": {
       "anyOf": [
         {
@@ -65,6 +74,19 @@
       ],
       "default": null,
       "title": "Lastsuccessfulmarketrefreshat"
+    },
+    "lastSuccessfulRefreshAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastsuccessfulrefreshat"
     },
     "monitorStatus": {
       "default": "idle",

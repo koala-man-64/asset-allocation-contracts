@@ -50,6 +50,17 @@
       "title": "Refreshcooldownminutes",
       "type": "integer"
     },
+    "refreshDomains": {
+      "items": {
+        "enum": [
+          "market",
+          "currency"
+        ],
+        "type": "string"
+      },
+      "title": "Refreshdomains",
+      "type": "array"
+    },
     "symbols": {
       "items": {
         "type": "string"

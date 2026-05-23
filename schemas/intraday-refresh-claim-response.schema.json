@@ -56,8 +56,10 @@
         },
         "domain": {
           "default": "market",
-          "maxLength": 64,
-          "minLength": 1,
+          "enum": [
+            "market",
+            "currency"
+          ],
           "title": "Domain",
           "type": "string"
         },

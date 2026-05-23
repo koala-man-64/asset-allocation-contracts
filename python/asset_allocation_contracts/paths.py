@@ -20,7 +20,12 @@ FINANCE_ALPHA26_SUBDOMAINS: tuple[str, ...] = (
 )
 QUIVER_DOMAIN_SLUG: str = "quiver"
 QUIVER_SILVER_DOMAIN_SLUG: str = "quiver-data"
-CURRENCY_INTRADAY_DOMAIN_SLUG: str = "currency-intraday"
+CURRENCY_DOMAIN_SLUG: str = "currency"
+CURRENCY_INTRADAY_PATH_SLUG: str = "intraday"
+CURRENCY_INTRADAY_DOMAIN_SLUG: str = CURRENCY_DOMAIN_SLUG
+CURRENCY_INTRADAY_STORAGE_PREFIX: str = (
+    f"{CURRENCY_DOMAIN_SLUG}/{CURRENCY_INTRADAY_PATH_SLUG}"
+)
 
 
 def normalize_finance_folder(folder: str) -> str:
@@ -184,13 +189,13 @@ class DataPaths:
         clean_run_id = str(run_id or "").strip()
         if not clean_run_id:
             raise ValueError("run_id must be non-empty.")
-        return f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/runs/{clean_run_id}"
+        return f"{CURRENCY_INTRADAY_STORAGE_PREFIX}/runs/{clean_run_id}"
 
     @staticmethod
     def get_silver_currency_intraday_bucket_path(interval: str, bucket: str) -> str:
         clean_interval = normalize_currency_intraday_interval(interval)
         return (
-            f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/{clean_interval}/buckets/"
+            f"{CURRENCY_INTRADAY_STORAGE_PREFIX}/{clean_interval}/buckets/"
             f"{str(bucket).strip().upper()}"
         )
 
@@ -201,11 +206,11 @@ class DataPaths:
     ) -> str:
         clean_interval = normalize_currency_intraday_interval(interval)
         return (
-            f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/features/{clean_interval}/buckets/"
+            f"{CURRENCY_INTRADAY_STORAGE_PREFIX}/features/{clean_interval}/buckets/"
             f"{str(bucket).strip().upper()}"
         )
 
     @staticmethod
     def get_gold_currency_intraday_features_domain_path(interval: str) -> str:
         clean_interval = normalize_currency_intraday_interval(interval)
-        return f"{CURRENCY_INTRADAY_DOMAIN_SLUG}/features/{clean_interval}"
+        return f"{CURRENCY_INTRADAY_STORAGE_PREFIX}/features/{clean_interval}"

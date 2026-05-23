@@ -526,6 +526,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         intraday.IntradayMonitorCompleteRequest,
     ),
     ("intraday-monitor-fail-request.schema.json", intraday.IntradayMonitorFailRequest),
+    ("intraday-refresh-request.schema.json", intraday.IntradayRefreshRequest),
     (
         "intraday-refresh-batch-summary.schema.json",
         intraday.IntradayRefreshBatchSummary,
@@ -706,6 +707,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
         "IntradayWatchlistSymbolAppendRunSkippedReason",
         intraday.IntradayWatchlistSymbolAppendRunSkippedReason,
     ),
+    ("IntradayRefreshDomain", intraday.IntradayRefreshDomain),
     ("SymbolIdentityProvider", symbol_identity.SymbolIdentityProvider),
     ("SymbolIdentityDomain", symbol_identity.SymbolIdentityDomain),
     ("SymbolResolutionStatus", symbol_identity.SymbolResolutionStatus),

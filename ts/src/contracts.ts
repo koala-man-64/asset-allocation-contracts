@@ -137,6 +137,7 @@ export type NotificationDecisionStatus = 'not_required' | 'pending' | 'approved'
 export type NotificationExecutionStatus = 'not_applicable' | 'pending_approval' | 'submitted' | 'blocked' | 'release_failed';
 export type NotificationRequestStatus = 'pending' | 'delivered' | 'delivery_failed' | 'decided' | 'expired';
 export type IntradayWatchlistSymbolAppendRunSkippedReason = 'watchlist_disabled' | 'no_new_symbols' | 'queue_run_disabled';
+export type IntradayRefreshDomain = 'market' | 'currency';
 export type SymbolIdentityProvider = 'massive' | 'alpha_vantage' | 'nasdaq';
 export type SymbolIdentityDomain = 'market' | 'finance' | 'earnings' | 'price-target';
 export type SymbolResolutionStatus = 'resolved' | 'unsupported' | 'ambiguous' | 'invalid';
@@ -4130,6 +4131,7 @@ export interface IntradayWatchlistSummary {
   pollIntervalMinutes: number;
   refreshCooldownMinutes: number;
   autoRefreshEnabled: boolean;
+  refreshDomains: IntradayRefreshDomain[];
   marketSession: 'us_equities_regular';
   nextDueAt?: string | null;
   lastRunAt?: string | null;
@@ -4145,6 +4147,7 @@ export interface IntradayWatchlistDetail {
   pollIntervalMinutes: number;
   refreshCooldownMinutes: number;
   autoRefreshEnabled: boolean;
+  refreshDomains: IntradayRefreshDomain[];
   marketSession: 'us_equities_regular';
   nextDueAt?: string | null;
   lastRunAt?: string | null;
@@ -4161,6 +4164,7 @@ export interface IntradayWatchlistUpsertRequest {
   pollIntervalMinutes: number;
   refreshCooldownMinutes: number;
   autoRefreshEnabled: boolean;
+  refreshDomains: IntradayRefreshDomain[];
   marketSession: 'us_equities_regular';
 }
 
@@ -4199,10 +4203,12 @@ export interface IntradayMonitorRunSummary {
 
 export interface IntradaySymbolStatus {
   watchlistId?: string | null;
+  domain: IntradayRefreshDomain;
   symbol: string;
   monitorStatus: 'idle' | 'observed' | 'refresh_queued' | 'refreshed' | 'failed';
   lastSnapshotAt?: string | null;
   lastObservedPrice?: number | null;
+  lastSuccessfulRefreshAt?: string | null;
   lastSuccessfulMarketRefreshAt?: string | null;
   lastRunId?: string | null;
   lastError?: string | null;
@@ -4268,7 +4274,13 @@ export interface IntradayMonitorCompleteRequest {
   claimToken: string;
   symbolStatuses: IntradaySymbolStatus[];
   events: IntradayMonitorEvent[];
+  refreshRequests: IntradayRefreshRequest[];
   refreshSymbols: string[];
+}
+
+export interface IntradayRefreshRequest {
+  domain: IntradayRefreshDomain;
+  symbols: string[];
 }
 
 export interface IntradayMonitorFailRequest {
@@ -4281,7 +4293,7 @@ export interface IntradayRefreshBatchSummary {
   runId: string;
   watchlistId: string;
   watchlistName?: string | null;
-  domain: string;
+  domain: IntradayRefreshDomain;
   bucketLetter: string;
   status: 'queued' | 'claimed' | 'completed' | 'failed';
   symbols: string[];
@@ -4296,6 +4308,7 @@ export interface IntradayRefreshBatchSummary {
 
 export interface IntradayRefreshClaimRequest {
   executionName?: string | null;
+  domain?: IntradayRefreshDomain | null;
 }
 
 export interface IntradayRefreshClaimResponse {

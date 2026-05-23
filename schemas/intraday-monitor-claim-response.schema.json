@@ -167,6 +167,15 @@
     "IntradaySymbolStatus": {
       "additionalProperties": false,
       "properties": {
+        "domain": {
+          "default": "market",
+          "enum": [
+            "market",
+            "currency"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
         "lastError": {
           "anyOf": [
             {
@@ -231,6 +240,19 @@
           ],
           "default": null,
           "title": "Lastsuccessfulmarketrefreshat"
+        },
+        "lastSuccessfulRefreshAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastsuccessfulrefreshat"
         },
         "monitorStatus": {
           "default": "idle",
@@ -374,6 +396,17 @@
           "minimum": 1,
           "title": "Refreshcooldownminutes",
           "type": "integer"
+        },
+        "refreshDomains": {
+          "items": {
+            "enum": [
+              "market",
+              "currency"
+            ],
+            "type": "string"
+          },
+          "title": "Refreshdomains",
+          "type": "array"
         },
         "symbolCount": {
           "default": 0,

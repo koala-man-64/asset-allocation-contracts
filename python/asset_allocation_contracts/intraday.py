@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 
 CurrencyIntradayBarInterval = Literal["1m", "5m", "15m"]
+IntradayRefreshDomain = Literal["market", "currency"]
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
 IntradayRefreshBatchStatus = Literal["queued", "claimed", "completed", "failed"]
@@ -135,6 +136,44 @@ def _normalize_symbols(values: object) -> list[str]:
     return normalized
 
 
+def _normalize_refresh_domain(value: object) -> IntradayRefreshDomain:
+    domain = str(value or "market").strip().lower()
+    if domain == "market":
+        return "market"
+    if domain == "currency":
+        return "currency"
+    raise ValueError("Intraday refresh domain must be market or currency.")
+
+
+def _normalize_optional_refresh_domain(
+    value: object,
+) -> IntradayRefreshDomain | None:
+    if value is None:
+        return None
+    if str(value).strip() == "":
+        return None
+    return _normalize_refresh_domain(value)
+
+
+def _normalize_refresh_domains(values: object) -> list[IntradayRefreshDomain]:
+    if values is None:
+        return ["market"]
+    if not isinstance(values, list):
+        raise TypeError("refreshDomains must be a list.")
+
+    normalized: list[IntradayRefreshDomain] = []
+    seen: set[IntradayRefreshDomain] = set()
+    for raw in values:
+        domain = _normalize_refresh_domain(raw)
+        if domain in seen:
+            continue
+        seen.add(domain)
+        normalized.append(domain)
+    if not normalized:
+        raise ValueError("refreshDomains must include at least one domain.")
+    return normalized
+
+
 def _normalize_optional_text(value: object) -> str | None:
     if value is None:
         return None
@@ -234,10 +273,17 @@ class IntradayWatchlistSummary(BaseModel):
     pollIntervalMinutes: int = Field(default=5, ge=1, le=1_440)
     refreshCooldownMinutes: int = Field(default=15, ge=1, le=1_440)
     autoRefreshEnabled: bool = True
+    refreshDomains: list[IntradayRefreshDomain] = Field(
+        default_factory=lambda: ["market"]
+    )
     marketSession: IntradayMarketSession = "us_equities_regular"
     nextDueAt: datetime | None = None
     lastRunAt: datetime | None = None
     updatedAt: datetime | None = None
+
+    _normalize_refresh_domains_field = field_validator(
+        "refreshDomains", mode="before"
+    )(_normalize_refresh_domains)
 
 
 class IntradayWatchlistDetail(IntradayWatchlistSummary):
@@ -261,11 +307,17 @@ class IntradayWatchlistUpsertRequest(BaseModel):
     pollIntervalMinutes: int = Field(default=5, ge=1, le=1_440)
     refreshCooldownMinutes: int = Field(default=15, ge=1, le=1_440)
     autoRefreshEnabled: bool = True
+    refreshDomains: list[IntradayRefreshDomain] = Field(
+        default_factory=lambda: ["market"]
+    )
     marketSession: IntradayMarketSession = "us_equities_regular"
 
     _normalize_symbols_field = field_validator("symbols", mode="before")(
         _normalize_symbols
     )
+    _normalize_refresh_domains_field = field_validator(
+        "refreshDomains", mode="before"
+    )(_normalize_refresh_domains)
 
 
 class IntradayWatchlistSymbolAppendRequest(BaseModel):
@@ -294,14 +346,20 @@ class IntradaySymbolStatus(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     watchlistId: str | None = Field(default=None, min_length=1, max_length=64)
+    domain: IntradayRefreshDomain = "market"
     symbol: str = Field(min_length=1, max_length=32)
     monitorStatus: IntradaySymbolMonitorStatus = "idle"
     lastSnapshotAt: datetime | None = None
     lastObservedPrice: float | None = None
+    lastSuccessfulRefreshAt: datetime | None = None
     lastSuccessfulMarketRefreshAt: datetime | None = None
     lastRunId: str | None = Field(default=None, min_length=1, max_length=64)
     lastError: str | None = Field(default=None, max_length=2_000)
     updatedAt: datetime | None = None
+
+    _normalize_domain_field = field_validator("domain", mode="before")(
+        _normalize_refresh_domain
+    )
 
     @field_validator("symbol", mode="before")
     @classmethod
@@ -451,17 +509,57 @@ class IntradayMonitorClaimResponse(BaseModel):
     claimToken: str | None = Field(default=None, min_length=1, max_length=128)
 
 
+class IntradayRefreshRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    domain: IntradayRefreshDomain = "market"
+    symbols: list[str] = Field(min_length=1)
+
+    _normalize_domain_field = field_validator("domain", mode="before")(
+        _normalize_refresh_domain
+    )
+    _normalize_symbols_field = field_validator("symbols", mode="before")(
+        _normalize_symbols
+    )
+
+
 class IntradayMonitorCompleteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     claimToken: str = Field(min_length=1, max_length=128)
     symbolStatuses: list[IntradaySymbolStatus] = Field(default_factory=list)
     events: list[IntradayMonitorEvent] = Field(default_factory=list)
+    refreshRequests: list[IntradayRefreshRequest] = Field(default_factory=list)
     refreshSymbols: list[str] = Field(default_factory=list)
 
     _normalize_refresh_symbols = field_validator("refreshSymbols", mode="before")(
         _normalize_symbols
     )
+
+    @model_validator(mode="after")
+    def _sync_legacy_refresh_symbols_alias(
+        self,
+    ) -> "IntradayMonitorCompleteRequest":
+        market_symbols: list[str] = []
+        has_market_request = False
+        for request in self.refreshRequests:
+            if request.domain == "market":
+                has_market_request = True
+                market_symbols.extend(request.symbols)
+
+        if self.refreshSymbols:
+            market_symbols.extend(self.refreshSymbols)
+            if not has_market_request:
+                self.refreshRequests.insert(
+                    0,
+                    IntradayRefreshRequest(
+                        domain="market",
+                        symbols=self.refreshSymbols,
+                    ),
+                )
+
+        self.refreshSymbols = _normalize_symbols(market_symbols)
+        return self
 
 
 class IntradayMonitorFailRequest(BaseModel):
@@ -478,7 +576,7 @@ class IntradayRefreshBatchSummary(BaseModel):
     runId: str = Field(min_length=1, max_length=64)
     watchlistId: str = Field(min_length=1, max_length=64)
     watchlistName: str | None = Field(default=None, max_length=255)
-    domain: str = Field(default="market", min_length=1, max_length=64)
+    domain: IntradayRefreshDomain = "market"
     bucketLetter: str = Field(min_length=1, max_length=1)
     status: IntradayRefreshBatchStatus = "queued"
     symbols: list[str] = Field(default_factory=list)
@@ -493,12 +591,20 @@ class IntradayRefreshBatchSummary(BaseModel):
     _normalize_symbols_field = field_validator("symbols", mode="before")(
         _normalize_symbols
     )
+    _normalize_domain_field = field_validator("domain", mode="before")(
+        _normalize_refresh_domain
+    )
 
 
 class IntradayRefreshClaimRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     executionName: str | None = Field(default=None, max_length=255)
+    domain: IntradayRefreshDomain | None = None
+
+    _normalize_domain_field = field_validator("domain", mode="before")(
+        _normalize_optional_refresh_domain
+    )
 
 
 class IntradayRefreshClaimResponse(BaseModel):
