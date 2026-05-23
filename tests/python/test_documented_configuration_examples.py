@@ -324,6 +324,11 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
                     "drawdownReducePct": 8,
                     "drawdownBlockPct": 12
                 },
+                "vixSpikeHalt": {
+                    "threshold": 32,
+                    "streakBars": 2,
+                    "cooldownBars": 2,
+                },
             },
         }
     )

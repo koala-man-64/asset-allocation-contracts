@@ -196,6 +196,7 @@ from asset_allocation_contracts.strategy import (
     StrategyRiskOverlaySet,
     StrategyRiskPolicy,
     StrategyRiskPolicyPreset,
+    StrategyRiskVixSpikeHaltPolicy,
     StrategyRegimeAllocation,
     StrategyRegimeGatePlan,
     StrategyRiskTradingPermissions,
@@ -1274,6 +1275,11 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
             "maxBidAskSpreadBps": 50,
             "maxSlippageBps": 35,
         },
+        vixSpikeHalt={
+            "threshold": 32,
+            "streakBars": 2,
+            "cooldownBars": 2,
+        },
         overlays={
             "regime": [
                 {
@@ -1316,6 +1322,10 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
     assert policy.tradingPermissions.optionsMode == "defined_risk_only"
     assert policy.liquidityLimits is not None
     assert policy.liquidityLimits.maxAdvParticipationPct == 7.5
+    assert policy.vixSpikeHalt is not None
+    assert policy.vixSpikeHalt.threshold == 32
+    assert policy.vixSpikeHalt.streakBars == 2
+    assert policy.vixSpikeHalt.cooldownBars == 2
     assert policy.overlays is not None
     assert policy.overlays.regime[0].id == "high-vol-de-risk"
     assert policy.dataQualityGates is not None
@@ -1347,6 +1357,21 @@ def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() ->
                 "event": [{"id": "duplicate", "trigger": "earnings_within=2d", "action": "warn"}],
             },
             "Duplicate risk overlay id",
+        ),
+        (
+            StrategyRiskVixSpikeHaltPolicy,
+            {"threshold": 0, "streakBars": 2, "cooldownBars": 2},
+            "greater than 0",
+        ),
+        (
+            StrategyRiskVixSpikeHaltPolicy,
+            {"threshold": 32, "streakBars": 0, "cooldownBars": 2},
+            "greater than or equal to 1",
+        ),
+        (
+            StrategyRiskVixSpikeHaltPolicy,
+            {"threshold": 32, "streakBars": 2, "cooldownBars": 0},
+            "greater than or equal to 1",
         ),
         (
             StrategyRiskPolicy,
@@ -1416,6 +1441,15 @@ def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
     assert detail.policy.version == 2
     assert detail.activeRevision is not None
     assert detail.activeRevision.config.policy.stopLoss is not None
+
+
+def test_strategy_risk_policy_accepts_vix_spike_halt_control() -> None:
+    policy = StrategyRiskPolicy(vixSpikeHalt={"threshold": 32, "streakBars": 2, "cooldownBars": 2})
+
+    assert policy.vixSpikeHalt is not None
+    assert policy.vixSpikeHalt.threshold == 32
+    assert policy.vixSpikeHalt.streakBars == 2
+    assert policy.vixSpikeHalt.cooldownBars == 2
 
 
 def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> (

@@ -716,6 +716,11 @@ const riskPreset: StrategyRiskPolicyPreset = {
       drawdownReducePct: 8,
       drawdownBlockPct: 12,
     },
+    vixSpikeHalt: {
+      threshold: 32,
+      streakBars: 2,
+      cooldownBars: 2,
+    },
     reentry: {
       cooldownBars: 0,
       requireApproval: false,

@@ -1848,6 +1848,17 @@
             }
           ],
           "default": null
+        },
+        "vixSpikeHalt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskVixSpikeHaltPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "title": "StrategyRiskPolicy",
@@ -2055,6 +2066,31 @@
         }
       },
       "title": "StrategyRiskTradingPermissions",
+      "type": "object"
+    },
+    "StrategyRiskVixSpikeHaltPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "cooldownBars": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
+        "streakBars": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Streakbars",
+          "type": "integer"
+        },
+        "threshold": {
+          "default": 32.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "title": "StrategyRiskVixSpikeHaltPolicy",
       "type": "object"
     },
     "UniverseCondition": {

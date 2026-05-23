@@ -336,6 +336,11 @@ Inline scratch configs remain valid for research notes, one-off experiments, and
     "exposureLimits": {
       "drawdownReducePct": 8,
       "drawdownBlockPct": 12
+    },
+    "vixSpikeHalt": {
+      "threshold": 32,
+      "streakBars": 2,
+      "cooldownBars": 2
     }
   },
   "exits": [
@@ -349,6 +354,7 @@ Validation notes:
 - `ConfigReference.version` and `ConfigIdentity.version` are positive integers.
 - `ConfigIdentity.status` is `draft`, `active`, or `deprecated`.
 - `ConfigIdentity.intendedUse` is `research`, `validation`, or `production_candidate`.
+- `StrategyRiskPolicy.vixSpikeHalt` stores a configurable VIX spike halt threshold, streak length, and post-halt cooldown; runtime enforcement is owned by downstream evaluators.
 - Reusable preset wrappers use `extra: forbid`; unknown fields should fail validation instead of being silently ignored.
 - Published reusable configs are immutable by `name + version`; changes require a new version.
 

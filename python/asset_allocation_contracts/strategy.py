@@ -1008,6 +1008,14 @@ class StrategyRiskAuditPolicy(BaseModel):
     recordTriggeredOverlays: bool = True
 
 
+class StrategyRiskVixSpikeHaltPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    threshold: float = Field(default=32.0, gt=0.0)
+    streakBars: int = Field(default=2, ge=1)
+    cooldownBars: int = Field(default=2, ge=1)
+
+
 class StrategyRiskPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -1022,6 +1030,7 @@ class StrategyRiskPolicy(BaseModel):
     tradingPermissions: StrategyRiskTradingPermissions | None = None
     liquidityLimits: StrategyRiskLiquidityLimits | None = None
     overlays: StrategyRiskOverlaySet | None = None
+    vixSpikeHalt: StrategyRiskVixSpikeHaltPolicy | None = None
     dataQualityGates: StrategyRiskDataQualityGates | None = None
     audit: StrategyRiskAuditPolicy | None = None
 
@@ -1057,6 +1066,7 @@ class StrategyRiskPolicy(BaseModel):
                     self.tradingPermissions,
                     self.liquidityLimits,
                     self.overlays,
+                    self.vixSpikeHalt,
                     self.dataQualityGates,
                     self.audit,
                 )

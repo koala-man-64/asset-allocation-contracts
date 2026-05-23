@@ -339,6 +339,7 @@ export interface StrategyRiskPolicy {
   tradingPermissions?: StrategyRiskTradingPermissions | null;
   liquidityLimits?: StrategyRiskLiquidityLimits | null;
   overlays?: StrategyRiskOverlaySet | null;
+  vixSpikeHalt?: StrategyRiskVixSpikeHaltPolicy | null;
   dataQualityGates?: StrategyRiskDataQualityGates | null;
   audit?: StrategyRiskAuditPolicy | null;
 }
@@ -418,6 +419,12 @@ export interface StrategyRiskOverlayRule {
   exposureReductionPct?: number | null;
   cooldownBars: number;
   requireApproval: boolean;
+}
+
+export interface StrategyRiskVixSpikeHaltPolicy {
+  threshold: number;
+  streakBars: number;
+  cooldownBars: number;
 }
 
 export interface StrategyRiskDataQualityGates {
