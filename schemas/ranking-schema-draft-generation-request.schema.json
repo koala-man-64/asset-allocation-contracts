@@ -98,6 +98,7 @@
         }
       ],
       "default": null,
+      "description": "Deprecated legacy hint for ranking-schema universe selection. Strategy-owned universe selection drives ranking execution.",
       "title": "Universeconfignamehint"
     }
   },

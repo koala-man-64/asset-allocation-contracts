@@ -713,7 +713,7 @@
           "title": "Sort",
           "type": "string"
         },
-        "universe_name": {
+        "strategy_name": {
           "anyOf": [
             {
               "maxLength": 128,
@@ -724,20 +724,7 @@
             }
           ],
           "default": null,
-          "title": "Universe Name"
-        },
-        "universe_version": {
-          "anyOf": [
-            {
-              "minimum": 1,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Universe Version"
+          "title": "Strategy Name"
         }
       },
       "title": "StockScreenerRequest",

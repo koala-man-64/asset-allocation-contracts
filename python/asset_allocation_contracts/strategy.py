@@ -1370,7 +1370,15 @@ class RankingSchemaDraftGenerationRequest(BaseModel):
     plaintext: str = Field(..., min_length=1, max_length=4000)
     nameHint: str | None = Field(default=None, min_length=1, max_length=128)
     descriptionHint: str | None = Field(default=None, min_length=1, max_length=2048)
-    universeConfigNameHint: str | None = Field(default=None, min_length=1, max_length=128)
+    universeConfigNameHint: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=128,
+        description=(
+            "Deprecated legacy hint for ranking-schema universe selection. "
+            "Strategy-owned universe selection drives ranking execution."
+        ),
+    )
     intendedUse: ReusableConfigIntendedUse | None = None
     previewStrategyName: str | None = Field(default=None, min_length=1, max_length=128)
     previewAsOfDate: date | None = None

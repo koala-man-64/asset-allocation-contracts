@@ -554,6 +554,7 @@ export interface RankingSchemaRevision {
 }
 
 export interface RankingSchemaConfig {
+  universeConfigName?: string | null;
   groups: RankingGroup[];
   overallTransforms: RankingTransform[];
 }
@@ -2130,10 +2131,9 @@ export interface StockScreenerRequest {
   offset: number;
   sort: StockScreenerSortKey;
   direction: RankingDirection;
+  strategy_name?: string | null;
   ranking_schema_name?: string | null;
   ranking_schema_version?: number | null;
-  universe_name?: string | null;
-  universe_version?: number | null;
   sectors?: string[] | null;
   industries?: string[] | null;
   countries?: string[] | null;

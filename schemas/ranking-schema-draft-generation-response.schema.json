@@ -292,6 +292,21 @@
           },
           "title": "Overalltransforms",
           "type": "array"
+        },
+        "universeConfigName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Legacy optional ranking-universe reference. Strategy-owned universe selection drives ranking execution and refresh.",
+          "title": "Universeconfigname"
         }
       },
       "required": [

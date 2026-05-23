@@ -62,10 +62,8 @@ from asset_allocation_contracts.broker_accounts import (
     RefreshBrokerAccountRequest,
 )
 from asset_allocation_contracts.deployment_provenance import (
-    DeploymentPackageVersion,
     DeploymentProvenanceSummary,
     DeploymentProvenanceView,
-    DeploymentVersionMatrix,
     PipelineRunSummary,
     ResourceDeploymentVersion,
 )
@@ -404,6 +402,7 @@ def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
     try:
         RankingSchemaConfig.model_validate(
             {
+                "universeConfigName": "us-large-liquid",
                 "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
                 "groups": [
                     {
@@ -429,6 +428,7 @@ def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
 
 def test_component_configs_accept_regime_gates() -> None:
     ranking = RankingSchemaConfig(
+        universeConfigName="us-large-liquid",
         groups=[
             {
                 "name": "momentum",
@@ -462,6 +462,7 @@ def test_component_configs_accept_regime_gates() -> None:
     )
     position = StrategyPositionPolicy(regimeGate={"blockedRegimes": ["trending_down"]})
 
+    assert ranking.universeConfigName == "us-large-liquid"
     assert rebalance.regimeGate is not None
     assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
     assert position.regimeGate is not None
@@ -628,10 +629,9 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
         min_return_5d=0.01,
         max_return_5d=0.08,
         sort="ranking_score",
+        strategy_name="quality-trend",
         ranking_schema_name="  quality-momentum  ",
         ranking_schema_version=2,
-        universe_name="  core-us-equities  ",
-        universe_version=4,
     )
     response = StockScreenerResponse(
         asOf="2026-05-04",
@@ -690,8 +690,6 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
     assert request.q == "ms"
     assert request.ranking_schema_name == "quality-momentum"
     assert request.ranking_schema_version == 2
-    assert request.universe_name == "core-us-equities"
-    assert request.universe_version == 4
     assert request.sectors == ["Technology", "Healthcare"]
     assert request.countries == ["US", "CA"]
     assert response.rows[0].symbol == "MSFT"
@@ -730,20 +728,16 @@ def test_stock_screener_contract_rejects_ranking_version_without_name() -> None:
         )
 
 
-def test_stock_screener_contract_rejects_ranked_requests_without_universe_pin() -> None:
-    for invalid_payload in (
-        {"ranking_schema_name": "quality-momentum"},
-        {"ranking_schema_name": "quality-momentum", "universe_name": "core-us-equities"},
-        {"ranking_schema_name": "quality-momentum", "universe_version": 2},
-    ):
-        try:
-            StockScreenerRequest.model_validate(invalid_payload)
-        except Exception as exc:
-            assert "universe_name" in str(exc) or "universe_version" in str(exc)
-        else:
-            raise AssertionError(
-                "Expected ranked screener requests without a universe pin to fail validation."
-            )
+def test_stock_screener_contract_rejects_ranking_without_strategy_context() -> None:
+    try:
+        StockScreenerRequest(ranking_schema_name="quality", ranking_schema_version=2)
+    except Exception as exc:
+        assert "ranking_schema_name" in str(exc)
+        assert "strategy_name" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected ranking schema selection without strategy context to fail validation."
+        )
 
 
 def test_config_reference_rejects_blank_name() -> None:
@@ -1831,7 +1825,7 @@ def test_ranking_schema_requires_groups() -> None:
         raise AssertionError("Expected validation failure for empty groups.")
 
 
-def test_ranking_schema_accepts_group_payload() -> None:
+def test_ranking_schema_accepts_missing_legacy_universe_reference() -> None:
     payload = RankingSchemaConfig(
         groups=[
             RankingGroup(
@@ -1847,7 +1841,29 @@ def test_ranking_schema_accepts_group_payload() -> None:
             )
         ],
     )
+
+    assert payload.universeConfigName is None
+
+
+def test_ranking_schema_accepts_group_payload() -> None:
+    payload = RankingSchemaConfig(
+        universeConfigName="core-universe",
+        groups=[
+            RankingGroup(
+                name="quality",
+                factors=[
+                    {
+                        "name": "pe",
+                        "table": "market_data",
+                        "column": "close",
+                        "weight": 1.0,
+                    }
+                ],
+            )
+        ],
+    )
     assert payload.groups[0].name == "quality"
+    assert payload.universeConfigName == "core-universe"
 
 
 def test_universe_condition_uses_governed_field_catalog() -> None:
@@ -2277,6 +2293,7 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
                 "intendedUse": "research",
             },
             "config": {
+                "universeConfigName": "us-large-liquid",
                 "groups": [
                     {
                         "name": "momentum",
@@ -2350,6 +2367,7 @@ def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -
                 "intendedUse": "research",
             },
             "config": {
+                "universeConfigName": "us-large-liquid",
                 "groups": [
                     {
                         "name": "momentum",
@@ -2522,12 +2540,6 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
         resourceType="Microsoft.App/containerApps",
         environment="prod",
         repo="asset-allocation-ui",
-        packageVersion="0.0.1",
-        versionMatrix=DeploymentVersionMatrix(
-            contracts="3.49.0",
-            runtimeCommon="2.14.0",
-            ui="0.0.1",
-        ),
         artifactDigest="sha256:abc123",
         sourceSha="420db20a1b1a5a3d70f26c8c23e2fa82a283ca82",
         releaseRun=latest_run,
@@ -2542,50 +2554,14 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
         status="available",
         result="consistent",
         summary=DeploymentProvenanceSummary(totalResources=1, consistent=1),
-        latestPackages=[
-            DeploymentPackageVersion(
-                repo="asset-allocation-contracts",
-                packageName="asset-allocation-contracts",
-                version="3.49.0",
-                versionMatrix=DeploymentVersionMatrix(contracts="3.49.0"),
-                releaseRun=latest_run,
-                checkedAt="2026-05-14T02:05:00Z",
-            ),
-            DeploymentPackageVersion(
-                repo="asset-allocation-runtime-common",
-                packageName="asset-allocation-runtime-common",
-                version="2.14.0",
-                versionMatrix=DeploymentVersionMatrix(
-                    contracts="3.49.0",
-                    runtimeCommon="2.14.0",
-                ),
-                releaseRun=latest_run,
-                checkedAt="2026-05-14T02:05:00Z",
-            ),
-        ],
         resources=[resource],
     )
     schema = DeploymentProvenanceView.model_json_schema()
 
     assert view.resources[0].resourceName == "vg-aa-prod-ui"
-    assert view.resources[0].packageVersion == "0.0.1"
-    assert view.resources[0].versionMatrix is not None
-    assert view.resources[0].versionMatrix.contracts == "3.49.0"
     assert view.resources[0].latestSuccessfulRun is not None
     assert view.resources[0].latestSuccessfulRun.runId == 1205
-    assert view.latestPackages[1].versionMatrix is not None
-    assert view.latestPackages[1].versionMatrix.contracts == "3.49.0"
     assert view.summary.consistent == 1
-    assert (
-        schema["properties"]["latestPackages"]["items"]["$ref"]
-        == "#/$defs/DeploymentPackageVersion"
-    )
-    assert (
-        schema["$defs"]["DeploymentPackageVersion"]["properties"]["versionMatrix"]["anyOf"][0][
-            "$ref"
-        ]
-        == "#/$defs/DeploymentVersionMatrix"
-    )
     assert schema["properties"]["resources"]["items"]["$ref"] == "#/$defs/ResourceDeploymentVersion"
 
 

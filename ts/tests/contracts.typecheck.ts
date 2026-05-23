@@ -63,7 +63,6 @@ import type {
   RefreshBrokerAccountRequest,
   ConfigIdentity,
   ConfigReference,
-  DeploymentProvenanceView,
   ExitPolicyPinImpactRequest,
   ExitPolicyPinImpactResponse,
   ExitPolicyPreset,
@@ -352,10 +351,9 @@ const stockScreenerRequest: StockScreenerRequest = {
   offset: 0,
   sort: "ranking_score",
   direction: "desc",
+  strategy_name: "quality-trend",
   ranking_schema_name: "quality_momentum",
   ranking_schema_version: 2,
-  universe_name: "core_us_equities",
-  universe_version: 4,
   sectors: ["Technology"],
   has_silver: true,
   min_volume_pct_rank_252d: 0.6,
@@ -596,6 +594,7 @@ const rankingPreset: RankingSchemaPreset = {
     thesis: "Pair durable quality with medium-term price strength.",
   },
   config: {
+    universeConfigName: "us_large_liquid",
     groups: [
       {
         name: "momentum",
@@ -1714,67 +1713,6 @@ const pullRequestSync: PullRequestSyncView = {
   errors: [],
 };
 
-const deploymentProvenance: DeploymentProvenanceView = {
-  checkedAt: "2026-05-23T12:00:00Z",
-  status: "available",
-  result: "consistent",
-  summary: {
-    totalResources: 1,
-    consistent: 1,
-    stale: 0,
-    mismatch: 0,
-    running: 0,
-    unknown: 0,
-    unavailable: 0,
-    error: 0,
-  },
-  latestPackages: [
-    {
-      repo: "asset-allocation-contracts",
-      packageName: "asset-allocation-contracts",
-      version: "3.49.0",
-      versionMatrix: { contracts: "3.49.0" },
-      checkedAt: "2026-05-23T12:00:00Z",
-      links: [],
-      warnings: [],
-    },
-    {
-      repo: "asset-allocation-runtime-common",
-      packageName: "asset-allocation-runtime-common",
-      version: "2.14.0",
-      versionMatrix: {
-        contracts: "3.49.0",
-        runtimeCommon: "2.14.0",
-      },
-      checkedAt: "2026-05-23T12:00:00Z",
-      links: [],
-      warnings: [],
-    },
-  ],
-  resources: [
-    {
-      resourceName: "asset-allocation-ui-release",
-      resourceType: "Microsoft.App/containerApps",
-      environment: "prod",
-      repo: "asset-allocation-ui",
-      packageVersion: "0.0.1",
-      versionMatrix: {
-        contracts: "3.49.0",
-        runtimeCommon: "2.14.0",
-        ui: "0.0.1",
-      },
-      status: "available",
-      result: "consistent",
-      checkedAt: "2026-05-23T12:00:00Z",
-      links: [],
-      warnings: [],
-    },
-  ],
-  links: [],
-  warnings: [],
-  errors: [],
-};
-
 const pipelineSync: PipelineSyncView = {
   checkedAt: "2026-05-21T12:00:00Z",
   status: "available",
@@ -1916,7 +1854,6 @@ void runSummary;
 void workReviewItem;
 void runReview;
 void pullRequestSync;
-void deploymentProvenance;
 void pipelineSync;
 void pipelineQueue;
 void pipelineAction;

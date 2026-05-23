@@ -146,8 +146,25 @@ class RankingGroup(BaseModel):
 class RankingSchemaConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    universeConfigName: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=128,
+        description=(
+            "Legacy optional ranking-universe reference. "
+            "Strategy-owned universe selection drives ranking execution and refresh."
+        ),
+    )
     groups: list[RankingGroup] = Field(..., min_length=1)
     overallTransforms: list[RankingTransform] = Field(default_factory=list)
+
+    @field_validator("universeConfigName", mode="before")
+    @classmethod
+    def normalize_universe_config_name(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = str(value).strip()
+        return normalized or None
 
     @model_validator(mode="after")
     def validate_unique_group_names(self) -> "RankingSchemaConfig":
