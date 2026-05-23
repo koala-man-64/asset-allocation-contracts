@@ -1,0 +1,284 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "activity_date": {
+      "format": "date",
+      "title": "Activity Date",
+      "type": "string"
+    },
+    "activity_label": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Activity Label",
+      "type": "string"
+    },
+    "activity_type": {
+      "default": "unknown",
+      "enum": [
+        "purchase",
+        "sale",
+        "mixed",
+        "mention",
+        "filing",
+        "unavailable",
+        "unknown"
+      ],
+      "title": "Activity Type",
+      "type": "string"
+    },
+    "actor_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Actor Name"
+    },
+    "amount_bucket_label": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Bucket Label"
+    },
+    "amount_lower_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Lower Usd"
+    },
+    "amount_upper_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Upper Usd"
+    },
+    "asset_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asset Name"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "date_basis": {
+      "enum": [
+        "filed_at",
+        "notified_at",
+        "uploaded",
+        "event_time",
+        "as_of_date",
+        "unknown"
+      ],
+      "title": "Date Basis",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_time": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Event Time"
+    },
+    "issuer_name": {
+      "anyOf": [
+        {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Issuer Name"
+    },
+    "late_filing_days": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Late Filing Days"
+    },
+    "mapping_status": {
+      "default": "unknown",
+      "enum": [
+        "mapped",
+        "pending_review",
+        "ignored",
+        "unmapped",
+        "unknown"
+      ],
+      "title": "Mapping Status",
+      "type": "string"
+    },
+    "quality_flags": {
+      "items": {
+        "enum": [
+          "stale_source",
+          "missing_daily_measure",
+          "missing_symbol",
+          "unmapped_symbol",
+          "low_confidence_mapping",
+          "missing_amount_proxy",
+          "amount_range_midpoint_proxy",
+          "notional_proxy",
+          "mentions_not_dollars",
+          "source_unavailable"
+        ],
+        "type": "string"
+      },
+      "title": "Quality Flags",
+      "type": "array"
+    },
+    "size_unit": {
+      "enum": [
+        "usd_midpoint_proxy",
+        "usd_notional_proxy",
+        "mentions",
+        "activity_count",
+        "unavailable"
+      ],
+      "title": "Size Unit",
+      "type": "string"
+    },
+    "size_value": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Size Value"
+    },
+    "source": {
+      "enum": [
+        "congressional_trading",
+        "insider_trading",
+        "wall_street_bets"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "source_detail": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Detail"
+    },
+    "symbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Symbol"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    }
+  },
+  "required": [
+    "event_id",
+    "source",
+    "activity_date",
+    "date_basis",
+    "activity_label",
+    "size_unit"
+  ],
+  "title": "SignalActivityEvent",
+  "type": "object"
+}

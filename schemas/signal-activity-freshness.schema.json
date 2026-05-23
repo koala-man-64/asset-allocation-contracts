@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "latest_activity_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latest Activity Date"
+    },
+    "latest_updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latest Updated At"
+    },
+    "source": {
+      "enum": [
+        "congressional_trading",
+        "insider_trading",
+        "wall_street_bets"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "stale": {
+      "default": false,
+      "title": "Stale",
+      "type": "boolean"
+    },
+    "stale_after_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stale After Date"
+    },
+    "unavailable_reason": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unavailable Reason"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "title": "SignalActivityFreshness",
+  "type": "object"
+}

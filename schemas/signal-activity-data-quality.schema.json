@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "excluded_tables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Excluded Tables",
+      "type": "array"
+    },
+    "mapped_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Mapped Symbol Count",
+      "type": "integer"
+    },
+    "missing_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Missing Symbol Count",
+      "type": "integer"
+    },
+    "quality_flags": {
+      "items": {
+        "enum": [
+          "stale_source",
+          "missing_daily_measure",
+          "missing_symbol",
+          "unmapped_symbol",
+          "low_confidence_mapping",
+          "missing_amount_proxy",
+          "amount_range_midpoint_proxy",
+          "notional_proxy",
+          "mentions_not_dollars",
+          "source_unavailable"
+        ],
+        "type": "string"
+      },
+      "title": "Quality Flags",
+      "type": "array"
+    },
+    "row_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Row Count",
+      "type": "integer"
+    },
+    "source": {
+      "enum": [
+        "congressional_trading",
+        "insider_trading",
+        "wall_street_bets"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "unavailable_metric_columns": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unavailable Metric Columns",
+      "type": "array"
+    },
+    "unmapped_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Unmapped Symbol Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "title": "SignalActivityDataQuality",
+  "type": "object"
+}

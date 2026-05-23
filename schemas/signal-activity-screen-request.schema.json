@@ -1,0 +1,142 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "activity_types": {
+      "items": {
+        "enum": [
+          "purchase",
+          "sale",
+          "mixed",
+          "mention",
+          "filing",
+          "unavailable",
+          "unknown"
+        ],
+        "type": "string"
+      },
+      "title": "Activity Types",
+      "type": "array"
+    },
+    "from_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "From Date"
+    },
+    "limit": {
+      "default": 250,
+      "maximum": 1000,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    },
+    "mapping_statuses": {
+      "items": {
+        "enum": [
+          "mapped",
+          "pending_review",
+          "ignored",
+          "unmapped",
+          "unknown"
+        ],
+        "type": "string"
+      },
+      "title": "Mapping Statuses",
+      "type": "array"
+    },
+    "minimum_count": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minimum Count"
+    },
+    "minimum_size": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Minimum Size"
+    },
+    "offset": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Offset",
+      "type": "integer"
+    },
+    "query": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Query"
+    },
+    "sources": {
+      "items": {
+        "enum": [
+          "congressional_trading",
+          "insider_trading",
+          "wall_street_bets"
+        ],
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "symbol": {
+      "anyOf": [
+        {
+          "maxLength": 32,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Symbol"
+    },
+    "to_date": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "To Date"
+    }
+  },
+  "title": "SignalActivityScreenRequest",
+  "type": "object"
+}

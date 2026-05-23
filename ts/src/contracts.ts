@@ -3903,6 +3903,105 @@ export interface GovernmentSignalPortfolioIssuerExposure {
   alerts: GovernmentSignalAlert[];
 }
 
+export interface SignalActivityPlotPoint {
+  source: 'congressional_trading' | 'insider_trading' | 'wall_street_bets';
+  activity_date: string;
+  date_basis: 'filed_at' | 'notified_at' | 'uploaded' | 'event_time' | 'as_of_date' | 'unknown';
+  activity_count: number;
+  size_value?: number | null;
+  size_unit: 'usd_midpoint_proxy' | 'usd_notional_proxy' | 'mentions' | 'activity_count' | 'unavailable';
+  active_symbol_count: number;
+  mapped_symbol_count: number;
+  missing_symbol_count: number;
+  buy_count: number;
+  sell_count: number;
+  mention_count: number;
+  amount_lower_usd_sum?: number | null;
+  amount_upper_usd_sum?: number | null;
+  amount_midpoint_proxy_usd_sum?: number | null;
+  net_amount_midpoint_proxy_usd?: number | null;
+  notional_proxy_usd?: number | null;
+  quality_flags: ('stale_source' | 'missing_daily_measure' | 'missing_symbol' | 'unmapped_symbol' | 'low_confidence_mapping' | 'missing_amount_proxy' | 'amount_range_midpoint_proxy' | 'notional_proxy' | 'mentions_not_dollars' | 'source_unavailable')[];
+}
+
+export interface SignalActivityPlot {
+  source: 'congressional_trading' | 'insider_trading' | 'wall_street_bets';
+  label: string;
+  size_unit: 'usd_midpoint_proxy' | 'usd_notional_proxy' | 'mentions' | 'activity_count' | 'unavailable';
+  points: SignalActivityPlotPoint[];
+  unavailable_reason?: string | null;
+  quality_flags: ('stale_source' | 'missing_daily_measure' | 'missing_symbol' | 'unmapped_symbol' | 'low_confidence_mapping' | 'missing_amount_proxy' | 'amount_range_midpoint_proxy' | 'notional_proxy' | 'mentions_not_dollars' | 'source_unavailable')[];
+}
+
+export interface SignalActivityEvent {
+  event_id: string;
+  source: 'congressional_trading' | 'insider_trading' | 'wall_street_bets';
+  activity_date: string;
+  date_basis: 'filed_at' | 'notified_at' | 'uploaded' | 'event_time' | 'as_of_date' | 'unknown';
+  event_time?: string | null;
+  symbol?: string | null;
+  issuer_name?: string | null;
+  actor_name?: string | null;
+  asset_name?: string | null;
+  activity_type: 'purchase' | 'sale' | 'mixed' | 'mention' | 'filing' | 'unavailable' | 'unknown';
+  activity_label: string;
+  size_value?: number | null;
+  size_unit: 'usd_midpoint_proxy' | 'usd_notional_proxy' | 'mentions' | 'activity_count' | 'unavailable';
+  amount_lower_usd?: number | null;
+  amount_upper_usd?: number | null;
+  amount_bucket_label?: string | null;
+  source_detail?: string | null;
+  mapping_status: 'mapped' | 'pending_review' | 'ignored' | 'unmapped' | 'unknown';
+  confidence?: number | null;
+  late_filing_days?: number | null;
+  quality_flags: ('stale_source' | 'missing_daily_measure' | 'missing_symbol' | 'unmapped_symbol' | 'low_confidence_mapping' | 'missing_amount_proxy' | 'amount_range_midpoint_proxy' | 'notional_proxy' | 'mentions_not_dollars' | 'source_unavailable')[];
+  updated_at?: string | null;
+}
+
+export interface SignalActivityFreshness {
+  source: 'congressional_trading' | 'insider_trading' | 'wall_street_bets';
+  latest_activity_date?: string | null;
+  latest_updated_at?: string | null;
+  stale: boolean;
+  stale_after_date?: string | null;
+  unavailable_reason?: string | null;
+}
+
+export interface SignalActivityDataQuality {
+  source: 'congressional_trading' | 'insider_trading' | 'wall_street_bets';
+  row_count: number;
+  mapped_symbol_count: number;
+  missing_symbol_count: number;
+  unmapped_symbol_count: number;
+  unavailable_metric_columns: string[];
+  excluded_tables: string[];
+  quality_flags: ('stale_source' | 'missing_daily_measure' | 'missing_symbol' | 'unmapped_symbol' | 'low_confidence_mapping' | 'missing_amount_proxy' | 'amount_range_midpoint_proxy' | 'notional_proxy' | 'mentions_not_dollars' | 'source_unavailable')[];
+}
+
+export interface SignalActivityScreenRequest {
+  from_date?: string | null;
+  to_date?: string | null;
+  sources: ('congressional_trading' | 'insider_trading' | 'wall_street_bets')[];
+  symbol?: string | null;
+  query?: string | null;
+  activity_types: ('purchase' | 'sale' | 'mixed' | 'mention' | 'filing' | 'unavailable' | 'unknown')[];
+  mapping_statuses: ('mapped' | 'pending_review' | 'ignored' | 'unmapped' | 'unknown')[];
+  minimum_size?: number | null;
+  minimum_count?: number | null;
+  limit: number;
+  offset: number;
+}
+
+export interface SignalActivityScreenResponse {
+  plots: SignalActivityPlot[];
+  events: SignalActivityEvent[];
+  freshness: SignalActivityFreshness[];
+  data_quality: SignalActivityDataQuality[];
+  total_events: number;
+  limit: number;
+  offset: number;
+}
+
 export interface AiChatRequest {
   prompt: string;
   role?: string | null;

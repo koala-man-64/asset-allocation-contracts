@@ -10,6 +10,7 @@ from asset_allocation_contracts.job_metadata import *
 from asset_allocation_contracts.kalshi_accounts import *
 from asset_allocation_contracts.market_layout import *
 from asset_allocation_contracts.market_history import *
+from asset_allocation_contracts.market_signals import *
 from asset_allocation_contracts.notifications import *
 from asset_allocation_contracts.options import *
 from asset_allocation_contracts.portfolio import *

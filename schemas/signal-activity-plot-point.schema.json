@@ -1,0 +1,188 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "active_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Active Symbol Count",
+      "type": "integer"
+    },
+    "activity_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Activity Count",
+      "type": "integer"
+    },
+    "activity_date": {
+      "format": "date",
+      "title": "Activity Date",
+      "type": "string"
+    },
+    "amount_lower_usd_sum": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Lower Usd Sum"
+    },
+    "amount_midpoint_proxy_usd_sum": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Midpoint Proxy Usd Sum"
+    },
+    "amount_upper_usd_sum": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Amount Upper Usd Sum"
+    },
+    "buy_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Buy Count",
+      "type": "integer"
+    },
+    "date_basis": {
+      "enum": [
+        "filed_at",
+        "notified_at",
+        "uploaded",
+        "event_time",
+        "as_of_date",
+        "unknown"
+      ],
+      "title": "Date Basis",
+      "type": "string"
+    },
+    "mapped_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Mapped Symbol Count",
+      "type": "integer"
+    },
+    "mention_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Mention Count",
+      "type": "integer"
+    },
+    "missing_symbol_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Missing Symbol Count",
+      "type": "integer"
+    },
+    "net_amount_midpoint_proxy_usd": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Net Amount Midpoint Proxy Usd"
+    },
+    "notional_proxy_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notional Proxy Usd"
+    },
+    "quality_flags": {
+      "items": {
+        "enum": [
+          "stale_source",
+          "missing_daily_measure",
+          "missing_symbol",
+          "unmapped_symbol",
+          "low_confidence_mapping",
+          "missing_amount_proxy",
+          "amount_range_midpoint_proxy",
+          "notional_proxy",
+          "mentions_not_dollars",
+          "source_unavailable"
+        ],
+        "type": "string"
+      },
+      "title": "Quality Flags",
+      "type": "array"
+    },
+    "sell_count": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Sell Count",
+      "type": "integer"
+    },
+    "size_unit": {
+      "enum": [
+        "usd_midpoint_proxy",
+        "usd_notional_proxy",
+        "mentions",
+        "activity_count",
+        "unavailable"
+      ],
+      "title": "Size Unit",
+      "type": "string"
+    },
+    "size_value": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Size Value"
+    },
+    "source": {
+      "enum": [
+        "congressional_trading",
+        "insider_trading",
+        "wall_street_bets"
+      ],
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source",
+    "activity_date",
+    "date_basis",
+    "size_unit"
+  ],
+  "title": "SignalActivityPlotPoint",
+  "type": "object"
+}
