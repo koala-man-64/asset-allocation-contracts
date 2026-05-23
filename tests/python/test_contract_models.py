@@ -1805,6 +1805,32 @@ def test_universe_condition_uses_governed_field_catalog() -> None:
     assert any(field.id == "security.sector" for field in UNIVERSE_FIELD_DEFINITIONS)
 
 
+def test_universe_condition_accepts_security_symbol_filter() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "and",
+            "clauses": [
+                {"field": "security.symbol", "operator": "eq", "value": "SPY"},
+            ],
+        }
+    )
+
+    clause = definition.root.clauses[0]
+    assert isinstance(clause, UniverseCondition)
+    assert clause.field == "security.symbol"
+    assert clause.value == "SPY"
+    assert UNIVERSE_FIELD_DEFINITION_BY_ID["security.symbol"].valueKind == "string"
+
+
+def test_universe_condition_rejects_numeric_operator_for_security_symbol() -> None:
+    try:
+        UniverseCondition(field="security.symbol", operator="gt", value="SPY")
+    except ValueError as exc:
+        assert "gt is not supported for field 'security.symbol'" in str(exc)
+    else:
+        raise AssertionError("Expected security.symbol to reject numeric comparison operators.")
+
+
 def test_universe_condition_accepts_us_liquid_equity_filter_fields() -> None:
     definition = UniverseDefinition(
         root={
@@ -1941,11 +1967,13 @@ def test_universe_condition_rejects_unknown_field() -> None:
 
 
 def test_universe_catalog_response_uses_governed_field_definitions() -> None:
-    payload = UniverseCatalogResponse(fields=list(UNIVERSE_FIELD_DEFINITIONS[:2]))
+    payload = UniverseCatalogResponse(fields=list(UNIVERSE_FIELD_DEFINITIONS[:3]))
+    fields_by_id = {field.id: field for field in payload.fields}
 
     assert payload.source == "postgres_gold"
     assert payload.fields[0].id == "market.close"
-    assert payload.fields[1].label == "Security Active Flag"
+    assert fields_by_id["security.symbol"].label == "Security Symbol"
+    assert fields_by_id["security.is_active"].label == "Security Active Flag"
 
 
 def test_universe_preview_response_uses_governed_field_ids() -> None:

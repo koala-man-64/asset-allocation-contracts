@@ -118,6 +118,7 @@ UniverseConditionOperator = Literal[
 ]
 UniverseFieldId = Literal[
     "market.close",
+    "security.symbol",
     "security.is_active",
     "security.sector",
     "security.delisted_at",
@@ -175,6 +176,12 @@ UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
         label="Close Price",
         valueKind="number",
         operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="security.symbol",
+        label="Security Symbol",
+        valueKind="string",
+        operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
     ),
     UniverseFieldDefinition(
         id="security.is_active",

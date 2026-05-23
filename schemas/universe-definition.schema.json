@@ -6,6 +6,7 @@
         "field": {
           "enum": [
             "market.close",
+            "security.symbol",
             "security.is_active",
             "security.sector",
             "security.delisted_at",
