@@ -2,6 +2,15 @@ from __future__ import annotations
 
 import os
 
+from asset_allocation_contracts.market_layout import (
+    MARKET_LAYOUT_DATE_PARTITIONED_V1,
+    MARKET_LAYOUT_SYMBOL_HASH_SHARD_V1,
+    market_symbol_hash_shard_key,
+    normalize_market_date,
+    normalize_market_layout_layer,
+    normalize_market_layout_version,
+)
+
 ALPHABET_BUCKETS: tuple[str, ...] = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 FINANCE_ALPHA26_SUBDOMAINS: tuple[str, ...] = (
     "balance_sheet",
@@ -47,6 +56,66 @@ class DataPaths:
     @staticmethod
     def get_gold_market_bucket_path(bucket: str) -> str:
         return f"market/buckets/{str(bucket).strip().upper()}"
+
+    @staticmethod
+    def get_bronze_market_date_partition_path(observation_date, *, vendor: str = "massive") -> str:
+        clean_vendor = str(vendor or "").strip().lower().replace(" ", "_").replace("-", "_")
+        if not clean_vendor:
+            raise ValueError("vendor must be non-empty.")
+        clean_date = normalize_market_date(observation_date)
+        return (
+            f"market-data/layouts/{MARKET_LAYOUT_DATE_PARTITIONED_V1}/"
+            f"vendor={clean_vendor}/observation_date={clean_date}"
+        )
+
+    @staticmethod
+    def get_silver_market_date_partition_path(observation_date) -> str:
+        clean_date = normalize_market_date(observation_date)
+        return f"market-data/layouts/{MARKET_LAYOUT_DATE_PARTITIONED_V1}/observation_date={clean_date}"
+
+    @staticmethod
+    def get_gold_market_feature_shard_path(
+        feature_date,
+        *,
+        symbol: str | None = None,
+        shard_key: str | None = None,
+        shard_count: int = 64,
+    ) -> str:
+        clean_date = normalize_market_date(feature_date)
+        resolved_shard_key = str(shard_key or "").strip()
+        if not resolved_shard_key:
+            if symbol is None:
+                raise ValueError("symbol or shard_key is required.")
+            resolved_shard_key = market_symbol_hash_shard_key(symbol, shard_count)
+        return (
+            f"market/layouts/{MARKET_LAYOUT_SYMBOL_HASH_SHARD_V1}/"
+            f"feature_date={clean_date}/shard_key={resolved_shard_key}"
+        )
+
+    @staticmethod
+    def get_market_layout_manifest_path(
+        *,
+        layer: str,
+        layout_version: str,
+        observation_date=None,
+        date_start=None,
+        date_end=None,
+        shard_key: str | None = None,
+    ) -> str:
+        clean_layer = normalize_market_layout_layer(layer)
+        clean_layout = normalize_market_layout_version(layout_version)
+        fragments = [f"system/market-layouts/{clean_layer}/{clean_layout}"]
+        if observation_date is not None:
+            fragments.append(f"observation_date={normalize_market_date(observation_date)}")
+        if date_start is not None:
+            fragments.append(f"date_start={normalize_market_date(date_start)}")
+        if date_end is not None:
+            fragments.append(f"date_end={normalize_market_date(date_end)}")
+        clean_shard = str(shard_key or "").strip()
+        if clean_shard:
+            fragments.append(f"shard_key={clean_shard}")
+        fragments.append("manifest.json")
+        return "/".join(fragments)
 
     @staticmethod
     def get_technical_analysis_path(ticker: str) -> str:
