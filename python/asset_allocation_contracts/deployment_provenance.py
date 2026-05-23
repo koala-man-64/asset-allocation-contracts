@@ -64,6 +64,29 @@ class PipelineRunSummary(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class DeploymentVersionMatrix(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    contracts: str | None = Field(default=None, min_length=1, max_length=80)
+    runtimeCommon: str | None = Field(default=None, min_length=1, max_length=80)
+    controlPlane: str | None = Field(default=None, min_length=1, max_length=80)
+    jobs: str | None = Field(default=None, min_length=1, max_length=80)
+    ui: str | None = Field(default=None, min_length=1, max_length=80)
+
+
+class DeploymentPackageVersion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    repo: str = Field(min_length=1, max_length=160)
+    packageName: str = Field(min_length=1, max_length=160)
+    version: str | None = Field(default=None, min_length=1, max_length=80)
+    versionMatrix: DeploymentVersionMatrix | None = None
+    releaseRun: PipelineRunSummary | None = None
+    checkedAt: datetime
+    links: list[DeploymentProvenanceLink] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class ResourceDeploymentVersion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -71,6 +94,8 @@ class ResourceDeploymentVersion(BaseModel):
     resourceType: str = Field(min_length=1, max_length=160)
     environment: str = Field(min_length=1, max_length=80)
     repo: str = Field(min_length=1, max_length=160)
+    packageVersion: str | None = Field(default=None, min_length=1, max_length=80)
+    versionMatrix: DeploymentVersionMatrix | None = None
     artifactDigest: str | None = Field(default=None, min_length=1, max_length=256)
     sourceSha: str | None = Field(
         default=None,
@@ -108,6 +133,7 @@ class DeploymentProvenanceView(BaseModel):
     status: DeploymentProvenanceStatus
     result: ConsistencyStatus
     summary: DeploymentProvenanceSummary
+    latestPackages: list[DeploymentPackageVersion] = Field(default_factory=list)
     resources: list[ResourceDeploymentVersion] = Field(default_factory=list)
     links: list[DeploymentProvenanceLink] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)

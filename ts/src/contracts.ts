@@ -1053,6 +1053,7 @@ export interface DeploymentProvenanceView {
   status: DeploymentProvenanceStatus;
   result: ConsistencyStatus;
   summary: DeploymentProvenanceSummary;
+  latestPackages: DeploymentPackageVersion[];
   resources: ResourceDeploymentVersion[];
   links: DeploymentProvenanceLink[];
   warnings: string[];
@@ -1070,21 +1071,23 @@ export interface DeploymentProvenanceSummary {
   error: number;
 }
 
-export interface ResourceDeploymentVersion {
-  resourceName: string;
-  resourceType: string;
-  environment: string;
+export interface DeploymentPackageVersion {
   repo: string;
-  artifactDigest?: string | null;
-  sourceSha?: string | null;
+  packageName: string;
+  version?: string | null;
+  versionMatrix?: DeploymentVersionMatrix | null;
   releaseRun?: PipelineRunSummary | null;
-  deployRun?: PipelineRunSummary | null;
-  latestSuccessfulRun?: PipelineRunSummary | null;
-  status: DeploymentProvenanceStatus;
-  result: ConsistencyStatus;
   checkedAt: string;
   links: DeploymentProvenanceLink[];
   warnings: string[];
+}
+
+export interface DeploymentVersionMatrix {
+  contracts?: string | null;
+  runtimeCommon?: string | null;
+  controlPlane?: string | null;
+  jobs?: string | null;
+  ui?: string | null;
 }
 
 export interface PipelineRunSummary {
@@ -1106,6 +1109,25 @@ export interface PipelineRunSummary {
 export interface DeploymentProvenanceLink {
   label: string;
   href: string;
+}
+
+export interface ResourceDeploymentVersion {
+  resourceName: string;
+  resourceType: string;
+  environment: string;
+  repo: string;
+  packageVersion?: string | null;
+  versionMatrix?: DeploymentVersionMatrix | null;
+  artifactDigest?: string | null;
+  sourceSha?: string | null;
+  releaseRun?: PipelineRunSummary | null;
+  deployRun?: PipelineRunSummary | null;
+  latestSuccessfulRun?: PipelineRunSummary | null;
+  status: DeploymentProvenanceStatus;
+  result: ConsistencyStatus;
+  checkedAt: string;
+  links: DeploymentProvenanceLink[];
+  warnings: string[];
 }
 
 export interface PullRequestSyncView {

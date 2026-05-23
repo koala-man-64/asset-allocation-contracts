@@ -1,5 +1,84 @@
 {
   "$defs": {
+    "DeploymentPackageVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "checkedAt": {
+          "format": "date-time",
+          "title": "Checkedat",
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "$ref": "#/$defs/DeploymentProvenanceLink"
+          },
+          "title": "Links",
+          "type": "array"
+        },
+        "packageName": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Packagename",
+          "type": "string"
+        },
+        "releaseRun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineRunSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "repo": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Repo",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "versionMatrix": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeploymentVersionMatrix"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "repo",
+        "packageName",
+        "checkedAt"
+      ],
+      "title": "DeploymentPackageVersion",
+      "type": "object"
+    },
     "DeploymentProvenanceLink": {
       "additionalProperties": false,
       "properties": {
@@ -78,6 +157,83 @@
         "totalResources"
       ],
       "title": "DeploymentProvenanceSummary",
+      "type": "object"
+    },
+    "DeploymentVersionMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "contracts": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contracts"
+        },
+        "controlPlane": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Controlplane"
+        },
+        "jobs": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Jobs"
+        },
+        "runtimeCommon": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Runtimecommon"
+        },
+        "ui": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ui"
+        }
+      },
+      "title": "DeploymentVersionMatrix",
       "type": "object"
     },
     "PipelineRunSummary": {
@@ -301,6 +457,20 @@
           "title": "Links",
           "type": "array"
         },
+        "packageVersion": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Packageversion"
+        },
         "releaseRun": {
           "anyOf": [
             {
@@ -369,6 +539,17 @@
           "title": "Status",
           "type": "string"
         },
+        "versionMatrix": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeploymentVersionMatrix"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "warnings": {
           "items": {
             "type": "string"
@@ -401,6 +582,13 @@
         "type": "string"
       },
       "title": "Errors",
+      "type": "array"
+    },
+    "latestPackages": {
+      "items": {
+        "$ref": "#/$defs/DeploymentPackageVersion"
+      },
+      "title": "Latestpackages",
       "type": "array"
     },
     "links": {

@@ -62,8 +62,10 @@ from asset_allocation_contracts.broker_accounts import (
     RefreshBrokerAccountRequest,
 )
 from asset_allocation_contracts.deployment_provenance import (
+    DeploymentPackageVersion,
     DeploymentProvenanceSummary,
     DeploymentProvenanceView,
+    DeploymentVersionMatrix,
     PipelineRunSummary,
     ResourceDeploymentVersion,
 )
@@ -2506,6 +2508,12 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
         resourceType="Microsoft.App/containerApps",
         environment="prod",
         repo="asset-allocation-ui",
+        packageVersion="0.0.1",
+        versionMatrix=DeploymentVersionMatrix(
+            contracts="3.49.0",
+            runtimeCommon="2.14.0",
+            ui="0.0.1",
+        ),
         artifactDigest="sha256:abc123",
         sourceSha="420db20a1b1a5a3d70f26c8c23e2fa82a283ca82",
         releaseRun=latest_run,
@@ -2520,14 +2528,50 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
         status="available",
         result="consistent",
         summary=DeploymentProvenanceSummary(totalResources=1, consistent=1),
+        latestPackages=[
+            DeploymentPackageVersion(
+                repo="asset-allocation-contracts",
+                packageName="asset-allocation-contracts",
+                version="3.49.0",
+                versionMatrix=DeploymentVersionMatrix(contracts="3.49.0"),
+                releaseRun=latest_run,
+                checkedAt="2026-05-14T02:05:00Z",
+            ),
+            DeploymentPackageVersion(
+                repo="asset-allocation-runtime-common",
+                packageName="asset-allocation-runtime-common",
+                version="2.14.0",
+                versionMatrix=DeploymentVersionMatrix(
+                    contracts="3.49.0",
+                    runtimeCommon="2.14.0",
+                ),
+                releaseRun=latest_run,
+                checkedAt="2026-05-14T02:05:00Z",
+            ),
+        ],
         resources=[resource],
     )
     schema = DeploymentProvenanceView.model_json_schema()
 
     assert view.resources[0].resourceName == "vg-aa-prod-ui"
+    assert view.resources[0].packageVersion == "0.0.1"
+    assert view.resources[0].versionMatrix is not None
+    assert view.resources[0].versionMatrix.contracts == "3.49.0"
     assert view.resources[0].latestSuccessfulRun is not None
     assert view.resources[0].latestSuccessfulRun.runId == 1205
+    assert view.latestPackages[1].versionMatrix is not None
+    assert view.latestPackages[1].versionMatrix.contracts == "3.49.0"
     assert view.summary.consistent == 1
+    assert (
+        schema["properties"]["latestPackages"]["items"]["$ref"]
+        == "#/$defs/DeploymentPackageVersion"
+    )
+    assert (
+        schema["$defs"]["DeploymentPackageVersion"]["properties"]["versionMatrix"]["anyOf"][0][
+            "$ref"
+        ]
+        == "#/$defs/DeploymentVersionMatrix"
+    )
     assert schema["properties"]["resources"]["items"]["$ref"] == "#/$defs/ResourceDeploymentVersion"
 
 
