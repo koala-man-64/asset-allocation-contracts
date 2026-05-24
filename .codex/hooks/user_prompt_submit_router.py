@@ -1,10 +1,36 @@
-from hook_utils import additional_context, emit_json, extract_prompt, read_hook_input
+from hook_utils import (
+    additional_context,
+    azure_devops_agent_authority_lines,
+    emit_json,
+    extract_prompt,
+    read_hook_input,
+)
 
 
 LANES = (
     (
         "finish",
-        ("finish it", "complete workflow", "complete your workflow", "commit", "push", "pull request", " pr ", "merge", "squash"),
+        (
+            "finish it",
+            "complete workflow",
+            "complete your workflow",
+            "commit",
+            "push",
+            "pull request",
+            " pr ",
+            "merge",
+            "squash",
+            "auto-complete",
+            "approve pr",
+            "approve pull request",
+            "complete pr",
+            "complete pull request",
+            "close work item",
+            "close workitem",
+            "complete work item",
+            "complete workitem",
+            "transition-work-items",
+        ),
         "delivery-orchestrator-agent -> gateway-bookkeeper -> git-hygiene-orchestrator -> qa-release-gate-agent as needed",
     ),
     (
@@ -89,6 +115,7 @@ def main() -> int:
             "- Use gateway-bookkeeper before and after auditable, multi-repo, PR, CI/CD, deployment, or Azure DevOps work.",
             "- If the prompt asks to finish, commit, push, open a PR, merge, or complete workflows, run the git-hygiene-orchestrator finish workflow before closeout.",
             f"- Contract routing: {contract_hint(prompt)}",
+            *azure_devops_agent_authority_lines(),
         ]
     )
     return emit_json(additional_context("UserPromptSubmit", context))

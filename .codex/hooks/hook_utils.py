@@ -14,6 +14,16 @@ CORE_AGENTS = (
     "strict-branch-and-merge-discipline",
 )
 
+AZURE_DEVOPS_AGENT_AUTHORITY_LINES = (
+    "- Azure DevOps authority: agents are pre-approved to update and close Azure Boards work items, approve Azure Repos PRs, set PR auto-complete, complete PRs, delete source branches, and transition linked work items when repo gates and policies pass.",
+    "- Production deploy boundary: agents must not approve production deployment pipeline, environment, or check gates; leave prod deploy approval to the user and record it as the remaining blocker.",
+    "- Azure permission failures are blockers to report with exact command and error; do not bypass policies, force permissions, or substitute direct protected-branch pushes.",
+)
+
+
+def azure_devops_agent_authority_lines() -> tuple[str, ...]:
+    return AZURE_DEVOPS_AGENT_AUTHORITY_LINES
+
 
 def read_hook_input() -> dict[str, Any]:
     raw = sys.stdin.read()

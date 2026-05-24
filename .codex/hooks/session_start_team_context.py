@@ -1,5 +1,6 @@
 from hook_utils import (
     additional_context,
+    azure_devops_agent_authority_lines,
     branch_header,
     current_branch,
     dirty_summary,
@@ -34,6 +35,7 @@ def main() -> int:
             "- Apply strict-branch-and-merge-discipline before edits, branches, commits, pushes, or PRs.",
             "- Classify changes as local-only or contracts-repo-first before editing shared API, schema, serialization, or mirrored contract shapes.",
             "- Avoid mixing new work into unrelated active branches; use an isolated branch or worktree when history is already scoped to another task.",
+            *azure_devops_agent_authority_lines(),
         ]
     )
     return emit_json(additional_context("SessionStart", context))
