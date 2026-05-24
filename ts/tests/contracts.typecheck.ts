@@ -83,6 +83,7 @@ import type {
   RankingSchemaDraftGenerationRequest,
   RankingSchemaDraftGenerationResponse,
   RankingSchemaPreset,
+  RankingSchemaSummary,
   RebalancePolicyPreset,
   RegimeActivationDecision,
   RegimeGate,
@@ -618,6 +619,29 @@ const rankingPreset: RankingSchemaPreset = {
       },
     ],
     overallTransforms: [],
+  },
+};
+
+const rankingSchemaSummary: RankingSchemaSummary = {
+  name: "quality_momentum",
+  version: 3,
+  status: "active",
+  description: "Quality plus medium-term momentum.",
+  intendedUse: "validation",
+  thesis: "Favor durable compounders with price confirmation.",
+  whatToMonitor: ["Factor drift"],
+  archived: false,
+  usageCount: 2,
+  updatedAt: "2026-05-24T12:00:00Z",
+  schemaProfile: {
+    groupCount: 2,
+    factorCount: 4,
+    groupNames: ["quality", "momentum"],
+    sourceTables: ["market_data", "fundamentals"],
+    factorColumns: ["market_data.return_126d", "fundamentals.pe_ratio"],
+    transformTypes: ["percentile_rank", "zscore"],
+    directionCounts: { asc: 1, desc: 3 },
+    missingPolicyCounts: { exclude: 2, zero: 2 },
   },
 };
 

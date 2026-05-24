@@ -537,6 +537,18 @@ export interface RankingSchemaSummary {
   archived: boolean;
   usageCount: number;
   updatedAt?: string | null;
+  schemaProfile?: RankingSchemaProfile | null;
+}
+
+export interface RankingSchemaProfile {
+  groupCount: number;
+  factorCount: number;
+  groupNames: string[];
+  sourceTables: string[];
+  factorColumns: string[];
+  transformTypes: RankingTransformType[];
+  directionCounts: Record<string, number>;
+  missingPolicyCounts: Record<string, number>;
 }
 
 export interface RankingSchemaRevision {

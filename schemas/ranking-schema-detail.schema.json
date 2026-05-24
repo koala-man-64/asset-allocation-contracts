@@ -141,6 +141,90 @@
       "title": "RankingSchemaConfig",
       "type": "object"
     },
+    "RankingSchemaProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "directionCounts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "title": "Directioncounts",
+          "type": "object"
+        },
+        "factorColumns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Factorcolumns",
+          "type": "array"
+        },
+        "factorCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Factorcount",
+          "type": "integer"
+        },
+        "groupCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Groupcount",
+          "type": "integer"
+        },
+        "groupNames": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Groupnames",
+          "type": "array"
+        },
+        "missingPolicyCounts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "exclude",
+              "zero"
+            ]
+          },
+          "title": "Missingpolicycounts",
+          "type": "object"
+        },
+        "sourceTables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Sourcetables",
+          "type": "array"
+        },
+        "transformTypes": {
+          "items": {
+            "enum": [
+              "percentile_rank",
+              "zscore",
+              "minmax",
+              "clip",
+              "winsorize",
+              "coalesce",
+              "log1p",
+              "negate",
+              "abs"
+            ],
+            "type": "string"
+          },
+          "title": "Transformtypes",
+          "type": "array"
+        }
+      },
+      "title": "RankingSchemaProfile",
+      "type": "object"
+    },
     "RankingSchemaRevision": {
       "additionalProperties": false,
       "properties": {
@@ -272,6 +356,17 @@
           "minLength": 1,
           "title": "Name",
           "type": "string"
+        },
+        "schemaProfile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RankingSchemaProfile"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "status": {
           "default": "draft",

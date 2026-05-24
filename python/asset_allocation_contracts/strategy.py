@@ -5,7 +5,14 @@ from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from asset_allocation_contracts.ranking import RankingFieldReference, RankingPreviewResponse, RankingSchemaConfig
+from asset_allocation_contracts.ranking import (
+    RankingDirection,
+    RankingFieldReference,
+    RankingMissingValuePolicy,
+    RankingPreviewResponse,
+    RankingSchemaConfig,
+    RankingTransformType,
+)
 from asset_allocation_contracts.regime import (
     DEFAULT_REGIME_MODEL_NAME,
     RegimeCode,
@@ -1324,8 +1331,21 @@ class UniverseConfigDraftGenerationResponse(BaseModel):
         return self
 
 
+class RankingSchemaProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    groupCount: int = Field(default=0, ge=0)
+    factorCount: int = Field(default=0, ge=0)
+    groupNames: list[str] = Field(default_factory=list)
+    sourceTables: list[str] = Field(default_factory=list)
+    factorColumns: list[str] = Field(default_factory=list)
+    transformTypes: list[RankingTransformType] = Field(default_factory=list)
+    directionCounts: dict[RankingDirection, int] = Field(default_factory=dict)
+    missingPolicyCounts: dict[RankingMissingValuePolicy, int] = Field(default_factory=dict)
+
+
 class RankingSchemaSummary(ReusableConfigSummaryBase):
-    pass
+    schemaProfile: RankingSchemaProfile | None = None
 
 
 class RankingSchemaRevision(ConfigIdentity):

@@ -185,9 +185,10 @@ from asset_allocation_contracts.strategy import (
     GeneratedStrategyProvenance,
     GeneratedStrategySaveRequest,
     GeneratedStrategySaveResponse,
-    RankingSchemaPreset,
     RankingSchemaDraftGenerationRequest,
     RankingSchemaDraftGenerationResponse,
+    RankingSchemaPreset,
+    RankingSchemaSummary,
     RebalancePolicy,
     RebalancePolicyPreset,
     RiskPolicyConfig,
@@ -1868,6 +1869,34 @@ def test_ranking_schema_accepts_group_payload() -> None:
     )
     assert payload.groups[0].name == "quality"
     assert payload.universeConfigName == "core-universe"
+
+
+def test_ranking_schema_summary_accepts_compact_profile() -> None:
+    payload = RankingSchemaSummary(
+        name="quality_momentum",
+        version=3,
+        status="active",
+        description="Quality plus medium-term momentum.",
+        intendedUse="validation",
+        schemaProfile={
+            "groupCount": 2,
+            "factorCount": 4,
+            "groupNames": ["quality", "momentum"],
+            "sourceTables": ["market_data", "fundamentals"],
+            "factorColumns": ["market_data.return_126d", "fundamentals.pe_ratio"],
+            "transformTypes": ["percentile_rank", "zscore"],
+            "directionCounts": {"asc": 1, "desc": 3},
+            "missingPolicyCounts": {"exclude": 2, "zero": 2},
+        },
+    )
+
+    assert payload.schemaProfile is not None
+    assert payload.schemaProfile.groupCount == 2
+    assert payload.schemaProfile.factorColumns == [
+        "market_data.return_126d",
+        "fundamentals.pe_ratio",
+    ]
+    assert payload.schemaProfile.directionCounts["desc"] == 3
 
 
 def test_universe_condition_uses_governed_field_catalog() -> None:
