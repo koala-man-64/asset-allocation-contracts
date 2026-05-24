@@ -15,16 +15,11 @@ from hook_utils import (
 )
 
 
-SECRET_WORDS = (
-    "pat",
-    "token",
-    "secret",
-    "password",
-    "client_secret",
-    "connectionstring",
-    "connection_string",
-    "private_key",
-    "oauth",
+PRINT_COMMAND_PATTERN = re.compile(r"\b(echo|write-output|write-host|printenv|env|set|cat|type|get-content)\b")
+SECRET_VALUE_PATTERN = re.compile(
+    r"(?<![a-z0-9])"
+    r"(?:client_secret|connection_string|private_key|connectionstring|password|secret|token|oauth|pat)"
+    r"(?![a-z0-9])"
 )
 
 
@@ -48,9 +43,9 @@ def contains_destructive_git(command: str) -> str | None:
 
 
 def contains_secret_print(command: str) -> str | None:
-    if not any(word in command for word in SECRET_WORDS):
+    if not PRINT_COMMAND_PATTERN.search(command):
         return None
-    if re.search(r"\b(echo|write-output|write-host|printenv|env|set|cat|type|get-content)\b", command):
+    if SECRET_VALUE_PATTERN.search(command):
         return "Command appears to print secret-bearing values. Do not echo tokens, PATs, OAuth codes, connection strings, or private keys."
     return None
 
