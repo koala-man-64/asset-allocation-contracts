@@ -14,15 +14,20 @@ resources:
             - refs/heads/main
 
 pool:
-  # Release publishes packages and stays hosted until the local Docker pool has
-  # sustained CI/security history, uptime, patching, monitoring, and repeatability.
-  vmImage: ubuntu-latest
+  name: local-docker-agents
+  demands:
+    - Agent.OS -equals Linux
+    - CONTRACTS_TOOLCHAIN -equals true
+    - CONTRACTS_PYTHON -equals 3.14
+    - CONTRACTS_NODE -equals 20
+    - CONTRACTS_PNPM -equals 10.28.1
 
 variables:
   AZURE_ARTIFACTS_FEED: asset-allocation-packages
   AZURE_ARTIFACTS_PROJECT_FEED: AdaptiveAssetAllocation/asset-allocation-packages
   NPM_FEED_REGISTRY_URL: https://pkgs.dev.azure.com/rdprokes/AdaptiveAssetAllocation/_packaging/asset-allocation-packages/npm/registry/
   NODE_VERSION: "20.x"
+  PNPM_VERSION: "10.28.1"
   PYTHON_VERSION: "3.14"
 
 stages:
@@ -40,13 +45,7 @@ stages:
                 - checkout: self
                   fetchDepth: 0
 
-                - task: UsePythonVersion@0
-                  inputs:
-                    versionSpec: "$(PYTHON_VERSION)"
-
-                - task: NodeTool@0
-                  inputs:
-                    versionSpec: "$(NODE_VERSION)"
+                - template: templates/contracts-toolchain-preflight.yml
 
                 - task: npmAuthenticate@0
                   inputs:
