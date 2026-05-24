@@ -1807,3 +1807,112 @@ class StrategyConfig(BaseModel):
         if self.componentRefs is None:
             return None
         return getattr(self.componentRefs, field_name)
+
+
+GeneratedStrategyReviewStatus = Literal["pending_review", "reviewed", "rejected"]
+
+
+class GeneratedStrategyProvenance(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    generationRequestId: str = Field(..., min_length=1, max_length=128)
+    promptFingerprint: str = Field(..., min_length=16, max_length=128)
+    promptSummary: str = Field(..., min_length=1, max_length=2000)
+    sourceContext: list[str] = Field(default_factory=list, max_length=50)
+    model: str = Field(..., min_length=1, max_length=128)
+    generatedAt: datetime
+    outputFingerprint: str = Field(..., min_length=16, max_length=128)
+    assumptions: list[str] = Field(default_factory=list, max_length=50)
+    warnings: list[str] = Field(default_factory=list, max_length=50)
+    unresolvedRequirements: list[str] = Field(default_factory=list, max_length=50)
+
+    @field_validator(
+        "generationRequestId",
+        "promptFingerprint",
+        "promptSummary",
+        "model",
+        "outputFingerprint",
+        mode="before",
+    )
+    @classmethod
+    def normalize_required_text(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+    @field_validator("sourceContext", "assumptions", "warnings", "unresolvedRequirements", mode="before")
+    @classmethod
+    def normalize_text_list(cls, value: object) -> object:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            return value
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip()
+            if text:
+                if len(text) > 1000:
+                    raise ValueError("Generated strategy provenance entries must be 1000 characters or less.")
+                normalized.append(text)
+        return normalized
+
+
+class GeneratedStrategyBacktestStrategyRef(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int = Field(..., ge=1)
+
+    @field_validator("strategyName", mode="before")
+    @classmethod
+    def normalize_strategy_name(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+
+class GeneratedStrategyBacktestHandoff(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    strategyRef: GeneratedStrategyBacktestStrategyRef
+    validationPath: str = Field(default="/api/backtests/validation", min_length=1)
+    runPath: str = Field(default="/api/backtests/runs", min_length=1)
+    method: Literal["POST"] = "POST"
+
+
+class GeneratedStrategySaveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=128)
+    config: StrategyConfig
+    provenance: GeneratedStrategyProvenance
+    description: str = Field(default="", max_length=2048)
+
+    @field_validator("name", "description", mode="before")
+    @classmethod
+    def normalize_save_text(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()
+
+
+class GeneratedStrategySaveResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["saved"] = "saved"
+    message: str = Field(..., min_length=1, max_length=512)
+    strategyName: str = Field(..., min_length=1, max_length=128)
+    strategyVersion: int = Field(..., ge=1)
+    strategyRef: GeneratedStrategyBacktestStrategyRef
+    provenanceId: str = Field(..., min_length=1, max_length=128)
+    provenanceStatus: Literal["recorded"] = "recorded"
+    reviewStatus: GeneratedStrategyReviewStatus = "pending_review"
+    provenance: GeneratedStrategyProvenance
+    backtestHandoff: GeneratedStrategyBacktestHandoff
+
+    @field_validator("message", "strategyName", "provenanceId", mode="before")
+    @classmethod
+    def normalize_response_text(cls, value: object) -> object:
+        if value is None:
+            return value
+        return str(value).strip()

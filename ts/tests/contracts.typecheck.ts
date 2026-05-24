@@ -74,6 +74,10 @@ import type {
   ExitRule,
   ExitRuleSetConfig,
   ExitRuleVisualKey,
+  GeneratedStrategyBacktestHandoff,
+  GeneratedStrategyProvenance,
+  GeneratedStrategySaveRequest,
+  GeneratedStrategySaveResponse,
   RankingFieldReference,
   RankingPreviewResponse,
   RankingSchemaDraftGenerationRequest,
@@ -651,6 +655,49 @@ const rankingDraftGenerationResponse: RankingSchemaDraftGenerationResponse = {
   fieldsUsed: [rankingFieldReference],
   unmappedSignals: ["quality"],
   preview: rankingPreview,
+};
+
+const generatedStrategyProvenance: GeneratedStrategyProvenance = {
+  generationRequestId: "genreq-123",
+  promptFingerprint: "sha256:prompt-abcdef1234567890",
+  promptSummary: "Redacted summary of the requested strategy.",
+  sourceContext: ["strategy workspace draft"],
+  model: "strategy-draft-v1",
+  generatedAt: "2026-05-24T12:00:00Z",
+  outputFingerprint: "sha256:output-abcdef1234567890",
+  assumptions: ["monthly rebalance"],
+  warnings: ["Review liquidity filters before backtest."],
+  unresolvedRequirements: ["Confirm benchmark."],
+};
+
+const generatedStrategySaveRequest: GeneratedStrategySaveRequest = {
+  name: "generated-quality-momentum",
+  description: "Human-reviewed generated draft.",
+  config: strategy,
+  provenance: generatedStrategyProvenance,
+};
+
+const generatedStrategyBacktestHandoff: GeneratedStrategyBacktestHandoff = {
+  strategyRef: {
+    strategyName: "generated-quality-momentum",
+    strategyVersion: 7,
+  },
+  validationPath: "/api/backtests/validation",
+  runPath: "/api/backtests/runs",
+  method: "POST",
+};
+
+const generatedStrategySaveResponse: GeneratedStrategySaveResponse = {
+  status: "saved",
+  message: "Generated strategy saved for review.",
+  strategyName: "generated-quality-momentum",
+  strategyVersion: 7,
+  strategyRef: generatedStrategyBacktestHandoff.strategyRef,
+  provenanceId: "generated-quality-momentum-7",
+  provenanceStatus: "recorded",
+  reviewStatus: "pending_review",
+  provenance: generatedStrategyProvenance,
+  backtestHandoff: generatedStrategyBacktestHandoff,
 };
 
 const rebalancePreset: RebalancePolicyPreset = {

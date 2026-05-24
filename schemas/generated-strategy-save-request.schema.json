@@ -1,0 +1,2317 @@
+{
+  "$defs": {
+    "ConfigReference": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigReference",
+      "type": "object"
+    },
+    "ExitRule": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "exit_full",
+          "default": "exit_full",
+          "title": "Action",
+          "type": "string"
+        },
+        "atrColumn": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Atrcolumn"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "minHoldBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Minholdbars",
+          "type": "integer"
+        },
+        "priceField": {
+          "anyOf": [
+            {
+              "enum": [
+                "open",
+                "high",
+                "low",
+                "close"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pricefield"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Priority"
+        },
+        "rankThreshold": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankthreshold"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "enum": [
+                "entry_price",
+                "highest_since_entry"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference"
+        },
+        "scope": {
+          "const": "position",
+          "default": "position",
+          "title": "Scope",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "stop_loss_fixed",
+            "take_profit_fixed",
+            "trailing_stop_pct",
+            "trailing_stop_atr",
+            "time_stop",
+            "rank_decay"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "visualKey": {
+          "anyOf": [
+            {
+              "enum": [
+                "stop_loss_fixed",
+                "take_profit_fixed",
+                "trailing_stop_pct",
+                "trailing_stop_atr",
+                "time_stop",
+                "rank_decay"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visualkey"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "ExitRule",
+      "type": "object"
+    },
+    "GeneratedStrategyProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "generatedAt": {
+          "format": "date-time",
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "generationRequestId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Generationrequestid",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "outputFingerprint": {
+          "maxLength": 128,
+          "minLength": 16,
+          "title": "Outputfingerprint",
+          "type": "string"
+        },
+        "promptFingerprint": {
+          "maxLength": 128,
+          "minLength": 16,
+          "title": "Promptfingerprint",
+          "type": "string"
+        },
+        "promptSummary": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Promptsummary",
+          "type": "string"
+        },
+        "sourceContext": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Sourcecontext",
+          "type": "array"
+        },
+        "unresolvedRequirements": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Unresolvedrequirements",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "generationRequestId",
+        "promptFingerprint",
+        "promptSummary",
+        "model",
+        "generatedAt",
+        "outputFingerprint"
+      ],
+      "title": "GeneratedStrategyProvenance",
+      "type": "object"
+    },
+    "RebalancePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowPartialRebalance": {
+          "default": true,
+          "title": "Allowpartialrebalance",
+          "type": "boolean"
+        },
+        "anchor": {
+          "anyOf": [
+            {
+              "enum": [
+                "close",
+                "next_open"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor"
+        },
+        "cadence": {
+          "anyOf": [
+            {
+              "enum": [
+                "daily",
+                "weekly",
+                "monthly",
+                "quarterly"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cadence"
+        },
+        "cashBufferPct": {
+          "default": 0.0,
+          "exclusiveMaximum": 100.0,
+          "minimum": 0.0,
+          "title": "Cashbufferpct",
+          "type": "number"
+        },
+        "closeRemovedPositions": {
+          "default": true,
+          "title": "Closeremovedpositions",
+          "type": "boolean"
+        },
+        "dayRule": {
+          "anyOf": [
+            {
+              "enum": [
+                "first_trading_day",
+                "last_trading_day"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dayrule"
+        },
+        "driftThresholdBps": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdbps"
+        },
+        "driftThresholdPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Driftthresholdpct"
+        },
+        "executionTiming": {
+          "const": "next_bar_open",
+          "default": "next_bar_open",
+          "title": "Executiontiming",
+          "type": "string"
+        },
+        "frequency": {
+          "default": "every_bar",
+          "enum": [
+            "every_bar",
+            "daily",
+            "weekly",
+            "monthly",
+            "quarterly",
+            "every_n_bars",
+            "manual"
+          ],
+          "title": "Frequency",
+          "type": "string"
+        },
+        "intervalBars": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intervalbars"
+        },
+        "maxTurnoverPct": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverpct"
+        },
+        "maxTurnoverPerRebalance": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxturnoverperrebalance"
+        },
+        "minTradeNotional": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Mintradenotional",
+          "type": "number"
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tradeDelayBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Tradedelaybars",
+          "type": "integer"
+        }
+      },
+      "title": "RebalancePolicy",
+      "type": "object"
+    },
+    "RegimeActivationPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedregimes",
+          "type": "array"
+        },
+        "blockWhenUnclassified": {
+          "default": true,
+          "title": "Blockwhenunclassified",
+          "type": "boolean"
+        },
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        },
+        "honorModelHalt": {
+          "default": true,
+          "title": "Honormodelhalt",
+          "type": "boolean"
+        },
+        "inactiveAction": {
+          "const": "target_zero",
+          "default": "target_zero",
+          "title": "Inactiveaction",
+          "type": "string"
+        }
+      },
+      "title": "RegimeActivationPolicy",
+      "type": "object"
+    },
+    "RegimeGate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeGate",
+      "type": "object"
+    },
+    "RegimePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "activation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeActivationPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mode": {
+          "default": "observe_only",
+          "enum": [
+            "observe_only",
+            "activation_gate"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "modelName": {
+          "default": "default-regime",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        }
+      },
+      "title": "RegimePolicy",
+      "type": "object"
+    },
+    "RegimeSourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "modelName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Modelname",
+          "type": "string"
+        },
+        "modelVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modelversion"
+        }
+      },
+      "required": [
+        "modelName"
+      ],
+      "title": "RegimeSourceRef",
+      "type": "object"
+    },
+    "RegimeStrategyPredicate": {
+      "additionalProperties": false,
+      "properties": {
+        "blockWhenUnclassified": {
+          "default": true,
+          "title": "Blockwhenunclassified",
+          "type": "boolean"
+        },
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        },
+        "honorModelHalt": {
+          "default": true,
+          "title": "Honormodelhalt",
+          "type": "boolean"
+        },
+        "requireAllRequired": {
+          "default": false,
+          "title": "Requireallrequired",
+          "type": "boolean"
+        },
+        "requiredRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredregimes",
+          "type": "array"
+        }
+      },
+      "title": "RegimeStrategyPredicate",
+      "type": "object"
+    },
+    "StrategyComponentRefs": {
+      "additionalProperties": false,
+      "properties": {
+        "exitPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rebalance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimePolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "riskPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "universe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyComponentRefs",
+      "type": "object"
+    },
+    "StrategyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "componentRefs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyComponentRefs"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "costModel": {
+          "default": "default",
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Costmodel",
+          "type": "string"
+        },
+        "exitRegimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "exitRuleSetName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitrulesetname"
+        },
+        "exitRuleSetVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exitrulesetversion"
+        },
+        "exits": {
+          "items": {
+            "$ref": "#/$defs/ExitRule"
+          },
+          "title": "Exits",
+          "type": "array"
+        },
+        "holdingPeriod": {
+          "default": 21,
+          "minimum": 1,
+          "title": "Holdingperiod",
+          "type": "integer"
+        },
+        "intrabarConflictPolicy": {
+          "default": "stop_first",
+          "enum": [
+            "stop_first",
+            "take_profit_first",
+            "priority_order"
+          ],
+          "title": "Intrabarconflictpolicy",
+          "type": "string"
+        },
+        "longOnly": {
+          "default": true,
+          "title": "Longonly",
+          "type": "boolean"
+        },
+        "lookbackWindow": {
+          "default": 63,
+          "minimum": 1,
+          "title": "Lookbackwindow",
+          "type": "integer"
+        },
+        "positionPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyPositionPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rankingSchemaName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingschemaname"
+        },
+        "rankingSchemaVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rankingschemaversion"
+        },
+        "rebalance": {
+          "default": "monthly",
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Rebalance",
+          "type": "string"
+        },
+        "rebalancePolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RebalancePolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimeGates": {
+          "additionalProperties": {
+            "$ref": "#/$defs/StrategyRegimeGatePlan"
+          },
+          "title": "Regimegates",
+          "type": "object"
+        },
+        "regimePolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimePolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimePolicyConfigName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyconfigname"
+        },
+        "regimePolicyConfigVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regimepolicyconfigversion"
+        },
+        "regimeSource": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeSourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "riskPolicyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyname"
+        },
+        "riskPolicyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskpolicyversion"
+        },
+        "riskProfileName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riskprofilename"
+        },
+        "riskRegimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "strategyRiskPolicy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "topN": {
+          "default": 20,
+          "minimum": 1,
+          "title": "Topn",
+          "type": "integer"
+        },
+        "universe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UniverseDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "universeConfigName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universeconfigname"
+        },
+        "universeConfigVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Universeconfigversion"
+        }
+      },
+      "title": "StrategyConfig",
+      "type": "object"
+    },
+    "StrategyPositionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedAssetClasses": {
+          "items": {
+            "enum": [
+              "equity",
+              "option"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedassetclasses",
+          "type": "array"
+        },
+        "maxOpenPositions": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxopenpositions"
+        },
+        "maxPositionSize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyPositionSizeLimit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "positionVolatilityTolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VolatilityTolerance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "requireOrderConfirmation": {
+          "default": false,
+          "title": "Requireorderconfirmation",
+          "type": "boolean"
+        },
+        "targetPositionSize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyPositionSizeLimit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyPositionPolicy",
+      "type": "object"
+    },
+    "StrategyPositionSizeLimit": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "pct_of_allocatable_capital",
+          "enum": [
+            "pct_of_allocatable_capital",
+            "notional_base_ccy"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "value": {
+          "exclusiveMinimum": 0.0,
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "StrategyPositionSizeLimit",
+      "type": "object"
+    },
+    "StrategyRegimeAllocation": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyRef": {
+          "$ref": "#/$defs/ConfigReference"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "strategyRef",
+        "weight"
+      ],
+      "title": "StrategyRegimeAllocation",
+      "type": "object"
+    },
+    "StrategyRegimeGatePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "allocations": {
+          "items": {
+            "$ref": "#/$defs/StrategyRegimeAllocation"
+          },
+          "minItems": 1,
+          "title": "Allocations",
+          "type": "array"
+        },
+        "when": {
+          "$ref": "#/$defs/RegimeStrategyPredicate"
+        }
+      },
+      "required": [
+        "allocations"
+      ],
+      "title": "StrategyRegimeGatePlan",
+      "type": "object"
+    },
+    "StrategyRiskAuditPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "auditRetentionDays": {
+          "default": 2555,
+          "minimum": 1,
+          "title": "Auditretentiondays",
+          "type": "integer"
+        },
+        "recordTriggeredOverlays": {
+          "default": true,
+          "title": "Recordtriggeredoverlays",
+          "type": "boolean"
+        },
+        "requirePolicySnapshotHash": {
+          "default": true,
+          "title": "Requirepolicysnapshothash",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskAuditPolicy",
+      "type": "object"
+    },
+    "StrategyRiskDataQualityGates": {
+      "additionalProperties": false,
+      "properties": {
+        "corporateActionPolicy": {
+          "default": "freeze",
+          "enum": [
+            "allow",
+            "warn",
+            "freeze"
+          ],
+          "title": "Corporateactionpolicy",
+          "type": "string"
+        },
+        "maxQuoteAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxquoteageseconds"
+        },
+        "maxSecurityMasterAgeSeconds": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsecuritymasterageseconds"
+        },
+        "minCoveragePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mincoveragepct"
+        },
+        "minVendorQuorum": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minvendorquorum"
+        },
+        "requireSymbolIdentityLock": {
+          "default": true,
+          "title": "Requiresymbolidentitylock",
+          "type": "boolean"
+        },
+        "requiredAdjustmentStatuses": {
+          "items": {
+            "enum": [
+              "raw_allowed",
+              "split_adjusted",
+              "dividend_adjusted",
+              "corporate_action_adjusted"
+            ],
+            "type": "string"
+          },
+          "title": "Requiredadjustmentstatuses",
+          "type": "array"
+        }
+      },
+      "title": "StrategyRiskDataQualityGates",
+      "type": "object"
+    },
+    "StrategyRiskExposureLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "dailyLossLimitPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dailylosslimitpct"
+        },
+        "drawdownBlockPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drawdownblockpct"
+        },
+        "drawdownReducePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drawdownreducepct"
+        },
+        "maxCorrelatedClusterPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcorrelatedclusterpct"
+        },
+        "maxFactorBetaAbs": {
+          "anyOf": [
+            {
+              "maximum": 5.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxfactorbetaabs"
+        },
+        "maxGrossExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxgrossexposurepct"
+        },
+        "maxLeverageMultiple": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 10.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxleveragemultiple"
+        },
+        "maxLongExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlongexposurepct"
+        },
+        "maxNetExposurePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 500.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxnetexposurepct"
+        },
+        "maxSectorPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsectorpct"
+        },
+        "maxShortExposurePct": {
+          "anyOf": [
+            {
+              "maximum": 500.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxshortexposurepct"
+        },
+        "maxSingleNamePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxsinglenamepct"
+        },
+        "maxThemePct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxthemepct"
+        },
+        "weeklyLossLimitPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weeklylosslimitpct"
+        }
+      },
+      "title": "StrategyRiskExposureLimits",
+      "type": "object"
+    },
+    "StrategyRiskLiquidityLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "maxAdvParticipationPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxadvparticipationpct"
+        },
+        "maxBidAskSpreadBps": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxbidaskspreadbps"
+        },
+        "maxExitHorizonDays": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxexithorizondays"
+        },
+        "maxSlippageBps": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxslippagebps"
+        },
+        "minLiquidityScore": {
+          "anyOf": [
+            {
+              "maximum": 100.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minliquidityscore"
+        }
+      },
+      "title": "StrategyRiskLiquidityLimits",
+      "type": "object"
+    },
+    "StrategyRiskOverlayRule": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "warn",
+            "reduce_exposure",
+            "freeze_buys",
+            "block_new_orders",
+            "reduce_only",
+            "liquidate"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "cooldownBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "exposureReductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exposurereductionpct"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "requireApproval": {
+          "default": false,
+          "title": "Requireapproval",
+          "type": "boolean"
+        },
+        "trigger": {
+          "maxLength": 256,
+          "minLength": 1,
+          "title": "Trigger",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "trigger",
+        "action"
+      ],
+      "title": "StrategyRiskOverlayRule",
+      "type": "object"
+    },
+    "StrategyRiskOverlaySet": {
+      "additionalProperties": false,
+      "properties": {
+        "correlationShock": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Correlationshock",
+          "type": "array"
+        },
+        "dataQuality": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Dataquality",
+          "type": "array"
+        },
+        "event": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Event",
+          "type": "array"
+        },
+        "liquidityStress": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Liquiditystress",
+          "type": "array"
+        },
+        "regime": {
+          "items": {
+            "$ref": "#/$defs/StrategyRiskOverlayRule"
+          },
+          "title": "Regime",
+          "type": "array"
+        }
+      },
+      "title": "StrategyRiskOverlaySet",
+      "type": "object"
+    },
+    "StrategyRiskPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "audit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskAuditPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dataQualityGates": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskDataQualityGates"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "exposureLimits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskExposureLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "liquidityLimits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskLiquidityLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "operatingMode": {
+          "anyOf": [
+            {
+              "enum": [
+                "research_observe_only",
+                "paper_controlled_pilot",
+                "core_diversified_long",
+                "balanced_long_short",
+                "liquidity_constrained_smid",
+                "catalyst_event_guarded",
+                "stress_de_risk_mode"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Operatingmode"
+        },
+        "overlays": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskOverlaySet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reentry": {
+          "$ref": "#/$defs/StrategyRiskReentryPolicy"
+        },
+        "scope": {
+          "default": "strategy",
+          "enum": [
+            "strategy",
+            "sleeve"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "stopLoss": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskStopLossPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "strategyVolatilityTolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VolatilityTolerance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "takeProfit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskTakeProfitPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tradingPermissions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskTradingPermissions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "vixSpikeHalt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskVixSpikeHaltPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyRiskPolicy",
+      "type": "object"
+    },
+    "StrategyRiskReentryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "cooldownBars": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
+        "requireApproval": {
+          "default": false,
+          "title": "Requireapproval",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskReentryPolicy",
+      "type": "object"
+    },
+    "StrategyRiskStopLossPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "default": "reduce_exposure",
+          "enum": [
+            "reduce_exposure",
+            "liquidate",
+            "freeze_buys"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "basis": {
+          "default": "strategy_nav_drawdown",
+          "enum": [
+            "strategy_nav_drawdown",
+            "sleeve_nav_drawdown"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "id": {
+          "default": "strategy-stop-loss",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "reductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reductionpct"
+        },
+        "thresholdPct": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "title": "Thresholdpct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "thresholdPct"
+      ],
+      "title": "StrategyRiskStopLossPolicy",
+      "type": "object"
+    },
+    "StrategyRiskTakeProfitPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "default": "rebalance_to_target",
+          "enum": [
+            "reduce_exposure",
+            "rebalance_to_target"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "basis": {
+          "default": "strategy_nav_gain",
+          "enum": [
+            "strategy_nav_gain",
+            "sleeve_nav_gain"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "id": {
+          "default": "strategy-take-profit",
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "reductionPct": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "maximum": 100.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reductionpct"
+        },
+        "thresholdPct": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "title": "Thresholdpct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "thresholdPct"
+      ],
+      "title": "StrategyRiskTakeProfitPolicy",
+      "type": "object"
+    },
+    "StrategyRiskTradingPermissions": {
+      "additionalProperties": false,
+      "properties": {
+        "allowLiveOrders": {
+          "default": false,
+          "title": "Allowliveorders",
+          "type": "boolean"
+        },
+        "allowedAssetClasses": {
+          "items": {
+            "enum": [
+              "equity",
+              "option"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedassetclasses",
+          "type": "array"
+        },
+        "allowedSides": {
+          "items": {
+            "enum": [
+              "long",
+              "short"
+            ],
+            "type": "string"
+          },
+          "title": "Allowedsides",
+          "type": "array"
+        },
+        "optionsMode": {
+          "default": "blocked",
+          "enum": [
+            "blocked",
+            "covered_only",
+            "defined_risk_only",
+            "approval_required"
+          ],
+          "title": "Optionsmode",
+          "type": "string"
+        },
+        "reduceOnly": {
+          "default": false,
+          "title": "Reduceonly",
+          "type": "boolean"
+        },
+        "requireBorrowLocate": {
+          "default": true,
+          "title": "Requireborrowlocate",
+          "type": "boolean"
+        },
+        "requireDifferentApprover": {
+          "default": true,
+          "title": "Requiredifferentapprover",
+          "type": "boolean"
+        },
+        "requireOrderConfirmation": {
+          "default": true,
+          "title": "Requireorderconfirmation",
+          "type": "boolean"
+        }
+      },
+      "title": "StrategyRiskTradingPermissions",
+      "type": "object"
+    },
+    "StrategyRiskVixSpikeHaltPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "cooldownBars": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Cooldownbars",
+          "type": "integer"
+        },
+        "streakBars": {
+          "default": 2,
+          "minimum": 1,
+          "title": "Streakbars",
+          "type": "integer"
+        },
+        "threshold": {
+          "default": 32.0,
+          "exclusiveMinimum": 0.0,
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "title": "StrategyRiskVixSpikeHaltPolicy",
+      "type": "object"
+    },
+    "UniverseCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "market.close",
+            "security.symbol",
+            "security.is_active",
+            "security.sector",
+            "security.delisted_at",
+            "market.trade_date",
+            "market.timestamp",
+            "returns.return_20d",
+            "returns.return_126d",
+            "alternative.wall_street_bets_observed_date",
+            "alternative.insider_trading_observed_date",
+            "alternative.congressional_trading_observed_date",
+            "alternative.government_contract_observed_date",
+            "alternative.institutional_holding_observed_date",
+            "alternative.patent_observed_date",
+            "alternative.congress_holding_observed_date",
+            "qmom.adr_pct_20d",
+            "qmom.volume_ratio_1d_50d",
+            "qmom.range_contraction_5d_20d",
+            "qmom.breakout_close_above_20d_high",
+            "qmom.breakout_distance_20d_pct",
+            "qmom.trend_filter",
+            "qmom.daily_research_score",
+            "runner.distance_to_20d_high_pct",
+            "runner.distance_to_55d_high_pct",
+            "runner.base_age_days",
+            "runner.volume_dryup_10d_50d",
+            "runner.close_location_value",
+            "runner.range_expansion_atr",
+            "runner.days_since_breakout",
+            "runner.breakout_hold_1d",
+            "runner.failed_breakout_1d",
+            "quality.piotroski_f_score",
+            "earnings.surprise_pct",
+            "security.market_cap",
+            "market.dollar_volume_20d",
+            "security.primary_listing",
+            "security.country",
+            "security.is_price_liquidity_eligible"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "kind": {
+          "const": "condition",
+          "default": "condition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values"
+        }
+      },
+      "required": [
+        "field",
+        "operator"
+      ],
+      "title": "UniverseCondition",
+      "type": "object"
+    },
+    "UniverseDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/UniverseGroup"
+        },
+        "source": {
+          "const": "postgres_gold",
+          "default": "postgres_gold",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root"
+      ],
+      "title": "UniverseDefinition",
+      "type": "object"
+    },
+    "UniverseGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "clauses": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UniverseGroup"
+              },
+              {
+                "$ref": "#/$defs/UniverseCondition"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Clauses",
+          "type": "array"
+        },
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Operator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clauses"
+      ],
+      "title": "UniverseGroup",
+      "type": "object"
+    },
+    "VolatilityTolerance": {
+      "additionalProperties": false,
+      "properties": {
+        "maxPct": {
+          "exclusiveMinimum": 0.0,
+          "title": "Maxpct",
+          "type": "number"
+        },
+        "metric": {
+          "enum": [
+            "realized_vol_20d",
+            "realized_vol_60d",
+            "atr_14d_pct_of_close"
+          ],
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "maxPct"
+      ],
+      "title": "VolatilityTolerance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/StrategyConfig"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/GeneratedStrategyProvenance"
+    }
+  },
+  "required": [
+    "name",
+    "config",
+    "provenance"
+  ],
+  "title": "GeneratedStrategySaveRequest",
+  "type": "object"
+}

@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "GeneratedStrategyBacktestStrategyRef": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "minimum": 1,
+          "title": "Strategyversion",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strategyName",
+        "strategyVersion"
+      ],
+      "title": "GeneratedStrategyBacktestStrategyRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "method": {
+      "const": "POST",
+      "default": "POST",
+      "title": "Method",
+      "type": "string"
+    },
+    "runPath": {
+      "default": "/api/backtests/runs",
+      "minLength": 1,
+      "title": "Runpath",
+      "type": "string"
+    },
+    "strategyRef": {
+      "$ref": "#/$defs/GeneratedStrategyBacktestStrategyRef"
+    },
+    "validationPath": {
+      "default": "/api/backtests/validation",
+      "minLength": 1,
+      "title": "Validationpath",
+      "type": "string"
+    }
+  },
+  "required": [
+    "strategyRef"
+  ],
+  "title": "GeneratedStrategyBacktestHandoff",
+  "type": "object"
+}

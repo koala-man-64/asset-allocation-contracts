@@ -1,0 +1,207 @@
+{
+  "$defs": {
+    "GeneratedStrategyBacktestHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "POST",
+          "default": "POST",
+          "title": "Method",
+          "type": "string"
+        },
+        "runPath": {
+          "default": "/api/backtests/runs",
+          "minLength": 1,
+          "title": "Runpath",
+          "type": "string"
+        },
+        "strategyRef": {
+          "$ref": "#/$defs/GeneratedStrategyBacktestStrategyRef"
+        },
+        "validationPath": {
+          "default": "/api/backtests/validation",
+          "minLength": 1,
+          "title": "Validationpath",
+          "type": "string"
+        }
+      },
+      "required": [
+        "strategyRef"
+      ],
+      "title": "GeneratedStrategyBacktestHandoff",
+      "type": "object"
+    },
+    "GeneratedStrategyBacktestStrategyRef": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "minimum": 1,
+          "title": "Strategyversion",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "strategyName",
+        "strategyVersion"
+      ],
+      "title": "GeneratedStrategyBacktestStrategyRef",
+      "type": "object"
+    },
+    "GeneratedStrategyProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "generatedAt": {
+          "format": "date-time",
+          "title": "Generatedat",
+          "type": "string"
+        },
+        "generationRequestId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Generationrequestid",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "outputFingerprint": {
+          "maxLength": 128,
+          "minLength": 16,
+          "title": "Outputfingerprint",
+          "type": "string"
+        },
+        "promptFingerprint": {
+          "maxLength": 128,
+          "minLength": 16,
+          "title": "Promptfingerprint",
+          "type": "string"
+        },
+        "promptSummary": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Promptsummary",
+          "type": "string"
+        },
+        "sourceContext": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Sourcecontext",
+          "type": "array"
+        },
+        "unresolvedRequirements": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Unresolvedrequirements",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "generationRequestId",
+        "promptFingerprint",
+        "promptSummary",
+        "model",
+        "generatedAt",
+        "outputFingerprint"
+      ],
+      "title": "GeneratedStrategyProvenance",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "backtestHandoff": {
+      "$ref": "#/$defs/GeneratedStrategyBacktestHandoff"
+    },
+    "message": {
+      "maxLength": 512,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/GeneratedStrategyProvenance"
+    },
+    "provenanceId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Provenanceid",
+      "type": "string"
+    },
+    "provenanceStatus": {
+      "const": "recorded",
+      "default": "recorded",
+      "title": "Provenancestatus",
+      "type": "string"
+    },
+    "reviewStatus": {
+      "default": "pending_review",
+      "enum": [
+        "pending_review",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Reviewstatus",
+      "type": "string"
+    },
+    "status": {
+      "const": "saved",
+      "default": "saved",
+      "title": "Status",
+      "type": "string"
+    },
+    "strategyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Strategyname",
+      "type": "string"
+    },
+    "strategyRef": {
+      "$ref": "#/$defs/GeneratedStrategyBacktestStrategyRef"
+    },
+    "strategyVersion": {
+      "minimum": 1,
+      "title": "Strategyversion",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "message",
+    "strategyName",
+    "strategyVersion",
+    "strategyRef",
+    "provenanceId",
+    "provenance",
+    "backtestHandoff"
+  ],
+  "title": "GeneratedStrategySaveResponse",
+  "type": "object"
+}

@@ -637,6 +637,51 @@ export interface RankingPreviewRow {
   score: number;
 }
 
+export interface GeneratedStrategyProvenance {
+  generationRequestId: string;
+  promptFingerprint: string;
+  promptSummary: string;
+  sourceContext: string[];
+  model: string;
+  generatedAt: string;
+  outputFingerprint: string;
+  assumptions: string[];
+  warnings: string[];
+  unresolvedRequirements: string[];
+}
+
+export interface GeneratedStrategyBacktestHandoff {
+  strategyRef: GeneratedStrategyBacktestStrategyRef;
+  validationPath: string;
+  runPath: string;
+  method: 'POST';
+}
+
+export interface GeneratedStrategyBacktestStrategyRef {
+  strategyName: string;
+  strategyVersion: number;
+}
+
+export interface GeneratedStrategySaveRequest {
+  name: string;
+  config: StrategyConfig;
+  provenance: GeneratedStrategyProvenance;
+  description: string;
+}
+
+export interface GeneratedStrategySaveResponse {
+  status: 'saved';
+  message: string;
+  strategyName: string;
+  strategyVersion: number;
+  strategyRef: GeneratedStrategyBacktestStrategyRef;
+  provenanceId: string;
+  provenanceStatus: 'recorded';
+  reviewStatus: 'pending_review' | 'reviewed' | 'rejected';
+  provenance: GeneratedStrategyProvenance;
+  backtestHandoff: GeneratedStrategyBacktestHandoff;
+}
+
 export interface RebalancePolicySummary {
   name: string;
   version: number;

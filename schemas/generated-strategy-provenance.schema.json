@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "generationRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Generationrequestid",
+      "type": "string"
+    },
+    "model": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    },
+    "outputFingerprint": {
+      "maxLength": 128,
+      "minLength": 16,
+      "title": "Outputfingerprint",
+      "type": "string"
+    },
+    "promptFingerprint": {
+      "maxLength": 128,
+      "minLength": 16,
+      "title": "Promptfingerprint",
+      "type": "string"
+    },
+    "promptSummary": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Promptsummary",
+      "type": "string"
+    },
+    "sourceContext": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Sourcecontext",
+      "type": "array"
+    },
+    "unresolvedRequirements": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Unresolvedrequirements",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "generationRequestId",
+    "promptFingerprint",
+    "promptSummary",
+    "model",
+    "generatedAt",
+    "outputFingerprint"
+  ],
+  "title": "GeneratedStrategyProvenance",
+  "type": "object"
+}

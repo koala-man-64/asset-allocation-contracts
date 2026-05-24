@@ -181,6 +181,10 @@ from asset_allocation_contracts.strategy import (
     ExitRuleSetDetailResponse,
     ExitRuleSetRevision,
     ExitRuleSetSummary,
+    GeneratedStrategyBacktestHandoff,
+    GeneratedStrategyProvenance,
+    GeneratedStrategySaveRequest,
+    GeneratedStrategySaveResponse,
     RankingSchemaPreset,
     RankingSchemaDraftGenerationRequest,
     RankingSchemaDraftGenerationResponse,
@@ -2354,6 +2358,100 @@ def test_ranking_schema_draft_generation_response_wraps_valid_draft_and_preview(
     assert payload.unmappedSignals == ["quality"]
     assert payload.preview is not None
     assert payload.preview.rows[0].symbol == "AAPL"
+
+
+def test_generated_strategy_save_request_normalizes_redacted_provenance() -> None:
+    payload = GeneratedStrategySaveRequest(
+        name="  generated-quality-momentum  ",
+        description="  Human-reviewed generated draft.  ",
+        config={
+            "universeConfigName": "us-large-liquid",
+            "rankingSchemaName": "quality-momentum",
+        },
+        provenance={
+            "generationRequestId": "  genreq-123  ",
+            "promptFingerprint": "  sha256:prompt-abcdef1234567890  ",
+            "promptSummary": "  Redacted summary of the requested strategy.  ",
+            "sourceContext": ["  upstream draft  ", "", "  user-reviewed assumptions  "],
+            "model": "  strategy-draft-v1  ",
+            "generatedAt": "2026-05-24T12:00:00Z",
+            "outputFingerprint": "  sha256:output-abcdef1234567890  ",
+            "assumptions": ["  monthly rebalance  "],
+            "warnings": ["  Validate liquidity filters before backtest.  "],
+            "unresolvedRequirements": ["  Confirm benchmark.  "],
+        },
+    )
+
+    assert payload.name == "generated-quality-momentum"
+    assert payload.description == "Human-reviewed generated draft."
+    assert payload.config.universeConfigName == "us-large-liquid"
+    assert payload.provenance.generationRequestId == "genreq-123"
+    assert payload.provenance.promptFingerprint == "sha256:prompt-abcdef1234567890"
+    assert payload.provenance.promptSummary == "Redacted summary of the requested strategy."
+    assert payload.provenance.sourceContext == ["upstream draft", "user-reviewed assumptions"]
+    assert payload.provenance.assumptions == ["monthly rebalance"]
+
+
+def test_generated_strategy_save_request_rejects_invalid_provenance() -> None:
+    invalid_payload = {
+        "name": "generated-quality-momentum",
+        "config": {
+            "universeConfigName": "us-large-liquid",
+            "rankingSchemaName": "quality-momentum",
+        },
+        "provenance": {
+            "generationRequestId": "genreq-123",
+            "promptFingerprint": "too-short",
+            "promptSummary": "Redacted summary.",
+            "model": "strategy-draft-v1",
+            "generatedAt": "2026-05-24T12:00:00Z",
+            "outputFingerprint": "sha256:output-abcdef1234567890",
+            "raw_generation_text": "not allowed",
+        },
+    }
+
+    try:
+        GeneratedStrategySaveRequest.model_validate(invalid_payload)
+    except Exception as exc:
+        message = str(exc)
+        assert "promptFingerprint" in message
+        assert "raw_generation_text" in message
+    else:
+        raise AssertionError("Expected invalid generated strategy provenance to fail validation.")
+
+
+def test_generated_strategy_save_response_carries_exact_backtest_handoff() -> None:
+    provenance = GeneratedStrategyProvenance(
+        generationRequestId="genreq-123",
+        promptFingerprint="sha256:prompt-abcdef1234567890",
+        promptSummary="Redacted summary of the requested strategy.",
+        sourceContext=["strategy workspace draft"],
+        model="strategy-draft-v1",
+        generatedAt="2026-05-24T12:00:00Z",
+        outputFingerprint="sha256:output-abcdef1234567890",
+        assumptions=["monthly rebalance"],
+        warnings=[],
+        unresolvedRequirements=[],
+    )
+    handoff = GeneratedStrategyBacktestHandoff(
+        strategyRef={"strategyName": "generated-quality-momentum", "strategyVersion": 7}
+    )
+    payload = GeneratedStrategySaveResponse(
+        message="Generated strategy saved for review.",
+        strategyName="generated-quality-momentum",
+        strategyVersion=7,
+        strategyRef={"strategyName": "generated-quality-momentum", "strategyVersion": 7},
+        provenanceId="generated-quality-momentum-7",
+        provenance=provenance,
+        backtestHandoff=handoff,
+    )
+
+    assert payload.status == "saved"
+    assert payload.reviewStatus == "pending_review"
+    assert payload.strategyRef.strategyVersion == 7
+    assert payload.backtestHandoff.strategyRef.strategyName == "generated-quality-momentum"
+    assert payload.backtestHandoff.validationPath == "/api/backtests/validation"
+    assert payload.backtestHandoff.runPath == "/api/backtests/runs"
 
 
 def test_ranking_schema_draft_generation_response_rejects_non_draft_identity() -> None:
