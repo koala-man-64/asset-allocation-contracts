@@ -3,6 +3,7 @@ import type {
   AuthProvider,
   AuthSessionStatus,
   AcknowledgeBrokerAlertRequest,
+  BacktestBenchmarkAttribution,
   BacktestClaimRequest,
   BacktestCompleteRequest,
   BacktestDataQualityEventListResponse,
@@ -1306,6 +1307,21 @@ const completeRequest: BacktestCompleteRequest = {
   },
 };
 
+const benchmarkAttribution: BacktestBenchmarkAttribution = {
+  benchmarkSymbol: "SPY",
+  attributionMethod: "simple_total_return",
+  dataQualityStatus: "complete",
+  strategyTotalReturn: 0.12,
+  benchmarkTotalReturn: 0.08,
+  excessTotalReturn: 0.04,
+  strategyAnnualizedReturn: 0.11,
+  benchmarkAnnualizedReturn: 0.07,
+  excessAnnualizedReturn: 0.04,
+  startTs: "2026-03-08T00:00:00Z",
+  endTs: "2026-03-09T00:00:00Z",
+  observationCount: 2,
+};
+
 const failRequest: BacktestFailRequest = {
   error: "Backtest failed",
 };
@@ -1408,6 +1424,7 @@ const lookupResponse: BacktestLookupResponse = {
     total_return: 0.12,
     requested_residual_cash_weight: 0,
     executed_residual_cash_weight: 0.15,
+    benchmarkAttribution,
   },
   links,
 };
@@ -1427,6 +1444,7 @@ const streamEvent: BacktestStreamEvent = {
     total_return: 0.12,
     requested_residual_cash_weight: 0,
     executed_residual_cash_weight: 0.15,
+    benchmarkAttribution,
   },
   metadata: {
     results_schema_version: 4,

@@ -1,5 +1,102 @@
 {
   "$defs": {
+    "BacktestBenchmarkAttribution": {
+      "additionalProperties": false,
+      "properties": {
+        "attributionMethod": {
+          "const": "simple_total_return",
+          "default": "simple_total_return",
+          "title": "Attributionmethod",
+          "type": "string"
+        },
+        "benchmarkAnnualizedReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmarkannualizedreturn"
+        },
+        "benchmarkSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Benchmarksymbol",
+          "type": "string"
+        },
+        "benchmarkTotalReturn": {
+          "title": "Benchmarktotalreturn",
+          "type": "number"
+        },
+        "dataQualityStatus": {
+          "const": "complete",
+          "default": "complete",
+          "title": "Dataqualitystatus",
+          "type": "string"
+        },
+        "endTs": {
+          "format": "date-time",
+          "title": "Endts",
+          "type": "string"
+        },
+        "excessAnnualizedReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excessannualizedreturn"
+        },
+        "excessTotalReturn": {
+          "title": "Excesstotalreturn",
+          "type": "number"
+        },
+        "observationCount": {
+          "minimum": 1,
+          "title": "Observationcount",
+          "type": "integer"
+        },
+        "startTs": {
+          "format": "date-time",
+          "title": "Startts",
+          "type": "string"
+        },
+        "strategyAnnualizedReturn": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyannualizedreturn"
+        },
+        "strategyTotalReturn": {
+          "title": "Strategytotalreturn",
+          "type": "number"
+        }
+      },
+      "required": [
+        "benchmarkSymbol",
+        "strategyTotalReturn",
+        "benchmarkTotalReturn",
+        "excessTotalReturn",
+        "startTs",
+        "endTs",
+        "observationCount"
+      ],
+      "title": "BacktestBenchmarkAttribution",
+      "type": "object"
+    },
     "BacktestExecutionSettings": {
       "additionalProperties": false,
       "properties": {
@@ -261,6 +358,17 @@
           ],
           "default": null,
           "title": "Avg Win Return"
+        },
+        "benchmarkAttribution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BacktestBenchmarkAttribution"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "calmar_ratio": {
           "anyOf": [

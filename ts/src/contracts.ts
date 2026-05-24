@@ -1673,7 +1673,23 @@ export interface BacktestSummary {
   expiry_event_count?: number | null;
   research_only_block_count?: number | null;
   option_backtest_model_quality?: OptionBacktestModelQuality | null;
+  benchmarkAttribution?: BacktestBenchmarkAttribution | null;
   [key: string]: unknown;
+}
+
+export interface BacktestBenchmarkAttribution {
+  benchmarkSymbol: string;
+  attributionMethod: 'simple_total_return';
+  dataQualityStatus: 'complete';
+  strategyTotalReturn: number;
+  benchmarkTotalReturn: number;
+  excessTotalReturn: number;
+  strategyAnnualizedReturn?: number | null;
+  benchmarkAnnualizedReturn?: number | null;
+  excessAnnualizedReturn?: number | null;
+  startTs: string;
+  endTs: string;
+  observationCount: number;
 }
 
 export interface BacktestResultLinks {

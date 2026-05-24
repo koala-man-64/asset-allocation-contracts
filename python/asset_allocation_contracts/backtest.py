@@ -19,6 +19,8 @@ BacktestExecutionModel = Literal["simple_bps"]
 BacktestExecutionModelQuality = Literal["not_tca_grade"]
 BacktestApprovalReadiness = Literal["research_only"]
 BacktestDataQualityEventSeverity = Literal["warning", "error", "fatal"]
+BacktestBenchmarkAttributionMethod = Literal["simple_total_return"]
+BacktestBenchmarkAttributionDataQualityStatus = Literal["complete"]
 
 
 class RunRecordResponse(BaseModel):
@@ -217,6 +219,23 @@ class BacktestRunResponse(BaseModel):
     streamUrl: str = Field(..., min_length=1)
 
 
+class BacktestBenchmarkAttribution(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    benchmarkSymbol: str = Field(..., min_length=1, max_length=32)
+    attributionMethod: BacktestBenchmarkAttributionMethod = "simple_total_return"
+    dataQualityStatus: BacktestBenchmarkAttributionDataQualityStatus = "complete"
+    strategyTotalReturn: float
+    benchmarkTotalReturn: float
+    excessTotalReturn: float
+    strategyAnnualizedReturn: float | None = None
+    benchmarkAnnualizedReturn: float | None = None
+    excessAnnualizedReturn: float | None = None
+    startTs: datetime
+    endTs: datetime
+    observationCount: int = Field(..., ge=1)
+
+
 class BacktestSummary(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -273,12 +292,13 @@ class BacktestSummary(BaseModel):
     expiry_event_count: int | None = Field(default=None, ge=0)
     research_only_block_count: int | None = Field(default=None, ge=0)
     option_backtest_model_quality: OptionBacktestModelQuality | None = None
+    benchmarkAttribution: BacktestBenchmarkAttribution | None = None
 
 
 class BacktestResultMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    results_schema_version: int = Field(default=8, ge=1)
+    results_schema_version: int = Field(default=9, ge=1)
     bar_size: str = Field(..., min_length=1, max_length=32)
     periods_per_year: int = Field(..., ge=1)
     strategy_scope: str = Field(..., min_length=1, max_length=128)

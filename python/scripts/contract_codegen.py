@@ -1116,3 +1116,14 @@ def _literal_to_ts(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     return str(value)
+
+
+def main() -> int:
+    repo_root = Path(__file__).resolve().parents[2]
+    write_schema_exports(repo_root / "schemas")
+    write_typescript_contracts(repo_root / "ts" / "src" / "contracts.ts")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

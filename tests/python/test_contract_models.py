@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 
 from asset_allocation_contracts.ai_chat import AiChatRequest, AiChatStreamEvent
 from asset_allocation_contracts.backtest import (
+    BacktestBenchmarkAttribution,
     BacktestClaimRequest,
     BacktestCompleteRequest,
     BacktestDataQualityEvent,
@@ -3555,6 +3556,37 @@ def test_backtest_run_response_and_lookup_response_support_links_and_summary() -
     assert run_response.streamUrl.endswith("/events")
 
 
+def test_backtest_summary_accepts_benchmark_attribution_and_nullable_compatibility() -> (
+    None
+):
+    attribution = BacktestBenchmarkAttribution(
+        benchmarkSymbol="SPY",
+        strategyTotalReturn=0.12,
+        benchmarkTotalReturn=0.08,
+        excessTotalReturn=0.04,
+        strategyAnnualizedReturn=0.11,
+        benchmarkAnnualizedReturn=0.07,
+        excessAnnualizedReturn=0.04,
+        startTs="2026-03-08T00:00:00Z",
+        endTs="2026-03-09T00:00:00Z",
+        observationCount=2,
+    )
+
+    summary = BacktestSummary(
+        total_return=0.12,
+        annualized_return=0.11,
+        benchmarkAttribution=attribution,
+    )
+    legacy_summary = BacktestSummary.model_validate({"total_return": 0.12})
+
+    assert summary.benchmarkAttribution is not None
+    assert summary.benchmarkAttribution.benchmarkSymbol == "SPY"
+    assert summary.benchmarkAttribution.attributionMethod == "simple_total_return"
+    assert summary.benchmarkAttribution.dataQualityStatus == "complete"
+    assert summary.benchmarkAttribution.excessTotalReturn == 0.04
+    assert legacy_summary.benchmarkAttribution is None
+
+
 def test_backtest_run_request_accepts_inline_strategy_config() -> None:
     payload = BacktestRunRequest(
         strategyConfig={
@@ -3708,21 +3740,21 @@ def test_backtest_reconcile_response_defaults_and_payload() -> None:
 
 def test_backtest_result_metadata_and_response_schema() -> None:
     metadata = BacktestResultMetadata(
-        results_schema_version=8,
+        results_schema_version=9,
         bar_size="1d",
         periods_per_year=252,
         strategy_scope="portfolio",
     )
     schema = TimeseriesResponse.model_json_schema()
 
-    assert metadata.results_schema_version == 8
+    assert metadata.results_schema_version == 9
     assert metadata.bar_size == "1d"
     assert schema["properties"]["metadata"]["default"] is None
     assert (
         schema["$defs"]["BacktestResultMetadata"]["properties"][
             "results_schema_version"
         ]["default"]
-        == 8
+        == 9
     )
 
 
