@@ -2197,13 +2197,19 @@ export interface BacktestReconcileResponse {
   failedRunIds: string[];
 }
 
+export interface StockScreenerSortClause {
+  key: StockScreenerSortKey;
+  direction: StockScreenerSortDirection;
+}
+
 export interface StockScreenerRequest {
   q?: string | null;
   as_of?: string | null;
   limit: number;
   offset: number;
   sort: StockScreenerSortKey;
-  direction: RankingDirection;
+  direction: StockScreenerSortDirection;
+  sorts?: StockScreenerSortClause[] | null;
   strategy_name?: string | null;
   ranking_schema_name?: string | null;
   ranking_schema_version?: number | null;

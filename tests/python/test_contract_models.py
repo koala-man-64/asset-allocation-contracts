@@ -165,6 +165,7 @@ from asset_allocation_contracts.stock_screener import (
     StockScreenerRequest,
     StockScreenerResponse,
     StockScreenerRow,
+    StockScreenerSortClause,
 )
 from asset_allocation_contracts.strategy import (
     ConfigIdentity,
@@ -635,6 +636,10 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
         min_return_5d=0.01,
         max_return_5d=0.08,
         sort="ranking_score",
+        sorts=[
+            {"key": "ranking_score", "direction": "desc"},
+            {"key": "return_5d", "direction": "desc"},
+        ],
         strategy_name="quality-trend",
         ranking_schema_name="  quality-momentum  ",
         ranking_schema_version=2,
@@ -696,6 +701,8 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
     assert request.q == "ms"
     assert request.ranking_schema_name == "quality-momentum"
     assert request.ranking_schema_version == 2
+    assert request.sorts is not None
+    assert [clause.key for clause in request.sorts] == ["ranking_score", "return_5d"]
     assert request.sectors == ["Technology", "Healthcare"]
     assert request.countries == ["US", "CA"]
     assert response.rows[0].symbol == "MSFT"
@@ -708,6 +715,49 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
     assert response.summary.coverage.missingGold == 2
     assert response.facets is not None
     assert response.facets.sectors[0].value == "Technology"
+
+
+def test_stock_screener_sort_stack_deduplicates_first_clause() -> None:
+    request = StockScreenerRequest(
+        sort="return_5d",
+        sorts=[
+            StockScreenerSortClause(key="return_5d", direction="desc"),
+            StockScreenerSortClause(key="volume_pct_rank_252d", direction="desc"),
+            StockScreenerSortClause(key="return_5d", direction="asc"),
+        ],
+    )
+
+    assert request.sorts is not None
+    assert [(clause.key, clause.direction) for clause in request.sorts] == [
+        ("return_5d", "desc"),
+        ("volume_pct_rank_252d", "desc"),
+    ]
+
+
+def test_stock_screener_sort_stack_rejects_invalid_clause_values() -> None:
+    try:
+        StockScreenerRequest(sorts=[{"key": "not_a_factor", "direction": "desc"}])
+    except Exception as exc:
+        assert "not_a_factor" in str(exc)
+    else:
+        raise AssertionError("Expected invalid screener sort key to fail validation.")
+
+    try:
+        StockScreenerRequest(sorts=[{"key": "return_5d", "direction": "sideways"}])
+    except Exception as exc:
+        assert "sideways" in str(exc)
+    else:
+        raise AssertionError("Expected invalid screener sort direction to fail validation.")
+
+
+def test_stock_screener_sort_stack_rejects_ranking_sort_without_schema() -> None:
+    try:
+        StockScreenerRequest(sorts=[{"key": "ranking_score", "direction": "desc"}])
+    except Exception as exc:
+        assert "ranking_score" in str(exc)
+        assert "ranking_schema_name" in str(exc)
+    else:
+        raise AssertionError("Expected ranking sort without ranking schema to fail validation.")
 
 
 def test_stock_screener_contract_rejects_inverted_numeric_ranges() -> None:

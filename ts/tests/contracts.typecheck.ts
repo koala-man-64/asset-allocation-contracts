@@ -60,6 +60,7 @@ import type {
   SymbolResolutionResult,
   StockScreenerRequest,
   StockScreenerResponse,
+  StockScreenerSortClause,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
   ConfigIdentity,
@@ -357,12 +358,22 @@ const stockScreenerRequest: StockScreenerRequest = {
   offset: 0,
   sort: "ranking_score",
   direction: "desc",
+  sorts: [
+    { key: "ranking_score", direction: "desc" },
+    { key: "return_5d", direction: "desc" },
+    { key: "volume_pct_rank_252d", direction: "desc" },
+  ],
   strategy_name: "quality-trend",
   ranking_schema_name: "quality_momentum",
   ranking_schema_version: 2,
   sectors: ["Technology"],
   has_silver: true,
   min_volume_pct_rank_252d: 0.6,
+};
+
+const stockScreenerSortClause: StockScreenerSortClause = {
+  key: "return_5d",
+  direction: "desc",
 };
 
 const stockScreenerResponse: StockScreenerResponse = {
@@ -1942,6 +1953,7 @@ void detail;
 void runSummary;
 void workReviewItem;
 void runReview;
+void stockScreenerSortClause;
 void pullRequestSync;
 void pipelineSync;
 void pipelineQueue;

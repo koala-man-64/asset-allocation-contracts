@@ -28,6 +28,7 @@ StockScreenerSortKey = Literal[
     "ranking_score",
 ]
 StockScreenerSortDirection = Literal["asc", "desc"]
+_RANKING_SORT_KEYS = {"ranking_rank", "ranking_score"}
 
 
 def _normalize_optional_text(value: object) -> str | None:
@@ -61,6 +62,13 @@ def _normalize_filter_values(value: object) -> list[str] | None:
     return normalized or None
 
 
+class StockScreenerSortClause(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    key: StockScreenerSortKey
+    direction: StockScreenerSortDirection = "desc"
+
+
 class StockScreenerRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -70,6 +78,7 @@ class StockScreenerRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
     sort: StockScreenerSortKey = "volume"
     direction: StockScreenerSortDirection = "desc"
+    sorts: list[StockScreenerSortClause] | None = Field(default=None, max_length=5)
     strategy_name: str | None = Field(default=None, max_length=128)
     ranking_schema_name: str | None = Field(default=None, max_length=128)
     ranking_schema_version: int | None = Field(default=None, ge=1)
@@ -118,12 +127,33 @@ class StockScreenerRequest(BaseModel):
     _normalize_industries = field_validator("industries", mode="before")(_normalize_filter_values)
     _normalize_countries = field_validator("countries", mode="before")(_normalize_filter_values)
 
+    @field_validator("sorts", mode="after")
+    @classmethod
+    def _normalize_sort_stack(
+        cls, value: list[StockScreenerSortClause] | None
+    ) -> list[StockScreenerSortClause] | None:
+        if not value:
+            return None
+
+        normalized: list[StockScreenerSortClause] = []
+        seen: set[StockScreenerSortKey] = set()
+        for clause in value:
+            if clause.key in seen:
+                continue
+            seen.add(clause.key)
+            normalized.append(clause)
+        return normalized or None
+
     @model_validator(mode="after")
     def _validate_numeric_ranges(self) -> StockScreenerRequest:
         if self.ranking_schema_version is not None and self.ranking_schema_name is None:
             raise ValueError("ranking_schema_version requires ranking_schema_name.")
         if self.ranking_schema_name is not None and self.strategy_name is None:
             raise ValueError("ranking_schema_name requires strategy_name.")
+        if self.ranking_schema_name is None:
+            sort_keys = [self.sort, *(clause.key for clause in self.sorts or [])]
+            if any(key in _RANKING_SORT_KEYS for key in sort_keys):
+                raise ValueError("ranking_rank and ranking_score sorts require ranking_schema_name.")
 
         for minimum_name, maximum_name in (
             ("min_close", "max_close"),

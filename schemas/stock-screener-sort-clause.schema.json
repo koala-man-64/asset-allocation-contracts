@@ -1,0 +1,44 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "direction": {
+      "default": "desc",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "key": {
+      "enum": [
+        "symbol",
+        "close",
+        "volume",
+        "return_1d",
+        "return_5d",
+        "vol_20d",
+        "drawdown_1y",
+        "atr_14d",
+        "gap_atr",
+        "sma_50d",
+        "sma_200d",
+        "trend_50_200",
+        "above_sma_50",
+        "bb_width_20d",
+        "compression_score",
+        "volume_z_20d",
+        "volume_pct_rank_252d",
+        "ranking_rank",
+        "ranking_score"
+      ],
+      "title": "Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "key"
+  ],
+  "title": "StockScreenerSortClause",
+  "type": "object"
+}
