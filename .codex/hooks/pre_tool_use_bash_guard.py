@@ -3,6 +3,7 @@ from pathlib import Path
 
 from hook_utils import (
     additional_context,
+    allow_pre_tool,
     azure_devops_agent_authority_lines,
     deny_pre_tool,
     dirty_summary,
@@ -16,7 +17,10 @@ from hook_utils import (
 )
 
 
-PRINT_COMMAND_PATTERN = re.compile(r"\b(echo|write-output|write-host|printenv|env|set|cat|type|get-content)\b")
+PRINT_COMMAND_PATTERN = re.compile(
+    r"(?:^|[;&|]\s*)"
+    r"(?:echo|write-output|write-host|printenv|env|set|cat|type|get-content)\b"
+)
 SECRET_VALUE_PATTERN = re.compile(
     r"(?<![a-z0-9])"
     r"(?:client_secret|connection_string|private_key|connectionstring|password|secret|token|oauth|pat)"
@@ -24,7 +28,9 @@ SECRET_VALUE_PATTERN = re.compile(
 )
 
 
-PROD_DEPLOY_APPROVAL_PATTERN = re.compile(r"\b(?:prod|production|deploy-prod|prod-[a-z0-9-]*)\b")
+PROD_DEPLOY_APPROVAL_PATTERN = re.compile(
+    r"\b(?:prod|production|deploy-prod|prod-[a-z0-9-]*)\b"
+)
 AZURE_PIPELINE_APPROVAL_COMMAND_PATTERN = re.compile(
     r"\baz\s+pipelines\b.*\bapprov|\baz\s+devops\s+invoke\b.*\bapprov|\b(?:curl|invoke-restmethod|irm|iwr|invoke-webrequest)\b.*\bapprove-check\b"
 )
@@ -32,19 +38,43 @@ AZURE_PIPELINE_APPROVAL_COMMAND_PATTERN = re.compile(
 
 def contains_destructive_git(command: str) -> str | None:
     checks = (
-        (r"\bgit\s+reset\s+--hard\b", "git reset --hard is blocked. Preserve the current worktree and inspect diffs instead."),
-        (r"\bgit\s+clean\b[^\n;|&]*(?:-[a-z]*f[a-z]*d|-[a-z]*d[a-z]*f)", "git clean with force/delete flags is blocked. Review untracked files and remove only explicit task-owned paths."),
-        (r"\bgit\s+checkout\s+--\b", "git checkout -- is blocked because it can discard work. Inspect the file diff and request explicit approval before reverting."),
-        (r"\bgit\s+restore\s+\.\b", "git restore . is blocked because it can discard broad worktree changes. Restore only explicit task-owned paths after approval."),
-        (r"\bgit\s+branch\s+-D\b", "git branch -D is blocked. Use git branch -d only after proving the branch is merged and not checked out in any worktree."),
-        (r"\bgit\s+push\b[^\n;|&]*(?:--force(?!-with-lease)|\s-f(?:\s|$))", "git push --force is blocked. Use the repo-approved sync path and avoid rewriting shared history."),
+        (
+            r"\bgit\s+reset\s+--hard\b",
+            "git reset --hard is blocked. Preserve the current worktree and inspect diffs instead.",
+        ),
+        (
+            r"\bgit\s+clean\b[^\n;|&]*(?:-[a-z]*f[a-z]*d|-[a-z]*d[a-z]*f)",
+            "git clean with force/delete flags is blocked. Review untracked files and remove only explicit task-owned paths.",
+        ),
+        (
+            r"\bgit\s+checkout\s+--\b",
+            "git checkout -- is blocked because it can discard work. Inspect the file diff and request explicit approval before reverting.",
+        ),
+        (
+            r"\bgit\s+restore\s+\.\b",
+            "git restore . is blocked because it can discard broad worktree changes. Restore only explicit task-owned paths after approval.",
+        ),
+        (
+            r"\bgit\s+branch\s+-D\b",
+            "git branch -D is blocked. Use git branch -d only after proving the branch is merged and not checked out in any worktree.",
+        ),
+        (
+            r"\bgit\s+push\b[^\n;|&]*(?:--force(?!-with-lease)|\s-f(?:\s|$))",
+            "git push --force is blocked. Use the repo-approved sync path and avoid rewriting shared history.",
+        ),
     )
     for pattern, reason in checks:
         if re.search(pattern, command):
             return reason
-    if re.search(r"\bgit\s+push\s+(?:origin\s+)?(?:main|master|trunk|develop|staging|production)\b", command):
+    if re.search(
+        r"\bgit\s+push\s+(?:origin\s+)?(?:main|master|trunk|develop|staging|production)\b",
+        command,
+    ):
         return "Direct pushes to protected branches are blocked. Use a task branch and PR policy path."
-    if re.search(r"\bgit\s+push\s+origin\s+head:(?:main|master|trunk|develop|staging|production)\b", command):
+    if re.search(
+        r"\bgit\s+push\s+origin\s+head:(?:main|master|trunk|develop|staging|production)\b",
+        command,
+    ):
         return "Direct pushes to protected branches are blocked. Use a task branch and PR policy path."
     return None
 
@@ -102,6 +132,56 @@ def contains_azure_devops_completion_command(command: str) -> bool:
     )
 
 
+def contains_finish_workflow_command(command: str) -> bool:
+    if "git commit" in command:
+        return True
+    if re.search(r"\bgit\s+push\b", command):
+        return True
+    if re.search(r"\baz\s+repos\s+pr\s+create\b", command):
+        return True
+    if re.search(r"\baz\s+repos\s+pr\s+update\b", command) and any(
+        marker in command
+        for marker in (
+            "--auto-complete",
+            "--status completed",
+            "--delete-source-branch",
+            "--squash",
+            "--transition-work-items",
+        )
+    ):
+        return True
+    if re.search(r"\baz\s+repos\s+pr\s+set-vote\b", command):
+        return True
+    if re.search(r"\baz\s+repos\s+pr\b", command) and "--vote" in command:
+        return True
+    return False
+
+
+def finish_workflow_permission_reason(command: str, root: Path) -> str | None:
+    if not contains_finish_workflow_command(command):
+        return None
+
+    notes = [
+        "Allowed finish workflow command after safety checks passed for commit, push, "
+        "pull request, or merge/completion work."
+    ]
+    status = dirty_summary(root)
+    if status.startswith("dirty"):
+        notes.append(
+            f"Working tree is {status}; confirm task-owned scope before committing or pushing."
+        )
+    if upstream_gone(root):
+        notes.append(
+            "Current branch upstream is gone; confirm branch ownership before pushing."
+        )
+    if contains_azure_devops_completion_command(command):
+        notes.append(
+            "Azure DevOps PR/work-item completion authority applies only after branch "
+            "policies and review rules pass."
+        )
+    return " ".join(notes)
+
+
 def risky_context(command: str, root: Path) -> str | None:
     ado_completion_command = contains_azure_devops_completion_command(command)
     risky = (
@@ -133,7 +213,9 @@ def risky_context(command: str, root: Path) -> str | None:
     if ado_completion_command:
         context_lines.append("Azure DevOps authority reminder:")
         context_lines.extend(azure_devops_agent_authority_lines())
-        context_lines.append("Proceed only when branch policies, required checks, and review rules allow it.")
+        context_lines.append(
+            "Proceed only when branch policies, required checks, and review rules allow it."
+        )
     return "\n".join(context_lines)
 
 
@@ -144,7 +226,11 @@ def main() -> int:
         return 0
 
     root = repo_root()
-    for check in (contains_destructive_git, contains_secret_print, contains_prod_deploy_approval):
+    for check in (
+        contains_destructive_git,
+        contains_secret_print,
+        contains_prod_deploy_approval,
+    ):
         reason = check(command)
         if reason:
             return emit_json(deny_pre_tool(reason))
@@ -152,6 +238,10 @@ def main() -> int:
     reason = contains_external_recursive_delete_or_move(command, root)
     if reason:
         return emit_json(deny_pre_tool(reason))
+
+    allow_reason = finish_workflow_permission_reason(command, root)
+    if allow_reason:
+        return emit_json(allow_pre_tool(allow_reason))
 
     context = risky_context(command, root)
     if context:

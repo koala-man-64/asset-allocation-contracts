@@ -165,6 +165,16 @@ def deny_pre_tool(reason: str) -> dict[str, Any]:
     }
 
 
+def allow_pre_tool(reason: str) -> dict[str, Any]:
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "permissionDecisionReason": ascii_text(reason),
+        }
+    }
+
+
 def block(reason: str) -> dict[str, Any]:
     return {"decision": "block", "reason": ascii_text(reason)}
 
