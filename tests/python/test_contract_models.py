@@ -2053,6 +2053,39 @@ def test_universe_condition_accepts_qmom_research_fields() -> None:
     assert any(field.id == "qmom.adr_pct_20d" for field in UNIVERSE_FIELD_DEFINITIONS)
 
 
+def test_universe_condition_accepts_strict_stock_state_fields() -> None:
+    definition = UniverseDefinition(
+        root={
+            "operator": "and",
+            "clauses": [
+                {"field": "returns.return_60d", "operator": "gte", "value": 0.30},
+                {"field": "technical.rsi_14d", "operator": "gte", "value": 75},
+                {"field": "technical.bb_width_20d", "operator": "lte", "value": 0.10},
+                {"field": "technical.compression_score", "operator": "gte", "value": 0.70},
+                {"field": "technical.position_in_20d_range", "operator": "gte", "value": 1.0},
+            ],
+        }
+    )
+
+    used_fields = [
+        clause.field
+        for clause in definition.root.clauses
+        if isinstance(clause, UniverseCondition)
+    ]
+    assert used_fields == [
+        "returns.return_60d",
+        "technical.rsi_14d",
+        "technical.bb_width_20d",
+        "technical.compression_score",
+        "technical.position_in_20d_range",
+    ]
+    assert UNIVERSE_FIELD_DEFINITION_BY_ID["technical.rsi_14d"].label == "14 Day RSI"
+    assert all(
+        UNIVERSE_FIELD_DEFINITION_BY_ID[field].valueKind == "number"
+        for field in used_fields
+    )
+
+
 def test_universe_condition_accepts_runner_discovery_fields() -> None:
     definition = UniverseDefinition(
         root={
