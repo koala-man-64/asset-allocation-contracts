@@ -387,6 +387,21 @@ Purpose:
 - Keep server-side filtering, sort keys, coverage flags, facets, and active filter echo aligned across control-plane and browser consumers
 - Preserve the read-only research boundary: these contracts describe screening data and metadata, not trading actions or watchlist mutation commands
 
+### 4.11.1 Intraday And Live Currency Contracts
+
+Owned by:
+
+- `python/asset_allocation_contracts/intraday.py`
+- `schemas/currency-intraday-*.schema.json`
+- `schemas/live-currency-price-*.schema.json`
+- `ts/src/contracts.ts`
+
+Purpose:
+
+- Define shared currency intraday bar payloads and live currency price payloads consumed by control-plane and UI.
+- Normalize supported BTC/USD symbol forms to canonical `BTCUSD` while preserving provider diagnostics such as `providerPair` and `providerChannel`.
+- Keep the live stream display boundary explicit: `LiveCurrencyPriceTick`, `LiveCurrencyPriceSnapshot`, and `LiveMarketPriceStatus` describe display/monitoring state only, not persistence, strategy triggers, order routing, or medallion ingestion.
+
 ### 4.12 Deployment Provenance Contracts
 
 Owned by:
@@ -436,11 +451,14 @@ Purpose:
 - `python/asset_allocation_contracts/ui_config.py`
 - `python/asset_allocation_contracts/deployment_provenance.py`
 - `python/asset_allocation_contracts/stock_screener.py`
+- `python/asset_allocation_contracts/intraday.py`
 - `python/asset_allocation_contracts/finance.py`
 - `python/asset_allocation_contracts/paths.py`
 - `python/asset_allocation_contracts/market_history.py`
 - `ts/src/contracts.ts`
 - `schemas/deployment-provenance-view.schema.json`
+- `schemas/live-currency-price-tick.schema.json`
+- `schemas/live-currency-price-snapshot.schema.json`
 - `schemas/`
 
 ## 5. Execution Lifecycle

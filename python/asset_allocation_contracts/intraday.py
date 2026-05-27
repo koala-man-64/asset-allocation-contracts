@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 
 CurrencyIntradayBarInterval = Literal["1m", "5m", "15m"]
+LiveMarketPriceStatus = Literal["connecting", "healthy", "degraded", "unavailable"]
 IntradayRefreshDomain = Literal["market", "currency"]
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
@@ -113,10 +114,34 @@ def _normalize_provider_symbol(value: object) -> str:
     return provider_symbol
 
 
+def _normalize_provider_pair(value: object) -> str:
+    provider_pair = str(value or "").strip().upper()
+    if not provider_pair:
+        raise ValueError("providerPair must be non-empty.")
+    if len(provider_pair) > 64:
+        raise ValueError("providerPair must be 64 characters or fewer.")
+    return provider_pair
+
+
+def _normalize_provider_channel(value: object) -> str:
+    provider_channel = str(value or "").strip().upper()
+    if not provider_channel:
+        raise ValueError("providerChannel must be non-empty.")
+    if len(provider_channel) > 80:
+        raise ValueError("providerChannel must be 80 characters or fewer.")
+    return provider_channel
+
+
 def _normalize_utc_datetime(value: datetime) -> datetime:
     if value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
+
+
+def _normalize_optional_utc_datetime(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    return _normalize_utc_datetime(value)
 
 
 def _normalize_symbols(values: object) -> list[str]:
@@ -259,6 +284,189 @@ class CurrencyIntradayBarsResponse(BaseModel):
             raise ValueError("providerSymbol must resolve to the canonical pair.")
         if self.rowCount != len(self.rows):
             raise ValueError("rowCount must match the number of rows.")
+        return self
+
+
+class LiveCurrencyPriceTick(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["crypto"] = "crypto"
+    symbol: str = Field(min_length=1, max_length=32)
+    baseCurrency: str = Field(min_length=1, max_length=16)
+    quoteCurrency: str = "USD"
+    providerPair: str = Field(min_length=1, max_length=64)
+    providerChannel: str = Field(min_length=1, max_length=80)
+    price: float = Field(gt=0)
+    size: float | None = Field(default=None, ge=0)
+    exchangeId: int | None = Field(default=None, ge=0)
+    conditions: list[int] = Field(default_factory=list)
+    tradeId: str | None = Field(default=None, min_length=1, max_length=128)
+    providerTimestampMs: int = Field(ge=0)
+    providerReceivedTimestampMs: int | None = Field(default=None, ge=0)
+    observedAt: datetime
+    sequence: int = Field(ge=1)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_currency_pair_symbol
+    )
+    _normalize_base_currency = field_validator("baseCurrency", mode="before")(
+        _normalize_base_currency
+    )
+    _normalize_quote_currency = field_validator("quoteCurrency", mode="before")(
+        _normalize_quote_currency
+    )
+    _normalize_provider_pair = field_validator("providerPair", mode="before")(
+        _normalize_provider_pair
+    )
+    _normalize_provider_channel = field_validator("providerChannel", mode="before")(
+        _normalize_provider_channel
+    )
+    _normalize_observed_at = field_validator("observedAt", mode="after")(
+        _normalize_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_pair_fields(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+
+        data = dict(raw)
+        quote_currency = data.get("quoteCurrency") or "USD"
+        if data.get("baseCurrency") is None:
+            base_currency, inferred_quote = _split_currency_pair(
+                data.get("symbol"),
+                default_quote_currency=quote_currency,
+            )
+            data["baseCurrency"] = base_currency
+            data["quoteCurrency"] = data.get("quoteCurrency") or inferred_quote
+        else:
+            data["baseCurrency"] = _normalize_base_currency(data["baseCurrency"])
+            data["quoteCurrency"] = _normalize_quote_currency(quote_currency)
+
+        data["symbol"] = f"{data['baseCurrency']}{data['quoteCurrency']}"
+        data["providerPair"] = data.get("providerPair") or (
+            f"{data['baseCurrency']}-{data['quoteCurrency']}"
+        )
+        data["providerChannel"] = data.get("providerChannel") or (
+            f"XT.{data['providerPair']}"
+        )
+        return data
+
+    @field_validator("conditions", mode="before")
+    @classmethod
+    def _normalize_conditions(cls, value: object) -> list[int]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise TypeError("conditions must be a list.")
+        normalized: list[int] = []
+        for condition in value:
+            normalized.append(int(condition))
+        return normalized
+
+    @model_validator(mode="after")
+    def _validate_tick(self) -> "LiveCurrencyPriceTick":
+        if self.symbol != f"{self.baseCurrency}{self.quoteCurrency}":
+            raise ValueError("symbol must match baseCurrency plus quoteCurrency.")
+        provider_pair = _normalize_currency_pair_symbol(self.providerPair)
+        if provider_pair != self.symbol:
+            raise ValueError("providerPair must resolve to the canonical pair.")
+        if not self.providerChannel.startswith("XT."):
+            raise ValueError("providerChannel must use the Massive XT trade channel.")
+        channel_pair = self.providerChannel.removeprefix("XT.")
+        if _normalize_currency_pair_symbol(channel_pair) != self.symbol:
+            raise ValueError("providerChannel must resolve to the canonical pair.")
+        return self
+
+
+class LiveCurrencyPriceSnapshot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["crypto"] = "crypto"
+    symbol: str = Field(min_length=1, max_length=32)
+    baseCurrency: str = Field(min_length=1, max_length=16)
+    quoteCurrency: str = "USD"
+    providerPair: str = Field(min_length=1, max_length=64)
+    providerChannel: str = Field(min_length=1, max_length=80)
+    topic: str = Field(min_length=1, max_length=160)
+    status: LiveMarketPriceStatus
+    lastTick: LiveCurrencyPriceTick | None = None
+    lastTickAgeSeconds: float | None = Field(default=None, ge=0)
+    connectedAt: datetime | None = None
+    lastProviderMessageAt: datetime | None = None
+    lastStatusAt: datetime
+    lastError: str | None = Field(default=None, max_length=2_000)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_currency_pair_symbol
+    )
+    _normalize_base_currency = field_validator("baseCurrency", mode="before")(
+        _normalize_base_currency
+    )
+    _normalize_quote_currency = field_validator("quoteCurrency", mode="before")(
+        _normalize_quote_currency
+    )
+    _normalize_provider_pair = field_validator("providerPair", mode="before")(
+        _normalize_provider_pair
+    )
+    _normalize_provider_channel = field_validator("providerChannel", mode="before")(
+        _normalize_provider_channel
+    )
+    _normalize_connected_at = field_validator("connectedAt", mode="after")(
+        _normalize_optional_utc_datetime
+    )
+    _normalize_last_provider_message_at = field_validator(
+        "lastProviderMessageAt",
+        mode="after",
+    )(_normalize_optional_utc_datetime)
+    _normalize_last_status_at = field_validator("lastStatusAt", mode="after")(
+        _normalize_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_pair_fields(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+
+        data = dict(raw)
+        quote_currency = data.get("quoteCurrency") or "USD"
+        if data.get("baseCurrency") is None:
+            base_currency, inferred_quote = _split_currency_pair(
+                data.get("symbol"),
+                default_quote_currency=quote_currency,
+            )
+            data["baseCurrency"] = base_currency
+            data["quoteCurrency"] = data.get("quoteCurrency") or inferred_quote
+        else:
+            data["baseCurrency"] = _normalize_base_currency(data["baseCurrency"])
+            data["quoteCurrency"] = _normalize_quote_currency(quote_currency)
+
+        data["symbol"] = f"{data['baseCurrency']}{data['quoteCurrency']}"
+        data["providerPair"] = data.get("providerPair") or (
+            f"{data['baseCurrency']}-{data['quoteCurrency']}"
+        )
+        data["providerChannel"] = data.get("providerChannel") or (
+            f"XT.{data['providerPair']}"
+        )
+        return data
+
+    @model_validator(mode="after")
+    def _validate_snapshot(self) -> "LiveCurrencyPriceSnapshot":
+        if self.symbol != f"{self.baseCurrency}{self.quoteCurrency}":
+            raise ValueError("symbol must match baseCurrency plus quoteCurrency.")
+        if _normalize_currency_pair_symbol(self.providerPair) != self.symbol:
+            raise ValueError("providerPair must resolve to the canonical pair.")
+        channel_pair = self.providerChannel.removeprefix("XT.")
+        if not self.providerChannel.startswith("XT.") or (
+            _normalize_currency_pair_symbol(channel_pair) != self.symbol
+        ):
+            raise ValueError("providerChannel must resolve to the canonical XT pair.")
+        if self.lastTick is not None and self.lastTick.symbol != self.symbol:
+            raise ValueError("lastTick symbol must match snapshot symbol.")
         return self
 
 

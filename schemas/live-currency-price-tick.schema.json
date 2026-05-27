@@ -1,0 +1,138 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assetClass": {
+      "const": "crypto",
+      "default": "crypto",
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "baseCurrency": {
+      "maxLength": 16,
+      "minLength": 1,
+      "title": "Basecurrency",
+      "type": "string"
+    },
+    "conditions": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Conditions",
+      "type": "array"
+    },
+    "exchangeId": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exchangeid"
+    },
+    "observedAt": {
+      "format": "date-time",
+      "title": "Observedat",
+      "type": "string"
+    },
+    "price": {
+      "exclusiveMinimum": 0,
+      "title": "Price",
+      "type": "number"
+    },
+    "provider": {
+      "const": "massive",
+      "default": "massive",
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerChannel": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Providerchannel",
+      "type": "string"
+    },
+    "providerPair": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Providerpair",
+      "type": "string"
+    },
+    "providerReceivedTimestampMs": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providerreceivedtimestampms"
+    },
+    "providerTimestampMs": {
+      "minimum": 0,
+      "title": "Providertimestampms",
+      "type": "integer"
+    },
+    "quoteCurrency": {
+      "default": "USD",
+      "title": "Quotecurrency",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "size": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Size"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "tradeId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tradeid"
+    }
+  },
+  "required": [
+    "symbol",
+    "baseCurrency",
+    "providerPair",
+    "providerChannel",
+    "price",
+    "providerTimestampMs",
+    "observedAt",
+    "sequence"
+  ],
+  "title": "LiveCurrencyPriceTick",
+  "type": "object"
+}

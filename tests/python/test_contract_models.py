@@ -89,6 +89,9 @@ from asset_allocation_contracts.intraday import (
     CurrencyIntradayBar,
     CurrencyIntradayBarInterval,
     CurrencyIntradayBarsResponse,
+    LiveCurrencyPriceSnapshot,
+    LiveCurrencyPriceTick,
+    LiveMarketPriceStatus,
     IntradayMonitorClaimResponse,
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
@@ -3035,6 +3038,141 @@ def test_currency_intraday_artifacts_include_schema_and_typescript_exports() -> 
     assert "export interface CurrencyIntradayBarsResponse" in generated_types
     assert "interval: CurrencyIntradayBarInterval;" in generated_types
     assert "from: string;" in generated_types
+
+
+def test_live_currency_price_contract_normalizes_massive_trade_shape() -> None:
+    adapter = TypeAdapter(LiveMarketPriceStatus)
+
+    assert adapter.validate_python("healthy") == "healthy"
+    assert adapter.validate_python("degraded") == "degraded"
+    assert adapter.validate_python("unavailable") == "unavailable"
+
+    tick = LiveCurrencyPriceTick(
+        symbol=" x:btcusd ",
+        providerPair="btc-usd",
+        providerChannel="xt.btc-usd",
+        price=101250.25,
+        size=0.025,
+        exchangeId=3,
+        conditions=["1", 2],
+        tradeId="trade-123",
+        providerTimestampMs=1779235200123,
+        providerReceivedTimestampMs=1779235200456,
+        observedAt="2026-05-20T00:05:00",
+        sequence=7,
+    )
+
+    assert tick.symbol == "BTCUSD"
+    assert tick.baseCurrency == "BTC"
+    assert tick.quoteCurrency == "USD"
+    assert tick.providerPair == "BTC-USD"
+    assert tick.providerChannel == "XT.BTC-USD"
+    assert tick.conditions == [1, 2]
+    assert tick.observedAt.isoformat() == "2026-05-20T00:05:00+00:00"
+
+    snapshot = LiveCurrencyPriceSnapshot(
+        symbol="BTC/USD",
+        providerPair="BTC-USD",
+        providerChannel="XT.BTC-USD",
+        topic="market-prices:massive:crypto:BTCUSD",
+        status="healthy",
+        lastTick=tick,
+        lastTickAgeSeconds=1.5,
+        connectedAt="2026-05-20T00:00:00Z",
+        lastProviderMessageAt="2026-05-20T00:05:00Z",
+        lastStatusAt="2026-05-20T00:05:01Z",
+    )
+
+    assert snapshot.symbol == "BTCUSD"
+    assert snapshot.baseCurrency == "BTC"
+    assert snapshot.quoteCurrency == "USD"
+    assert snapshot.lastTick == tick
+    assert snapshot.status == "healthy"
+
+
+def test_live_currency_price_contract_rejects_cross_pair_payloads() -> None:
+    invalid_payloads = (
+        {
+            "symbol": "BTCUSD",
+            "providerPair": "ETH-USD",
+            "providerChannel": "XT.BTC-USD",
+            "price": 101000,
+            "providerTimestampMs": 1779235200000,
+            "observedAt": "2026-05-20T00:00:00Z",
+            "sequence": 1,
+        },
+        {
+            "symbol": "BTCUSD",
+            "providerPair": "BTC-USD",
+            "providerChannel": "XA.BTC-USD",
+            "price": 101000,
+            "providerTimestampMs": 1779235200000,
+            "observedAt": "2026-05-20T00:00:00Z",
+            "sequence": 1,
+        },
+        {
+            "symbol": "BTCUSD",
+            "providerPair": "BTC-USD",
+            "providerChannel": "XT.BTC-USD",
+            "price": 0,
+            "providerTimestampMs": 1779235200000,
+            "observedAt": "2026-05-20T00:00:00Z",
+            "sequence": 1,
+        },
+    )
+    for payload in invalid_payloads:
+        try:
+            LiveCurrencyPriceTick.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected live currency price validation to reject {payload!r}."
+        )
+
+    matching_tick = LiveCurrencyPriceTick(
+        symbol="BTCUSD",
+        providerPair="BTC-USD",
+        providerChannel="XT.BTC-USD",
+        price=101000,
+        providerTimestampMs=1779235200000,
+        observedAt="2026-05-20T00:00:00Z",
+        sequence=1,
+    )
+    try:
+        LiveCurrencyPriceSnapshot(
+            symbol="ETHUSD",
+            providerPair="ETH-USD",
+            providerChannel="XT.ETH-USD",
+            topic="market-prices:massive:crypto:ETHUSD",
+            status="healthy",
+            lastTick=matching_tick,
+            lastStatusAt="2026-05-20T00:00:01Z",
+        )
+    except Exception:
+        return
+    raise AssertionError("Expected snapshot validation to reject mismatched lastTick.")
+
+
+def test_live_currency_price_artifacts_include_schema_and_typescript_exports() -> None:
+    root = Path(__file__).resolve().parents[2]
+    tick_schema_path = root / "schemas" / "live-currency-price-tick.schema.json"
+    snapshot_schema_path = (
+        root / "schemas" / "live-currency-price-snapshot.schema.json"
+    )
+    type_path = root / "ts" / "src" / "contracts.ts"
+
+    tick_schema = json.loads(tick_schema_path.read_text(encoding="utf-8"))
+    snapshot_schema = json.loads(snapshot_schema_path.read_text(encoding="utf-8"))
+
+    assert tick_schema["properties"]["providerChannel"]["maxLength"] == 80
+    assert tick_schema["properties"]["price"]["exclusiveMinimum"] == 0
+    assert "LiveCurrencyPriceTick" in snapshot_schema["$defs"]
+
+    generated_types = type_path.read_text(encoding="utf-8")
+    assert "export type LiveMarketPriceStatus" in generated_types
+    assert "export interface LiveCurrencyPriceTick" in generated_types
+    assert "export interface LiveCurrencyPriceSnapshot" in generated_types
+    assert "status: LiveMarketPriceStatus;" in generated_types
 
 
 def test_currency_intraday_paths_use_shared_domain_root() -> None:

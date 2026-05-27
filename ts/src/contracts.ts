@@ -29,6 +29,7 @@ export type PipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skip
 export type PipelineSyncActionKind = 'queue' | 'cancel' | 'retry-run' | 'retry-stage' | 'approve-check' | 'open';
 export type PipelineActionResponseStatus = 'accepted' | 'completed';
 export type CurrencyIntradayBarInterval = '1m' | '5m' | '15m';
+export type LiveMarketPriceStatus = 'connecting' | 'healthy' | 'degraded' | 'unavailable';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -4328,6 +4329,43 @@ export interface CurrencyIntradayBarsResponse {
   to: string;
   rowCount: number;
   rows: CurrencyIntradayBar[];
+}
+
+export interface LiveCurrencyPriceTick {
+  provider: 'massive';
+  assetClass: 'crypto';
+  symbol: string;
+  baseCurrency: string;
+  quoteCurrency: string;
+  providerPair: string;
+  providerChannel: string;
+  price: number;
+  size?: number | null;
+  exchangeId?: number | null;
+  conditions: number[];
+  tradeId?: string | null;
+  providerTimestampMs: number;
+  providerReceivedTimestampMs?: number | null;
+  observedAt: string;
+  sequence: number;
+}
+
+export interface LiveCurrencyPriceSnapshot {
+  provider: 'massive';
+  assetClass: 'crypto';
+  symbol: string;
+  baseCurrency: string;
+  quoteCurrency: string;
+  providerPair: string;
+  providerChannel: string;
+  topic: string;
+  status: LiveMarketPriceStatus;
+  lastTick?: LiveCurrencyPriceTick | null;
+  lastTickAgeSeconds?: number | null;
+  connectedAt?: string | null;
+  lastProviderMessageAt?: string | null;
+  lastStatusAt: string;
+  lastError?: string | null;
 }
 
 export interface IntradayWatchlistSummary {

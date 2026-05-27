@@ -28,6 +28,9 @@ import type {
   CurrencyIntradayBar,
   CurrencyIntradayBarInterval,
   CurrencyIntradayBarsResponse,
+  LiveCurrencyPriceSnapshot,
+  LiveCurrencyPriceTick,
+  LiveMarketPriceStatus,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   IntradayMonitorCompleteRequest,
@@ -165,6 +168,44 @@ const currencyBars: CurrencyIntradayBarsResponse = {
   to: "2026-05-20T00:15:00Z",
   rowCount: 1,
   rows: [currencyBar],
+};
+
+const liveMarketPriceStatus: LiveMarketPriceStatus = "healthy";
+const liveCurrencyTick: LiveCurrencyPriceTick = {
+  provider: "massive",
+  assetClass: "crypto",
+  symbol: "BTCUSD",
+  baseCurrency: "BTC",
+  quoteCurrency: "USD",
+  providerPair: "BTC-USD",
+  providerChannel: "XT.BTC-USD",
+  price: 101250.25,
+  size: 0.025,
+  exchangeId: 3,
+  conditions: [1, 2],
+  tradeId: "trade-123",
+  providerTimestampMs: 1779235200123,
+  providerReceivedTimestampMs: 1779235200456,
+  observedAt: "2026-05-20T00:05:00Z",
+  sequence: 7,
+};
+
+const liveCurrencySnapshot: LiveCurrencyPriceSnapshot = {
+  provider: "massive",
+  assetClass: "crypto",
+  symbol: "BTCUSD",
+  baseCurrency: "BTC",
+  quoteCurrency: "USD",
+  providerPair: "BTC-USD",
+  providerChannel: "XT.BTC-USD",
+  topic: "market-prices:massive:crypto:BTCUSD",
+  status: liveMarketPriceStatus,
+  lastTick: liveCurrencyTick,
+  lastTickAgeSeconds: 1.25,
+  connectedAt: "2026-05-20T00:00:00Z",
+  lastProviderMessageAt: "2026-05-20T00:05:00Z",
+  lastStatusAt: "2026-05-20T00:05:01Z",
+  lastError: null,
 };
 
 const intradayRefreshDomain: IntradayRefreshDomain = "currency";

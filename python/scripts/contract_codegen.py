@@ -493,6 +493,11 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "currency-intraday-bars-response.schema.json",
         intraday.CurrencyIntradayBarsResponse,
     ),
+    ("live-currency-price-tick.schema.json", intraday.LiveCurrencyPriceTick),
+    (
+        "live-currency-price-snapshot.schema.json",
+        intraday.LiveCurrencyPriceSnapshot,
+    ),
     ("intraday-watchlist-summary.schema.json", intraday.IntradayWatchlistSummary),
     ("intraday-watchlist-detail.schema.json", intraday.IntradayWatchlistDetail),
     (
@@ -594,6 +599,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("PipelineSyncActionKind", pipeline_sync.PipelineSyncActionKind),
     ("PipelineActionResponseStatus", pipeline_sync.PipelineActionResponseStatus),
     ("CurrencyIntradayBarInterval", intraday.CurrencyIntradayBarInterval),
+    ("LiveMarketPriceStatus", intraday.LiveMarketPriceStatus),
     ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleVisualKey", strategy.ExitRuleVisualKey),
