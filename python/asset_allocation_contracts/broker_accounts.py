@@ -48,6 +48,9 @@ BrokerAccountActionType = Literal[
     "update_allocation",
 ]
 BrokerAccountActionStatus = Literal["accepted", "in_progress", "completed", "failed"]
+BrokerTradeApprovalMode = Literal["disabled", "optional", "required"]
+BrokerTradeApprovalReleaseMode = Literal["decision_only", "paper_sandbox_bearer", "live_bearer"]
+BrokerTradeApprovalEnvironment = Literal["paper", "sandbox", "live"]
 
 
 def _normalize_required_text(value: object, field_name: str) -> str:
@@ -129,6 +132,69 @@ class BrokerPositionSizeLimit(BaseModel):
         return self
 
 
+class BrokerTradeApprovalPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    approvalMode: BrokerTradeApprovalMode = "disabled"
+    releaseMode: BrokerTradeApprovalReleaseMode = "decision_only"
+    enabledEnvironments: list[BrokerTradeApprovalEnvironment] = Field(default_factory=list)
+    recipientGroupId: str | None = Field(default=None, min_length=1, max_length=128)
+    recipientEmails: list[str] = Field(default_factory=list)
+    recipientPhoneNumbers: list[str] = Field(default_factory=list)
+    maxLiveBearerNotional: float | None = Field(default=None, gt=0.0)
+    tokenTtlSeconds: int = Field(default=900, ge=60, le=86400)
+    requireDistinctRequester: bool = True
+
+    @field_validator("recipientGroupId", mode="before")
+    @classmethod
+    def normalize_recipient_group_id(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("enabledEnvironments", mode="before")
+    @classmethod
+    def normalize_environments(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("enabledEnvironments must be a list.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip().lower()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized
+
+    @field_validator("recipientEmails", "recipientPhoneNumbers", mode="before")
+    @classmethod
+    def normalize_recipient_lists(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("Recipient lists must be lists.")
+        normalized: list[str] = []
+        for item in value:
+            text = str(item or "").strip()
+            if text and text not in normalized:
+                normalized.append(text)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_approval_policy(self) -> "BrokerTradeApprovalPolicy":
+        if self.approvalMode == "disabled":
+            return self
+        if not self.enabledEnvironments:
+            raise ValueError("enabledEnvironments must be populated when trade approval is enabled.")
+        has_recipient_config = bool(self.recipientGroupId or self.recipientEmails or self.recipientPhoneNumbers)
+        if not has_recipient_config:
+            raise ValueError("Trade approval requires a recipient group or explicit recipients.")
+        if self.releaseMode == "live_bearer":
+            if "live" not in self.enabledEnvironments:
+                raise ValueError("live_bearer release mode requires live in enabledEnvironments.")
+            if self.maxLiveBearerNotional is None:
+                raise ValueError("live_bearer release mode requires maxLiveBearerNotional.")
+        return self
+
+
 class BrokerTradingPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -144,6 +210,7 @@ class BrokerTradingPolicy(BaseModel):
     requireOrderConfirmation: bool = False
     requireBorrowLocate: bool = True
     reduceOnly: bool = False
+    tradeApproval: BrokerTradeApprovalPolicy = Field(default_factory=BrokerTradeApprovalPolicy)
 
     @field_validator("allowedSides", "allowedAssetClasses", mode="before")
     @classmethod

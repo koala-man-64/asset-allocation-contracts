@@ -98,6 +98,35 @@
       "title": "NotificationDeliveryResult",
       "type": "object"
     },
+    "StrategyReferenceInput": {
+      "additionalProperties": false,
+      "properties": {
+        "strategyName": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Strategyname",
+          "type": "string"
+        },
+        "strategyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Strategyversion"
+        }
+      },
+      "required": [
+        "strategyName"
+      ],
+      "title": "StrategyReferenceInput",
+      "type": "object"
+    },
     "TradeApprovalDisplay": {
       "additionalProperties": false,
       "properties": {
@@ -177,6 +206,17 @@
           "default": null,
           "title": "Quantity"
         },
+        "reviewContext": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TradeApprovalReviewContext"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "side": {
           "enum": [
             "buy",
@@ -228,6 +268,290 @@
         "orderType"
       ],
       "title": "TradeApprovalDisplay",
+      "type": "object"
+    },
+    "TradeApprovalReviewContext": {
+      "additionalProperties": false,
+      "properties": {
+        "accountLabel": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accountlabel"
+        },
+        "blockReason": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blockreason"
+        },
+        "buyingPowerAfter": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Buyingpowerafter"
+        },
+        "cashAfter": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cashafter"
+        },
+        "confirmationRequired": {
+          "default": false,
+          "title": "Confirmationrequired",
+          "type": "boolean"
+        },
+        "estimatedCost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedcost"
+        },
+        "estimatedFees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedfees"
+        },
+        "policyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policyversion"
+        },
+        "proposalId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposalid"
+        },
+        "proposalTradeIndex": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Proposaltradeindex"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "enum": [
+                "alpaca",
+                "etrade",
+                "schwab",
+                "kalshi"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "releaseMode": {
+          "default": "decision_only",
+          "enum": [
+            "decision_only",
+            "paper_sandbox_bearer",
+            "live_bearer"
+          ],
+          "title": "Releasemode",
+          "type": "string"
+        },
+        "riskChecks": {
+          "items": {
+            "$ref": "#/$defs/TradeRiskCheck"
+          },
+          "title": "Riskchecks",
+          "type": "array"
+        },
+        "sleeveId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sleeveid"
+        },
+        "sleeveName": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sleevename"
+        },
+        "source": {
+          "default": "manual_preview",
+          "enum": [
+            "manual_preview",
+            "rebalance_proposal",
+            "system"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "strategyRef": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyReferenceInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "title": "TradeApprovalReviewContext",
+      "type": "object"
+    },
+    "TradeRiskCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "checkId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Checkid",
+          "type": "string"
+        },
+        "code": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "message": {
+          "default": "",
+          "title": "Message",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "severity": {
+          "default": "info",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "warning",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "checkId",
+        "code",
+        "label",
+        "status"
+      ],
+      "title": "TradeRiskCheck",
       "type": "object"
     }
   },

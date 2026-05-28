@@ -23,6 +23,98 @@
       ],
       "title": "BrokerPositionSizeLimit",
       "type": "object"
+    },
+    "BrokerTradeApprovalPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "approvalMode": {
+          "default": "disabled",
+          "enum": [
+            "disabled",
+            "optional",
+            "required"
+          ],
+          "title": "Approvalmode",
+          "type": "string"
+        },
+        "enabledEnvironments": {
+          "items": {
+            "enum": [
+              "paper",
+              "sandbox",
+              "live"
+            ],
+            "type": "string"
+          },
+          "title": "Enabledenvironments",
+          "type": "array"
+        },
+        "maxLiveBearerNotional": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlivebearernotional"
+        },
+        "recipientEmails": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Recipientemails",
+          "type": "array"
+        },
+        "recipientGroupId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipientgroupid"
+        },
+        "recipientPhoneNumbers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Recipientphonenumbers",
+          "type": "array"
+        },
+        "releaseMode": {
+          "default": "decision_only",
+          "enum": [
+            "decision_only",
+            "paper_sandbox_bearer",
+            "live_bearer"
+          ],
+          "title": "Releasemode",
+          "type": "string"
+        },
+        "requireDistinctRequester": {
+          "default": true,
+          "title": "Requiredistinctrequester",
+          "type": "boolean"
+        },
+        "tokenTtlSeconds": {
+          "default": 900,
+          "maximum": 86400,
+          "minimum": 60,
+          "title": "Tokenttlseconds",
+          "type": "integer"
+        }
+      },
+      "title": "BrokerTradeApprovalPolicy",
+      "type": "object"
     }
   },
   "additionalProperties": false,
@@ -148,6 +240,9 @@
       "default": false,
       "title": "Requireorderconfirmation",
       "type": "boolean"
+    },
+    "tradeApproval": {
+      "$ref": "#/$defs/BrokerTradeApprovalPolicy"
     }
   },
   "title": "BrokerTradingPolicy",

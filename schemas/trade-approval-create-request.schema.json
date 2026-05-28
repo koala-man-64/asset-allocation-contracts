@@ -1,0 +1,117 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "clientRequestId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Clientrequestid",
+      "type": "string"
+    },
+    "expiresAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expiresat"
+    },
+    "idempotencyKey": {
+      "maxLength": 160,
+      "minLength": 16,
+      "title": "Idempotencykey",
+      "type": "string"
+    },
+    "previewId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previewid"
+    },
+    "proposalId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Proposalid"
+    },
+    "proposalTradeIndexes": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Proposaltradeindexes",
+      "type": "array"
+    },
+    "reason": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Reason",
+      "type": "string"
+    },
+    "releaseMode": {
+      "anyOf": [
+        {
+          "enum": [
+            "decision_only",
+            "paper_sandbox_bearer",
+            "live_bearer"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Releasemode"
+    },
+    "source": {
+      "default": "manual_preview",
+      "enum": [
+        "manual_preview",
+        "rebalance_proposal"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "targetUrl": {
+      "anyOf": [
+        {
+          "maxLength": 2048,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Targeturl"
+    }
+  },
+  "required": [
+    "clientRequestId",
+    "idempotencyKey"
+  ],
+  "title": "TradeApprovalCreateRequest",
+  "type": "object"
+}

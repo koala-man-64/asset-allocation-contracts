@@ -2509,11 +2509,24 @@ export interface BrokerTradingPolicy {
   requireOrderConfirmation: boolean;
   requireBorrowLocate?: boolean;
   reduceOnly?: boolean;
+  tradeApproval?: BrokerTradeApprovalPolicy;
 }
 
 export interface BrokerPositionSizeLimit {
   mode: StrategyPositionSizeMode;
   value: number;
+}
+
+export interface BrokerTradeApprovalPolicy {
+  approvalMode: 'disabled' | 'optional' | 'required';
+  releaseMode: 'decision_only' | 'paper_sandbox_bearer' | 'live_bearer';
+  enabledEnvironments: TradeEnvironment[];
+  recipientGroupId?: string | null;
+  recipientEmails: string[];
+  recipientPhoneNumbers: string[];
+  maxLiveBearerNotional?: number | null;
+  tokenTtlSeconds: number;
+  requireDistinctRequester: boolean;
 }
 
 export interface BrokerAccountConfigurationAuditRecord {
@@ -3362,6 +3375,46 @@ export interface TradeApprovalPayload {
   orderHash: string;
   placeIdempotencyKey: string;
   order: TradeOrderPreviewRequest;
+  reviewContext?: TradeApprovalReviewContext | null;
+}
+
+export interface TradeApprovalReviewContext {
+  source: 'manual_preview' | 'rebalance_proposal' | 'system';
+  accountLabel?: string | null;
+  provider?: BrokerVendor | null;
+  proposalId?: string | null;
+  proposalTradeIndex?: number | null;
+  sleeveId?: string | null;
+  sleeveName?: string | null;
+  strategyRef?: StrategyReferenceInput | null;
+  policyVersion?: number | null;
+  estimatedCost?: number | null;
+  estimatedFees?: number | null;
+  cashAfter?: number | null;
+  buyingPowerAfter?: number | null;
+  riskChecks: TradeRiskCheck[];
+  warnings: string[];
+  blockReason?: string | null;
+  confirmationRequired: boolean;
+  releaseMode: 'decision_only' | 'paper_sandbox_bearer' | 'live_bearer';
+}
+
+export interface TradeApprovalCreateRequest {
+  source: 'manual_preview' | 'rebalance_proposal';
+  clientRequestId: string;
+  idempotencyKey: string;
+  previewId?: string | null;
+  proposalId?: string | null;
+  proposalTradeIndexes: number[];
+  targetUrl?: string | null;
+  reason: string;
+  releaseMode?: 'decision_only' | 'paper_sandbox_bearer' | 'live_bearer' | null;
+  expiresAt?: string | null;
+}
+
+export interface TradeApprovalCreateResponse {
+  accountId: string;
+  approvals: NotificationStatusResponse[];
 }
 
 export interface NotificationStatusResponse {
@@ -3412,6 +3465,7 @@ export interface TradeApprovalDisplay {
   notional?: number | null;
   limitPrice?: number | null;
   stopPrice?: number | null;
+  reviewContext?: TradeApprovalReviewContext | null;
 }
 
 export interface NotificationActionDetailResponse {

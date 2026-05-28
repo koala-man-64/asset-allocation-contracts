@@ -53,6 +53,7 @@ from asset_allocation_contracts.broker_accounts import (
     BrokerCapabilityFlags,
     BrokerConnectionHealth,
     BrokerStrategyAllocationSummary,
+    BrokerTradeApprovalPolicy,
     BrokerTradingPolicy,
     BrokerTradingPolicyUpdateRequest,
     BrokerSyncRun,
@@ -109,6 +110,13 @@ from asset_allocation_contracts.intraday import (
     IntradayWatchlistUpsertRequest,
 )
 from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
+from asset_allocation_contracts.notifications import (
+    NotificationActionDetailResponse,
+    NotificationStatusResponse,
+    TradeApprovalCreateRequest,
+    TradeApprovalCreateResponse,
+    TradeApprovalPayload,
+)
 from asset_allocation_contracts.portfolio import (
     PortfolioAccount,
     PortfolioAccountUpsertRequest,
@@ -5177,6 +5185,7 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
     assert configuration.requestedPolicy.maxSinglePositionExposure.value == 8.5
     assert configuration.requestedPolicy.maxGrossExposurePct == 100
     assert configuration.requestedPolicy.maxAdvParticipationPct == 5
+    assert configuration.requestedPolicy.tradeApproval.approvalMode == "disabled"
     assert configuration.allocation.items[0].strategy.strategyName == "quality-trend"
     assert configuration.audit[0].grantedRoles == [
         "AssetAllocation.AccountPolicy.Write"
@@ -5201,4 +5210,209 @@ def test_broker_account_configuration_contracts_capture_policy_and_allocation() 
         else:
             raise AssertionError(
                 f"Expected BrokerTradingPolicy to reject {invalid_policy!r}."
+            )
+
+
+def test_broker_trade_approval_policy_contracts_gate_live_bearer_release() -> None:
+    policy = BrokerTradeApprovalPolicy(
+        approvalMode="required",
+        releaseMode="live_bearer",
+        enabledEnvironments=["paper", "live", "live"],
+        recipientGroupId="desk-reviewers",
+        maxLiveBearerNotional=2500.0,
+        tokenTtlSeconds=300,
+    )
+
+    assert policy.enabledEnvironments == ["paper", "live"]
+    assert policy.maxLiveBearerNotional == 2500.0
+    assert policy.requireDistinctRequester is True
+
+    for invalid_policy, expected in (
+        (
+            {
+                "approvalMode": "required",
+                "releaseMode": "live_bearer",
+                "enabledEnvironments": ["live"],
+                "recipientEmails": ["desk@example.com"],
+            },
+            "maxLiveBearerNotional",
+        ),
+        (
+            {
+                "approvalMode": "required",
+                "releaseMode": "paper_sandbox_bearer",
+                "enabledEnvironments": ["paper"],
+            },
+            "recipient group",
+        ),
+    ):
+        try:
+            BrokerTradeApprovalPolicy.model_validate(invalid_policy)
+        except Exception as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(
+                f"Expected BrokerTradeApprovalPolicy to reject {invalid_policy!r}."
+            )
+
+
+def test_trade_approval_review_context_contracts_are_structured_and_optional() -> None:
+    order = {
+        "accountId": "acct-live",
+        "environment": "live",
+        "clientRequestId": "client-approval-1",
+        "symbol": "SPY",
+        "side": "buy",
+        "orderType": "market",
+        "timeInForce": "day",
+        "assetClass": "etf",
+        "quantity": 1.0,
+        "optionLegs": [],
+        "allowExtendedHours": False,
+        "source": "rebalance_preview",
+        "strategyRef": {"strategyName": "quality-trend", "strategyVersion": 4},
+    }
+    review_context = {
+        "source": "rebalance_proposal",
+        "accountLabel": "Core Live",
+        "provider": "alpaca",
+        "proposalId": "proposal-1",
+        "proposalTradeIndex": 0,
+        "sleeveId": "quality-core",
+        "sleeveName": "Quality Core",
+        "strategyRef": {"strategyName": "quality-trend", "strategyVersion": 4},
+        "policyVersion": 7,
+        "estimatedCost": 525.0,
+        "estimatedFees": 1.25,
+        "cashAfter": 9475.0,
+        "buyingPowerAfter": 9475.0,
+        "riskChecks": [
+            {
+                "checkId": "approval-live-bearer-cap",
+                "code": "max_live_bearer_notional",
+                "label": "Live bearer release cap",
+                "status": "pass",
+                "severity": "info",
+                "blocking": False,
+                "message": "Within live bearer cap.",
+            }
+        ],
+        "warnings": ["Live release requires one-time approval link."],
+        "confirmationRequired": True,
+        "releaseMode": "live_bearer",
+    }
+
+    payload = TradeApprovalPayload(
+        accountId="acct-live",
+        previewId="preview-1",
+        orderHash="hash-1",
+        placeIdempotencyKey="place-idempotency-1",
+        order=order,
+        reviewContext=review_context,
+    )
+    status = NotificationStatusResponse(
+        requestId="notification-1",
+        kind="trade_approval",
+        status="delivered",
+        sourceRepo="asset-allocation-control-plane",
+        clientRequestId="client-approval-1",
+        title="Approve SPY buy",
+        description="Approve one SPY buy order.",
+        createdAt="2026-05-28T15:00:00Z",
+        updatedAt="2026-05-28T15:00:00Z",
+        decisionStatus="pending",
+        executionStatus="pending_approval",
+        tradeApproval={
+            "accountId": "acct-live",
+            "previewId": "preview-1",
+            "orderHash": "hash-1",
+            "environment": "live",
+            "symbol": "SPY",
+            "side": "buy",
+            "orderType": "market",
+            "timeInForce": "day",
+            "quantity": 1.0,
+            "reviewContext": review_context,
+        },
+    )
+    action = NotificationActionDetailResponse(
+        requestId=status.requestId,
+        tokenId="token-1",
+        kind=status.kind,
+        title=status.title,
+        description=status.description,
+        createdAt=status.createdAt,
+        decisionStatus=status.decisionStatus,
+        executionStatus=status.executionStatus,
+        tradeApproval=status.tradeApproval,
+    )
+    legacy_payload = TradeApprovalPayload(
+        accountId="acct-live",
+        previewId="preview-2",
+        orderHash="hash-2",
+        placeIdempotencyKey="place-idempotency-2",
+        order={**order, "clientRequestId": "client-approval-2", "source": "manual"},
+    )
+
+    assert payload.reviewContext is not None
+    assert payload.reviewContext.source == "rebalance_proposal"
+    assert payload.reviewContext.riskChecks[0].code == "max_live_bearer_notional"
+    assert action.tradeApproval is not None
+    assert action.tradeApproval.reviewContext is not None
+    assert action.tradeApproval.reviewContext.releaseMode == "live_bearer"
+    assert legacy_payload.reviewContext is None
+
+
+def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> None:
+    manual_request = TradeApprovalCreateRequest(
+        source="manual_preview",
+        clientRequestId="approval-client-1",
+        idempotencyKey="approval-idempotency-1",
+        previewId="preview-1",
+        targetUrl="https://example.com/trade-desk",
+        reason="Desk review requested.",
+    )
+    rebalance_request = TradeApprovalCreateRequest(
+        source="rebalance_proposal",
+        clientRequestId="approval-client-2",
+        idempotencyKey="approval-idempotency-2",
+        proposalId="proposal-1",
+        proposalTradeIndexes=[2, 0, 2],
+        releaseMode="paper_sandbox_bearer",
+    )
+    response = TradeApprovalCreateResponse(
+        accountId="acct-live",
+        approvals=[],
+    )
+
+    assert manual_request.previewId == "preview-1"
+    assert rebalance_request.proposalTradeIndexes == [0, 2]
+    assert response.accountId == "acct-live"
+
+    for invalid_request, expected in (
+        (
+            {
+                "source": "manual_preview",
+                "clientRequestId": "client",
+                "idempotencyKey": "approval-idempotency-3",
+            },
+            "previewId",
+        ),
+        (
+            {
+                "source": "rebalance_proposal",
+                "clientRequestId": "client",
+                "idempotencyKey": "approval-idempotency-4",
+                "proposalId": "proposal-1",
+            },
+            "proposalTradeIndexes",
+        ),
+    ):
+        try:
+            TradeApprovalCreateRequest.model_validate(invalid_request)
+        except Exception as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(
+                f"Expected TradeApprovalCreateRequest to reject {invalid_request!r}."
             )

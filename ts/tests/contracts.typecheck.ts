@@ -24,6 +24,7 @@ import type {
   BrokerAccountOnboardingRequest,
   BrokerAccountOnboardingResponse,
   BrokerAccountSummary,
+  BrokerTradeApprovalPolicy,
   CongressTradeEventListResponse,
   CurrencyIntradayBar,
   CurrencyIntradayBarInterval,
@@ -47,6 +48,8 @@ import type {
   OptionPayoffProfile,
   OptionStrategyLadderResponse,
   OptionStrategyTemplate,
+  NotificationActionDetailResponse,
+  NotificationStatusResponse,
   RunPinsResponse,
   RunRecordResponse,
   RunStatusResponse,
@@ -107,6 +110,10 @@ import type {
   TradeAccountSummary,
   TradeBlotterResponse,
   TradeMetricFeedResponse,
+  TradeApprovalCreateRequest,
+  TradeApprovalCreateResponse,
+  TradeApprovalPayload,
+  TradeApprovalReviewContext,
   TradeOrderPreviewRequest,
   TradePosition,
   UiRuntimeConfig,
@@ -333,6 +340,113 @@ const optionPreview: TradeOrderPreviewRequest = {
   source: "manual",
   optionStrategyId: "long_call",
   optionLegs: [],
+};
+
+const tradeApprovalPolicy: BrokerTradeApprovalPolicy = {
+  approvalMode: "required",
+  releaseMode: "live_bearer",
+  enabledEnvironments: ["paper", "live"],
+  recipientGroupId: "desk-reviewers",
+  recipientEmails: [],
+  recipientPhoneNumbers: [],
+  maxLiveBearerNotional: 2500,
+  tokenTtlSeconds: 300,
+  requireDistinctRequester: true,
+};
+
+const tradeApprovalReviewContext: TradeApprovalReviewContext = {
+  source: "rebalance_proposal",
+  accountLabel: "Core Live",
+  provider: "alpaca",
+  proposalId: "proposal-1",
+  proposalTradeIndex: 0,
+  sleeveId: "quality-core",
+  sleeveName: "Quality Core",
+  strategyRef: { strategyName: "quality-trend", strategyVersion: 4 },
+  policyVersion: 7,
+  estimatedCost: 525,
+  estimatedFees: 1.25,
+  cashAfter: 9475,
+  buyingPowerAfter: 9475,
+  riskChecks: [
+    {
+      checkId: "approval-live-bearer-cap",
+      code: "max_live_bearer_notional",
+      label: "Live bearer release cap",
+      status: "pass",
+      severity: "info",
+      blocking: false,
+      message: "Within live bearer cap.",
+      metadata: {},
+    },
+  ],
+  warnings: ["Live release requires one-time approval link."],
+  confirmationRequired: true,
+  releaseMode: tradeApprovalPolicy.releaseMode,
+};
+
+const tradeApprovalPayload: TradeApprovalPayload = {
+  accountId: "acct-1",
+  previewId: "preview-1",
+  orderHash: "hash-1",
+  placeIdempotencyKey: "place-idempotency-1",
+  order: optionPreview,
+  reviewContext: tradeApprovalReviewContext,
+};
+
+const tradeApprovalStatus: NotificationStatusResponse = {
+  requestId: "notification-1",
+  kind: "trade_approval",
+  status: "delivered",
+  sourceRepo: "asset-allocation-control-plane",
+  clientRequestId: "client-1",
+  title: "Approve option order",
+  description: "Approve the reviewed trade.",
+  createdAt: "2026-05-28T15:00:00Z",
+  updatedAt: "2026-05-28T15:00:00Z",
+  decisionStatus: "pending",
+  executionStatus: "pending_approval",
+  deliveries: [],
+  tradeApproval: {
+    accountId: tradeApprovalPayload.accountId,
+    previewId: tradeApprovalPayload.previewId,
+    orderHash: tradeApprovalPayload.orderHash,
+    environment: optionPreview.environment,
+    symbol: optionPreview.symbol,
+    side: optionPreview.side,
+    orderType: optionPreview.orderType,
+    timeInForce: optionPreview.timeInForce,
+    quantity: optionPreview.quantity,
+    limitPrice: optionPreview.limitPrice,
+    reviewContext: tradeApprovalReviewContext,
+  },
+};
+
+const tradeApprovalAction: NotificationActionDetailResponse = {
+  requestId: tradeApprovalStatus.requestId,
+  tokenId: "token-1",
+  kind: tradeApprovalStatus.kind,
+  title: tradeApprovalStatus.title,
+  description: tradeApprovalStatus.description,
+  createdAt: tradeApprovalStatus.createdAt,
+  decisionStatus: tradeApprovalStatus.decisionStatus,
+  executionStatus: tradeApprovalStatus.executionStatus,
+  tradeApproval: tradeApprovalStatus.tradeApproval,
+};
+
+const tradeApprovalCreateRequest: TradeApprovalCreateRequest = {
+  source: "rebalance_proposal",
+  clientRequestId: "approval-client-1",
+  idempotencyKey: "approval-idempotency-1",
+  proposalId: "proposal-1",
+  proposalTradeIndexes: [0],
+  reason: "Desk approval requested.",
+  releaseMode: "paper_sandbox_bearer",
+};
+
+const tradeApprovalCreateResponse: TradeApprovalCreateResponse = {
+  accountId: "acct-1",
+  approvals: [tradeApprovalStatus],
 };
 
 const tradeMetricFeed: TradeMetricFeedResponse = {

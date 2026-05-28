@@ -255,6 +255,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         broker_accounts.BrokerAccountOnboardingResponse,
     ),
     ("broker-trading-policy.schema.json", broker_accounts.BrokerTradingPolicy),
+    ("broker-trade-approval-policy.schema.json", broker_accounts.BrokerTradeApprovalPolicy),
     ("broker-position-size-limit.schema.json", broker_accounts.BrokerPositionSizeLimit),
     (
         "broker-allocation-update-request.schema.json",
@@ -332,6 +333,14 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     (
         "notification-create-request.schema.json",
         notifications.CreateNotificationRequest,
+    ),
+    (
+        "trade-approval-create-request.schema.json",
+        notifications.TradeApprovalCreateRequest,
+    ),
+    (
+        "trade-approval-create-response.schema.json",
+        notifications.TradeApprovalCreateResponse,
     ),
     (
         "notification-status-response.schema.json",
@@ -783,6 +792,7 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("BrokerTradingPolicy", "allowLiveOrders"),
     ("BrokerTradingPolicy", "requireBorrowLocate"),
     ("BrokerTradingPolicy", "reduceOnly"),
+    ("BrokerTradingPolicy", "tradeApproval"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {

@@ -5,11 +5,14 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from asset_allocation_contracts.backtest import StrategyReferenceInput
 from asset_allocation_contracts.trade_desk import (
     TradeEnvironment,
     TradeOrderPreviewRequest,
     TradeOrderSide,
     TradeOrderType,
+    TradeProvider,
+    TradeRiskCheck,
     TradeTimeInForce,
 )
 
@@ -26,6 +29,9 @@ NotificationExecutionStatus = Literal[
     "release_failed",
 ]
 NotificationRequestStatus = Literal["pending", "delivered", "delivery_failed", "decided", "expired"]
+TradeApprovalRequestSource = Literal["manual_preview", "rebalance_proposal", "system"]
+TradeApprovalCreateSource = Literal["manual_preview", "rebalance_proposal"]
+TradeApprovalReleaseMode = Literal["decision_only", "paper_sandbox_bearer", "live_bearer"]
 
 
 def _normalize_required_text(value: object, field_name: str) -> str:
@@ -91,6 +97,50 @@ class NotificationRecipient(BaseModel):
         return self
 
 
+class TradeApprovalReviewContext(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: TradeApprovalRequestSource = "manual_preview"
+    accountLabel: str | None = Field(default=None, min_length=1, max_length=160)
+    provider: TradeProvider | None = None
+    proposalId: str | None = Field(default=None, min_length=1, max_length=128)
+    proposalTradeIndex: int | None = Field(default=None, ge=0)
+    sleeveId: str | None = Field(default=None, min_length=1, max_length=128)
+    sleeveName: str | None = Field(default=None, min_length=1, max_length=160)
+    strategyRef: StrategyReferenceInput | None = None
+    policyVersion: int | None = Field(default=None, ge=1)
+    estimatedCost: float | None = None
+    estimatedFees: float | None = None
+    cashAfter: float | None = None
+    buyingPowerAfter: float | None = None
+    riskChecks: list[TradeRiskCheck] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    blockReason: str | None = Field(default=None, min_length=1, max_length=500)
+    confirmationRequired: bool = False
+    releaseMode: TradeApprovalReleaseMode = "decision_only"
+
+    @field_validator(
+        "accountLabel",
+        "proposalId",
+        "sleeveId",
+        "sleeveName",
+        "blockReason",
+        mode="before",
+    )
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("warnings", mode="before")
+    @classmethod
+    def normalize_warnings(cls, value: object) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("warnings must be a list.")
+        return [str(item).strip() for item in value if str(item).strip()]
+
+
 class TradeApprovalPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -99,6 +149,7 @@ class TradeApprovalPayload(BaseModel):
     orderHash: str = Field(..., min_length=1, max_length=128)
     placeIdempotencyKey: str = Field(..., min_length=16, max_length=160)
     order: TradeOrderPreviewRequest
+    reviewContext: TradeApprovalReviewContext | None = None
 
     @field_validator("accountId", "previewId", "orderHash", "placeIdempotencyKey", mode="before")
     @classmethod
@@ -109,6 +160,66 @@ class TradeApprovalPayload(BaseModel):
     def validate_order_alignment(self) -> "TradeApprovalPayload":
         if self.accountId != self.order.accountId:
             raise ValueError("accountId must match order.accountId.")
+        return self
+
+
+class TradeApprovalCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: TradeApprovalCreateSource = "manual_preview"
+    clientRequestId: str = Field(..., min_length=1, max_length=128)
+    idempotencyKey: str = Field(..., min_length=16, max_length=160)
+    previewId: str | None = Field(default=None, min_length=1, max_length=128)
+    proposalId: str | None = Field(default=None, min_length=1, max_length=128)
+    proposalTradeIndexes: list[int] = Field(default_factory=list)
+    targetUrl: str | None = Field(default=None, min_length=1, max_length=2048)
+    reason: str = Field(default="", max_length=1000)
+    releaseMode: TradeApprovalReleaseMode | None = None
+    expiresAt: datetime | None = None
+
+    @field_validator("clientRequestId", "idempotencyKey", mode="before")
+    @classmethod
+    def normalize_required_text_fields(cls, value: object, info) -> str:
+        return _normalize_required_text(value, info.field_name)
+
+    @field_validator("previewId", "proposalId", mode="before")
+    @classmethod
+    def normalize_optional_text_fields(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+    @field_validator("targetUrl", mode="before")
+    @classmethod
+    def normalize_target_url(cls, value: object) -> str | None:
+        return _normalize_url(value, "targetUrl")
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def normalize_reason(cls, value: object) -> str:
+        return str(value or "").strip()
+
+    @field_validator("proposalTradeIndexes", mode="before")
+    @classmethod
+    def normalize_trade_indexes(cls, value: object) -> list[int]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise ValueError("proposalTradeIndexes must be a list.")
+        return sorted({int(item) for item in value})
+
+    @model_validator(mode="after")
+    def validate_source_shape(self) -> "TradeApprovalCreateRequest":
+        if self.source == "manual_preview":
+            if not self.previewId:
+                raise ValueError("previewId is required for manual_preview approval requests.")
+            if self.proposalId or self.proposalTradeIndexes:
+                raise ValueError("manual_preview approval requests cannot include proposal fields.")
+            return self
+        if not self.proposalId:
+            raise ValueError("proposalId is required for rebalance_proposal approval requests.")
+        if not self.proposalTradeIndexes:
+            raise ValueError("proposalTradeIndexes must include at least one index.")
+        if self.previewId:
+            raise ValueError("rebalance_proposal approval requests cannot include previewId.")
         return self
 
 
@@ -127,11 +238,24 @@ class TradeApprovalDisplay(BaseModel):
     notional: float | None = Field(default=None, gt=0)
     limitPrice: float | None = Field(default=None, gt=0)
     stopPrice: float | None = Field(default=None, gt=0)
+    reviewContext: TradeApprovalReviewContext | None = None
 
     @field_validator("accountId", "previewId", "orderHash", "symbol", mode="before")
     @classmethod
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
+
+
+class TradeApprovalCreateResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    approvals: list["NotificationStatusResponse"] = Field(default_factory=list)
+
+    @field_validator("accountId", mode="before")
+    @classmethod
+    def normalize_account_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "accountId")
 
 
 class CreateNotificationRequest(BaseModel):
