@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from asset_allocation_contracts.trade_desk import (
+    TradeAccountBalanceHistoryPoint,
+    TradeAccountBalanceHistoryResponse,
     TradeAccountDetail,
     TradeAccountSummary,
     TradeBlotterResponse,
@@ -124,6 +126,38 @@ def test_trade_account_contracts_accept_kalshi_provider() -> None:
     assert account.provider == "kalshi"
     assert account.environment == "live"
     assert account.freshness.balancesState == "unknown"
+
+
+def test_trade_account_balance_history_contract_normalizes_currency_and_metadata() -> None:
+    observed_at = _now()
+    point = TradeAccountBalanceHistoryPoint(
+        accountId=" acct-paper ",
+        provider="alpaca",
+        environment="paper",
+        asOf=observed_at,
+        balance=201_125.25,
+        equity=201_125.25,
+        cash=-250.75,
+        buyingPower=402_250.50,
+        currency="usd",
+        sourceObservedAt=observed_at,
+        syncRunId=" sync-001 ",
+    )
+    response = TradeAccountBalanceHistoryResponse(
+        accountId=" acct-paper ",
+        points=[point],
+        totalPoints=3,
+        truncated=True,
+        generatedAt=observed_at,
+    )
+
+    assert point.accountId == "acct-paper"
+    assert point.currency == "USD"
+    assert point.syncRunId == "sync-001"
+    assert response.accountId == "acct-paper"
+    assert response.points[0].balance == response.points[0].equity
+    assert response.totalPoints == 3
+    assert response.truncated is True
 
 
 def test_trade_metric_feed_accepts_extensible_metric_ids_and_v1_rows() -> None:

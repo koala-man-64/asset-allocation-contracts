@@ -2793,6 +2793,28 @@ export interface TradeAccountListResponse {
   generatedAt?: string | null;
 }
 
+export interface TradeAccountBalanceHistoryResponse {
+  accountId: string;
+  points: TradeAccountBalanceHistoryPoint[];
+  totalPoints: number;
+  truncated: boolean;
+  generatedAt?: string | null;
+}
+
+export interface TradeAccountBalanceHistoryPoint {
+  accountId: string;
+  provider: BrokerVendor;
+  environment: TradeEnvironment;
+  asOf: string;
+  balance: number;
+  equity: number;
+  cash?: number | null;
+  buyingPower?: number | null;
+  currency: string;
+  sourceObservedAt?: string | null;
+  syncRunId?: string | null;
+}
+
 export interface TradeMetricFeedResponse {
   scope: string;
   generatedAt: string;

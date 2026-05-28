@@ -291,6 +291,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("trade-account-summary.schema.json", trade_desk.TradeAccountSummary),
     ("trade-account-detail.schema.json", trade_desk.TradeAccountDetail),
     ("trade-account-list.schema.json", trade_desk.TradeAccountListResponse),
+    (
+        "trade-account-balance-history.schema.json",
+        trade_desk.TradeAccountBalanceHistoryResponse,
+    ),
     ("trade-capability-flags.schema.json", trade_desk.TradeCapabilityFlags),
     ("trade-pnl-snapshot.schema.json", trade_desk.TradePnlSnapshot),
     ("trade-metric-feed.schema.json", trade_desk.TradeMetricFeedResponse),

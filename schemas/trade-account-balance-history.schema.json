@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "TradeAccountBalanceHistoryPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "accountId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Accountid",
+          "type": "string"
+        },
+        "asOf": {
+          "format": "date-time",
+          "title": "Asof",
+          "type": "string"
+        },
+        "balance": {
+          "title": "Balance",
+          "type": "number"
+        },
+        "buyingPower": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Buyingpower"
+        },
+        "cash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cash"
+        },
+        "currency": {
+          "default": "USD",
+          "maxLength": 3,
+          "minLength": 3,
+          "title": "Currency",
+          "type": "string"
+        },
+        "environment": {
+          "enum": [
+            "paper",
+            "sandbox",
+            "live"
+          ],
+          "title": "Environment",
+          "type": "string"
+        },
+        "equity": {
+          "title": "Equity",
+          "type": "number"
+        },
+        "provider": {
+          "enum": [
+            "alpaca",
+            "etrade",
+            "schwab",
+            "kalshi"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "sourceObservedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sourceobservedat"
+        },
+        "syncRunId": {
+          "anyOf": [
+            {
+              "maxLength": 160,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Syncrunid"
+        }
+      },
+      "required": [
+        "accountId",
+        "provider",
+        "environment",
+        "asOf",
+        "balance",
+        "equity"
+      ],
+      "title": "TradeAccountBalanceHistoryPoint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accountId": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Accountid",
+      "type": "string"
+    },
+    "generatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Generatedat"
+    },
+    "points": {
+      "items": {
+        "$ref": "#/$defs/TradeAccountBalanceHistoryPoint"
+      },
+      "title": "Points",
+      "type": "array"
+    },
+    "totalPoints": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Totalpoints",
+      "type": "integer"
+    },
+    "truncated": {
+      "default": false,
+      "title": "Truncated",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "accountId"
+  ],
+  "title": "TradeAccountBalanceHistoryResponse",
+  "type": "object"
+}

@@ -416,6 +416,52 @@ class TradeAccountListResponse(BaseModel):
     generatedAt: datetime | None = None
 
 
+class TradeAccountBalanceHistoryPoint(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    provider: TradeProvider
+    environment: TradeEnvironment
+    asOf: datetime
+    balance: float
+    equity: float
+    cash: float | None = None
+    buyingPower: float | None = None
+    currency: str = Field(default="USD", min_length=3, max_length=3)
+    sourceObservedAt: datetime | None = None
+    syncRunId: str | None = Field(default=None, min_length=1, max_length=160)
+
+    @field_validator("accountId", mode="before")
+    @classmethod
+    def normalize_account_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "accountId")
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def normalize_currency(cls, value: object) -> str:
+        return _normalize_currency(value)
+
+    @field_validator("syncRunId", mode="before")
+    @classmethod
+    def normalize_sync_run_id(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
+
+
+class TradeAccountBalanceHistoryResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    accountId: str = Field(..., min_length=1, max_length=128)
+    points: list[TradeAccountBalanceHistoryPoint] = Field(default_factory=list)
+    totalPoints: int = Field(default=0, ge=0)
+    truncated: bool = False
+    generatedAt: datetime | None = None
+
+    @field_validator("accountId", mode="before")
+    @classmethod
+    def normalize_account_id(cls, value: object) -> str:
+        return _normalize_required_text(value, "accountId")
+
+
 class TradePosition(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

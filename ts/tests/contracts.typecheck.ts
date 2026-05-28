@@ -103,6 +103,7 @@ import type {
   UniverseConfigDraftGenerationResponse,
   UniverseCatalogResponse,
   TimeseriesPointResponse,
+  TradeAccountBalanceHistoryResponse,
   TradeAccountSummary,
   TradeBlotterResponse,
   TradeMetricFeedResponse,
@@ -378,6 +379,28 @@ const tradeMetricFeed: TradeMetricFeedResponse = {
     },
   ],
   warnings: ["Mixed execution environments are segmented."],
+};
+
+const tradeAccountBalanceHistory: TradeAccountBalanceHistoryResponse = {
+  accountId: "acct-paper",
+  points: [
+    {
+      accountId: "acct-paper",
+      provider: "alpaca",
+      environment: "paper",
+      asOf: "2026-05-27T14:30:00Z",
+      balance: 201125.25,
+      equity: 201125.25,
+      cash: -250.75,
+      buyingPower: 402250.5,
+      currency: "USD",
+      sourceObservedAt: "2026-05-27T14:30:01Z",
+      syncRunId: "sync-001",
+    },
+  ],
+  totalPoints: 1,
+  truncated: false,
+  generatedAt: "2026-05-27T14:31:00Z",
 };
 
 const optionBacktestResult: OptionBacktestResult = {
