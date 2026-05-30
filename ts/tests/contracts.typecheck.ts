@@ -92,6 +92,11 @@ import type {
   RankingSchemaDraftGenerationResponse,
   RankingSchemaPreset,
   RankingSchemaSummary,
+  RateLimitPolicyConfig,
+  RateLimitPolicySummary,
+  RateLimitThrottleSample,
+  RateLimitUsageBucket,
+  RateLimitUsageView,
   RebalancePolicyPreset,
   RegimeActivationDecision,
   RegimeGate,
@@ -447,6 +452,78 @@ const tradeApprovalCreateRequest: TradeApprovalCreateRequest = {
 const tradeApprovalCreateResponse: TradeApprovalCreateResponse = {
   accountId: "acct-1",
   approvals: [tradeApprovalStatus],
+};
+
+const rateLimitPolicyConfig: RateLimitPolicyConfig = {
+  rules: [
+    {
+      provider: "alpha_vantage",
+      operation: "time_series_daily",
+      windowSeconds: 60,
+      maxRequests: 5,
+      burstRequests: 5,
+      maxConcurrency: 1,
+      cooldownSeconds: 30,
+      backgroundMaxWaitMs: 1000,
+    },
+  ],
+};
+
+const rateLimitPolicySummary: RateLimitPolicySummary = {
+  name: "system_default",
+  version: 1,
+  description: "Default upstream limits",
+  archived: false,
+  usageCount: 0,
+  status: "active",
+  intendedUse: "production_candidate",
+  thesis: "Protect provider quotas",
+  whatToMonitor: ["429 spikes"],
+  updatedAt: "2026-05-30T12:00:00Z",
+  ruleCount: 1,
+  providers: ["alpha_vantage"],
+};
+
+const rateLimitUsageBucket: RateLimitUsageBucket = {
+  provider: "alpha_vantage",
+  operation: "time_series_daily",
+  windowSeconds: 60,
+  maxRequests: 5,
+  burstRequests: 5,
+  maxConcurrency: 1,
+  cooldownSeconds: 30,
+  availableTokens: 2.5,
+  tokenFillPct: 50,
+  activeConcurrency: 0,
+  allowCount: 11,
+  denyCount: 2,
+  cooldownCount: 1,
+  upstreamThrottleCount: 0,
+  lastDecisionAt: "2026-05-30T12:00:00Z",
+  lastDeniedAt: "2026-05-30T12:00:00Z",
+  lastCooldownAt: "2026-05-30T12:00:00Z",
+  nearLimit: true,
+};
+
+const rateLimitThrottleSample: RateLimitThrottleSample = {
+  observedAt: "2026-05-30T12:00:00Z",
+  provider: "alpha_vantage",
+  operation: "time_series_daily",
+  workload: "interactive",
+  reason: "local_rate_limit",
+  retryAfterMs: 30000,
+  policyName: "system_default",
+  policyVersion: 1,
+  message: "Burst exhausted",
+};
+
+const rateLimitUsageView: RateLimitUsageView = {
+  policyName: "system_default",
+  policyVersion: 1,
+  generatedAt: "2026-05-30T12:00:01Z",
+  buckets: [rateLimitUsageBucket],
+  throttleSamples: [rateLimitThrottleSample],
+  warnings: ["snapshot is process-local"],
 };
 
 const tradeMetricFeed: TradeMetricFeedResponse = {
@@ -1769,6 +1846,10 @@ void rebalancePreset;
 void riskPreset;
 void exitPreset;
 void exitRuleWithMetadata;
+void rateLimitPolicyConfig;
+void rateLimitPolicySummary;
+void rateLimitUsageBucket;
+void rateLimitUsageView;
 const portfolioAccount: PortfolioAccount = {
   accountId: "acct-001",
   name: "Core Long Only",

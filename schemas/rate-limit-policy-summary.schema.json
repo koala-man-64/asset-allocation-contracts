@@ -1,0 +1,103 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "archived": {
+      "default": false,
+      "title": "Archived",
+      "type": "boolean"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 2048,
+      "title": "Description",
+      "type": "string"
+    },
+    "intendedUse": {
+      "default": "research",
+      "enum": [
+        "research",
+        "validation",
+        "production_candidate"
+      ],
+      "title": "Intendeduse",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "providers": {
+      "items": {
+        "enum": [
+          "alpha_vantage",
+          "quiver",
+          "openai_responses"
+        ],
+        "type": "string"
+      },
+      "title": "Providers",
+      "type": "array"
+    },
+    "ruleCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Rulecount",
+      "type": "integer"
+    },
+    "status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "thesis": {
+      "default": "",
+      "maxLength": 4096,
+      "title": "Thesis",
+      "type": "string"
+    },
+    "updatedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updatedat"
+    },
+    "usageCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Usagecount",
+      "type": "integer"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "whatToMonitor": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Whattomonitor",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "version"
+  ],
+  "title": "RateLimitPolicySummary",
+  "type": "object"
+}

@@ -1,0 +1,148 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "activeConcurrency": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Activeconcurrency",
+      "type": "integer"
+    },
+    "allowCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Allowcount",
+      "type": "integer"
+    },
+    "availableTokens": {
+      "default": 0.0,
+      "minimum": 0.0,
+      "title": "Availabletokens",
+      "type": "number"
+    },
+    "burstRequests": {
+      "maximum": 1000000,
+      "minimum": 1,
+      "title": "Burstrequests",
+      "type": "integer"
+    },
+    "cooldownCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Cooldowncount",
+      "type": "integer"
+    },
+    "cooldownSeconds": {
+      "maximum": 86400,
+      "minimum": 0,
+      "title": "Cooldownseconds",
+      "type": "integer"
+    },
+    "denyCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Denycount",
+      "type": "integer"
+    },
+    "lastCooldownAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastcooldownat"
+    },
+    "lastDecisionAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastdecisionat"
+    },
+    "lastDeniedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastdeniedat"
+    },
+    "maxConcurrency": {
+      "maximum": 10000,
+      "minimum": 1,
+      "title": "Maxconcurrency",
+      "type": "integer"
+    },
+    "maxRequests": {
+      "maximum": 1000000,
+      "minimum": 1,
+      "title": "Maxrequests",
+      "type": "integer"
+    },
+    "nearLimit": {
+      "default": false,
+      "title": "Nearlimit",
+      "type": "boolean"
+    },
+    "operation": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Operation",
+      "type": "string"
+    },
+    "provider": {
+      "enum": [
+        "alpha_vantage",
+        "quiver",
+        "openai_responses"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "tokenFillPct": {
+      "default": 0.0,
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Tokenfillpct",
+      "type": "number"
+    },
+    "upstreamThrottleCount": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Upstreamthrottlecount",
+      "type": "integer"
+    },
+    "windowSeconds": {
+      "maximum": 3600,
+      "minimum": 1,
+      "title": "Windowseconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "provider",
+    "operation",
+    "windowSeconds",
+    "maxRequests",
+    "burstRequests",
+    "maxConcurrency",
+    "cooldownSeconds"
+  ],
+  "title": "RateLimitUsageBucket",
+  "type": "object"
+}

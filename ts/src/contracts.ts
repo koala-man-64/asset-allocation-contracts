@@ -49,6 +49,9 @@ export type RebalanceFrequency = 'every_bar' | 'daily' | 'weekly' | 'monthly' | 
 export type RebalanceExecutionTiming = 'next_bar_open';
 export type ReusableConfigStatus = 'draft' | 'active' | 'deprecated';
 export type ReusableConfigIntendedUse = 'research' | 'validation' | 'production_candidate';
+export type RateLimitProvider = 'alpha_vantage' | 'quiver' | 'openai_responses';
+export type RateLimitWorkload = 'interactive' | 'background';
+export type RateLimitThrottleReason = 'local_rate_limit' | 'local_concurrency_limit' | 'local_cooldown' | 'upstream_429';
 export type ReusableRebalanceCadence = 'daily' | 'weekly' | 'monthly' | 'quarterly';
 export type ReusableRebalanceDayRule = 'first_trading_day' | 'last_trading_day';
 export type ReusableRebalanceAnchor = 'close' | 'next_open';
@@ -745,6 +748,108 @@ export interface RebalancePolicyUpsertRequest {
 export interface RebalancePolicyPreset {
   identity: ConfigIdentity;
   config: RebalancePolicy;
+}
+
+export interface RateLimitPolicyConfig {
+  rules: RateLimitRule[];
+}
+
+export interface RateLimitRule {
+  provider: RateLimitProvider;
+  operation: string;
+  windowSeconds: number;
+  maxRequests: number;
+  burstRequests?: number | null;
+  maxConcurrency: number;
+  cooldownSeconds: number;
+  backgroundMaxWaitMs: number;
+}
+
+export interface RateLimitPolicySummary {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  archived: boolean;
+  usageCount: number;
+  updatedAt?: string | null;
+  ruleCount: number;
+  providers: RateLimitProvider[];
+}
+
+export interface RateLimitPolicyRevision {
+  name: string;
+  version: number;
+  status: ReusableConfigStatus;
+  description: string;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  config: RateLimitPolicyConfig;
+  configHash?: string | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+}
+
+export interface RateLimitPolicyDetailResponse {
+  policy: RateLimitPolicySummary;
+  activeRevision?: RateLimitPolicyRevision | null;
+  revisions: RateLimitPolicyRevision[];
+}
+
+export interface RateLimitPolicyUpsertRequest {
+  name: string;
+  description: string;
+  status: ReusableConfigStatus;
+  intendedUse: ReusableConfigIntendedUse;
+  thesis: string;
+  whatToMonitor: string[];
+  config: RateLimitPolicyConfig;
+}
+
+export interface RateLimitUsageBucket {
+  provider: RateLimitProvider;
+  operation: string;
+  windowSeconds: number;
+  maxRequests: number;
+  burstRequests: number;
+  maxConcurrency: number;
+  cooldownSeconds: number;
+  availableTokens: number;
+  tokenFillPct: number;
+  activeConcurrency: number;
+  allowCount: number;
+  denyCount: number;
+  cooldownCount: number;
+  upstreamThrottleCount: number;
+  lastDecisionAt?: string | null;
+  lastDeniedAt?: string | null;
+  lastCooldownAt?: string | null;
+  nearLimit: boolean;
+}
+
+export interface RateLimitThrottleSample {
+  observedAt: string;
+  provider: RateLimitProvider;
+  operation: string;
+  workload: RateLimitWorkload;
+  reason: RateLimitThrottleReason;
+  retryAfterMs: number;
+  policyName?: string | null;
+  policyVersion?: number | null;
+  message?: string | null;
+}
+
+export interface RateLimitUsageView {
+  policyName: string;
+  policyVersion: number;
+  generatedAt: string;
+  buckets: RateLimitUsageBucket[];
+  throttleSamples: RateLimitThrottleSample[];
+  warnings: string[];
 }
 
 export interface StrategyRiskPolicyPreset {

@@ -1,0 +1,99 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "message": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Message"
+    },
+    "observedAt": {
+      "format": "date-time",
+      "title": "Observedat",
+      "type": "string"
+    },
+    "operation": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Operation",
+      "type": "string"
+    },
+    "policyName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Policyname"
+    },
+    "policyVersion": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Policyversion"
+    },
+    "provider": {
+      "enum": [
+        "alpha_vantage",
+        "quiver",
+        "openai_responses"
+      ],
+      "title": "Provider",
+      "type": "string"
+    },
+    "reason": {
+      "enum": [
+        "local_rate_limit",
+        "local_concurrency_limit",
+        "local_cooldown",
+        "upstream_429"
+      ],
+      "title": "Reason",
+      "type": "string"
+    },
+    "retryAfterMs": {
+      "maximum": 3600000,
+      "minimum": 0,
+      "title": "Retryafterms",
+      "type": "integer"
+    },
+    "workload": {
+      "enum": [
+        "interactive",
+        "background"
+      ],
+      "title": "Workload",
+      "type": "string"
+    }
+  },
+  "required": [
+    "observedAt",
+    "provider",
+    "operation",
+    "workload",
+    "reason",
+    "retryAfterMs"
+  ],
+  "title": "RateLimitThrottleSample",
+  "type": "object"
+}

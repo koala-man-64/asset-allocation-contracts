@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "RateLimitRule": {
+      "additionalProperties": false,
+      "properties": {
+        "backgroundMaxWaitMs": {
+          "default": 0,
+          "maximum": 3600000,
+          "minimum": 0,
+          "title": "Backgroundmaxwaitms",
+          "type": "integer"
+        },
+        "burstRequests": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Burstrequests"
+        },
+        "cooldownSeconds": {
+          "default": 0,
+          "maximum": 86400,
+          "minimum": 0,
+          "title": "Cooldownseconds",
+          "type": "integer"
+        },
+        "maxConcurrency": {
+          "default": 1,
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Maxconcurrency",
+          "type": "integer"
+        },
+        "maxRequests": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "Maxrequests",
+          "type": "integer"
+        },
+        "operation": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Operation",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "alpha_vantage",
+            "quiver",
+            "openai_responses"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "windowSeconds": {
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Windowseconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provider",
+        "operation",
+        "windowSeconds",
+        "maxRequests"
+      ],
+      "title": "RateLimitRule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "rules": {
+      "items": {
+        "$ref": "#/$defs/RateLimitRule"
+      },
+      "minItems": 1,
+      "title": "Rules",
+      "type": "array"
+    }
+  },
+  "required": [
+    "rules"
+  ],
+  "title": "RateLimitPolicyConfig",
+  "type": "object"
+}

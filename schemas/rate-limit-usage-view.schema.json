@@ -1,0 +1,298 @@
+{
+  "$defs": {
+    "RateLimitThrottleSample": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "anyOf": [
+            {
+              "maxLength": 512,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "observedAt": {
+          "format": "date-time",
+          "title": "Observedat",
+          "type": "string"
+        },
+        "operation": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Operation",
+          "type": "string"
+        },
+        "policyName": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policyname"
+        },
+        "policyVersion": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Policyversion"
+        },
+        "provider": {
+          "enum": [
+            "alpha_vantage",
+            "quiver",
+            "openai_responses"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "local_rate_limit",
+            "local_concurrency_limit",
+            "local_cooldown",
+            "upstream_429"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "retryAfterMs": {
+          "maximum": 3600000,
+          "minimum": 0,
+          "title": "Retryafterms",
+          "type": "integer"
+        },
+        "workload": {
+          "enum": [
+            "interactive",
+            "background"
+          ],
+          "title": "Workload",
+          "type": "string"
+        }
+      },
+      "required": [
+        "observedAt",
+        "provider",
+        "operation",
+        "workload",
+        "reason",
+        "retryAfterMs"
+      ],
+      "title": "RateLimitThrottleSample",
+      "type": "object"
+    },
+    "RateLimitUsageBucket": {
+      "additionalProperties": false,
+      "properties": {
+        "activeConcurrency": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Activeconcurrency",
+          "type": "integer"
+        },
+        "allowCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Allowcount",
+          "type": "integer"
+        },
+        "availableTokens": {
+          "default": 0.0,
+          "minimum": 0.0,
+          "title": "Availabletokens",
+          "type": "number"
+        },
+        "burstRequests": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "Burstrequests",
+          "type": "integer"
+        },
+        "cooldownCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Cooldowncount",
+          "type": "integer"
+        },
+        "cooldownSeconds": {
+          "maximum": 86400,
+          "minimum": 0,
+          "title": "Cooldownseconds",
+          "type": "integer"
+        },
+        "denyCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Denycount",
+          "type": "integer"
+        },
+        "lastCooldownAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastcooldownat"
+        },
+        "lastDecisionAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastdecisionat"
+        },
+        "lastDeniedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastdeniedat"
+        },
+        "maxConcurrency": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Maxconcurrency",
+          "type": "integer"
+        },
+        "maxRequests": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "title": "Maxrequests",
+          "type": "integer"
+        },
+        "nearLimit": {
+          "default": false,
+          "title": "Nearlimit",
+          "type": "boolean"
+        },
+        "operation": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Operation",
+          "type": "string"
+        },
+        "provider": {
+          "enum": [
+            "alpha_vantage",
+            "quiver",
+            "openai_responses"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "tokenFillPct": {
+          "default": 0.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Tokenfillpct",
+          "type": "number"
+        },
+        "upstreamThrottleCount": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Upstreamthrottlecount",
+          "type": "integer"
+        },
+        "windowSeconds": {
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Windowseconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "provider",
+        "operation",
+        "windowSeconds",
+        "maxRequests",
+        "burstRequests",
+        "maxConcurrency",
+        "cooldownSeconds"
+      ],
+      "title": "RateLimitUsageBucket",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "buckets": {
+      "items": {
+        "$ref": "#/$defs/RateLimitUsageBucket"
+      },
+      "title": "Buckets",
+      "type": "array"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "policyName": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Policyname",
+      "type": "string"
+    },
+    "policyVersion": {
+      "minimum": 1,
+      "title": "Policyversion",
+      "type": "integer"
+    },
+    "throttleSamples": {
+      "items": {
+        "$ref": "#/$defs/RateLimitThrottleSample"
+      },
+      "title": "Throttlesamples",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "policyName",
+    "policyVersion",
+    "generatedAt"
+  ],
+  "title": "RateLimitUsageView",
+  "type": "object"
+}

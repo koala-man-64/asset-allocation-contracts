@@ -17,6 +17,7 @@ from asset_allocation_contracts.portfolio import *
 from asset_allocation_contracts.pipeline_sync import *
 from asset_allocation_contracts.pull_request_sync import *
 from asset_allocation_contracts.quiver_signals import *
+from asset_allocation_contracts.rate_limits import *
 from asset_allocation_contracts.paths import *
 from asset_allocation_contracts.ranking import *
 from asset_allocation_contracts.regime import *
