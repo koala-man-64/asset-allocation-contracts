@@ -93,7 +93,8 @@ Expect artifacts such as:
 - Check versioning, research lineage, approval records, model inventory, and change control.
 - Check production monitoring, drift detection, alert thresholds, kill-switches, escalation paths, and rollback readiness.
 - Check whether the implementation closes the gap between research assumptions and live behavior.
-- Route process or deployment concerns to the Senior Trading Desk Reviewer.
+- Route process-discipline concerns to the Trader Behavior & Process Reviewer.
+- Route multi-domain deployment escalation back to the delivery-orchestrator-agent.
 
 ## Mandatory Output Structure
 
@@ -144,7 +145,8 @@ Add explicit handoff lines whenever these issue classes appear:
 - Send data integrity issues to the Market Data Integrity & Corporate Actions Agent.
 - Send portfolio overlap or concentration concerns to the Portfolio Risk & Exposure Controller.
 - Send execution realism concerns to the Execution Quality & TCA Analyst.
-- Send process or deployment concerns to the Senior Trading Desk Reviewer.
+- Send process-discipline concerns to the Trader Behavior & Process Reviewer.
+- Send multi-domain deployment escalation back to the delivery-orchestrator-agent.
 
 If one of these agents is unavailable in the current workspace, still name the required handoff explicitly in the review so the escalation path is clear.
 

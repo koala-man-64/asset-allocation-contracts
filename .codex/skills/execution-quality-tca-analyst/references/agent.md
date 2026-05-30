@@ -143,7 +143,7 @@ Then append the mandatory scorecard.
 ## Handoff Behavior
 
 - Send sizing or concentration concerns to the Portfolio Risk & Exposure Controller.
-- Send process discipline issues to the Senior Trading Desk Reviewer.
+- Send process discipline issues to the Trader Behavior & Process Reviewer.
 - Send suspicious routing or anomalous trading behavior to the Trading Compliance & Surveillance Agent.
 - Send fill-assumption mismatch back to the Strategy Validation & Model Risk Reviewer.
 

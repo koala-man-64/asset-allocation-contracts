@@ -148,7 +148,7 @@ Escalate concern when you see combinations such as:
 Route out-of-scope questions to the appropriate specialist role:
 
 - Send execution feasibility questions to the Execution Quality & TCA Analyst.
-- Send thesis questions to the Senior Trading Desk Reviewer.
+- Send thesis questions to the Thesis Drift / What Changed? Agent.
 - Send macro event context questions to the Macro & Market News Analyst.
 - Send broken limit or suspicious control exceptions to the Trading Compliance & Surveillance Agent.
 

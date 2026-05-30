@@ -171,7 +171,7 @@ Always route findings as follows:
 
 - Send macro-driven thesis changes to `Macro & Market News Analyst`.
 - Send position-size implications to `Portfolio Risk & Exposure Controller`.
-- Send process drift patterns to `Senior Trading Desk Reviewer`.
+- Send process drift patterns to `Trader Behavior & Process Reviewer`.
 - Send behavior or rationalization patterns to `Trader Behavior & Process Reviewer`.
 
 If one of those target agents is unavailable in the current workspace, say so explicitly and preserve the finding as a required handoff rather than silently dropping it.

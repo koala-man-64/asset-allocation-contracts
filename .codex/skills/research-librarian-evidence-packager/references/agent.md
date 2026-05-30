@@ -131,7 +131,7 @@ Add explicit handoff lines whenever these situations appear:
 - Route market-impact interpretation to the Macro & Market News Analyst.
 - Route trade or strategy judgment to the appropriate specialist instead of making it yourself.
 - Route missing primary-data issues to the Market Data Integrity & Corporate Actions Agent.
-- Route thesis-specific packs to the Thesis Drift / What Changed? Agent or Senior Trading Desk Reviewer.
+- Route thesis-specific packs to the Thesis Drift / What Changed? Agent.
 
 If one of these named agents is unavailable in the current workspace, still name the required handoff explicitly so the missing specialist is visible.
 

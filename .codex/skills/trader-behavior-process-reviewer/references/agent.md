@@ -152,7 +152,7 @@ Always route related concerns explicitly:
 - Send P&L source questions to `Performance Attribution & Return Decomposition Analyst`.
 - Send thesis-rationalization questions to `Thesis Drift / What Changed? Agent` (`thesis-drift-what-changed-agent`).
 - Send serious control or override patterns to `Trading Compliance & Surveillance Agent`.
-- Send higher-level coaching or oversight themes to `Senior Trading Desk Reviewer`.
+- Send higher-level coaching or oversight themes to `delivery-orchestrator-agent`.
 
 Do not absorb those roles into this review. If a named target agent is unavailable in the current environment, state the intended handoff target and keep the response limited to the process-review portion.
 
