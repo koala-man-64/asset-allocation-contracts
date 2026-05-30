@@ -58,9 +58,22 @@
           "enum": [
             "alpha_vantage",
             "quiver",
-            "openai_responses"
+            "openai_responses",
+            "alpaca",
+            "etrade",
+            "schwab",
+            "kalshi"
           ],
           "title": "Provider",
+          "type": "string"
+        },
+        "quotaUnit": {
+          "default": "request",
+          "enum": [
+            "request",
+            "token_1k"
+          ],
+          "title": "Quotaunit",
           "type": "string"
         },
         "reason": {
@@ -210,9 +223,22 @@
           "enum": [
             "alpha_vantage",
             "quiver",
-            "openai_responses"
+            "openai_responses",
+            "alpaca",
+            "etrade",
+            "schwab",
+            "kalshi"
           ],
           "title": "Provider",
+          "type": "string"
+        },
+        "quotaUnit": {
+          "default": "request",
+          "enum": [
+            "request",
+            "token_1k"
+          ],
+          "title": "Quotaunit",
           "type": "string"
         },
         "tokenFillPct": {

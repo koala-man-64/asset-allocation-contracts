@@ -41,6 +41,41 @@ def test_rate_limit_policy_normalizes_operations_and_defaults_burst() -> None:
     assert payload.whatToMonitor == ["429 spikes", "queue pressure"]
     assert rule.operation == "time_series_daily"
     assert rule.burstRequests == 5
+    assert rule.quotaUnit == "request"
+
+
+def test_rate_limit_policy_accepts_broker_providers_and_token_units() -> None:
+    config = RateLimitPolicyConfig.model_validate(
+        {
+            "rules": [
+                {
+                    "provider": "alpaca",
+                    "operation": "order_write",
+                    "windowSeconds": 60,
+                    "maxRequests": 50,
+                    "maxConcurrency": 1,
+                },
+                {
+                    "provider": "etrade",
+                    "operation": "market_hourly",
+                    "windowSeconds": 3600,
+                    "maxRequests": 14_000,
+                    "maxConcurrency": 4,
+                },
+                {
+                    "provider": "openai_responses",
+                    "operation": "responses_create",
+                    "windowSeconds": 60,
+                    "maxRequests": 10,
+                    "maxConcurrency": 1,
+                    "quotaUnit": "token_1k",
+                },
+            ]
+        }
+    )
+
+    assert {rule.provider for rule in config.rules} == {"alpaca", "etrade", "openai_responses"}
+    assert config.rules[2].quotaUnit == "token_1k"
 
 
 def test_rate_limit_policy_rejects_duplicate_provider_operation_pairs() -> None:
@@ -109,6 +144,7 @@ def test_rate_limit_usage_contracts_capture_operator_view() -> None:
             "burstRequests": 5,
             "maxConcurrency": 1,
             "cooldownSeconds": 30,
+            "quotaUnit": "token_1k",
             "availableTokens": 2.5,
             "tokenFillPct": 50,
             "activeConcurrency": 0,
@@ -127,6 +163,7 @@ def test_rate_limit_usage_contracts_capture_operator_view() -> None:
             "workload": "interactive",
             "reason": "local_rate_limit",
             "retryAfterMs": 30_000,
+            "quotaUnit": "token_1k",
             "policyName": " system_default ",
             "policyVersion": 1,
             "message": " Burst exhausted ",
@@ -144,7 +181,9 @@ def test_rate_limit_usage_contracts_capture_operator_view() -> None:
     )
 
     assert bucket.operation == "time_series_daily"
+    assert bucket.quotaUnit == "token_1k"
     assert sample.policyName == "system_default"
+    assert sample.quotaUnit == "token_1k"
     assert sample.message == "Burst exhausted"
     assert view.warnings == ["snapshot is process-local"]
     assert view.throttleSamples[0].reason == "local_rate_limit"

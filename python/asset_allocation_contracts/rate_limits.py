@@ -12,7 +12,16 @@ from asset_allocation_contracts.strategy import (
     ReusableConfigSummaryBase,
 )
 
-RateLimitProvider = Literal["alpha_vantage", "quiver", "openai_responses"]
+RateLimitProvider = Literal[
+    "alpha_vantage",
+    "quiver",
+    "openai_responses",
+    "alpaca",
+    "etrade",
+    "schwab",
+    "kalshi",
+]
+RateLimitQuotaUnit = Literal["request", "token_1k"]
 RateLimitWorkload = Literal["interactive", "background"]
 RateLimitThrottleReason = Literal[
     "local_rate_limit",
@@ -33,6 +42,7 @@ class RateLimitRule(BaseModel):
     maxConcurrency: int = Field(default=1, ge=1, le=10_000)
     cooldownSeconds: int = Field(default=0, ge=0, le=86_400)
     backgroundMaxWaitMs: int = Field(default=0, ge=0, le=3_600_000)
+    quotaUnit: RateLimitQuotaUnit = "request"
 
     @field_validator("operation", mode="before")
     @classmethod
@@ -142,6 +152,7 @@ class RateLimitUsageBucket(BaseModel):
     burstRequests: int = Field(..., ge=1, le=1_000_000)
     maxConcurrency: int = Field(..., ge=1, le=10_000)
     cooldownSeconds: int = Field(..., ge=0, le=86_400)
+    quotaUnit: RateLimitQuotaUnit = "request"
     availableTokens: float = Field(default=0.0, ge=0.0)
     tokenFillPct: float = Field(default=0.0, ge=0.0, le=100.0)
     activeConcurrency: int = Field(default=0, ge=0)
@@ -171,6 +182,7 @@ class RateLimitThrottleSample(BaseModel):
     workload: RateLimitWorkload
     reason: RateLimitThrottleReason
     retryAfterMs: int = Field(..., ge=0, le=3_600_000)
+    quotaUnit: RateLimitQuotaUnit = "request"
     policyName: str | None = Field(default=None, min_length=1, max_length=128)
     policyVersion: int | None = Field(default=None, ge=1)
     message: str | None = Field(default=None, max_length=512)

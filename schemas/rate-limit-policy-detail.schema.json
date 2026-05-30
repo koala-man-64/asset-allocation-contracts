@@ -155,7 +155,11 @@
             "enum": [
               "alpha_vantage",
               "quiver",
-              "openai_responses"
+              "openai_responses",
+              "alpaca",
+              "etrade",
+              "schwab",
+              "kalshi"
             ],
             "type": "string"
           },
@@ -277,9 +281,22 @@
           "enum": [
             "alpha_vantage",
             "quiver",
-            "openai_responses"
+            "openai_responses",
+            "alpaca",
+            "etrade",
+            "schwab",
+            "kalshi"
           ],
           "title": "Provider",
+          "type": "string"
+        },
+        "quotaUnit": {
+          "default": "request",
+          "enum": [
+            "request",
+            "token_1k"
+          ],
+          "title": "Quotaunit",
           "type": "string"
         },
         "windowSeconds": {

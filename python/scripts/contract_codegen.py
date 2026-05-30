@@ -642,6 +642,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("ReusableConfigStatus", strategy.ReusableConfigStatus),
     ("ReusableConfigIntendedUse", strategy.ReusableConfigIntendedUse),
     ("RateLimitProvider", rate_limits.RateLimitProvider),
+    ("RateLimitQuotaUnit", rate_limits.RateLimitQuotaUnit),
     ("RateLimitWorkload", rate_limits.RateLimitWorkload),
     ("RateLimitThrottleReason", rate_limits.RateLimitThrottleReason),
     ("ReusableRebalanceCadence", strategy.ReusableRebalanceCadence),
@@ -805,6 +806,9 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("BrokerTradingPolicy", "requireBorrowLocate"),
     ("BrokerTradingPolicy", "reduceOnly"),
     ("BrokerTradingPolicy", "tradeApproval"),
+    ("RateLimitRule", "quotaUnit"),
+    ("RateLimitUsageBucket", "quotaUnit"),
+    ("RateLimitThrottleSample", "quotaUnit"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {

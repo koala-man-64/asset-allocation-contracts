@@ -33,7 +33,11 @@
         "enum": [
           "alpha_vantage",
           "quiver",
-          "openai_responses"
+          "openai_responses",
+          "alpaca",
+          "etrade",
+          "schwab",
+          "kalshi"
         ],
         "type": "string"
       },

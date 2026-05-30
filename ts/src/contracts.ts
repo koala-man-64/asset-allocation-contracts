@@ -49,7 +49,8 @@ export type RebalanceFrequency = 'every_bar' | 'daily' | 'weekly' | 'monthly' | 
 export type RebalanceExecutionTiming = 'next_bar_open';
 export type ReusableConfigStatus = 'draft' | 'active' | 'deprecated';
 export type ReusableConfigIntendedUse = 'research' | 'validation' | 'production_candidate';
-export type RateLimitProvider = 'alpha_vantage' | 'quiver' | 'openai_responses';
+export type RateLimitProvider = 'alpha_vantage' | 'quiver' | 'openai_responses' | 'alpaca' | 'etrade' | 'schwab' | 'kalshi';
+export type RateLimitQuotaUnit = 'request' | 'token_1k';
 export type RateLimitWorkload = 'interactive' | 'background';
 export type RateLimitThrottleReason = 'local_rate_limit' | 'local_concurrency_limit' | 'local_cooldown' | 'upstream_429';
 export type ReusableRebalanceCadence = 'daily' | 'weekly' | 'monthly' | 'quarterly';
@@ -763,6 +764,7 @@ export interface RateLimitRule {
   maxConcurrency: number;
   cooldownSeconds: number;
   backgroundMaxWaitMs: number;
+  quotaUnit?: RateLimitQuotaUnit;
 }
 
 export interface RateLimitPolicySummary {
@@ -818,6 +820,7 @@ export interface RateLimitUsageBucket {
   burstRequests: number;
   maxConcurrency: number;
   cooldownSeconds: number;
+  quotaUnit?: RateLimitQuotaUnit;
   availableTokens: number;
   tokenFillPct: number;
   activeConcurrency: number;
@@ -838,6 +841,7 @@ export interface RateLimitThrottleSample {
   workload: RateLimitWorkload;
   reason: RateLimitThrottleReason;
   retryAfterMs: number;
+  quotaUnit?: RateLimitQuotaUnit;
   policyName?: string | null;
   policyVersion?: number | null;
   message?: string | null;
