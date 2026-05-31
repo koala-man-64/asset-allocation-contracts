@@ -3006,6 +3006,8 @@ export interface TradePnlSnapshot {
   grossExposure?: number | null;
   netExposure?: number | null;
   asOf?: string | null;
+  realizedSource?: 'broker' | 'ledger' | null;
+  ledgerHorizonAt?: string | null;
 }
 
 export interface TradeDataFreshness {

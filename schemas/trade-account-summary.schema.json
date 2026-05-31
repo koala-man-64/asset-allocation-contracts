@@ -596,6 +596,19 @@
           "default": null,
           "title": "Grossexposure"
         },
+        "ledgerHorizonAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ledgerhorizonat"
+        },
         "netExposure": {
           "anyOf": [
             {
@@ -619,6 +632,22 @@
           ],
           "default": null,
           "title": "Realizedpnl"
+        },
+        "realizedSource": {
+          "anyOf": [
+            {
+              "enum": [
+                "broker",
+                "ledger"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Realizedsource"
         },
         "unrealizedPnl": {
           "anyOf": [

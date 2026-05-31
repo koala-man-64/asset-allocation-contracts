@@ -218,6 +218,16 @@ class TradePnlSnapshot(BaseModel):
     grossExposure: float | None = None
     netExposure: float | None = None
     asOf: datetime | None = None
+    # realizedSource discriminates where realizedPnl came from:
+    #   "broker"  - the broker reported realized P/L directly on positions or activities
+    #               (today: Kalshi via market_positions[].realized_pnl_dollars).
+    #   "ledger"  - we computed it ourselves via FIFO cost-basis matching of the
+    #               broker_fill_ledger (Alpaca / E*TRADE / Schwab).
+    # None means realizedPnl is None and no source applies. This lets the UI surface
+    # an honest "Realized from {ledgerHorizonAt} forward" caveat for ledger-derived
+    # values where the broker's transaction history window limits how far back we see.
+    realizedSource: Literal["broker", "ledger"] | None = None
+    ledgerHorizonAt: datetime | None = None
 
 
 class TradeMetricCoverage(BaseModel):

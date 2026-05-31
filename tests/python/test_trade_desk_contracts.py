@@ -18,9 +18,13 @@ from asset_allocation_contracts.trade_desk import (
     TradeOrderPlaceRequest,
     TradeOrderPreviewRequest,
     TradeOrderPreviewResponse,
+    TradePnlSnapshot,
     TradePosition,
     TradeRiskCheck,
 )
+
+import pytest
+from pydantic import ValidationError
 
 
 def _now() -> datetime:
@@ -627,3 +631,35 @@ def test_trade_contracts_capture_prediction_market_normalization_metadata() -> N
     assert response.rows[0].providerEventId == "event-001"
     assert response.quarantinedRowCount == 1
     assert response.normalizationWarnings[0].code == "unknown_kalshi_order_status"
+
+
+def test_trade_pnl_snapshot_carries_realized_source_and_ledger_horizon() -> None:
+    horizon = datetime(2026, 4, 1, 14, 30, tzinfo=timezone.utc)
+    snapshot = TradePnlSnapshot(
+        realizedPnl=500.0,
+        unrealizedPnl=125.0,
+        dayPnl=12.0,
+        asOf=horizon,
+        realizedSource="ledger",
+        ledgerHorizonAt=horizon,
+    )
+
+    assert snapshot.realizedSource == "ledger"
+    assert snapshot.ledgerHorizonAt == horizon
+    # Round-trips cleanly through JSON for storage on the account snapshot payload.
+    payload = snapshot.model_dump(mode="json")
+    assert payload["realizedSource"] == "ledger"
+    assert payload["ledgerHorizonAt"].startswith("2026-04-01T14:30:00")
+    assert TradePnlSnapshot.model_validate(payload) == snapshot
+
+
+def test_trade_pnl_snapshot_realized_source_rejects_unknown_values() -> None:
+    with pytest.raises(ValidationError):
+        TradePnlSnapshot(realizedSource="estimated")  # type: ignore[arg-type]
+
+
+def test_trade_pnl_snapshot_defaults_omit_new_optional_fields() -> None:
+    """The new fields are additive; legacy payloads must still validate as None."""
+    snapshot = TradePnlSnapshot(realizedPnl=42.0, unrealizedPnl=1.0)
+    assert snapshot.realizedSource is None
+    assert snapshot.ledgerHorizonAt is None
