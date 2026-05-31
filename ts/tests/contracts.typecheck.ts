@@ -69,6 +69,10 @@ import type {
   SymbolEnrichmentSymbolDetailResponse,
   SymbolResolutionResult,
   StockScreenerRequest,
+  StockScreenerPresetListResponse,
+  StockScreenerPresetSummary,
+  StockScreenerPresetUpsertRequest,
+  StockScreenerPresetWorkspace,
   StockScreenerResponse,
   StockScreenerSortClause,
   ReconnectBrokerAccountRequest,
@@ -774,6 +778,43 @@ const stockScreenerRequest: StockScreenerRequest = {
 const stockScreenerSortClause: StockScreenerSortClause = {
   key: "return_5d",
   direction: "desc",
+};
+
+const stockScreenerPresetWorkspace: StockScreenerPresetWorkspace = {
+  q: "MS",
+  as_of: "2026-05-04",
+  source_layer: "platinum",
+  sort: "ranking_score",
+  direction: "desc",
+  sorts: [
+    { key: "ranking_score", direction: "desc" },
+    stockScreenerSortClause,
+  ],
+  strategy_name: "quality-trend",
+  ranking_schema_name: "quality_momentum",
+  ranking_schema_version: 2,
+  sectors: ["Technology"],
+  min_volume_pct_rank_252d: 0.6,
+  visible_column_ids: ["symbol", "return_5d", "ranking_score"],
+};
+
+const stockScreenerPresetUpsert: StockScreenerPresetUpsertRequest = {
+  name: "Momentum desk",
+  description: "Quality momentum workstation view",
+  workspace: stockScreenerPresetWorkspace,
+};
+
+const stockScreenerPresetSummary: StockScreenerPresetSummary = {
+  preset_id: "preset-1",
+  name: stockScreenerPresetUpsert.name,
+  description: stockScreenerPresetUpsert.description,
+  workspace: stockScreenerPresetUpsert.workspace,
+  created_at: "2026-05-31T15:00:00Z",
+  updated_at: "2026-05-31T15:00:00Z",
+};
+
+const stockScreenerPresetList: StockScreenerPresetListResponse = {
+  presets: [stockScreenerPresetSummary],
 };
 
 const stockScreenerResponse: StockScreenerResponse = {

@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "archived": {
+      "default": true,
+      "title": "Archived",
+      "type": "boolean"
+    },
+    "preset_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Preset Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "preset_id"
+  ],
+  "title": "StockScreenerPresetDeleteResponse",
+  "type": "object"
+}

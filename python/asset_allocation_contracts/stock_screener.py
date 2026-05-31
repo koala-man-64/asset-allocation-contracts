@@ -28,7 +28,25 @@ StockScreenerSortKey = Literal[
     "ranking_score",
 ]
 StockScreenerSortDirection = Literal["asc", "desc"]
+StockScreenerSourceLayer = Literal["gold", "platinum"]
 _RANKING_SORT_KEYS = {"ranking_rank", "ranking_score"}
+_NUMERIC_RANGE_FIELDS = (
+    ("min_close", "max_close"),
+    ("min_volume", "max_volume"),
+    ("min_return_1d", "max_return_1d"),
+    ("min_return_5d", "max_return_5d"),
+    ("min_vol_20d", "max_vol_20d"),
+    ("min_drawdown_1y", "max_drawdown_1y"),
+    ("min_atr_14d", "max_atr_14d"),
+    ("min_gap_atr", "max_gap_atr"),
+    ("min_sma_50d", "max_sma_50d"),
+    ("min_sma_200d", "max_sma_200d"),
+    ("min_trend_50_200", "max_trend_50_200"),
+    ("min_bb_width_20d", "max_bb_width_20d"),
+    ("min_compression_score", "max_compression_score"),
+    ("min_volume_z_20d", "max_volume_z_20d"),
+    ("min_volume_pct_rank_252d", "max_volume_pct_rank_252d"),
+)
 
 
 def _normalize_optional_text(value: object) -> str | None:
@@ -60,6 +78,53 @@ def _normalize_filter_values(value: object) -> list[str] | None:
         seen.add(key)
         normalized.append(item)
     return normalized or None
+
+
+def _normalize_visible_column_ids(value: object) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise TypeError("visible_column_ids must be a list of strings.")
+
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for raw in value:
+        column_id = str(raw or "").strip()
+        if not column_id:
+            continue
+        if len(column_id) > 128:
+            raise ValueError("visible_column_ids entries must be 128 characters or fewer.")
+        key = column_id.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(column_id)
+    return normalized
+
+
+def _validate_filter_workspace_ranges_and_ranking(
+    payload: object,
+    *,
+    sort: StockScreenerSortKey,
+    sorts: list["StockScreenerSortClause"] | None,
+    strategy_name: str | None,
+    ranking_schema_name: str | None,
+    ranking_schema_version: int | None,
+) -> None:
+    if ranking_schema_version is not None and ranking_schema_name is None:
+        raise ValueError("ranking_schema_version requires ranking_schema_name.")
+    if ranking_schema_name is not None and strategy_name is None:
+        raise ValueError("ranking_schema_name requires strategy_name.")
+    if ranking_schema_name is None:
+        sort_keys = [sort, *(clause.key for clause in sorts or [])]
+        if any(key in _RANKING_SORT_KEYS for key in sort_keys):
+            raise ValueError("ranking_rank and ranking_score sorts require ranking_schema_name.")
+
+    for minimum_name, maximum_name in _NUMERIC_RANGE_FIELDS:
+        minimum = getattr(payload, minimum_name)
+        maximum = getattr(payload, maximum_name)
+        if minimum is not None and maximum is not None and minimum > maximum:
+            raise ValueError(f"{minimum_name} must be less than or equal to {maximum_name}.")
 
 
 class StockScreenerSortClause(BaseModel):
@@ -146,37 +211,135 @@ class StockScreenerRequest(BaseModel):
 
     @model_validator(mode="after")
     def _validate_numeric_ranges(self) -> StockScreenerRequest:
-        if self.ranking_schema_version is not None and self.ranking_schema_name is None:
-            raise ValueError("ranking_schema_version requires ranking_schema_name.")
-        if self.ranking_schema_name is not None and self.strategy_name is None:
-            raise ValueError("ranking_schema_name requires strategy_name.")
-        if self.ranking_schema_name is None:
-            sort_keys = [self.sort, *(clause.key for clause in self.sorts or [])]
-            if any(key in _RANKING_SORT_KEYS for key in sort_keys):
-                raise ValueError("ranking_rank and ranking_score sorts require ranking_schema_name.")
-
-        for minimum_name, maximum_name in (
-            ("min_close", "max_close"),
-            ("min_volume", "max_volume"),
-            ("min_return_1d", "max_return_1d"),
-            ("min_return_5d", "max_return_5d"),
-            ("min_vol_20d", "max_vol_20d"),
-            ("min_drawdown_1y", "max_drawdown_1y"),
-            ("min_atr_14d", "max_atr_14d"),
-            ("min_gap_atr", "max_gap_atr"),
-            ("min_sma_50d", "max_sma_50d"),
-            ("min_sma_200d", "max_sma_200d"),
-            ("min_trend_50_200", "max_trend_50_200"),
-            ("min_bb_width_20d", "max_bb_width_20d"),
-            ("min_compression_score", "max_compression_score"),
-            ("min_volume_z_20d", "max_volume_z_20d"),
-            ("min_volume_pct_rank_252d", "max_volume_pct_rank_252d"),
-        ):
-            minimum = getattr(self, minimum_name)
-            maximum = getattr(self, maximum_name)
-            if minimum is not None and maximum is not None and minimum > maximum:
-                raise ValueError(f"{minimum_name} must be less than or equal to {maximum_name}.")
+        _validate_filter_workspace_ranges_and_ranking(
+            self,
+            sort=self.sort,
+            sorts=self.sorts,
+            strategy_name=self.strategy_name,
+            ranking_schema_name=self.ranking_schema_name,
+            ranking_schema_version=self.ranking_schema_version,
+        )
         return self
+
+
+class StockScreenerPresetWorkspace(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    q: str | None = Field(default=None, max_length=255)
+    as_of: date | None = None
+    source_layer: StockScreenerSourceLayer = "gold"
+    sort: StockScreenerSortKey = "volume"
+    direction: StockScreenerSortDirection = "desc"
+    sorts: list[StockScreenerSortClause] | None = Field(default=None, max_length=5)
+    strategy_name: str | None = Field(default=None, max_length=128)
+    ranking_schema_name: str | None = Field(default=None, max_length=128)
+    ranking_schema_version: int | None = Field(default=None, ge=1)
+    sectors: list[str] | None = None
+    industries: list[str] | None = None
+    countries: list[str] | None = None
+    is_optionable: bool | None = None
+    has_silver: bool | None = None
+    has_gold: bool | None = None
+    above_sma_50: bool | None = None
+    min_close: float | None = None
+    max_close: float | None = None
+    min_volume: float | None = None
+    max_volume: float | None = None
+    min_return_1d: float | None = None
+    max_return_1d: float | None = None
+    min_return_5d: float | None = None
+    max_return_5d: float | None = None
+    min_vol_20d: float | None = None
+    max_vol_20d: float | None = None
+    min_drawdown_1y: float | None = None
+    max_drawdown_1y: float | None = None
+    min_atr_14d: float | None = None
+    max_atr_14d: float | None = None
+    min_gap_atr: float | None = None
+    max_gap_atr: float | None = None
+    min_sma_50d: float | None = None
+    max_sma_50d: float | None = None
+    min_sma_200d: float | None = None
+    max_sma_200d: float | None = None
+    min_trend_50_200: float | None = None
+    max_trend_50_200: float | None = None
+    min_bb_width_20d: float | None = None
+    max_bb_width_20d: float | None = None
+    min_compression_score: float | None = None
+    max_compression_score: float | None = None
+    min_volume_z_20d: float | None = None
+    max_volume_z_20d: float | None = None
+    min_volume_pct_rank_252d: float | None = None
+    max_volume_pct_rank_252d: float | None = None
+    visible_column_ids: list[str] = Field(default_factory=list, max_length=64)
+
+    _normalize_query = field_validator("q", mode="before")(_normalize_optional_text)
+    _normalize_strategy_name = field_validator("strategy_name", mode="before")(_normalize_optional_text)
+    _normalize_ranking_schema_name = field_validator("ranking_schema_name", mode="before")(_normalize_optional_text)
+    _normalize_sectors = field_validator("sectors", mode="before")(_normalize_filter_values)
+    _normalize_industries = field_validator("industries", mode="before")(_normalize_filter_values)
+    _normalize_countries = field_validator("countries", mode="before")(_normalize_filter_values)
+    _normalize_visible_column_ids = field_validator("visible_column_ids", mode="before")(
+        _normalize_visible_column_ids
+    )
+
+    @field_validator("sorts", mode="after")
+    @classmethod
+    def _normalize_sort_stack(
+        cls, value: list[StockScreenerSortClause] | None
+    ) -> list[StockScreenerSortClause] | None:
+        return StockScreenerRequest._normalize_sort_stack(value)
+
+    @model_validator(mode="after")
+    def _validate_numeric_ranges(self) -> StockScreenerPresetWorkspace:
+        _validate_filter_workspace_ranges_and_ranking(
+            self,
+            sort=self.sort,
+            sorts=self.sorts,
+            strategy_name=self.strategy_name,
+            ranking_schema_name=self.ranking_schema_name,
+            ranking_schema_version=self.ranking_schema_version,
+        )
+        return self
+
+
+class StockScreenerPresetSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    preset_id: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=96)
+    description: str | None = Field(default=None, max_length=512)
+    workspace: StockScreenerPresetWorkspace
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    last_used_at: datetime | None = None
+
+    _normalize_name = field_validator("name", mode="before")(_normalize_optional_text)
+    _normalize_description = field_validator("description", mode="before")(_normalize_optional_text)
+
+
+class StockScreenerPresetUpsertRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=96)
+    description: str | None = Field(default=None, max_length=512)
+    workspace: StockScreenerPresetWorkspace
+
+    _normalize_name = field_validator("name", mode="before")(_normalize_optional_text)
+    _normalize_description = field_validator("description", mode="before")(_normalize_optional_text)
+
+
+class StockScreenerPresetListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    presets: list[StockScreenerPresetSummary] = Field(default_factory=list)
+
+
+class StockScreenerPresetDeleteResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    preset_id: str = Field(min_length=1, max_length=64)
+    archived: bool = True
 
 
 class StockScreenerRankingComponent(BaseModel):

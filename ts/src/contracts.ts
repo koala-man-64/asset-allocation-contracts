@@ -2469,6 +2469,81 @@ export interface StockScreenerRequest {
   max_volume_pct_rank_252d?: number | null;
 }
 
+export interface StockScreenerPresetWorkspace {
+  q?: string | null;
+  as_of?: string | null;
+  source_layer: 'gold' | 'platinum';
+  sort: StockScreenerSortKey;
+  direction: RankingDirection;
+  sorts?: StockScreenerSortClause[] | null;
+  strategy_name?: string | null;
+  ranking_schema_name?: string | null;
+  ranking_schema_version?: number | null;
+  sectors?: string[] | null;
+  industries?: string[] | null;
+  countries?: string[] | null;
+  is_optionable?: boolean | null;
+  has_silver?: boolean | null;
+  has_gold?: boolean | null;
+  above_sma_50?: boolean | null;
+  min_close?: number | null;
+  max_close?: number | null;
+  min_volume?: number | null;
+  max_volume?: number | null;
+  min_return_1d?: number | null;
+  max_return_1d?: number | null;
+  min_return_5d?: number | null;
+  max_return_5d?: number | null;
+  min_vol_20d?: number | null;
+  max_vol_20d?: number | null;
+  min_drawdown_1y?: number | null;
+  max_drawdown_1y?: number | null;
+  min_atr_14d?: number | null;
+  max_atr_14d?: number | null;
+  min_gap_atr?: number | null;
+  max_gap_atr?: number | null;
+  min_sma_50d?: number | null;
+  max_sma_50d?: number | null;
+  min_sma_200d?: number | null;
+  max_sma_200d?: number | null;
+  min_trend_50_200?: number | null;
+  max_trend_50_200?: number | null;
+  min_bb_width_20d?: number | null;
+  max_bb_width_20d?: number | null;
+  min_compression_score?: number | null;
+  max_compression_score?: number | null;
+  min_volume_z_20d?: number | null;
+  max_volume_z_20d?: number | null;
+  min_volume_pct_rank_252d?: number | null;
+  max_volume_pct_rank_252d?: number | null;
+  visible_column_ids: string[];
+}
+
+export interface StockScreenerPresetSummary {
+  preset_id: string;
+  name: string;
+  description?: string | null;
+  workspace: StockScreenerPresetWorkspace;
+  created_at?: string | null;
+  updated_at?: string | null;
+  last_used_at?: string | null;
+}
+
+export interface StockScreenerPresetUpsertRequest {
+  name: string;
+  description?: string | null;
+  workspace: StockScreenerPresetWorkspace;
+}
+
+export interface StockScreenerPresetListResponse {
+  presets: StockScreenerPresetSummary[];
+}
+
+export interface StockScreenerPresetDeleteResponse {
+  preset_id: string;
+  archived: boolean;
+}
+
 export interface StockScreenerRow {
   symbol: string;
   name?: string | null;

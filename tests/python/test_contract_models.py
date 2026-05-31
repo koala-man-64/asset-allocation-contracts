@@ -174,6 +174,10 @@ from asset_allocation_contracts.symbol_identity import (
     SymbolResolutionResult,
 )
 from asset_allocation_contracts.stock_screener import (
+    StockScreenerPresetListResponse,
+    StockScreenerPresetSummary,
+    StockScreenerPresetUpsertRequest,
+    StockScreenerPresetWorkspace,
     StockScreenerRequest,
     StockScreenerResponse,
     StockScreenerRow,
@@ -807,6 +811,79 @@ def test_stock_screener_contract_rejects_ranking_without_strategy_context() -> N
         raise AssertionError(
             "Expected ranking schema selection without strategy context to fail validation."
         )
+
+
+def test_stock_screener_preset_workspace_normalizes_saved_state() -> None:
+    workspace = StockScreenerPresetWorkspace(
+        q="  ms ",
+        as_of="2026-05-04",
+        source_layer="platinum",
+        sort="ranking_score",
+        direction="desc",
+        sorts=[
+            {"key": "ranking_score", "direction": "desc"},
+            {"key": "return_5d", "direction": "desc"},
+            {"key": "ranking_score", "direction": "asc"},
+        ],
+        strategy_name=" quality-trend ",
+        ranking_schema_name=" quality-momentum ",
+        ranking_schema_version=2,
+        sectors="Technology, Healthcare, technology",
+        countries=[" US ", "CA", "US"],
+        min_return_5d=0.01,
+        max_return_5d=0.08,
+        visible_column_ids=["symbol", "return_5d", "symbol", "  volume  ", ""],
+    )
+    upsert = StockScreenerPresetUpsertRequest(
+        name="  Momentum desk ",
+        description="  Active quality/momentum view  ",
+        workspace=workspace,
+    )
+    summary = StockScreenerPresetSummary(
+        preset_id="preset-1",
+        name=upsert.name,
+        description=upsert.description,
+        workspace=upsert.workspace,
+    )
+    listing = StockScreenerPresetListResponse(presets=[summary])
+
+    assert workspace.q == "ms"
+    assert workspace.source_layer == "platinum"
+    assert workspace.strategy_name == "quality-trend"
+    assert workspace.ranking_schema_name == "quality-momentum"
+    assert workspace.sectors == ["Technology", "Healthcare"]
+    assert workspace.countries == ["US", "CA"]
+    assert workspace.sorts is not None
+    assert [(clause.key, clause.direction) for clause in workspace.sorts] == [
+        ("ranking_score", "desc"),
+        ("return_5d", "desc"),
+    ]
+    assert workspace.visible_column_ids == ["symbol", "return_5d", "volume"]
+    assert upsert.name == "Momentum desk"
+    assert upsert.description == "Active quality/momentum view"
+    assert listing.presets[0].preset_id == "preset-1"
+
+
+def test_stock_screener_preset_workspace_rejects_invalid_payloads() -> None:
+    for payload, expected in (
+        ({"source_layer": "silver"}, "source_layer"),
+        ({"min_volume": 100, "max_volume": 10}, "min_volume"),
+        ({"ranking_schema_version": 2}, "ranking_schema_name"),
+        (
+            {"sorts": [{"key": "ranking_score", "direction": "desc"}]},
+            "ranking_schema_name",
+        ),
+        ({"visible_column_ids": "symbol,volume"}, "visible_column_ids"),
+        ({"unknown_field": True}, "unknown_field"),
+    ):
+        try:
+            StockScreenerPresetWorkspace.model_validate(payload)
+        except Exception as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(
+                f"Expected StockScreenerPresetWorkspace to reject {payload!r}."
+            )
 
 
 def test_config_reference_rejects_blank_name() -> None:
