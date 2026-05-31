@@ -56,12 +56,16 @@ ExitRuleDiagnosticCode = Literal[
     "invalid_rule",
 ]
 ExitRulePreviewVerdict = Literal["pass", "warning", "block"]
-ExitRulePinImpactChangeType = Literal["unchanged", "added", "removed", "modified", "reordered"]
+ExitRulePinImpactChangeType = Literal[
+    "unchanged", "added", "removed", "modified", "reordered"
+]
 ExitRuleDiagnosticDetail: TypeAlias = str | int | float | bool | None
 StrategyPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 StrategyPositionAssetClass = Literal["equity", "option"]
 RiskTolerancePreset = Literal["conservative", "balanced", "aggressive"]
-RebalanceFrequency = Literal["every_bar", "daily", "weekly", "monthly", "quarterly", "every_n_bars", "manual"]
+RebalanceFrequency = Literal[
+    "every_bar", "daily", "weekly", "monthly", "quarterly", "every_n_bars", "manual"
+]
 RebalanceExecutionTiming = Literal["next_bar_open"]
 ReusableConfigStatus = Literal["draft", "active", "deprecated"]
 ReusableConfigIntendedUse = Literal["research", "validation", "production_candidate"]
@@ -187,7 +191,18 @@ UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
         id="market.close",
         label="Close Price",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="security.symbol",
@@ -211,223 +226,630 @@ UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
         id="security.delisted_at",
         label="Delisted Timestamp",
         valueKind="datetime",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="market.trade_date",
         label="Trade Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="market.timestamp",
         label="Market Timestamp",
         valueKind="datetime",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="returns.return_20d",
         label="20 Day Return",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="returns.return_60d",
         label="60 Day Return",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="returns.return_126d",
         label="126 Day Return",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="technical.rsi_14d",
         label="14 Day RSI",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="technical.bb_width_20d",
         label="20 Day Bollinger Band Width",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="technical.compression_score",
         label="Compression Score",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="technical.position_in_20d_range",
         label="20 Day Range Position",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.wall_street_bets_observed_date",
         label="Wall Street Bets Mention Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.insider_trading_observed_date",
         label="Insider Trading Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.congressional_trading_observed_date",
         label="Congressional Trading Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.government_contract_observed_date",
         label="Government Contract Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.institutional_holding_observed_date",
         label="Institutional Holding Change Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.patent_observed_date",
         label="Patent Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="alternative.congress_holding_observed_date",
         label="Congress Holding Observed Date",
         valueKind="date",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.adr_pct_20d",
         label="QMom 20 Day ADR Percent",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.volume_ratio_1d_50d",
         label="QMom 1 Day To 50 Day Volume Ratio",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.range_contraction_5d_20d",
         label="QMom 5 Day To 20 Day Range Contraction",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.breakout_close_above_20d_high",
         label="QMom Close Above Prior 20 Day High Flag",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.breakout_distance_20d_pct",
         label="QMom Breakout Distance Percent",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.trend_filter",
         label="QMom Trend Filter Flag",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="qmom.daily_research_score",
         label="QMom Daily Research Score",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.distance_to_20d_high_pct",
         label="Runner Distance To Prior 20 Day High Percent",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.distance_to_55d_high_pct",
         label="Runner Distance To Prior 55 Day High Percent",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.base_age_days",
         label="Runner Base Age Days",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.volume_dryup_10d_50d",
         label="Runner 10 Day To 50 Day Volume Dry-Up Ratio",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.close_location_value",
         label="Runner Close Location Value",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.range_expansion_atr",
         label="Runner Range Expansion To Prior ATR",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.days_since_breakout",
         label="Runner Days Since Latest 20 Day Breakout",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.breakout_hold_1d",
         label="Runner One Day Breakout Hold Flag",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="runner.failed_breakout_1d",
         label="Runner One Day Failed Breakout Flag",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="quality.piotroski_f_score",
         label="Piotroski F-Score",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="earnings.surprise_pct",
         label="Earnings Surprise Percent",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="security.market_cap",
         label="Market Capitalization",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="market.dollar_volume_20d",
         label="20 Day Dollar Volume",
         valueKind="number",
-        operators=["eq", "ne", "gt", "gte", "lt", "lte", "in", "not_in", "is_null", "is_not_null"],
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
     UniverseFieldDefinition(
         id="security.primary_listing",
@@ -475,7 +897,9 @@ class UniverseCondition(BaseModel):
         field_definition = UNIVERSE_FIELD_DEFINITION_BY_ID[self.field]
 
         if self.operator not in field_definition.operators:
-            raise ValueError(f"{self.operator} is not supported for field '{self.field}'.")
+            raise ValueError(
+                f"{self.operator} is not supported for field '{self.field}'."
+            )
 
         if self.operator in {"is_null", "is_not_null"}:
             if self.value is not None or self.values is not None:
@@ -705,7 +1129,9 @@ class ExitRule(BaseModel):
             self.priceField = expected
             return
         if self.priceField not in {"open", "high", "low", "close"}:
-            raise ValueError(f"{self.type} received unsupported priceField='{self.priceField}'.")
+            raise ValueError(
+                f"{self.type} received unsupported priceField='{self.priceField}'."
+            )
 
     def _reject_atr_column(self) -> None:
         if self.atrColumn is not None:
@@ -751,7 +1177,9 @@ class StrategyPositionPolicy(BaseModel):
     targetPositionSize: StrategyPositionSizeLimit | None = None
     maxPositionSize: StrategyPositionSizeLimit | None = None
     maxOpenPositions: int | None = Field(default=None, ge=1)
-    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(default_factory=lambda: ["equity"])
+    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(
+        default_factory=lambda: ["equity"]
+    )
     positionVolatilityTolerance: VolatilityTolerance | None = None
     requireOrderConfirmation: bool = False
 
@@ -772,7 +1200,9 @@ class StrategyPositionPolicy(BaseModel):
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyPositionPolicy":
         if not self.allowedAssetClasses:
-            raise ValueError("allowedAssetClasses must include at least one asset class.")
+            raise ValueError(
+                "allowedAssetClasses must include at least one asset class."
+            )
         return self
 
 
@@ -795,9 +1225,13 @@ class StrategyRiskProfileConfig(BaseModel):
         if max_open_positions is None:
             raise ValueError("Strategy risk profiles require maxOpenPositions.")
         if target.mode != maximum.mode:
-            raise ValueError("Strategy risk profiles require targetPositionSize and maxPositionSize to share a mode.")
+            raise ValueError(
+                "Strategy risk profiles require targetPositionSize and maxPositionSize to share a mode."
+            )
         if maximum.value < target.value:
-            raise ValueError("maxPositionSize must be greater than or equal to targetPositionSize.")
+            raise ValueError(
+                "maxPositionSize must be greater than or equal to targetPositionSize."
+            )
 
         return self
 
@@ -843,12 +1277,22 @@ class RebalancePolicy(BaseModel):
     def validate_policy(self) -> "RebalancePolicy":
         if self.frequency == "every_n_bars":
             if self.intervalBars is None:
-                raise ValueError("every_n_bars rebalance frequency requires intervalBars.")
+                raise ValueError(
+                    "every_n_bars rebalance frequency requires intervalBars."
+                )
         elif self.intervalBars is not None:
-            raise ValueError("intervalBars is only supported when frequency='every_n_bars'.")
-        reusable_fields = [self.cadence is not None, self.dayRule is not None, self.anchor is not None]
+            raise ValueError(
+                "intervalBars is only supported when frequency='every_n_bars'."
+            )
+        reusable_fields = [
+            self.cadence is not None,
+            self.dayRule is not None,
+            self.anchor is not None,
+        ]
         if any(reusable_fields) and not all(reusable_fields):
-            raise ValueError("Reusable rebalance policies require cadence, dayRule, and anchor together.")
+            raise ValueError(
+                "Reusable rebalance policies require cadence, dayRule, and anchor together."
+            )
         return self
 
 
@@ -871,10 +1315,16 @@ class StrategyRiskStopLossPolicy(BaseModel):
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskStopLossPolicy":
-        if self.enabled and self.action == "reduce_exposure" and self.reductionPct is None:
+        if (
+            self.enabled
+            and self.action == "reduce_exposure"
+            and self.reductionPct is None
+        ):
             raise ValueError("reduce_exposure stop-loss policies require reductionPct.")
         if self.action != "reduce_exposure" and self.reductionPct is not None:
-            raise ValueError("reductionPct is only supported for reduce_exposure stop-loss policies.")
+            raise ValueError(
+                "reductionPct is only supported for reduce_exposure stop-loss policies."
+            )
         return self
 
 
@@ -890,10 +1340,18 @@ class StrategyRiskTakeProfitPolicy(BaseModel):
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskTakeProfitPolicy":
-        if self.enabled and self.action == "reduce_exposure" and self.reductionPct is None:
-            raise ValueError("reduce_exposure take-profit policies require reductionPct.")
+        if (
+            self.enabled
+            and self.action == "reduce_exposure"
+            and self.reductionPct is None
+        ):
+            raise ValueError(
+                "reduce_exposure take-profit policies require reductionPct."
+            )
         if self.action != "reduce_exposure" and self.reductionPct is not None:
-            raise ValueError("reductionPct is only supported for reduce_exposure take-profit policies.")
+            raise ValueError(
+                "reductionPct is only supported for reduce_exposure take-profit policies."
+            )
         return self
 
 
@@ -922,13 +1380,17 @@ class StrategyRiskExposureLimits(BaseModel):
             and self.weeklyLossLimitPct is not None
             and self.weeklyLossLimitPct < self.dailyLossLimitPct
         ):
-            raise ValueError("weeklyLossLimitPct must be greater than or equal to dailyLossLimitPct.")
+            raise ValueError(
+                "weeklyLossLimitPct must be greater than or equal to dailyLossLimitPct."
+            )
         if (
             self.drawdownReducePct is not None
             and self.drawdownBlockPct is not None
             and self.drawdownBlockPct < self.drawdownReducePct
         ):
-            raise ValueError("drawdownBlockPct must be greater than or equal to drawdownReducePct.")
+            raise ValueError(
+                "drawdownBlockPct must be greater than or equal to drawdownReducePct."
+            )
         return self
 
 
@@ -936,7 +1398,9 @@ class StrategyRiskTradingPermissions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     allowedSides: list[StrategyRiskSide] = Field(default_factory=lambda: ["long"])
-    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(default_factory=lambda: ["equity"])
+    allowedAssetClasses: list[StrategyPositionAssetClass] = Field(
+        default_factory=lambda: ["equity"]
+    )
     optionsMode: StrategyRiskOptionMode = "blocked"
     allowLiveOrders: bool = False
     requireOrderConfirmation: bool = True
@@ -963,9 +1427,13 @@ class StrategyRiskTradingPermissions(BaseModel):
         if not self.allowedSides:
             raise ValueError("allowedSides must include at least one side.")
         if not self.allowedAssetClasses:
-            raise ValueError("allowedAssetClasses must include at least one asset class.")
+            raise ValueError(
+                "allowedAssetClasses must include at least one asset class."
+            )
         if "short" in self.allowedSides and not self.requireBorrowLocate:
-            raise ValueError("Short-enabled risk policies require borrow/locate enforcement.")
+            raise ValueError(
+                "Short-enabled risk policies require borrow/locate enforcement."
+            )
         if self.optionsMode != "blocked" and "option" not in self.allowedAssetClasses:
             raise ValueError("optionsMode requires option in allowedAssetClasses.")
         if self.allowLiveOrders and not self.requireOrderConfirmation:
@@ -999,9 +1467,13 @@ class StrategyRiskOverlayRule(BaseModel):
     @model_validator(mode="after")
     def validate_rule(self) -> "StrategyRiskOverlayRule":
         if self.action == "reduce_exposure" and self.exposureReductionPct is None:
-            raise ValueError("reduce_exposure overlay rules require exposureReductionPct.")
+            raise ValueError(
+                "reduce_exposure overlay rules require exposureReductionPct."
+            )
         if self.action != "reduce_exposure" and self.exposureReductionPct is not None:
-            raise ValueError("exposureReductionPct is only supported for reduce_exposure overlays.")
+            raise ValueError(
+                "exposureReductionPct is only supported for reduce_exposure overlays."
+            )
         return self
 
 
@@ -1039,7 +1511,9 @@ class StrategyRiskDataQualityGates(BaseModel):
     minVendorQuorum: int | None = Field(default=None, ge=1)
     requireSymbolIdentityLock: bool = True
     corporateActionPolicy: StrategyRiskCorporateActionPolicy = "freeze"
-    requiredAdjustmentStatuses: list[StrategyRiskAdjustmentStatus] = Field(default_factory=list)
+    requiredAdjustmentStatuses: list[StrategyRiskAdjustmentStatus] = Field(
+        default_factory=list
+    )
     minCoveragePct: float | None = Field(default=None, gt=0.0, le=100.0)
 
     @field_validator("requiredAdjustmentStatuses", mode="before")
@@ -1073,64 +1547,96 @@ class StrategyRiskVixSpikeHaltPolicy(BaseModel):
     cooldownBars: int = Field(default=2, ge=1)
 
 
+class StrategyRiskDrawdownPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    stopLoss: StrategyRiskStopLossPolicy | None = None
+    takeProfit: StrategyRiskTakeProfitPolicy | None = None
+    reentry: StrategyRiskReentryPolicy = Field(
+        default_factory=StrategyRiskReentryPolicy
+    )
+
+    def has_active_control(self) -> bool:
+        enabled_stop = self.stopLoss is not None and self.stopLoss.enabled
+        enabled_take = self.takeProfit is not None and self.takeProfit.enabled
+        reentry_control = self.reentry.cooldownBars > 0 or self.reentry.requireApproval
+        return enabled_stop or enabled_take or reentry_control
+
+
+class StrategyRiskExposurePolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    limits: StrategyRiskExposureLimits | None = None
+    volatilityTolerance: VolatilityTolerance | None = None
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> "StrategyRiskExposurePolicy":
+        if (
+            self.volatilityTolerance is not None
+            and self.volatilityTolerance.metric == "atr_14d_pct_of_close"
+        ):
+            raise ValueError(
+                "exposure.volatilityTolerance.metric only supports realized_vol_20d or realized_vol_60d."
+            )
+        return self
+
+
+class StrategyRiskMarketStressPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    regimeGate: RegimeGate | None = None
+    overlays: StrategyRiskOverlaySet | None = None
+    vixSpikeHalt: StrategyRiskVixSpikeHaltPolicy | None = None
+
+
 class StrategyRiskPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     enabled: bool = True
     operatingMode: RiskPolicyOperatingMode | None = None
     scope: StrategyRiskPolicyScope = "strategy"
-    stopLoss: StrategyRiskStopLossPolicy | None = None
-    takeProfit: StrategyRiskTakeProfitPolicy | None = None
-    reentry: StrategyRiskReentryPolicy = Field(default_factory=StrategyRiskReentryPolicy)
-    exposureLimits: StrategyRiskExposureLimits | None = None
-    strategyVolatilityTolerance: VolatilityTolerance | None = None
-    tradingPermissions: StrategyRiskTradingPermissions | None = None
-    liquidityLimits: StrategyRiskLiquidityLimits | None = None
-    overlays: StrategyRiskOverlaySet | None = None
-    vixSpikeHalt: StrategyRiskVixSpikeHaltPolicy | None = None
-    dataQualityGates: StrategyRiskDataQualityGates | None = None
+    drawdown: StrategyRiskDrawdownPolicy | None = None
+    exposure: StrategyRiskExposurePolicy | None = None
+    trading: StrategyRiskTradingPermissions | None = None
+    liquidity: StrategyRiskLiquidityLimits | None = None
+    marketStress: StrategyRiskMarketStressPolicy | None = None
+    dataQuality: StrategyRiskDataQualityGates | None = None
     audit: StrategyRiskAuditPolicy | None = None
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskPolicy":
         if (
-            self.strategyVolatilityTolerance is not None
-            and self.strategyVolatilityTolerance.metric == "atr_14d_pct_of_close"
+            self.drawdown is not None
+            and self.drawdown.stopLoss is not None
+            and self.drawdown.stopLoss.enabled
+            and self.exposure is not None
+            and self.exposure.limits is not None
+            and self.exposure.limits.drawdownReducePct is not None
+            and self.drawdown.stopLoss.thresholdPct
+            != self.exposure.limits.drawdownReducePct
         ):
             raise ValueError(
-                "strategyVolatilityTolerance.metric only supports realized_vol_20d or realized_vol_60d."
-            )
-        if (
-            self.stopLoss is not None
-            and self.stopLoss.enabled
-            and self.exposureLimits is not None
-            and self.exposureLimits.drawdownReducePct is not None
-            and self.stopLoss.thresholdPct != self.exposureLimits.drawdownReducePct
-        ):
-            raise ValueError(
-                "stopLoss.thresholdPct must match exposureLimits.drawdownReducePct when stopLoss is enabled."
+                "drawdown.stopLoss.thresholdPct must match exposure.limits.drawdownReducePct when stopLoss is enabled."
             )
         if self.enabled:
-            enabled_stop = self.stopLoss is not None and self.stopLoss.enabled
-            enabled_take = self.takeProfit is not None and self.takeProfit.enabled
-            reentry_control = self.reentry.cooldownBars > 0 or self.reentry.requireApproval
+            drawdown_control = (
+                self.drawdown is not None and self.drawdown.has_active_control()
+            )
             complete_controls = any(
                 item is not None
                 for item in (
                     self.operatingMode,
-                    self.exposureLimits,
-                    self.strategyVolatilityTolerance,
-                    self.tradingPermissions,
-                    self.liquidityLimits,
-                    self.overlays,
-                    self.vixSpikeHalt,
-                    self.dataQualityGates,
+                    self.exposure,
+                    self.trading,
+                    self.liquidity,
+                    self.marketStress,
+                    self.dataQuality,
                     self.audit,
                 )
             )
-            if not enabled_stop and not enabled_take and not reentry_control and not complete_controls:
+            if not drawdown_control and not complete_controls:
                 raise ValueError(
-                    "Enabled strategyRiskPolicy requires an enabled stopLoss, takeProfit, or reentry control, "
+                    "Enabled strategyRiskPolicy requires an enabled drawdown stopLoss, takeProfit, or reentry control, "
                     "or complete risk policy control."
                 )
         return self
@@ -1139,12 +1645,11 @@ class StrategyRiskPolicy(BaseModel):
 class RiskPolicyConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    regimeGate: RegimeGate | None = None
     policy: StrategyRiskPolicy
 
 
 class RiskPolicyConfigSummary(ReusableConfigSummaryBase):
-    regimeGate: RegimeGate | None = None
+    pass
 
 
 class RiskPolicyConfigRevision(ConfigIdentity):
@@ -1290,7 +1795,9 @@ class ExitPolicyPinImpactRequest(BaseModel):
 
     strategyName: str = Field(..., min_length=1, max_length=128)
     strategyVersion: int | None = Field(default=None, ge=1)
-    currentExitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    currentExitPolicyName: str | None = Field(
+        default=None, min_length=1, max_length=128
+    )
     currentExitPolicyVersion: int | None = Field(default=None, ge=1)
     proposedExitPolicyName: str = Field(..., min_length=1, max_length=128)
     proposedExitPolicyVersion: int | None = Field(default=None, ge=1)
@@ -1303,7 +1810,9 @@ class ExitPolicyPinImpactResponse(BaseModel):
 
     strategyName: str = Field(..., min_length=1, max_length=128)
     strategyVersion: int | None = Field(default=None, ge=1)
-    currentExitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    currentExitPolicyName: str | None = Field(
+        default=None, min_length=1, max_length=128
+    )
     currentExitPolicyVersion: int | None = Field(default=None, ge=1)
     proposedExitPolicyName: str = Field(..., min_length=1, max_length=128)
     proposedExitPolicyVersion: int | None = Field(default=None, ge=1)
@@ -1375,7 +1884,9 @@ class UniverseConfigDraftGenerationResponse(BaseModel):
     @model_validator(mode="after")
     def validate_draft_identity(self) -> "UniverseConfigDraftGenerationResponse":
         if self.draft.identity.status != "draft":
-            raise ValueError("Generated universe config must be returned with draft status.")
+            raise ValueError(
+                "Generated universe config must be returned with draft status."
+            )
         if self.draft.identity.version != 1:
             raise ValueError("Generated universe config drafts must use version 1.")
         return self
@@ -1391,7 +1902,9 @@ class RankingSchemaProfile(BaseModel):
     factorColumns: list[str] = Field(default_factory=list)
     transformTypes: list[RankingTransformType] = Field(default_factory=list)
     directionCounts: dict[RankingDirection, int] = Field(default_factory=dict)
-    missingPolicyCounts: dict[RankingMissingValuePolicy, int] = Field(default_factory=dict)
+    missingPolicyCounts: dict[RankingMissingValuePolicy, int] = Field(
+        default_factory=dict
+    )
 
 
 class RankingSchemaSummary(ReusableConfigSummaryBase):
@@ -1478,7 +1991,9 @@ class RankingSchemaDraftGenerationRequest(BaseModel):
     @model_validator(mode="after")
     def validate_preview_pair(self) -> "RankingSchemaDraftGenerationRequest":
         if bool(self.previewStrategyName) != bool(self.previewAsOfDate):
-            raise ValueError("previewStrategyName and previewAsOfDate must be provided together.")
+            raise ValueError(
+                "previewStrategyName and previewAsOfDate must be provided together."
+            )
         return self
 
 
@@ -1512,7 +2027,9 @@ class RankingSchemaDraftGenerationResponse(BaseModel):
     @model_validator(mode="after")
     def validate_draft_identity(self) -> "RankingSchemaDraftGenerationResponse":
         if self.draft.identity.status != "draft":
-            raise ValueError("Generated ranking schema must be returned with draft status.")
+            raise ValueError(
+                "Generated ranking schema must be returned with draft status."
+            )
         if self.draft.identity.version != 1:
             raise ValueError("Generated ranking schema drafts must use version 1.")
         return self
@@ -1562,8 +2079,14 @@ class RebalancePolicyPreset(BaseModel):
 
     @model_validator(mode="after")
     def validate_reusable_rebalance_policy(self) -> "RebalancePolicyPreset":
-        if self.config.cadence is None or self.config.dayRule is None or self.config.anchor is None:
-            raise ValueError("RebalancePolicyPreset requires cadence, dayRule, and anchor.")
+        if (
+            self.config.cadence is None
+            or self.config.dayRule is None
+            or self.config.anchor is None
+        ):
+            raise ValueError(
+                "RebalancePolicyPreset requires cadence, dayRule, and anchor."
+            )
         return self
 
 
@@ -1618,7 +2141,9 @@ class RegimeStrategyPredicate(BaseModel):
         overlap = sorted(set(self.requiredRegimes).intersection(self.blockedRegimes))
         if overlap:
             joined = ", ".join(overlap)
-            raise ValueError(f"Regime strategy predicate cannot both require and block: {joined}.")
+            raise ValueError(
+                f"Regime strategy predicate cannot both require and block: {joined}."
+            )
         return self
 
 
@@ -1653,13 +2178,14 @@ class StrategyConfig(BaseModel):
     costModel: str = Field(default="default", min_length=1, max_length=64)
     rankingSchemaName: str | None = Field(default=None, min_length=1, max_length=128)
     rankingSchemaVersion: int | None = Field(default=None, ge=1)
-    regimePolicyConfigName: str | None = Field(default=None, min_length=1, max_length=128)
+    regimePolicyConfigName: str | None = Field(
+        default=None, min_length=1, max_length=128
+    )
     regimePolicyConfigVersion: int | None = Field(default=None, ge=1)
     regimePolicy: RegimePolicy | None = None
     riskProfileName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
     riskPolicyVersion: int | None = Field(default=None, ge=1)
-    riskRegimeGate: RegimeGate | None = None
     positionPolicy: StrategyPositionPolicy | None = None
     rebalancePolicy: RebalancePolicy | None = None
     strategyRiskPolicy: StrategyRiskPolicy | None = None
@@ -1686,7 +2212,8 @@ class StrategyConfig(BaseModel):
                 payload["regimePolicy"] = normalized_policy
                 if payload.get("regimeSource") in (None, {}):
                     payload["regimeSource"] = {
-                        "modelName": normalized_policy.get("modelName") or DEFAULT_REGIME_MODEL_NAME,
+                        "modelName": normalized_policy.get("modelName")
+                        or DEFAULT_REGIME_MODEL_NAME,
                         "modelVersion": normalized_policy.get("modelVersion"),
                     }
 
@@ -1727,7 +2254,9 @@ class StrategyConfig(BaseModel):
             if len(name) > 128:
                 raise ValueError("regimeGates keys must be 128 characters or fewer.")
             if name in normalized_gates:
-                raise ValueError(f"Duplicate regimeGates key after normalization: {name}.")
+                raise ValueError(
+                    f"Duplicate regimeGates key after normalization: {name}."
+                )
             normalized_gates[name] = gate_plan
         payload["regimeGates"] = normalized_gates
         return payload
@@ -1764,22 +2293,36 @@ class StrategyConfig(BaseModel):
 
     @model_validator(mode="after")
     def normalize_exits(self) -> "StrategyConfig":
-        if not self.universeConfigName and self.universe is None and not self._component_ref("universe"):
-            raise ValueError("componentRefs.universe, universeConfigName, or universe is required.")
+        if (
+            not self.universeConfigName
+            and self.universe is None
+            and not self._component_ref("universe")
+        ):
+            raise ValueError(
+                "componentRefs.universe, universeConfigName, or universe is required."
+            )
         if self.regimeSource is None and self.regimePolicy is not None:
             self.regimeSource = RegimeSourceRef(
                 modelName=self.regimePolicy.modelName,
                 modelVersion=self.regimePolicy.modelVersion,
             )
-        self._validate_pin_pair("universeConfigVersion", self.universeConfigName, self.universeConfigVersion)
-        self._validate_pin_pair("rankingSchemaVersion", self.rankingSchemaName, self.rankingSchemaVersion)
+        self._validate_pin_pair(
+            "universeConfigVersion", self.universeConfigName, self.universeConfigVersion
+        )
+        self._validate_pin_pair(
+            "rankingSchemaVersion", self.rankingSchemaName, self.rankingSchemaVersion
+        )
         self._validate_pin_pair(
             "regimePolicyConfigVersion",
             self.regimePolicyConfigName,
             self.regimePolicyConfigVersion,
         )
-        self._validate_pin_pair("riskPolicyVersion", self.riskPolicyName, self.riskPolicyVersion)
-        self._validate_pin_pair("exitRuleSetVersion", self.exitRuleSetName, self.exitRuleSetVersion)
+        self._validate_pin_pair(
+            "riskPolicyVersion", self.riskPolicyName, self.riskPolicyVersion
+        )
+        self._validate_pin_pair(
+            "exitRuleSetVersion", self.exitRuleSetName, self.exitRuleSetVersion
+        )
         self._validate_component_pin(
             "universe",
             self._component_ref("universe"),
@@ -1810,12 +2353,27 @@ class StrategyConfig(BaseModel):
             self.exitRuleSetName,
             self.exitRuleSetVersion,
         )
-        if self.rebalancePolicy is not None and self.rebalancePolicy.regimeGate is not None and self.regimeSource is None:
+        if (
+            self.rebalancePolicy is not None
+            and self.rebalancePolicy.regimeGate is not None
+            and self.regimeSource is None
+        ):
             raise ValueError("rebalancePolicy.regimeGate requires regimeSource.")
-        if self.positionPolicy is not None and self.positionPolicy.regimeGate is not None and self.regimeSource is None:
+        if (
+            self.positionPolicy is not None
+            and self.positionPolicy.regimeGate is not None
+            and self.regimeSource is None
+        ):
             raise ValueError("positionPolicy.regimeGate requires regimeSource.")
-        if self.riskRegimeGate is not None and self.regimeSource is None:
-            raise ValueError("riskRegimeGate requires regimeSource.")
+        if (
+            self.strategyRiskPolicy is not None
+            and self.strategyRiskPolicy.marketStress is not None
+            and self.strategyRiskPolicy.marketStress.regimeGate is not None
+            and self.regimeSource is None
+        ):
+            raise ValueError(
+                "strategyRiskPolicy.marketStress.regimeGate requires regimeSource."
+            )
         if self.exitRegimeGate is not None and self.regimeSource is None:
             raise ValueError("exitRegimeGate requires regimeSource.")
         if self.regimeGates and self.regimeSource is None:
@@ -1842,7 +2400,9 @@ class StrategyConfig(BaseModel):
         target = policy.targetPositionSize
         if target.mode != "pct_of_allocatable_capital":
             return
-        selected_positions = min(int(self.topN), int(policy.maxOpenPositions or self.topN))
+        selected_positions = min(
+            int(self.topN), int(policy.maxOpenPositions or self.topN)
+        )
         total_target_pct = float(target.value) * selected_positions
         if total_target_pct > 100:
             raise ValueError(
@@ -1851,7 +2411,9 @@ class StrategyConfig(BaseModel):
             )
 
     @staticmethod
-    def _validate_pin_pair(field_name: str, name: str | None, version: int | None) -> None:
+    def _validate_pin_pair(
+        field_name: str, name: str | None, version: int | None
+    ) -> None:
         if version is not None and not name:
             raise ValueError(f"{field_name} requires the matching config name.")
 
@@ -1910,7 +2472,13 @@ class GeneratedStrategyProvenance(BaseModel):
             return value
         return str(value).strip()
 
-    @field_validator("sourceContext", "assumptions", "warnings", "unresolvedRequirements", mode="before")
+    @field_validator(
+        "sourceContext",
+        "assumptions",
+        "warnings",
+        "unresolvedRequirements",
+        mode="before",
+    )
     @classmethod
     def normalize_text_list(cls, value: object) -> object:
         if value is None:
@@ -1922,7 +2490,9 @@ class GeneratedStrategyProvenance(BaseModel):
             text = str(item or "").strip()
             if text:
                 if len(text) > 1000:
-                    raise ValueError("Generated strategy provenance entries must be 1000 characters or less.")
+                    raise ValueError(
+                        "Generated strategy provenance entries must be 1000 characters or less."
+                    )
                 normalized.append(text)
         return normalized
 

@@ -216,6 +216,7 @@ from asset_allocation_contracts.strategy import (
     RegimeStrategyPredicate,
     StrategyComponentRefs,
     StrategyRiskExposureLimits,
+    StrategyRiskExposurePolicy,
     StrategyRiskOverlaySet,
     StrategyRiskPolicy,
     StrategyRiskPolicyPreset,
@@ -285,10 +286,12 @@ def test_strategy_config_accepts_pinned_configuration_references_with_resolved_s
         riskPolicyVersion=5,
         strategyRiskPolicy={
             "scope": "strategy",
-            "stopLoss": {
-                "thresholdPct": 8,
-                "action": "reduce_exposure",
-                "reductionPct": 50,
+            "drawdown": {
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
             },
         },
         exitRuleSetName="standard-exits",
@@ -335,7 +338,7 @@ def test_strategy_config_accepts_component_refs_as_canonical_pins() -> None:
             "rebalance": {"name": "monthly-last-trading-day", "version": 1},
             "riskPolicy": {"name": "balanced-long-only", "version": 1},
             "exitPolicy": {"name": "rank-decay-exit", "version": 1},
-        }
+        },
     )
 
     assert isinstance(payload.componentRefs, StrategyComponentRefs)
@@ -377,7 +380,9 @@ def test_strategy_config_rejects_mismatched_component_ref_and_legacy_pin() -> No
         )
 
 
-def test_strategy_config_accepts_legacy_regime_policy_component_ref_for_compatibility() -> None:
+def test_strategy_config_accepts_legacy_regime_policy_component_ref_for_compatibility() -> (
+    None
+):
     payload = StrategyConfig(
         componentRefs={
             "universe": {"name": "us-large-liquid", "version": 1},
@@ -401,7 +406,9 @@ def test_regime_source_ref_requires_model_name() -> None:
     except Exception as exc:
         assert "modelName" in str(exc)
     else:
-        raise AssertionError("Expected blank regime source model name to fail validation.")
+        raise AssertionError(
+            "Expected blank regime source model name to fail validation."
+        )
 
 
 def test_regime_gate_normalizes_blocked_lists_and_rejects_legacy_active_shape() -> None:
@@ -411,7 +418,9 @@ def test_regime_gate_normalizes_blocked_lists_and_rejects_legacy_active_shape() 
 
     assert gate.blockedRegimes == ["liquidity_stress", "high_volatility"]
 
-    legacy_inactive = RegimeGate(inactiveInRegimes=["liquidity_stress", "liquidity_stress"])
+    legacy_inactive = RegimeGate(
+        inactiveInRegimes=["liquidity_stress", "liquidity_stress"]
+    )
     assert legacy_inactive.blockedRegimes == ["liquidity_stress"]
 
     try:
@@ -419,7 +428,9 @@ def test_regime_gate_normalizes_blocked_lists_and_rejects_legacy_active_shape() 
     except Exception as exc:
         assert "blockedRegimes only" in str(exc)
     else:
-        raise AssertionError("Expected legacy activeInRegimes gates to fail validation.")
+        raise AssertionError(
+            "Expected legacy activeInRegimes gates to fail validation."
+        )
 
 
 def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
@@ -447,7 +458,9 @@ def test_ranking_schema_rejects_legacy_regime_gate_authoring() -> None:
     except Exception as exc:
         assert "regimeGate" in str(exc)
     else:
-        raise AssertionError("Expected ranking schema regimeGate authoring to fail validation.")
+        raise AssertionError(
+            "Expected ranking schema regimeGate authoring to fail validation."
+        )
 
 
 def test_component_configs_accept_regime_gates() -> None:
@@ -470,13 +483,17 @@ def test_component_configs_accept_regime_gates() -> None:
     )
     rebalance = RebalancePolicy(regimeGate={"blockedRegimes": ["high_volatility"]})
     risk = RiskPolicyConfig(
-        regimeGate={"blockedRegimes": ["liquidity_stress"]},
         policy={
             "scope": "strategy",
-            "stopLoss": {
-                "thresholdPct": 8,
-                "action": "reduce_exposure",
-                "reductionPct": 50,
+            "drawdown": {
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
+            },
+            "marketStress": {
+                "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
             },
         },
     )
@@ -491,8 +508,9 @@ def test_component_configs_accept_regime_gates() -> None:
     assert rebalance.regimeGate.blockedRegimes == ["high_volatility"]
     assert position.regimeGate is not None
     assert position.regimeGate.blockedRegimes == ["trending_down"]
-    assert risk.regimeGate is not None
-    assert risk.regimeGate.blockedRegimes == ["liquidity_stress"]
+    assert risk.policy.marketStress is not None
+    assert risk.policy.marketStress.regimeGate is not None
+    assert risk.policy.marketStress.regimeGate.blockedRegimes == ["liquidity_stress"]
     assert exits.regimeGate is not None
     assert exits.regimeGate.blockedRegimes == ["liquidity_stress"]
 
@@ -514,8 +532,14 @@ def test_strategy_config_accepts_weighted_regime_strategy_playbook() -> None:
                     "blockedRegimes": ["liquidity_stress"],
                 },
                 "allocations": [
-                    {"strategyRef": {"name": "quality-momentum", "version": 7}, "weight": 2},
-                    {"strategyRef": {"name": "defensive-value", "version": 3}, "weight": 1},
+                    {
+                        "strategyRef": {"name": "quality-momentum", "version": 7},
+                        "weight": 2,
+                    },
+                    {
+                        "strategyRef": {"name": "defensive-value", "version": 3},
+                        "weight": 1,
+                    },
                 ],
             }
         },
@@ -523,7 +547,10 @@ def test_strategy_config_accepts_weighted_regime_strategy_playbook() -> None:
 
     assert isinstance(payload.regimeGates["risk-on"], StrategyRegimeGatePlan)
     assert payload.regimeGates["risk-on"].when.requiredRegimes == ["trending_up"]
-    assert payload.regimeGates["risk-on"].allocations[0].strategyRef.name == "quality-momentum"
+    assert (
+        payload.regimeGates["risk-on"].allocations[0].strategyRef.name
+        == "quality-momentum"
+    )
     assert payload.regimeGates["risk-on"].allocations[0].weight == 2
 
 
@@ -541,7 +568,10 @@ def test_strategy_config_requires_regime_source_for_weighted_regime_playbook() -
                 "risk-on": {
                     "when": {"requiredRegimes": ["trending_up"]},
                     "allocations": [
-                        {"strategyRef": {"name": "quality-momentum", "version": 7}, "weight": 1},
+                        {
+                            "strategyRef": {"name": "quality-momentum", "version": 7},
+                            "weight": 1,
+                        },
                     ],
                 }
             },
@@ -549,23 +579,33 @@ def test_strategy_config_requires_regime_source_for_weighted_regime_playbook() -
     except Exception as exc:
         assert "regimeGates requires regimeSource" in str(exc)
     else:
-        raise AssertionError("Expected regimeGates without regimeSource to fail validation.")
+        raise AssertionError(
+            "Expected regimeGates without regimeSource to fail validation."
+        )
 
 
 def test_weighted_regime_playbook_rejects_invalid_entries() -> None:
     try:
-        RegimeStrategyPredicate(requiredRegimes=["trending_up"], blockedRegimes=["trending_up"])
+        RegimeStrategyPredicate(
+            requiredRegimes=["trending_up"], blockedRegimes=["trending_up"]
+        )
     except Exception as exc:
         assert "both require and block" in str(exc)
     else:
-        raise AssertionError("Expected overlapping required and blocked regimes to fail validation.")
+        raise AssertionError(
+            "Expected overlapping required and blocked regimes to fail validation."
+        )
 
     try:
-        StrategyRegimeAllocation(strategyRef={"name": "quality-momentum", "version": 7}, weight=0)
+        StrategyRegimeAllocation(
+            strategyRef={"name": "quality-momentum", "version": 7}, weight=0
+        )
     except Exception as exc:
         assert "weight" in str(exc)
     else:
-        raise AssertionError("Expected non-positive allocation weight to fail validation.")
+        raise AssertionError(
+            "Expected non-positive allocation weight to fail validation."
+        )
 
     try:
         StrategyRegimeGatePlan(
@@ -575,7 +615,9 @@ def test_weighted_regime_playbook_rejects_invalid_entries() -> None:
     except Exception as exc:
         assert "allocations" in str(exc)
     else:
-        raise AssertionError("Expected empty regime gate allocations to fail validation.")
+        raise AssertionError(
+            "Expected empty regime gate allocations to fail validation."
+        )
 
 
 def test_strategy_config_requires_regime_source_for_inline_component_gates() -> None:
@@ -588,17 +630,28 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
     }
 
     for payload in (
-        {**base_payload, "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}}},
+        {
+            **base_payload,
+            "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}},
+        },
         {
             **base_payload,
             "positionPolicy": {
                 "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
-                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 5,
+                },
                 "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
                 "maxOpenPositions": 10,
             },
         },
-        {**base_payload, "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
+        {
+            **base_payload,
+            "strategyRiskPolicy": {
+                "marketStress": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}}
+            },
+        },
         {**base_payload, "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]}},
     ):
         try:
@@ -606,7 +659,9 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
         except Exception as exc:
             assert "regimeSource" in str(exc)
         else:
-            raise AssertionError(f"Expected missing regime source to fail for {payload!r}")
+            raise AssertionError(
+                f"Expected missing regime source to fail for {payload!r}"
+            )
 
     resolved = StrategyConfig.model_validate(
         {
@@ -615,11 +670,16 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
             "rebalancePolicy": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}},
             "positionPolicy": {
                 "regimeGate": {"blockedRegimes": ["trending_down"]},
-                "targetPositionSize": {"mode": "pct_of_allocatable_capital", "value": 5},
+                "targetPositionSize": {
+                    "mode": "pct_of_allocatable_capital",
+                    "value": 5,
+                },
                 "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
                 "maxOpenPositions": 10,
             },
-            "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
+            "strategyRiskPolicy": {
+                "marketStress": {"regimeGate": {"blockedRegimes": ["liquidity_stress"]}}
+            },
             "exitRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
         }
     )
@@ -629,7 +689,9 @@ def test_strategy_config_requires_regime_source_for_inline_component_gates() -> 
     assert resolved.rebalancePolicy.regimeGate is not None
     assert resolved.positionPolicy is not None
     assert resolved.positionPolicy.regimeGate is not None
-    assert resolved.riskRegimeGate is not None
+    assert resolved.strategyRiskPolicy is not None
+    assert resolved.strategyRiskPolicy.marketStress is not None
+    assert resolved.strategyRiskPolicy.marketStress.regimeGate is not None
     assert resolved.exitRegimeGate is not None
 
 
@@ -764,7 +826,9 @@ def test_stock_screener_sort_stack_rejects_invalid_clause_values() -> None:
     except Exception as exc:
         assert "sideways" in str(exc)
     else:
-        raise AssertionError("Expected invalid screener sort direction to fail validation.")
+        raise AssertionError(
+            "Expected invalid screener sort direction to fail validation."
+        )
 
 
 def test_stock_screener_sort_stack_rejects_ranking_sort_without_schema() -> None:
@@ -774,7 +838,9 @@ def test_stock_screener_sort_stack_rejects_ranking_sort_without_schema() -> None
         assert "ranking_score" in str(exc)
         assert "ranking_schema_name" in str(exc)
     else:
-        raise AssertionError("Expected ranking sort without ranking schema to fail validation.")
+        raise AssertionError(
+            "Expected ranking sort without ranking schema to fail validation."
+        )
 
 
 def test_stock_screener_contract_rejects_inverted_numeric_ranges() -> None:
@@ -931,10 +997,12 @@ def test_reusable_preset_wrappers_forbid_unknown_fields() -> None:
     }
     risk_policy = {
         "scope": "strategy",
-        "stopLoss": {
-            "thresholdPct": 8,
-            "action": "reduce_exposure",
-            "reductionPct": 50,
+        "drawdown": {
+            "stopLoss": {
+                "thresholdPct": 8,
+                "action": "reduce_exposure",
+                "reductionPct": 50,
+            },
         },
     }
     exit_policy = {
@@ -1021,7 +1089,10 @@ def test_strategy_position_policy_accepts_target_and_max_sizing() -> None:
     assert payload.positionPolicy.targetPositionSize.value == 5
     assert payload.positionPolicy.allowedAssetClasses == ["equity", "option"]
     assert payload.positionPolicy.positionVolatilityTolerance is not None
-    assert payload.positionPolicy.positionVolatilityTolerance.metric == "atr_14d_pct_of_close"
+    assert (
+        payload.positionPolicy.positionVolatilityTolerance.metric
+        == "atr_14d_pct_of_close"
+    )
     assert payload.positionPolicy.requireOrderConfirmation is True
 
 
@@ -1222,7 +1293,9 @@ def test_strategy_config_accepts_risk_profile_name_with_snapshot() -> None:
     assert payload.riskProfileName == "balanced"
     assert payload.positionPolicy is not None
     assert payload.positionPolicy.positionVolatilityTolerance is not None
-    assert payload.positionPolicy.positionVolatilityTolerance.metric == "realized_vol_60d"
+    assert (
+        payload.positionPolicy.positionVolatilityTolerance.metric == "realized_vol_60d"
+    )
 
 
 def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
@@ -1247,26 +1320,30 @@ def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
         },
         strategyRiskPolicy={
             "scope": "strategy",
-            "stopLoss": {
-                "thresholdPct": 8,
-                "action": "reduce_exposure",
-                "reductionPct": 50,
+            "drawdown": {
+                "stopLoss": {
+                    "thresholdPct": 8,
+                    "action": "reduce_exposure",
+                    "reductionPct": 50,
+                },
+                "takeProfit": {
+                    "thresholdPct": 15,
+                    "action": "rebalance_to_target",
+                },
+                "reentry": {
+                    "cooldownBars": 12,
+                    "requireApproval": False,
+                },
             },
-            "strategyVolatilityTolerance": {
-                "metric": "realized_vol_20d",
-                "maxPct": 16,
-            },
-            "exposureLimits": {
-                "drawdownReducePct": 8,
-                "drawdownBlockPct": 12,
-            },
-            "takeProfit": {
-                "thresholdPct": 15,
-                "action": "rebalance_to_target",
-            },
-            "reentry": {
-                "cooldownBars": 12,
-                "requireApproval": False,
+            "exposure": {
+                "volatilityTolerance": {
+                    "metric": "realized_vol_20d",
+                    "maxPct": 16,
+                },
+                "limits": {
+                    "drawdownReducePct": 8,
+                    "drawdownBlockPct": 12,
+                },
             },
         },
     )
@@ -1274,11 +1351,16 @@ def test_strategy_config_accepts_rebalance_and_strategy_risk_policies() -> None:
     assert payload.rebalancePolicy is not None
     assert payload.rebalancePolicy.intervalBars == 3
     assert payload.strategyRiskPolicy is not None
-    assert payload.strategyRiskPolicy.stopLoss is not None
-    assert payload.strategyRiskPolicy.stopLoss.thresholdPct == 8
-    assert payload.strategyRiskPolicy.strategyVolatilityTolerance is not None
-    assert payload.strategyRiskPolicy.strategyVolatilityTolerance.metric == "realized_vol_20d"
-    assert payload.strategyRiskPolicy.reentry.cooldownBars == 12
+    assert payload.strategyRiskPolicy.drawdown is not None
+    assert payload.strategyRiskPolicy.drawdown.stopLoss is not None
+    assert payload.strategyRiskPolicy.drawdown.stopLoss.thresholdPct == 8
+    assert payload.strategyRiskPolicy.exposure is not None
+    assert payload.strategyRiskPolicy.exposure.volatilityTolerance is not None
+    assert (
+        payload.strategyRiskPolicy.exposure.volatilityTolerance.metric
+        == "realized_vol_20d"
+    )
+    assert payload.strategyRiskPolicy.drawdown.reentry.cooldownBars == 12
 
 
 def test_rebalance_policy_requires_interval_only_for_every_n_bars() -> None:
@@ -1378,47 +1460,78 @@ def test_strategy_risk_policy_rejects_ambiguous_enabled_empty_policy() -> None:
     try:
         StrategyRiskPolicy()
     except Exception as exc:
-        assert "stopLoss, takeProfit, or reentry control" in str(exc)
+        assert "drawdown stopLoss, takeProfit, or reentry control" in str(exc)
     else:
         raise AssertionError(
             "Expected enabled empty strategy risk policy to fail validation."
         )
 
 
-def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
-    policy = StrategyRiskPolicy(reentry={"cooldownBars": 3, "requireApproval": True})
+def test_strategy_risk_policy_rejects_flat_v1_payload_keys() -> None:
+    for field_name in (
+        "stopLoss",
+        "takeProfit",
+        "reentry",
+        "exposureLimits",
+        "strategyVolatilityTolerance",
+        "tradingPermissions",
+        "liquidityLimits",
+        "overlays",
+        "vixSpikeHalt",
+        "dataQualityGates",
+    ):
+        try:
+            StrategyRiskPolicy.model_validate({field_name: {}})
+        except Exception as exc:
+            assert field_name in str(exc)
+            assert "extra" in str(exc).lower()
+        else:
+            raise AssertionError(
+                f"Expected flat v1 key {field_name!r} to fail validation."
+            )
 
-    assert policy.stopLoss is None
-    assert policy.takeProfit is None
-    assert policy.reentry.cooldownBars == 3
-    assert policy.reentry.requireApproval is True
+
+def test_strategy_risk_policy_accepts_reentry_only_controls() -> None:
+    policy = StrategyRiskPolicy(
+        drawdown={"reentry": {"cooldownBars": 3, "requireApproval": True}}
+    )
+
+    assert policy.drawdown is not None
+    assert policy.drawdown.stopLoss is None
+    assert policy.drawdown.takeProfit is None
+    assert policy.drawdown.reentry.cooldownBars == 3
+    assert policy.drawdown.reentry.requireApproval is True
 
 
 def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
     policy = StrategyRiskPolicy(
         operatingMode="balanced_long_short",
-        stopLoss={
-            "thresholdPct": 6,
-            "action": "reduce_exposure",
-            "reductionPct": 35,
+        drawdown={
+            "stopLoss": {
+                "thresholdPct": 6,
+                "action": "reduce_exposure",
+                "reductionPct": 35,
+            },
         },
-        exposureLimits={
-            "maxGrossExposurePct": 135,
-            "maxNetExposurePct": 65,
-            "maxSingleNamePct": 6,
-            "maxSectorPct": 25,
-            "maxCorrelatedClusterPct": 35,
-            "maxFactorBetaAbs": 1.4,
-            "dailyLossLimitPct": 2.5,
-            "weeklyLossLimitPct": 5,
-            "drawdownReducePct": 6,
-            "drawdownBlockPct": 9,
+        exposure={
+            "limits": {
+                "maxGrossExposurePct": 135,
+                "maxNetExposurePct": 65,
+                "maxSingleNamePct": 6,
+                "maxSectorPct": 25,
+                "maxCorrelatedClusterPct": 35,
+                "maxFactorBetaAbs": 1.4,
+                "dailyLossLimitPct": 2.5,
+                "weeklyLossLimitPct": 5,
+                "drawdownReducePct": 6,
+                "drawdownBlockPct": 9,
+            },
+            "volatilityTolerance": {
+                "metric": "realized_vol_60d",
+                "maxPct": 14,
+            },
         },
-        strategyVolatilityTolerance={
-            "metric": "realized_vol_60d",
-            "maxPct": 14,
-        },
-        tradingPermissions={
+        trading={
             "allowedSides": ["long", "short"],
             "allowedAssetClasses": ["equity", "option"],
             "optionsMode": "defined_risk_only",
@@ -1427,37 +1540,39 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
             "requireDifferentApprover": True,
             "requireBorrowLocate": True,
         },
-        liquidityLimits={
+        liquidity={
             "maxAdvParticipationPct": 7.5,
             "minLiquidityScore": 60,
             "maxExitHorizonDays": 3,
             "maxBidAskSpreadBps": 50,
             "maxSlippageBps": 35,
         },
-        vixSpikeHalt={
-            "threshold": 32,
-            "streakBars": 2,
-            "cooldownBars": 2,
+        marketStress={
+            "vixSpikeHalt": {
+                "threshold": 32,
+                "streakBars": 2,
+                "cooldownBars": 2,
+            },
+            "overlays": {
+                "regime": [
+                    {
+                        "id": "high-vol-de-risk",
+                        "trigger": "regime=high_volatility",
+                        "action": "reduce_exposure",
+                        "exposureReductionPct": 35,
+                    }
+                ],
+                "event": [
+                    {
+                        "id": "earnings-blackout",
+                        "trigger": "earnings_within=2d",
+                        "action": "block_new_orders",
+                        "requireApproval": True,
+                    }
+                ],
+            },
         },
-        overlays={
-            "regime": [
-                {
-                    "id": "high-vol-de-risk",
-                    "trigger": "regime=high_volatility",
-                    "action": "reduce_exposure",
-                    "exposureReductionPct": 35,
-                }
-            ],
-            "event": [
-                {
-                    "id": "earnings-blackout",
-                    "trigger": "earnings_within=2d",
-                    "action": "block_new_orders",
-                    "requireApproval": True,
-                }
-            ],
-        },
-        dataQualityGates={
+        dataQuality={
             "maxQuoteAgeSeconds": 900,
             "maxSecurityMasterAgeSeconds": 86400,
             "minVendorQuorum": 2,
@@ -1470,30 +1585,37 @@ def test_strategy_risk_policy_accepts_complete_policy_envelope() -> None:
     )
 
     assert policy.operatingMode == "balanced_long_short"
-    assert policy.stopLoss is not None
-    assert policy.stopLoss.thresholdPct == 6
-    assert policy.exposureLimits is not None
-    assert policy.exposureLimits.maxGrossExposurePct == 135
-    assert policy.strategyVolatilityTolerance is not None
-    assert policy.strategyVolatilityTolerance.metric == "realized_vol_60d"
-    assert policy.tradingPermissions is not None
-    assert policy.tradingPermissions.allowedSides == ["long", "short"]
-    assert policy.tradingPermissions.optionsMode == "defined_risk_only"
-    assert policy.liquidityLimits is not None
-    assert policy.liquidityLimits.maxAdvParticipationPct == 7.5
-    assert policy.vixSpikeHalt is not None
-    assert policy.vixSpikeHalt.threshold == 32
-    assert policy.vixSpikeHalt.streakBars == 2
-    assert policy.vixSpikeHalt.cooldownBars == 2
-    assert policy.overlays is not None
-    assert policy.overlays.regime[0].id == "high-vol-de-risk"
-    assert policy.dataQualityGates is not None
-    assert policy.dataQualityGates.requiredAdjustmentStatuses == ["split_adjusted"]
+    assert policy.drawdown is not None
+    assert policy.drawdown.stopLoss is not None
+    assert policy.drawdown.stopLoss.thresholdPct == 6
+    assert policy.exposure is not None
+    assert policy.exposure.limits is not None
+    assert policy.exposure.limits.maxGrossExposurePct == 135
+    assert policy.exposure.volatilityTolerance is not None
+    assert policy.exposure.volatilityTolerance.metric == "realized_vol_60d"
+    assert policy.trading is not None
+    assert policy.trading.allowedSides == ["long", "short"]
+    assert policy.trading.optionsMode == "defined_risk_only"
+    assert policy.liquidity is not None
+    assert policy.liquidity.maxAdvParticipationPct == 7.5
+    assert policy.marketStress is not None
+    assert policy.marketStress.vixSpikeHalt is not None
+    assert policy.marketStress.vixSpikeHalt.threshold == 32
+    assert policy.marketStress.vixSpikeHalt.streakBars == 2
+    assert policy.marketStress.vixSpikeHalt.cooldownBars == 2
+    assert policy.marketStress.overlays is not None
+    assert policy.marketStress.overlays.regime[0].id == "high-vol-de-risk"
+    assert policy.dataQuality is not None
+    assert policy.dataQuality.requiredAdjustmentStatuses == ["split_adjusted"]
 
 
 def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() -> None:
     invalid_payloads = (
-        (StrategyRiskExposureLimits, {"dailyLossLimitPct": 6, "weeklyLossLimitPct": 3}, "weeklyLossLimitPct"),
+        (
+            StrategyRiskExposureLimits,
+            {"dailyLossLimitPct": 6, "weeklyLossLimitPct": 3},
+            "weeklyLossLimitPct",
+        ),
         (
             StrategyRiskTradingPermissions,
             {"allowedSides": ["long", "short"], "requireBorrowLocate": False},
@@ -1512,8 +1634,20 @@ def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() ->
         (
             StrategyRiskOverlaySet,
             {
-                "regime": [{"id": "duplicate", "trigger": "regime=high_volatility", "action": "warn"}],
-                "event": [{"id": "duplicate", "trigger": "earnings_within=2d", "action": "warn"}],
+                "regime": [
+                    {
+                        "id": "duplicate",
+                        "trigger": "regime=high_volatility",
+                        "action": "warn",
+                    }
+                ],
+                "event": [
+                    {
+                        "id": "duplicate",
+                        "trigger": "earnings_within=2d",
+                        "action": "warn",
+                    }
+                ],
             },
             "Duplicate risk overlay id",
         ),
@@ -1533,31 +1667,30 @@ def test_complete_strategy_risk_policy_rejects_unsafe_or_ambiguous_controls() ->
             "greater than or equal to 1",
         ),
         (
-            StrategyRiskPolicy,
+            StrategyRiskExposurePolicy,
             {
-                "strategyVolatilityTolerance": {
+                "volatilityTolerance": {
                     "metric": "atr_14d_pct_of_close",
                     "maxPct": 12,
-                },
-                "stopLoss": {
-                    "thresholdPct": 8,
-                    "action": "reduce_exposure",
-                    "reductionPct": 50,
-                },
+                }
             },
-            "strategyVolatilityTolerance.metric",
+            "exposure.volatilityTolerance.metric",
         ),
         (
             StrategyRiskPolicy,
             {
-                "stopLoss": {
-                    "thresholdPct": 8,
-                    "action": "reduce_exposure",
-                    "reductionPct": 50,
+                "drawdown": {
+                    "stopLoss": {
+                        "thresholdPct": 8,
+                        "action": "reduce_exposure",
+                        "reductionPct": 50,
+                    },
                 },
-                "exposureLimits": {
-                    "drawdownReducePct": 6,
-                    "drawdownBlockPct": 9,
+                "exposure": {
+                    "limits": {
+                        "drawdownReducePct": 6,
+                        "drawdownBlockPct": 9,
+                    },
                 },
             },
             "drawdownReducePct",
@@ -1584,10 +1717,12 @@ def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
         config={
             "policy": {
                 "scope": "strategy",
-                "stopLoss": {
-                    "thresholdPct": 8,
-                    "action": "reduce_exposure",
-                    "reductionPct": 50,
+                "drawdown": {
+                    "stopLoss": {
+                        "thresholdPct": 8,
+                        "action": "reduce_exposure",
+                        "reductionPct": 50,
+                    },
                 },
             }
         },
@@ -1599,23 +1734,31 @@ def test_risk_policy_library_contracts_wrap_strategy_risk_policy() -> None:
 
     assert detail.policy.version == 2
     assert detail.activeRevision is not None
-    assert detail.activeRevision.config.policy.stopLoss is not None
+    assert detail.activeRevision.config.policy.drawdown is not None
+    assert detail.activeRevision.config.policy.drawdown.stopLoss is not None
 
 
 def test_strategy_risk_policy_accepts_vix_spike_halt_control() -> None:
-    policy = StrategyRiskPolicy(vixSpikeHalt={"threshold": 32, "streakBars": 2, "cooldownBars": 2})
+    policy = StrategyRiskPolicy(
+        marketStress={
+            "vixSpikeHalt": {"threshold": 32, "streakBars": 2, "cooldownBars": 2}
+        }
+    )
 
-    assert policy.vixSpikeHalt is not None
-    assert policy.vixSpikeHalt.threshold == 32
-    assert policy.vixSpikeHalt.streakBars == 2
-    assert policy.vixSpikeHalt.cooldownBars == 2
+    assert policy.marketStress is not None
+    assert policy.marketStress.vixSpikeHalt is not None
+    assert policy.marketStress.vixSpikeHalt.threshold == 32
+    assert policy.marketStress.vixSpikeHalt.streakBars == 2
+    assert policy.marketStress.vixSpikeHalt.cooldownBars == 2
 
 
 def test_strategy_risk_policy_requires_reduction_percentage_for_reduce_exposure() -> (
     None
 ):
     try:
-        StrategyRiskPolicy(stopLoss={"thresholdPct": 8, "action": "reduce_exposure"})
+        StrategyRiskPolicy(
+            drawdown={"stopLoss": {"thresholdPct": 8, "action": "reduce_exposure"}}
+        )
     except Exception as exc:
         assert "reduce_exposure" in str(exc)
         assert "reductionPct" in str(exc)
@@ -2072,7 +2215,9 @@ def test_universe_condition_rejects_numeric_operator_for_security_symbol() -> No
     except ValueError as exc:
         assert "gt is not supported for field 'security.symbol'" in str(exc)
     else:
-        raise AssertionError("Expected security.symbol to reject numeric comparison operators.")
+        raise AssertionError(
+            "Expected security.symbol to reject numeric comparison operators."
+        )
 
 
 def test_universe_condition_accepts_us_liquid_equity_filter_fields() -> None:
@@ -2121,7 +2266,11 @@ def test_universe_condition_accepts_qmom_research_fields() -> None:
             "operator": "and",
             "clauses": [
                 {"field": "qmom.daily_research_score", "operator": "gte", "value": 70},
-                {"field": "qmom.breakout_close_above_20d_high", "operator": "eq", "value": 1},
+                {
+                    "field": "qmom.breakout_close_above_20d_high",
+                    "operator": "eq",
+                    "value": 1,
+                },
                 {"field": "qmom.trend_filter", "operator": "eq", "value": 1},
             ],
         }
@@ -2148,8 +2297,16 @@ def test_universe_condition_accepts_strict_stock_state_fields() -> None:
                 {"field": "returns.return_60d", "operator": "gte", "value": 0.30},
                 {"field": "technical.rsi_14d", "operator": "gte", "value": 75},
                 {"field": "technical.bb_width_20d", "operator": "lte", "value": 0.10},
-                {"field": "technical.compression_score", "operator": "gte", "value": 0.70},
-                {"field": "technical.position_in_20d_range", "operator": "gte", "value": 1.0},
+                {
+                    "field": "technical.compression_score",
+                    "operator": "gte",
+                    "value": 0.70,
+                },
+                {
+                    "field": "technical.position_in_20d_range",
+                    "operator": "gte",
+                    "value": 1.0,
+                },
             ],
         }
     )
@@ -2178,8 +2335,16 @@ def test_universe_condition_accepts_runner_discovery_fields() -> None:
         root={
             "operator": "and",
             "clauses": [
-                {"field": "runner.distance_to_20d_high_pct", "operator": "gte", "value": -0.03},
-                {"field": "runner.volume_dryup_10d_50d", "operator": "lte", "value": 0.7},
+                {
+                    "field": "runner.distance_to_20d_high_pct",
+                    "operator": "gte",
+                    "value": -0.03,
+                },
+                {
+                    "field": "runner.volume_dryup_10d_50d",
+                    "operator": "lte",
+                    "value": 0.7,
+                },
                 {"field": "runner.breakout_hold_1d", "operator": "eq", "value": 1},
             ],
         }
@@ -2195,7 +2360,9 @@ def test_universe_condition_accepts_runner_discovery_fields() -> None:
         "runner.volume_dryup_10d_50d",
         "runner.breakout_hold_1d",
     ]
-    assert any(field.id == "runner.failed_breakout_1d" for field in UNIVERSE_FIELD_DEFINITIONS)
+    assert any(
+        field.id == "runner.failed_breakout_1d" for field in UNIVERSE_FIELD_DEFINITIONS
+    )
 
 
 def test_universe_condition_accepts_alternative_data_observed_fields() -> None:
@@ -2203,13 +2370,34 @@ def test_universe_condition_accepts_alternative_data_observed_fields() -> None:
         root={
             "operator": "or",
             "clauses": [
-                {"field": "alternative.wall_street_bets_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.insider_trading_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.congressional_trading_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.government_contract_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.institutional_holding_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.patent_observed_date", "operator": "is_not_null"},
-                {"field": "alternative.congress_holding_observed_date", "operator": "is_not_null"},
+                {
+                    "field": "alternative.wall_street_bets_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.insider_trading_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.congressional_trading_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.government_contract_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.institutional_holding_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.patent_observed_date",
+                    "operator": "is_not_null",
+                },
+                {
+                    "field": "alternative.congress_holding_observed_date",
+                    "operator": "is_not_null",
+                },
             ],
         }
     )
@@ -2596,7 +2784,11 @@ def test_generated_strategy_save_request_normalizes_redacted_provenance() -> Non
             "generationRequestId": "  genreq-123  ",
             "promptFingerprint": "  sha256:prompt-abcdef1234567890  ",
             "promptSummary": "  Redacted summary of the requested strategy.  ",
-            "sourceContext": ["  upstream draft  ", "", "  user-reviewed assumptions  "],
+            "sourceContext": [
+                "  upstream draft  ",
+                "",
+                "  user-reviewed assumptions  ",
+            ],
             "model": "  strategy-draft-v1  ",
             "generatedAt": "2026-05-24T12:00:00Z",
             "outputFingerprint": "  sha256:output-abcdef1234567890  ",
@@ -2611,8 +2803,14 @@ def test_generated_strategy_save_request_normalizes_redacted_provenance() -> Non
     assert payload.config.universeConfigName == "us-large-liquid"
     assert payload.provenance.generationRequestId == "genreq-123"
     assert payload.provenance.promptFingerprint == "sha256:prompt-abcdef1234567890"
-    assert payload.provenance.promptSummary == "Redacted summary of the requested strategy."
-    assert payload.provenance.sourceContext == ["upstream draft", "user-reviewed assumptions"]
+    assert (
+        payload.provenance.promptSummary
+        == "Redacted summary of the requested strategy."
+    )
+    assert payload.provenance.sourceContext == [
+        "upstream draft",
+        "user-reviewed assumptions",
+    ]
     assert payload.provenance.assumptions == ["monthly rebalance"]
 
 
@@ -2641,7 +2839,9 @@ def test_generated_strategy_save_request_rejects_invalid_provenance() -> None:
         assert "promptFingerprint" in message
         assert "raw_generation_text" in message
     else:
-        raise AssertionError("Expected invalid generated strategy provenance to fail validation.")
+        raise AssertionError(
+            "Expected invalid generated strategy provenance to fail validation."
+        )
 
 
 def test_generated_strategy_save_response_carries_exact_backtest_handoff() -> None:
@@ -2664,7 +2864,10 @@ def test_generated_strategy_save_response_carries_exact_backtest_handoff() -> No
         message="Generated strategy saved for review.",
         strategyName="generated-quality-momentum",
         strategyVersion=7,
-        strategyRef={"strategyName": "generated-quality-momentum", "strategyVersion": 7},
+        strategyRef={
+            "strategyName": "generated-quality-momentum",
+            "strategyVersion": 7,
+        },
         provenanceId="generated-quality-momentum-7",
         provenance=provenance,
         backtestHandoff=handoff,
@@ -2673,7 +2876,9 @@ def test_generated_strategy_save_response_carries_exact_backtest_handoff() -> No
     assert payload.status == "saved"
     assert payload.reviewStatus == "pending_review"
     assert payload.strategyRef.strategyVersion == 7
-    assert payload.backtestHandoff.strategyRef.strategyName == "generated-quality-momentum"
+    assert (
+        payload.backtestHandoff.strategyRef.strategyName == "generated-quality-momentum"
+    )
     assert payload.backtestHandoff.validationPath == "/api/backtests/validation"
     assert payload.backtestHandoff.runPath == "/api/backtests/runs"
 
@@ -2855,7 +3060,9 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
         sourceSha="420db20a1b1a5a3d70f26c8c23e2fa82a283ca82",
         sourceBranch="refs/heads/main",
         finishedAt="2026-05-14T02:00:00Z",
-        links=[{"label": "Pipeline run", "href": "https://dev.azure.com/example/run/1205"}],
+        links=[
+            {"label": "Pipeline run", "href": "https://dev.azure.com/example/run/1205"}
+        ],
     )
     resource = ResourceDeploymentVersion(
         resourceName="vg-aa-prod-ui",
@@ -2884,10 +3091,15 @@ def test_deployment_provenance_view_captures_resource_consistency() -> None:
     assert view.resources[0].latestSuccessfulRun is not None
     assert view.resources[0].latestSuccessfulRun.runId == 1205
     assert view.summary.consistent == 1
-    assert schema["properties"]["resources"]["items"]["$ref"] == "#/$defs/ResourceDeploymentVersion"
+    assert (
+        schema["properties"]["resources"]["items"]["$ref"]
+        == "#/$defs/ResourceDeploymentVersion"
+    )
 
 
-def test_deployment_provenance_contracts_reject_unknown_result_and_extra_fields() -> None:
+def test_deployment_provenance_contracts_reject_unknown_result_and_extra_fields() -> (
+    None
+):
     try:
         ResourceDeploymentVersion(
             resourceName="vg-aa-prod-ui",
@@ -2903,7 +3115,9 @@ def test_deployment_provenance_contracts_reject_unknown_result_and_extra_fields(
         assert "result" in str(exc)
         assert "unexpected" in str(exc)
     else:
-        raise AssertionError("Expected deployment provenance to reject invalid result fields.")
+        raise AssertionError(
+            "Expected deployment provenance to reject invalid result fields."
+        )
 
 
 def test_pull_request_sync_view_captures_commit_and_work_item_lineage() -> None:
@@ -2912,7 +3126,9 @@ def test_pull_request_sync_view_captures_commit_and_work_item_lineage() -> None:
         comment="Add symbol cleanup review panel",
         authorName="rudy",
         authoredAt="2026-05-15T14:34:47Z",
-        links=[{"label": "Commit", "href": "https://dev.azure.com/example/commit/2a954f0"}],
+        links=[
+            {"label": "Commit", "href": "https://dev.azure.com/example/commit/2a954f0"}
+        ],
     )
     row = PullRequestSyncRow(
         repo="asset-allocation-ui",
@@ -2952,7 +3168,10 @@ def test_pull_request_sync_view_captures_commit_and_work_item_lineage() -> None:
     assert view.pullRequests[0].pullRequestId == 280
     assert view.pullRequests[0].commits[0].commitId.startswith("2a954f0")
     assert view.pullRequests[0].workItems[0].id == 178
-    assert schema["properties"]["pullRequests"]["items"]["$ref"] == "#/$defs/PullRequestSyncRow"
+    assert (
+        schema["properties"]["pullRequests"]["items"]["$ref"]
+        == "#/$defs/PullRequestSyncRow"
+    )
 
 
 def test_pull_request_sync_contracts_reject_unknown_result_and_extra_fields() -> None:
@@ -2971,10 +3190,14 @@ def test_pull_request_sync_contracts_reject_unknown_result_and_extra_fields() ->
         assert "result" in str(exc)
         assert "unexpected" in str(exc)
     else:
-        raise AssertionError("Expected pull request sync to reject invalid result fields.")
+        raise AssertionError(
+            "Expected pull request sync to reject invalid result fields."
+        )
 
 
-def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> None:
+def test_strategy_publication_reconcile_signal_request_validates_key_and_fingerprint() -> (
+    None
+):
     payload = StrategyPublicationReconcileSignalRequest(
         jobKey="regime",
         sourceFingerprint="abc123",
@@ -3055,9 +3278,7 @@ def test_results_reconcile_contract_requires_strict_complete_payloads() -> None:
         )
 
 
-def test_currency_intraday_bars_contract_normalizes_pair_and_provider_fields() -> (
-    None
-):
+def test_currency_intraday_bars_contract_normalizes_pair_and_provider_fields() -> None:
     payload = CurrencyIntradayBarsResponse(
         symbol=" btcusd ",
         providerSymbol="x:btcusd",
@@ -3297,9 +3518,7 @@ def test_live_currency_price_contract_rejects_cross_pair_payloads() -> None:
 def test_live_currency_price_artifacts_include_schema_and_typescript_exports() -> None:
     root = Path(__file__).resolve().parents[2]
     tick_schema_path = root / "schemas" / "live-currency-price-tick.schema.json"
-    snapshot_schema_path = (
-        root / "schemas" / "live-currency-price-snapshot.schema.json"
-    )
+    snapshot_schema_path = root / "schemas" / "live-currency-price-snapshot.schema.json"
     type_path = root / "ts" / "src" / "contracts.ts"
 
     tick_schema = json.loads(tick_schema_path.read_text(encoding="utf-8"))
@@ -3624,15 +3843,23 @@ def test_regime_policy_activation_gate_requires_rules_and_revision() -> None:
     assert policy.activation.inactiveAction == "target_zero"
 
     for payload in (
-        {"mode": "activation_gate", "activation": {"blockedRegimes": ["liquidity_stress"]}},
+        {
+            "mode": "activation_gate",
+            "activation": {"blockedRegimes": ["liquidity_stress"]},
+        },
         {"modelVersion": 3, "mode": "activation_gate"},
-        {"mode": "observe_only", "activation": {"blockedRegimes": ["liquidity_stress"]}},
+        {
+            "mode": "observe_only",
+            "activation": {"blockedRegimes": ["liquidity_stress"]},
+        },
     ):
         try:
             RegimePolicy.model_validate(payload)
         except Exception:
             continue
-        raise AssertionError(f"Expected invalid regime policy payload to fail: {payload!r}")
+        raise AssertionError(
+            f"Expected invalid regime policy payload to fail: {payload!r}"
+        )
 
 
 def test_regime_activation_decision_can_be_reported_on_portfolio_slices() -> None:
@@ -3977,7 +4204,9 @@ def test_backtest_execution_settings_reject_unsupported_execution_model() -> Non
     except Exception as exc:
         assert "simple_bps" in str(exc)
     else:
-        raise AssertionError("Expected unsupported backtest execution model to fail validation.")
+        raise AssertionError(
+            "Expected unsupported backtest execution model to fail validation."
+        )
 
 
 def test_backtest_run_request_rejects_unsupported_inline_backtest_fields() -> None:
@@ -5065,7 +5294,10 @@ def test_broker_account_contracts_capture_normalized_operations_surface() -> Non
     assert remove.reason == "Remove duplicate paper account."
     assert remove_response.accountId == "alpaca-core"
     assert remove_response.removed is True
-    assert TypeAdapter(BrokerAccountActionType).validate_python("remove_account") == "remove_account"
+    assert (
+        TypeAdapter(BrokerAccountActionType).validate_python("remove_account")
+        == "remove_account"
+    )
     assert action_response.resultingConnectionHealth is not None
     assert action_response.resultingConnectionHealth.syncStatus == "syncing"
     assert listing.accounts[0].tradeReadiness == "blocked"

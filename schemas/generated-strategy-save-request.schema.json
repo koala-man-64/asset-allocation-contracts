@@ -980,17 +980,6 @@
           "default": null,
           "title": "Riskprofilename"
         },
-        "riskRegimeGate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RegimeGate"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
         "strategyRiskPolicy": {
           "anyOf": [
             {
@@ -1305,6 +1294,38 @@
       "title": "StrategyRiskDataQualityGates",
       "type": "object"
     },
+    "StrategyRiskDrawdownPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "reentry": {
+          "$ref": "#/$defs/StrategyRiskReentryPolicy"
+        },
+        "stopLoss": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskStopLossPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "takeProfit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskTakeProfitPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyRiskDrawdownPolicy",
+      "type": "object"
+    },
     "StrategyRiskExposureLimits": {
       "additionalProperties": false,
       "properties": {
@@ -1508,6 +1529,35 @@
       "title": "StrategyRiskExposureLimits",
       "type": "object"
     },
+    "StrategyRiskExposurePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskExposureLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "volatilityTolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VolatilityTolerance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyRiskExposurePolicy",
+      "type": "object"
+    },
     "StrategyRiskLiquidityLimits": {
       "additionalProperties": false,
       "properties": {
@@ -1580,6 +1630,46 @@
         }
       },
       "title": "StrategyRiskLiquidityLimits",
+      "type": "object"
+    },
+    "StrategyRiskMarketStressPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "overlays": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskOverlaySet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "regimeGate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RegimeGate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "vixSpikeHalt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskVixSpikeHaltPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StrategyRiskMarketStressPolicy",
       "type": "object"
     },
     "StrategyRiskOverlayRule": {
@@ -1704,10 +1794,21 @@
           ],
           "default": null
         },
-        "dataQualityGates": {
+        "dataQuality": {
           "anyOf": [
             {
               "$ref": "#/$defs/StrategyRiskDataQualityGates"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "drawdown": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskDrawdownPolicy"
             },
             {
               "type": "null"
@@ -1720,10 +1821,10 @@
           "title": "Enabled",
           "type": "boolean"
         },
-        "exposureLimits": {
+        "exposure": {
           "anyOf": [
             {
-              "$ref": "#/$defs/StrategyRiskExposureLimits"
+              "$ref": "#/$defs/StrategyRiskExposurePolicy"
             },
             {
               "type": "null"
@@ -1731,10 +1832,21 @@
           ],
           "default": null
         },
-        "liquidityLimits": {
+        "liquidity": {
           "anyOf": [
             {
               "$ref": "#/$defs/StrategyRiskLiquidityLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "marketStress": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskMarketStressPolicy"
             },
             {
               "type": "null"
@@ -1763,20 +1875,6 @@
           "default": null,
           "title": "Operatingmode"
         },
-        "overlays": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/StrategyRiskOverlaySet"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "reentry": {
-          "$ref": "#/$defs/StrategyRiskReentryPolicy"
-        },
         "scope": {
           "default": "strategy",
           "enum": [
@@ -1786,54 +1884,10 @@
           "title": "Scope",
           "type": "string"
         },
-        "stopLoss": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/StrategyRiskStopLossPolicy"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "strategyVolatilityTolerance": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/VolatilityTolerance"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "takeProfit": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/StrategyRiskTakeProfitPolicy"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "tradingPermissions": {
+        "trading": {
           "anyOf": [
             {
               "$ref": "#/$defs/StrategyRiskTradingPermissions"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "vixSpikeHalt": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/StrategyRiskVixSpikeHaltPolicy"
             },
             {
               "type": "null"

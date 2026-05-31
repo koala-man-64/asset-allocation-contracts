@@ -277,7 +277,6 @@ const agentResolutionPreview: AgentStrategyResolutionPreview = {
     riskProfileName: null,
     riskPolicyName: null,
     riskPolicyVersion: null,
-    riskRegimeGate: null,
     positionPolicy: null,
     rebalancePolicy: null,
     strategyRiskPolicy: null,
@@ -966,7 +965,6 @@ const strategy: StrategyConfig = {
   lookbackWindow: 63,
   holdingPeriod: 21,
   costModel: "default",
-  riskRegimeGate: trendingGate,
   positionPolicy: {
     regimeGate: { blockedRegimes: ["trending_down"] },
     targetPositionSize: { mode: "pct_of_allocatable_capital", value: 5 },
@@ -974,6 +972,13 @@ const strategy: StrategyConfig = {
     maxOpenPositions: 10,
     allowedAssetClasses: ["equity"],
     requireOrderConfirmation: true,
+  },
+  strategyRiskPolicy: {
+    enabled: true,
+    scope: "strategy",
+    marketStress: {
+      regimeGate: trendingGate,
+    },
   },
   exitRegimeGate: { blockedRegimes: ["high_volatility"] },
   intrabarConflictPolicy: "priority_order",
@@ -1235,33 +1240,39 @@ const riskPreset: StrategyRiskPolicyPreset = {
   config: {
     enabled: true,
     scope: "strategy",
-    stopLoss: {
-      id: "strategy-stop-loss",
-      enabled: true,
-      basis: "strategy_nav_drawdown",
-      thresholdPct: 8,
-      action: "reduce_exposure",
-      reductionPct: 50,
+    drawdown: {
+      stopLoss: {
+        id: "strategy-stop-loss",
+        enabled: true,
+        basis: "strategy_nav_drawdown",
+        thresholdPct: 8,
+        action: "reduce_exposure",
+        reductionPct: 50,
+      },
+      reentry: {
+        cooldownBars: 0,
+        requireApproval: false,
+      },
     },
-    strategyVolatilityTolerance,
-    exposureLimits: {
-      drawdownReducePct: 8,
-      drawdownBlockPct: 12,
+    exposure: {
+      volatilityTolerance: strategyVolatilityTolerance,
+      limits: {
+        drawdownReducePct: 8,
+        drawdownBlockPct: 12,
+      },
     },
-    vixSpikeHalt: {
-      threshold: 32,
-      streakBars: 2,
-      cooldownBars: 2,
-    },
-    reentry: {
-      cooldownBars: 0,
-      requireApproval: false,
+    marketStress: {
+      regimeGate: trendingGate,
+      vixSpikeHalt: {
+        threshold: 32,
+        streakBars: 2,
+        cooldownBars: 2,
+      },
     },
   },
 };
 
 const riskPolicyConfig: RiskPolicyConfig = {
-  regimeGate: trendingGate,
   policy: riskPreset.config,
 };
 

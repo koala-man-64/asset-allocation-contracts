@@ -322,7 +322,6 @@ export interface StrategyConfig {
   riskProfileName?: string | null;
   riskPolicyName?: string | null;
   riskPolicyVersion?: number | null;
-  riskRegimeGate?: RegimeGate | null;
   positionPolicy?: StrategyPositionPolicy | null;
   rebalancePolicy?: RebalancePolicy | null;
   strategyRiskPolicy?: StrategyRiskPolicy | null;
@@ -399,10 +398,6 @@ export interface RegimeActivationPolicy {
   inactiveAction: RegimeInactiveAction;
 }
 
-export interface RegimeGate {
-  blockedRegimes: RegimeCode[];
-}
-
 export interface StrategyPositionPolicy {
   regimeGate?: RegimeGate | null;
   targetPositionSize?: StrategyPositionSizeLimit | null;
@@ -411,6 +406,10 @@ export interface StrategyPositionPolicy {
   allowedAssetClasses: StrategyPositionAssetClass[];
   positionVolatilityTolerance?: VolatilityTolerance | null;
   requireOrderConfirmation: boolean;
+}
+
+export interface RegimeGate {
+  blockedRegimes: RegimeCode[];
 }
 
 export interface StrategyPositionSizeLimit {
@@ -446,17 +445,19 @@ export interface StrategyRiskPolicy {
   enabled: boolean;
   operatingMode?: RiskPolicyOperatingMode | null;
   scope: StrategyRiskPolicyScope;
+  drawdown?: StrategyRiskDrawdownPolicy | null;
+  exposure?: StrategyRiskExposurePolicy | null;
+  trading?: StrategyRiskTradingPermissions | null;
+  liquidity?: StrategyRiskLiquidityLimits | null;
+  marketStress?: StrategyRiskMarketStressPolicy | null;
+  dataQuality?: StrategyRiskDataQualityGates | null;
+  audit?: StrategyRiskAuditPolicy | null;
+}
+
+export interface StrategyRiskDrawdownPolicy {
   stopLoss?: StrategyRiskStopLossPolicy | null;
   takeProfit?: StrategyRiskTakeProfitPolicy | null;
   reentry: StrategyRiskReentryPolicy;
-  exposureLimits?: StrategyRiskExposureLimits | null;
-  strategyVolatilityTolerance?: VolatilityTolerance | null;
-  tradingPermissions?: StrategyRiskTradingPermissions | null;
-  liquidityLimits?: StrategyRiskLiquidityLimits | null;
-  overlays?: StrategyRiskOverlaySet | null;
-  vixSpikeHalt?: StrategyRiskVixSpikeHaltPolicy | null;
-  dataQualityGates?: StrategyRiskDataQualityGates | null;
-  audit?: StrategyRiskAuditPolicy | null;
 }
 
 export interface StrategyRiskStopLossPolicy {
@@ -480,6 +481,11 @@ export interface StrategyRiskTakeProfitPolicy {
 export interface StrategyRiskReentryPolicy {
   cooldownBars: number;
   requireApproval: boolean;
+}
+
+export interface StrategyRiskExposurePolicy {
+  limits?: StrategyRiskExposureLimits | null;
+  volatilityTolerance?: VolatilityTolerance | null;
 }
 
 export interface StrategyRiskExposureLimits {
@@ -516,6 +522,12 @@ export interface StrategyRiskLiquidityLimits {
   maxExitHorizonDays?: number | null;
   maxBidAskSpreadBps?: number | null;
   maxSlippageBps?: number | null;
+}
+
+export interface StrategyRiskMarketStressPolicy {
+  regimeGate?: RegimeGate | null;
+  overlays?: StrategyRiskOverlaySet | null;
+  vixSpikeHalt?: StrategyRiskVixSpikeHaltPolicy | null;
 }
 
 export interface StrategyRiskOverlaySet {
@@ -973,7 +985,6 @@ export interface ExitRuleSetConfig {
 }
 
 export interface RiskPolicyConfig {
-  regimeGate?: RegimeGate | null;
   policy: StrategyRiskPolicy;
 }
 
@@ -988,7 +999,6 @@ export interface RiskPolicyConfigSummary {
   archived: boolean;
   usageCount: number;
   updatedAt?: string | null;
-  regimeGate?: RegimeGate | null;
 }
 
 export interface RiskPolicyConfigRevision {

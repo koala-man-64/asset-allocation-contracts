@@ -98,17 +98,14 @@ def test_documented_strategy_example_is_valid() -> None:
             "positionPolicy": {
                 "targetPositionSize": {
                     "mode": "pct_of_allocatable_capital",
-                    "value": 5
+                    "value": 5,
                 },
-                "maxPositionSize": {
-                    "mode": "pct_of_allocatable_capital",
-                    "value": 8
-                },
+                "maxPositionSize": {"mode": "pct_of_allocatable_capital", "value": 8},
                 "maxOpenPositions": 20,
                 "positionVolatilityTolerance": {
                     "metric": "realized_vol_20d",
-                    "maxPct": 18
-                }
+                    "maxPct": 18,
+                },
             },
             "intrabarConflictPolicy": "priority_order",
             "exits": [
@@ -216,8 +213,18 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
                     "kind": "group",
                     "operator": "and",
                     "clauses": [
-                        {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
-                        {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                        {
+                            "kind": "condition",
+                            "field": "security.country",
+                            "operator": "eq",
+                            "value": "US",
+                        },
+                        {
+                            "kind": "condition",
+                            "field": "market.close",
+                            "operator": "gt",
+                            "value": 5,
+                        },
                         {
                             "kind": "condition",
                             "field": "market.dollar_volume_20d",
@@ -234,21 +241,27 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
                 "regimeGate": {"blockedRegimes": ["liquidity_stress"]},
             },
             "regimeSource": {"modelName": "default-regime", "modelVersion": 1},
-            "riskRegimeGate": {"blockedRegimes": ["liquidity_stress"]},
             "strategyRiskPolicy": {
                 "scope": "strategy",
-                "stopLoss": {
-                    "thresholdPct": 8,
-                    "action": "reduce_exposure",
-                    "reductionPct": 50,
+                "marketStress": {
+                    "regimeGate": {"blockedRegimes": ["liquidity_stress"]}
                 },
-                "strategyVolatilityTolerance": {
-                    "metric": "realized_vol_20d",
-                    "maxPct": 16
+                "drawdown": {
+                    "stopLoss": {
+                        "thresholdPct": 8,
+                        "action": "reduce_exposure",
+                        "reductionPct": 50,
+                    },
                 },
-                "exposureLimits": {
-                    "drawdownReducePct": 8,
-                    "drawdownBlockPct": 12
+                "exposure": {
+                    "volatilityTolerance": {
+                        "metric": "realized_vol_20d",
+                        "maxPct": 16,
+                    },
+                    "limits": {
+                        "drawdownReducePct": 8,
+                        "drawdownBlockPct": 12,
+                    },
                 },
             },
             "exits": [
@@ -263,7 +276,8 @@ def test_documented_reusable_strategy_examples_are_valid() -> None:
     assert inline_scratch.universe is not None
     assert inline_scratch.exits[0].rankThreshold == 40
     assert inline_scratch.strategyRiskPolicy is not None
-    assert inline_scratch.strategyRiskPolicy.strategyVolatilityTolerance is not None
+    assert inline_scratch.strategyRiskPolicy.exposure is not None
+    assert inline_scratch.strategyRiskPolicy.exposure.volatilityTolerance is not None
 
 
 def test_documented_reusable_preset_examples_are_valid() -> None:
@@ -274,7 +288,11 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
         "description": "US large-cap, primary-listed, liquid common-equity universe.",
         "intendedUse": "validation",
         "thesis": "A stable large-liquid universe reduces capacity and stale-price artifacts.",
-        "whatToMonitor": ["constituent count", "daily turnover", "spread and slippage drift"],
+        "whatToMonitor": [
+            "constituent count",
+            "daily turnover",
+            "spread and slippage drift",
+        ],
     }
     universe = {
         "source": "postgres_gold",
@@ -282,11 +300,36 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
             "kind": "group",
             "operator": "and",
             "clauses": [
-                {"kind": "condition", "field": "security.country", "operator": "eq", "value": "US"},
-                {"kind": "condition", "field": "security.primary_listing", "operator": "eq", "value": True},
-                {"kind": "condition", "field": "security.market_cap", "operator": "gte", "value": 10000000000},
-                {"kind": "condition", "field": "market.dollar_volume_20d", "operator": "gte", "value": 50000000},
-                {"kind": "condition", "field": "market.close", "operator": "gt", "value": 5},
+                {
+                    "kind": "condition",
+                    "field": "security.country",
+                    "operator": "eq",
+                    "value": "US",
+                },
+                {
+                    "kind": "condition",
+                    "field": "security.primary_listing",
+                    "operator": "eq",
+                    "value": True,
+                },
+                {
+                    "kind": "condition",
+                    "field": "security.market_cap",
+                    "operator": "gte",
+                    "value": 10000000000,
+                },
+                {
+                    "kind": "condition",
+                    "field": "market.dollar_volume_20d",
+                    "operator": "gte",
+                    "value": 50000000,
+                },
+                {
+                    "kind": "condition",
+                    "field": "market.close",
+                    "operator": "gt",
+                    "value": 5,
+                },
                 {
                     "kind": "condition",
                     "field": "security.is_price_liquidity_eligible",
@@ -297,7 +340,9 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
         },
     }
 
-    universe_preset = UniverseConfigPreset.model_validate({"identity": identity, "config": universe})
+    universe_preset = UniverseConfigPreset.model_validate(
+        {"identity": identity, "config": universe}
+    )
     rebalance_preset = RebalancePolicyPreset.model_validate(
         {
             "identity": {**identity, "name": "monthly_last_trading_day"},
@@ -315,19 +360,29 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
             "identity": {**identity, "name": "balanced_long_only"},
             "config": {
                 "scope": "strategy",
-                "stopLoss": {"thresholdPct": 8, "action": "reduce_exposure", "reductionPct": 50},
-                "strategyVolatilityTolerance": {
-                    "metric": "realized_vol_60d",
-                    "maxPct": 14
+                "drawdown": {
+                    "stopLoss": {
+                        "thresholdPct": 8,
+                        "action": "reduce_exposure",
+                        "reductionPct": 50,
+                    },
                 },
-                "exposureLimits": {
-                    "drawdownReducePct": 8,
-                    "drawdownBlockPct": 12
+                "exposure": {
+                    "volatilityTolerance": {
+                        "metric": "realized_vol_60d",
+                        "maxPct": 14,
+                    },
+                    "limits": {
+                        "drawdownReducePct": 8,
+                        "drawdownBlockPct": 12,
+                    },
                 },
-                "vixSpikeHalt": {
-                    "threshold": 32,
-                    "streakBars": 2,
-                    "cooldownBars": 2,
+                "marketStress": {
+                    "vixSpikeHalt": {
+                        "threshold": 32,
+                        "streakBars": 2,
+                        "cooldownBars": 2,
+                    },
                 },
             },
         }
@@ -337,14 +392,17 @@ def test_documented_reusable_preset_examples_are_valid() -> None:
             "identity": {**identity, "name": "rank_decay_exit"},
             "config": {
                 "intrabarConflictPolicy": "priority_order",
-                "exits": [{"id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40}],
+                "exits": [
+                    {"id": "rank-decay-40", "type": "rank_decay", "rankThreshold": 40}
+                ],
             },
         }
     )
 
     assert universe_preset.identity.name == "us_large_liquid"
     assert rebalance_preset.config.cadence == "monthly"
-    assert risk_preset.config.stopLoss is not None
+    assert risk_preset.config.drawdown is not None
+    assert risk_preset.config.drawdown.stopLoss is not None
     assert exit_preset.config.exits[0].rankThreshold == 40
 
 
@@ -362,19 +420,19 @@ def test_documented_strategy_risk_profile_example_is_valid() -> None:
                 "positionPolicy": {
                     "targetPositionSize": {
                         "mode": "pct_of_allocatable_capital",
-                        "value": 5
+                        "value": 5,
                     },
                     "maxPositionSize": {
                         "mode": "pct_of_allocatable_capital",
-                        "value": 8
+                        "value": 8,
                     },
                     "maxOpenPositions": 20,
                     "positionVolatilityTolerance": {
                         "metric": "realized_vol_20d",
-                        "maxPct": 18
-                    }
-                }
-            }
+                        "maxPct": 18,
+                    },
+                },
+            },
         }
     )
 
