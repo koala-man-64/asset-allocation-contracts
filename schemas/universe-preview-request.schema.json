@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "UniverseCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "market.close",
+            "security.symbol",
+            "security.is_active",
+            "security.sector",
+            "security.delisted_at",
+            "market.trade_date",
+            "market.timestamp",
+            "returns.return_20d",
+            "returns.return_60d",
+            "returns.return_126d",
+            "technical.rsi_14d",
+            "technical.bb_width_20d",
+            "technical.compression_score",
+            "technical.position_in_20d_range",
+            "alternative.wall_street_bets_observed_date",
+            "alternative.insider_trading_observed_date",
+            "alternative.congressional_trading_observed_date",
+            "alternative.government_contract_observed_date",
+            "alternative.institutional_holding_observed_date",
+            "alternative.patent_observed_date",
+            "alternative.congress_holding_observed_date",
+            "qmom.adr_pct_20d",
+            "qmom.volume_ratio_1d_50d",
+            "qmom.range_contraction_5d_20d",
+            "qmom.breakout_close_above_20d_high",
+            "qmom.breakout_distance_20d_pct",
+            "qmom.trend_filter",
+            "qmom.daily_research_score",
+            "runner.distance_to_20d_high_pct",
+            "runner.distance_to_55d_high_pct",
+            "runner.base_age_days",
+            "runner.volume_dryup_10d_50d",
+            "runner.close_location_value",
+            "runner.range_expansion_atr",
+            "runner.days_since_breakout",
+            "runner.breakout_hold_1d",
+            "runner.failed_breakout_1d",
+            "quality.piotroski_f_score",
+            "earnings.surprise_pct",
+            "security.market_cap",
+            "market.dollar_volume_20d",
+            "security.primary_listing",
+            "security.country",
+            "security.is_price_liquidity_eligible"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "kind": {
+          "const": "condition",
+          "default": "condition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values"
+        }
+      },
+      "required": [
+        "field",
+        "operator"
+      ],
+      "title": "UniverseCondition",
+      "type": "object"
+    },
+    "UniverseDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/UniverseGroup"
+        },
+        "source": {
+          "const": "postgres_gold",
+          "default": "postgres_gold",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "root"
+      ],
+      "title": "UniverseDefinition",
+      "type": "object"
+    },
+    "UniverseGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "clauses": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UniverseGroup"
+              },
+              {
+                "$ref": "#/$defs/UniverseCondition"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Clauses",
+          "type": "array"
+        },
+        "kind": {
+          "const": "group",
+          "default": "group",
+          "title": "Kind",
+          "type": "string"
+        },
+        "operator": {
+          "default": "and",
+          "enum": [
+            "and",
+            "or"
+          ],
+          "title": "Operator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "clauses"
+      ],
+      "title": "UniverseGroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "asOfDate": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Asofdate"
+    },
+    "sampleLimit": {
+      "default": 25,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Samplelimit",
+      "type": "integer"
+    },
+    "universe": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UniverseDefinition"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "universeName": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Universename"
+    }
+  },
+  "title": "UniversePreviewRequest",
+  "type": "object"
+}

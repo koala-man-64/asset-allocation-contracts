@@ -1177,6 +1177,13 @@ export interface UniverseFieldDefinition {
   operators: UniverseConditionOperator[];
 }
 
+export interface UniversePreviewRequest {
+  universeName?: string | null;
+  universe?: UniverseDefinition | null;
+  asOfDate?: string | null;
+  sampleLimit: number;
+}
+
 export interface RegimeActivationDecision {
   state: RegimeActivationState;
   reasonCode: RegimeActivationReasonCode;

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 
 from pydantic import TypeAdapter
@@ -233,6 +234,7 @@ from asset_allocation_contracts.strategy import (
     UniverseDefinition,
     UniverseGroup,
     UniversePreviewResponse,
+    UniversePreviewRequest,
 )
 from asset_allocation_contracts.trade_desk import TradeOrderPreviewRequest
 from asset_allocation_contracts.ui_config import (
@@ -2200,6 +2202,27 @@ def test_universe_preview_response_uses_governed_field_ids() -> None:
     assert payload.warnings == []
     assert payload.rows[0].symbol == "AAPL"
     assert payload.rowCount == 2
+
+
+def test_universe_preview_request_accepts_as_of_date() -> None:
+    payload = UniversePreviewRequest(
+        universeName="u26_us_liquid_oversold_dislocation",
+        asOfDate="2020-03-20",
+        sampleLimit=50,
+    )
+
+    assert payload.universeName == "u26_us_liquid_oversold_dislocation"
+    assert payload.asOfDate == date(2020, 3, 20)
+    assert payload.sampleLimit == 50
+
+
+def test_universe_preview_request_requires_source() -> None:
+    try:
+        UniversePreviewRequest(asOfDate="2020-03-20")
+    except Exception as exc:
+        assert "universeName or universe is required" in str(exc)
+    else:
+        raise AssertionError("Expected validation failure without universe source.")
 
 
 def test_universe_preview_response_rejects_unknown_field_ids() -> None:

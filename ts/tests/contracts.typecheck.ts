@@ -127,6 +127,7 @@ import type {
   TradePosition,
   UiRuntimeConfig,
   UniverseCondition,
+  UniversePreviewRequest,
   UniversePreviewResponse,
   VolatilityTolerance,
 } from "../src/contracts";
@@ -856,6 +857,13 @@ const preview: UniversePreviewResponse = {
   truncated: false,
   asOf: "2026-05-16",
 };
+
+const previewRequest: UniversePreviewRequest = {
+  universeName: "u26_us_liquid_oversold_dislocation",
+  asOfDate: "2020-03-20",
+  sampleLimit: 50,
+};
+void previewRequest;
 
 const regimeSource: RegimeSourceRef = {
   modelName: "default-regime",

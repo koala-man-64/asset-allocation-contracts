@@ -518,6 +518,21 @@ class UniverseCatalogResponse(BaseModel):
     fields: list[UniverseFieldDefinition] = Field(default_factory=list)
 
 
+class UniversePreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    universeName: str | None = Field(default=None, min_length=1, max_length=128)
+    universe: UniverseDefinition | None = None
+    asOfDate: date | None = None
+    sampleLimit: int = Field(default=25, ge=1, le=100)
+
+    @model_validator(mode="after")
+    def validate_source(self) -> "UniversePreviewRequest":
+        if self.universeName is None and self.universe is None:
+            raise ValueError("universeName or universe is required.")
+        return self
+
+
 class UniversePreviewRow(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

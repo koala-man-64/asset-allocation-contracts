@@ -129,6 +129,7 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("strategy-risk-profile-detail.schema.json", strategy.StrategyRiskProfileDetail),
     ("universe-definition.schema.json", strategy.UniverseDefinition),
     ("universe-catalog.schema.json", strategy.UniverseCatalogResponse),
+    ("universe-preview-request.schema.json", strategy.UniversePreviewRequest),
     ("universe-preview.schema.json", strategy.UniversePreviewResponse),
     ("ranking-schema.schema.json", ranking.RankingSchemaConfig),
     ("regime-policy.schema.json", regime.RegimePolicy),
