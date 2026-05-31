@@ -9,6 +9,7 @@ from typing import Any, get_args, get_origin, get_type_hints
 from pydantic import BaseModel, TypeAdapter
 
 from asset_allocation_contracts import (
+    agent_profile,
     ai_chat,
     backtest,
     broker_accounts,
@@ -38,6 +39,18 @@ from asset_allocation_contracts import (
 
 
 SCHEMA_EXPORTS: list[tuple[str, Any]] = [
+    ("agent-profile-config.schema.json", agent_profile.AgentProfileConfig),
+    ("agent-profile-preset.schema.json", agent_profile.AgentProfilePreset),
+    ("agent-worldview-weight.schema.json", agent_profile.AgentWorldviewWeight),
+    ("agent-behavior-traits.schema.json", agent_profile.AgentBehaviorTraits),
+    ("agent-evidence-policy.schema.json", agent_profile.AgentEvidencePolicy),
+    ("agent-regime-preference.schema.json", agent_profile.AgentRegimePreference),
+    ("agent-strategy-binding.schema.json", agent_profile.AgentStrategyBinding),
+    ("agent-applied-config-change.schema.json", agent_profile.AgentAppliedConfigChange),
+    (
+        "agent-strategy-resolution-preview.schema.json",
+        agent_profile.AgentStrategyResolutionPreview,
+    ),
     ("strategy-config.schema.json", strategy.StrategyConfig),
     ("config-reference.schema.json", strategy.ConfigReference),
     ("config-identity.schema.json", strategy.ConfigIdentity),
@@ -587,6 +600,16 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
 ]
 
 TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
+    ("AgentWorkflowScope", agent_profile.AgentWorkflowScope),
+    ("AgentRole", agent_profile.AgentRole),
+    ("AgentWorldview", agent_profile.AgentWorldview),
+    ("AgentRiskBand", agent_profile.AgentRiskBand),
+    ("AgentTurnoverBand", agent_profile.AgentTurnoverBand),
+    ("AgentClampStatus", agent_profile.AgentClampStatus),
+    (
+        "AgentResolutionValidationStatus",
+        agent_profile.AgentResolutionValidationStatus,
+    ),
     ("AuthSessionMode", ui_config.AuthSessionMode),
     ("AuthProvider", ui_config.AuthProvider),
     ("JobCategory", job_metadata.JobCategory),
@@ -812,8 +835,24 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
+    ("AgentProfileConfig", "role"): "AgentRole",
+    ("AgentProfileConfig", "maxWorkflowScope"): "AgentWorkflowScope",
+    ("AgentWorldviewWeight", "worldview"): "AgentWorldview",
+    ("AgentRegimePreference", "preferredRegimes"): "RegimeCode[]",
+    ("AgentRegimePreference", "blockedRegimes"): "RegimeCode[]",
+    ("AgentStrategyBinding", "rankingRefsByWorldview"): "Partial<Record<AgentWorldview, ConfigReference>>",
+    ("AgentStrategyBinding", "riskPolicyRefsByBand"): "Partial<Record<AgentRiskBand, ConfigReference>>",
+    ("AgentStrategyBinding", "rebalancePolicyRefsByBand"): "Partial<Record<AgentTurnoverBand, ConfigReference>>",
+    ("AgentStrategyBinding", "exitPolicyRefsByBand"): "Partial<Record<AgentRiskBand, ConfigReference>>",
+    ("AgentStrategyBinding", "allowedRegimes"): "RegimeCode[]",
+    ("AgentStrategyBinding", "blockedRegimes"): "RegimeCode[]",
+    ("AgentAppliedConfigChange", "clampStatus"): "AgentClampStatus",
+    ("AgentStrategyResolutionPreview", "validationStatus"): "AgentResolutionValidationStatus",
     ("ConfigIdentity", "status"): "ReusableConfigStatus",
     ("ConfigIdentity", "intendedUse"): "ReusableConfigIntendedUse",
+    ("StrategyRiskProfileConfig", "presetClass"): "RiskTolerancePreset",
+    ("StrategyRiskProfileSummary", "presetClass"): "RiskTolerancePreset",
+    ("StrategyRiskProfileDetail", "presetClass"): "RiskTolerancePreset",
     ("StrategyPositionPolicy", "allowedAssetClasses"): "StrategyPositionAssetClass[]",
     ("StrategyPositionSizeLimit", "mode"): "StrategyPositionSizeMode",
     ("RebalancePolicy", "frequency"): "RebalanceFrequency",

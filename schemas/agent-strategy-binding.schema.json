@@ -1,0 +1,214 @@
+{
+  "$defs": {
+    "ConfigReference": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigReference",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "agentProfileRef": {
+      "$ref": "#/$defs/ConfigReference"
+    },
+    "allowExitPolicyOverride": {
+      "default": true,
+      "title": "Allowexitpolicyoverride",
+      "type": "boolean"
+    },
+    "allowRankingOverride": {
+      "default": true,
+      "title": "Allowrankingoverride",
+      "type": "boolean"
+    },
+    "allowRebalanceOverride": {
+      "default": true,
+      "title": "Allowrebalanceoverride",
+      "type": "boolean"
+    },
+    "allowRiskPolicyOverride": {
+      "default": true,
+      "title": "Allowriskpolicyoverride",
+      "type": "boolean"
+    },
+    "allowedRegimes": {
+      "items": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ],
+        "type": "string"
+      },
+      "title": "Allowedregimes",
+      "type": "array"
+    },
+    "baseStrategyRef": {
+      "$ref": "#/$defs/ConfigReference"
+    },
+    "blockedRegimes": {
+      "items": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ],
+        "type": "string"
+      },
+      "title": "Blockedregimes",
+      "type": "array"
+    },
+    "compilerVersion": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Compilerversion",
+      "type": "integer"
+    },
+    "exitPolicyRefsByBand": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigReference"
+      },
+      "propertyNames": {
+        "enum": [
+          "conservative",
+          "balanced",
+          "aggressive"
+        ]
+      },
+      "title": "Exitpolicyrefsbyband",
+      "type": "object"
+    },
+    "maxHoldingPeriod": {
+      "default": 252,
+      "minimum": 1,
+      "title": "Maxholdingperiod",
+      "type": "integer"
+    },
+    "maxLookbackWindow": {
+      "default": 504,
+      "minimum": 1,
+      "title": "Maxlookbackwindow",
+      "type": "integer"
+    },
+    "maxPositionSizePct": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxpositionsizepct"
+    },
+    "maxTopN": {
+      "default": 100,
+      "minimum": 1,
+      "title": "Maxtopn",
+      "type": "integer"
+    },
+    "minHoldingPeriod": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Minholdingperiod",
+      "type": "integer"
+    },
+    "minLookbackWindow": {
+      "default": 5,
+      "minimum": 1,
+      "title": "Minlookbackwindow",
+      "type": "integer"
+    },
+    "minTopN": {
+      "default": 5,
+      "minimum": 1,
+      "title": "Mintopn",
+      "type": "integer"
+    },
+    "rankingRefsByWorldview": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigReference"
+      },
+      "propertyNames": {
+        "enum": [
+          "momentum",
+          "quality",
+          "value",
+          "growth",
+          "mean_reversion",
+          "event_driven",
+          "macro",
+          "sentiment",
+          "volatility",
+          "liquidity"
+        ]
+      },
+      "title": "Rankingrefsbyworldview",
+      "type": "object"
+    },
+    "rebalancePolicyRefsByBand": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigReference"
+      },
+      "propertyNames": {
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ]
+      },
+      "title": "Rebalancepolicyrefsbyband",
+      "type": "object"
+    },
+    "riskPolicyRefsByBand": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ConfigReference"
+      },
+      "propertyNames": {
+        "enum": [
+          "conservative",
+          "balanced",
+          "aggressive"
+        ]
+      },
+      "title": "Riskpolicyrefsbyband",
+      "type": "object"
+    }
+  },
+  "required": [
+    "agentProfileRef",
+    "baseStrategyRef"
+  ],
+  "title": "AgentStrategyBinding",
+  "type": "object"
+}

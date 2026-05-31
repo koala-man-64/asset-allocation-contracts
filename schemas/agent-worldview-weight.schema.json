@@ -1,0 +1,32 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "weight": {
+      "exclusiveMinimum": 0,
+      "title": "Weight",
+      "type": "number"
+    },
+    "worldview": {
+      "enum": [
+        "momentum",
+        "quality",
+        "value",
+        "growth",
+        "mean_reversion",
+        "event_driven",
+        "macro",
+        "sentiment",
+        "volatility",
+        "liquidity"
+      ],
+      "title": "Worldview",
+      "type": "string"
+    }
+  },
+  "required": [
+    "worldview",
+    "weight"
+  ],
+  "title": "AgentWorldviewWeight",
+  "type": "object"
+}

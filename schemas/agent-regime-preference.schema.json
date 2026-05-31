@@ -1,0 +1,51 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "blockWhenUnclassified": {
+      "default": true,
+      "title": "Blockwhenunclassified",
+      "type": "boolean"
+    },
+    "blockedRegimes": {
+      "items": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ],
+        "type": "string"
+      },
+      "title": "Blockedregimes",
+      "type": "array"
+    },
+    "honorModelHalt": {
+      "default": true,
+      "title": "Honormodelhalt",
+      "type": "boolean"
+    },
+    "preferredRegimes": {
+      "items": {
+        "enum": [
+          "trending_up",
+          "trending_down",
+          "mean_reverting",
+          "low_volatility",
+          "high_volatility",
+          "liquidity_stress",
+          "macro_alignment",
+          "unclassified"
+        ],
+        "type": "string"
+      },
+      "title": "Preferredregimes",
+      "type": "array"
+    }
+  },
+  "title": "AgentRegimePreference",
+  "type": "object"
+}

@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "concentrationTolerance": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Concentrationtolerance",
+      "type": "number"
+    },
+    "contrarianBias": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": -1.0,
+      "title": "Contrarianbias",
+      "type": "number"
+    },
+    "conviction": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Conviction",
+      "type": "number"
+    },
+    "lossAversion": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Lossaversion",
+      "type": "number"
+    },
+    "patience": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Patience",
+      "type": "number"
+    },
+    "recencyBias": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Recencybias",
+      "type": "number"
+    },
+    "riskAppetite": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Riskappetite",
+      "type": "number"
+    },
+    "turnoverTolerance": {
+      "default": 0.5,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Turnovertolerance",
+      "type": "number"
+    }
+  },
+  "title": "AgentBehaviorTraits",
+  "type": "object"
+}

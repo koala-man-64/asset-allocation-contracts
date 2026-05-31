@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "maxContradictorySignals": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maxcontradictorysignals"
+    },
+    "minimumConfidence": {
+      "default": 0.6,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Minimumconfidence",
+      "type": "number"
+    },
+    "minimumIndependentSignals": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Minimumindependentsignals",
+      "type": "integer"
+    },
+    "requireLiquiditySupport": {
+      "default": true,
+      "title": "Requireliquiditysupport",
+      "type": "boolean"
+    },
+    "requireRankingSupport": {
+      "default": true,
+      "title": "Requirerankingsupport",
+      "type": "boolean"
+    },
+    "requireRegimeSupport": {
+      "default": false,
+      "title": "Requireregimesupport",
+      "type": "boolean"
+    }
+  },
+  "title": "AgentEvidencePolicy",
+  "type": "object"
+}

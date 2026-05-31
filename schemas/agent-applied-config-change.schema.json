@@ -1,0 +1,59 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "clampStatus": {
+      "default": "not_clamped",
+      "enum": [
+        "not_clamped",
+        "clamped",
+        "blocked"
+      ],
+      "title": "Clampstatus",
+      "type": "string"
+    },
+    "newValue": {
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Newvalue"
+    },
+    "path": {
+      "maxLength": 256,
+      "minLength": 1,
+      "title": "Path",
+      "type": "string"
+    },
+    "previousValue": {
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previousvalue"
+    },
+    "reason": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Reason",
+      "type": "string"
+    },
+    "reasonCode": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Reasoncode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "path",
+    "reasonCode"
+  ],
+  "title": "AgentAppliedConfigChange",
+  "type": "object"
+}

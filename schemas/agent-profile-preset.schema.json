@@ -1,0 +1,331 @@
+{
+  "$defs": {
+    "AgentBehaviorTraits": {
+      "additionalProperties": false,
+      "properties": {
+        "concentrationTolerance": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Concentrationtolerance",
+          "type": "number"
+        },
+        "contrarianBias": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": -1.0,
+          "title": "Contrarianbias",
+          "type": "number"
+        },
+        "conviction": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Conviction",
+          "type": "number"
+        },
+        "lossAversion": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Lossaversion",
+          "type": "number"
+        },
+        "patience": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Patience",
+          "type": "number"
+        },
+        "recencyBias": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Recencybias",
+          "type": "number"
+        },
+        "riskAppetite": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Riskappetite",
+          "type": "number"
+        },
+        "turnoverTolerance": {
+          "default": 0.5,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Turnovertolerance",
+          "type": "number"
+        }
+      },
+      "title": "AgentBehaviorTraits",
+      "type": "object"
+    },
+    "AgentEvidencePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "maxContradictorySignals": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxcontradictorysignals"
+        },
+        "minimumConfidence": {
+          "default": 0.6,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Minimumconfidence",
+          "type": "number"
+        },
+        "minimumIndependentSignals": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Minimumindependentsignals",
+          "type": "integer"
+        },
+        "requireLiquiditySupport": {
+          "default": true,
+          "title": "Requireliquiditysupport",
+          "type": "boolean"
+        },
+        "requireRankingSupport": {
+          "default": true,
+          "title": "Requirerankingsupport",
+          "type": "boolean"
+        },
+        "requireRegimeSupport": {
+          "default": false,
+          "title": "Requireregimesupport",
+          "type": "boolean"
+        }
+      },
+      "title": "AgentEvidencePolicy",
+      "type": "object"
+    },
+    "AgentProfileConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "evidencePolicy": {
+          "$ref": "#/$defs/AgentEvidencePolicy"
+        },
+        "maxWorkflowScope": {
+          "default": "research",
+          "enum": [
+            "research",
+            "recommendation",
+            "paper_preview"
+          ],
+          "title": "Maxworkflowscope",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 50,
+          "title": "Notes",
+          "type": "array"
+        },
+        "regimePreference": {
+          "$ref": "#/$defs/AgentRegimePreference"
+        },
+        "role": {
+          "enum": [
+            "alpha_research",
+            "portfolio_manager",
+            "risk_reviewer",
+            "execution_specialist",
+            "critic"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "traits": {
+          "$ref": "#/$defs/AgentBehaviorTraits"
+        },
+        "worldviewWeights": {
+          "items": {
+            "$ref": "#/$defs/AgentWorldviewWeight"
+          },
+          "minItems": 1,
+          "title": "Worldviewweights",
+          "type": "array"
+        }
+      },
+      "required": [
+        "role",
+        "worldviewWeights"
+      ],
+      "title": "AgentProfileConfig",
+      "type": "object"
+    },
+    "AgentRegimePreference": {
+      "additionalProperties": false,
+      "properties": {
+        "blockWhenUnclassified": {
+          "default": true,
+          "title": "Blockwhenunclassified",
+          "type": "boolean"
+        },
+        "blockedRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Blockedregimes",
+          "type": "array"
+        },
+        "honorModelHalt": {
+          "default": true,
+          "title": "Honormodelhalt",
+          "type": "boolean"
+        },
+        "preferredRegimes": {
+          "items": {
+            "enum": [
+              "trending_up",
+              "trending_down",
+              "mean_reverting",
+              "low_volatility",
+              "high_volatility",
+              "liquidity_stress",
+              "macro_alignment",
+              "unclassified"
+            ],
+            "type": "string"
+          },
+          "title": "Preferredregimes",
+          "type": "array"
+        }
+      },
+      "title": "AgentRegimePreference",
+      "type": "object"
+    },
+    "AgentWorldviewWeight": {
+      "additionalProperties": false,
+      "properties": {
+        "weight": {
+          "exclusiveMinimum": 0,
+          "title": "Weight",
+          "type": "number"
+        },
+        "worldview": {
+          "enum": [
+            "momentum",
+            "quality",
+            "value",
+            "growth",
+            "mean_reversion",
+            "event_driven",
+            "macro",
+            "sentiment",
+            "volatility",
+            "liquidity"
+          ],
+          "title": "Worldview",
+          "type": "string"
+        }
+      },
+      "required": [
+        "worldview",
+        "weight"
+      ],
+      "title": "AgentWorldviewWeight",
+      "type": "object"
+    },
+    "ConfigIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "maxLength": 2048,
+          "title": "Description",
+          "type": "string"
+        },
+        "intendedUse": {
+          "default": "research",
+          "enum": [
+            "research",
+            "validation",
+            "production_candidate"
+          ],
+          "title": "Intendeduse",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "default": "draft",
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "thesis": {
+          "default": "",
+          "maxLength": 4096,
+          "title": "Thesis",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "whatToMonitor": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Whattomonitor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "ConfigIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "$ref": "#/$defs/AgentProfileConfig"
+    },
+    "identity": {
+      "$ref": "#/$defs/ConfigIdentity"
+    }
+  },
+  "required": [
+    "identity",
+    "config"
+  ],
+  "title": "AgentProfilePreset",
+  "type": "object"
+}

@@ -4,6 +4,7 @@ This reference documents valid configuration objects owned by `asset-allocation-
 
 It is intentionally limited to configuration surfaces that control behavior:
 
+- `AgentProfileConfig`, `AgentStrategyBinding`, and `AgentStrategyResolutionPreview`
 - `StrategyConfig`, `UniverseDefinition`, and `ExitRule`
 - `ConfigReference`, `ConfigIdentity`, and reusable strategy component presets
 - `RebalancePolicy`, `StrategyRiskPolicy`, and reusable exit policy bundles
@@ -14,6 +15,114 @@ It is intentionally limited to configuration surfaces that control behavior:
 - The repo bootstrap env surface defined by `.env.template` and `docs/ops/env-contract.*`
 
 It does not cover non-configuration payloads such as backtest request/response objects, auth session status responses, or constant-only modules such as `finance.py`, `market_history.py`, and `paths.py`.
+
+## Trader Agent Profile Overlay
+
+Source of truth:
+
+- `python/asset_allocation_contracts/agent_profile.py`
+- `schemas/agent-profile-config.schema.json`
+- `schemas/agent-profile-preset.schema.json`
+- `schemas/agent-strategy-binding.schema.json`
+- `schemas/agent-strategy-resolution-preview.schema.json`
+- `ts/src/contracts.ts`
+
+Trader agent profiles are deterministic overlays, not strategy personalities embedded in `StrategyConfig`. A profile plus an exact base strategy version and a governed `AgentStrategyBinding` compiles into a resolved `StrategyConfig`; durable execution artifacts should then be saved as immutable strategy revisions by the consuming control plane.
+
+The v1 workflow scope is limited to `research`, `recommendation`, and `paper_preview`. The contracts intentionally do not model live order-submit authority. Bindings carry explicit component maps for worldviews, risk bands, turnover bands, and exit-policy bands, plus clamp bounds for concentration, turnover, lookback, position sizing, and regimes. A compiler should block when a requested mapping or referenced revision is missing rather than falling back silently.
+
+### Agent profile preset
+
+```json
+{
+  "identity": {
+    "name": "balanced-alpha-researcher",
+    "version": 1,
+    "status": "active",
+    "description": "",
+    "intendedUse": "research",
+    "thesis": "Quality-led momentum profile for paper-preview strategy exploration.",
+    "whatToMonitor": ["ranking support", "regime compatibility", "liquidity support"]
+  },
+  "config": {
+    "role": "alpha_research",
+    "maxWorkflowScope": "paper_preview",
+    "traits": {
+      "riskAppetite": 0.55,
+      "lossAversion": 0.45,
+      "patience": 0.6,
+      "conviction": 0.7,
+      "concentrationTolerance": 0.35,
+      "turnoverTolerance": 0.4,
+      "recencyBias": 0.5,
+      "contrarianBias": -0.1
+    },
+    "worldviewWeights": [
+      {"worldview": "quality", "weight": 3},
+      {"worldview": "momentum", "weight": 2}
+    ],
+    "regimePreference": {
+      "preferredRegimes": ["trending_up", "low_volatility"],
+      "blockedRegimes": ["liquidity_stress"],
+      "honorModelHalt": true,
+      "blockWhenUnclassified": true
+    },
+    "evidencePolicy": {
+      "minimumConfidence": 0.7,
+      "minimumIndependentSignals": 2,
+      "requireRankingSupport": true,
+      "requireRegimeSupport": true,
+      "requireLiquiditySupport": true,
+      "maxContradictorySignals": null
+    },
+    "notes": []
+  }
+}
+```
+
+Validation notes:
+
+- `worldviewWeights` are positive relative weights and must be unique by `worldview`; compilers normalize them before applying rules.
+- `AgentRegimePreference.preferredRegimes` and `blockedRegimes` cannot overlap.
+- `AgentBehaviorTraits` only includes bounded values with deterministic compiler use in v1.
+
+### Agent strategy binding
+
+```json
+{
+  "agentProfileRef": {"name": "balanced-alpha-researcher", "version": 1},
+  "baseStrategyRef": {"name": "core-quality-momentum", "version": 4},
+  "compilerVersion": 1,
+  "rankingRefsByWorldview": {
+    "quality": {"name": "quality_momentum", "version": 2},
+    "momentum": {"name": "price_momentum", "version": 3}
+  },
+  "riskPolicyRefsByBand": {
+    "balanced": {"name": "balanced_long_only", "version": 1}
+  },
+  "rebalancePolicyRefsByBand": {
+    "medium": {"name": "monthly_last_trading_day", "version": 1}
+  },
+  "exitPolicyRefsByBand": {
+    "balanced": {"name": "rank_decay_exit", "version": 1}
+  },
+  "allowRankingOverride": true,
+  "allowRiskPolicyOverride": true,
+  "allowRebalanceOverride": true,
+  "allowExitPolicyOverride": true,
+  "minTopN": 10,
+  "maxTopN": 40,
+  "minHoldingPeriod": 5,
+  "maxHoldingPeriod": 63,
+  "minLookbackWindow": 21,
+  "maxLookbackWindow": 252,
+  "maxPositionSizePct": 8,
+  "allowedRegimes": [],
+  "blockedRegimes": ["liquidity_stress"]
+}
+```
+
+`AgentStrategyResolutionPreview` returns the resolved `StrategyConfig`, structured `AgentAppliedConfigChange` rows, warnings, immutable input/output hashes, compiler version, and validation status. `AgentAppliedConfigChange` is always structured as `path`, `previousValue`, `newValue`, `reasonCode`, `reason`, and `clampStatus`.
 
 ## Strategy, Universe, and Exit Rules
 

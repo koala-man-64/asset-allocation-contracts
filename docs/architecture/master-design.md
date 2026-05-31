@@ -183,6 +183,8 @@ Plaintext-to-universe generation is a draft-only contract family. `UniverseConfi
 
 Plaintext-to-ranking generation follows the same draft-only boundary. `RankingSchemaDraftGenerationRequest` carries the user's ranking intent plus optional naming, universe, and preview hints; `RankingSchemaDraftGenerationResponse` returns a candidate `RankingSchemaPreset`, explanation, assumptions, warnings, factor field references, unmapped signals, and optional ranking preview. The generated ranking schema is not persisted by this contract; control-plane owns prompt construction, Azure OpenAI calls, catalog validation, preview execution, and save separation.
 
+Trader agent profile overlays are contracts-repo-first and deterministic. `AgentProfileConfig` stores bounded behavioral traits, relative worldview weights, evidence policy, and regime preferences; `AgentStrategyBinding` pins an exact profile revision and exact base strategy revision while carrying explicit governed component maps and clamp bounds. Compilers must produce an immutable resolved `StrategyConfig` artifact outside the profile document, record structured `AgentAppliedConfigChange` provenance, and block on missing mappings or refs instead of silently selecting defaults. V1 agent profiles are limited to research, recommendation, and paper-preview workflows and must not model live-submit authority.
+
 ### 4.2 Ranking Contracts
 
 Owned by:

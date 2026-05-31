@@ -1,5 +1,6 @@
 # ruff: noqa: F403
 from asset_allocation_contracts.ai_chat import *
+from asset_allocation_contracts.agent_profile import *
 from asset_allocation_contracts.backtest import *
 from asset_allocation_contracts.broker_accounts import *
 from asset_allocation_contracts.deployment_provenance import *

@@ -1,5 +1,9 @@
 import type {
   AiChatStreamEvent,
+  AgentProfileConfig,
+  AgentProfilePreset,
+  AgentStrategyBinding,
+  AgentStrategyResolutionPreview,
   AuthProvider,
   AuthSessionStatus,
   AcknowledgeBrokerAlertRequest,
@@ -148,6 +152,85 @@ const symbolAliasRulesetVersion: 'symbol-alias-v1' = SYMBOL_ALIAS_RULESET_VERSIO
 const massiveVixRule = symbolAliasRules.find((rule) => rule.providerSymbol === 'I:VIX');
 const massiveVixCanonical: '^VIX' | undefined = massiveVixRule?.canonicalSymbol;
 
+const agentProfileConfig: AgentProfileConfig = {
+  role: "alpha_research",
+  maxWorkflowScope: "paper_preview",
+  traits: {
+    riskAppetite: 0.55,
+    lossAversion: 0.45,
+    patience: 0.6,
+    conviction: 0.7,
+    concentrationTolerance: 0.35,
+    turnoverTolerance: 0.4,
+    recencyBias: 0.5,
+    contrarianBias: -0.1,
+  },
+  worldviewWeights: [
+    { worldview: "quality", weight: 3 },
+    { worldview: "momentum", weight: 2 },
+  ],
+  regimePreference: {
+    preferredRegimes: ["trending_up", "low_volatility"],
+    blockedRegimes: ["liquidity_stress"],
+    honorModelHalt: true,
+    blockWhenUnclassified: true,
+  },
+  evidencePolicy: {
+    minimumConfidence: 0.7,
+    minimumIndependentSignals: 2,
+    requireRankingSupport: true,
+    requireRegimeSupport: true,
+    requireLiquiditySupport: true,
+    maxContradictorySignals: null,
+  },
+  notes: [],
+};
+
+const agentProfilePreset: AgentProfilePreset = {
+  identity: {
+    name: "balanced-alpha-researcher",
+    version: 1,
+    status: "active",
+    description: "",
+    intendedUse: "research",
+    thesis: "",
+    whatToMonitor: [],
+  },
+  config: agentProfileConfig,
+};
+
+const agentStrategyBinding: AgentStrategyBinding = {
+  agentProfileRef: { name: agentProfilePreset.identity.name, version: 1 },
+  baseStrategyRef: { name: "core-quality-momentum", version: 4 },
+  compilerVersion: 1,
+  rankingRefsByWorldview: {
+    quality: { name: "quality_momentum", version: 2 },
+    momentum: { name: "price_momentum", version: 3 },
+  },
+  riskPolicyRefsByBand: {
+    balanced: { name: "balanced_long_only", version: 1 },
+  },
+  rebalancePolicyRefsByBand: {
+    medium: { name: "monthly_last_trading_day", version: 1 },
+  },
+  exitPolicyRefsByBand: {
+    balanced: { name: "rank_decay_exit", version: 1 },
+  },
+  allowRankingOverride: true,
+  allowRiskPolicyOverride: true,
+  allowRebalanceOverride: true,
+  allowExitPolicyOverride: true,
+  minTopN: 10,
+  maxTopN: 40,
+  minHoldingPeriod: 5,
+  maxHoldingPeriod: 63,
+  minLookbackWindow: 21,
+  maxLookbackWindow: 252,
+  maxPositionSizePct: 8,
+  allowedRegimes: [],
+  blockedRegimes: ["liquidity_stress"],
+};
+
 const symbolResolution: SymbolResolutionResult = {
   status: "resolved",
   provider: "massive",
@@ -157,6 +240,67 @@ const symbolResolution: SymbolResolutionResult = {
   providerSymbol: "I:VIX",
   mappingVersion: "symbol-alias-v1",
 };
+
+const agentResolutionPreview: AgentStrategyResolutionPreview = {
+  agentProfileRef: agentStrategyBinding.agentProfileRef,
+  baseStrategyRef: agentStrategyBinding.baseStrategyRef,
+  resolvedStrategy: {
+    universeConfigName: "us-large-liquid",
+    universeConfigVersion: null,
+    universe: null,
+    componentRefs: {
+      universe: { name: "us-large-liquid", version: 1 },
+      ranking: { name: "quality_momentum", version: 2 },
+      rebalance: null,
+      regimePolicy: null,
+      riskPolicy: null,
+      exitPolicy: null,
+    },
+    regimeSource: null,
+    regimeGates: {},
+    rebalance: "monthly",
+    longOnly: true,
+    topN: 20,
+    lookbackWindow: 63,
+    holdingPeriod: 21,
+    costModel: "default",
+    rankingSchemaName: "quality_momentum",
+    rankingSchemaVersion: 2,
+    regimePolicyConfigName: null,
+    regimePolicyConfigVersion: null,
+    regimePolicy: null,
+    riskProfileName: null,
+    riskPolicyName: null,
+    riskPolicyVersion: null,
+    riskRegimeGate: null,
+    positionPolicy: null,
+    rebalancePolicy: null,
+    strategyRiskPolicy: null,
+    exitRuleSetName: null,
+    exitRuleSetVersion: null,
+    exitRegimeGate: null,
+    intrabarConflictPolicy: "stop_first",
+    exits: [],
+  },
+  appliedChanges: [
+    {
+      path: "rankingSchemaName",
+      previousValue: "base-ranking",
+      newValue: "quality_momentum",
+      reasonCode: "dominant_worldview",
+      reason: "quality carried the largest normalized worldview weight",
+      clampStatus: "not_clamped",
+    },
+  ],
+  warnings: [],
+  agentProfileSnapshotHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  baseStrategySnapshotHash: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  bindingHash: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  resolvedStrategyHash: "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  compilerVersion: 1,
+  validationStatus: "valid",
+};
+const agentResolutionStrategyTopN: number = agentResolutionPreview.resolvedStrategy.topN;
 
 const currencyInterval: CurrencyIntradayBarInterval = "1m";
 const currencyBar: CurrencyIntradayBar = {
