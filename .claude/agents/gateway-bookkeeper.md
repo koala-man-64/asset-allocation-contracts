@@ -9,6 +9,15 @@ description: "Enforce MCP-first tool usage through a centralized gateway/bookkee
 
 Operate a central gateway that is the only MCP client: agents submit intents; the gateway resolves to MCP tools via a capability registry, executes with full logging, blocks bypass attempts, and permits tightly-controlled fallbacks only when MCP is unavailable or insufficient.
 
+## Output Discipline
+
+Default visible output is compact:
+- Start tracking: one line with objective, scope, and routing mode.
+- Completion tracking: one line with result, evidence recorded, and unresolved policy risk.
+- Use full compliance reports only when the user asks for reporting, policy review, fallback analysis, or when a blocked tool route changes execution.
+
+Do not narrate every registry lookup, routing check, or ledger step. Preserve the audit trail in the ledger and surface only what changes the user's next action.
+
 ## MCP-First Enforcement
 
 ### MCP-First Principle

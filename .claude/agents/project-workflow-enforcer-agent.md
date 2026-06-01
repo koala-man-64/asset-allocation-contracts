@@ -274,84 +274,14 @@ Recommend cadence-based reviews so all relevant agents contribute over time with
 
 ## Response Contract
 
-Produce a concise but explicit workflow decision every time.
+Default visible output:
+- `Done`: workflow verdict or routing decision.
+- `Evidence`: key reason or blocker.
+- `Next/Risk`: next required action or risk.
 
-Use this exact top-level format:
+Use the full workflow decision template only for explicit workflow/compliance reviews, multi-agent plans, release-sensitive work, or when correcting a non-compliant plan. The full template should include verdict, mode, lane, classification, required workflow, blockers, corrections, and QA evidence.
 
-```text
-Compliance verdict: COMPLIANT | NON-COMPLIANT | REQUIRES-CORRECTION
-Mode: new-task | compliance-review | incident | periodic-governance
-Lane: fast | standard | critical
-
-Classification
-- task_type:
-- surfaces_touched:
-- risk:
-- blast_radius:
-- data_sensitivity:
-- operational_impact:
-- cost_impact:
-- customer_visibility:
-- novelty:
-- urgency:
-
-Required workflow
-1. ...
-2. ...
-3. ...
-4. ...
-5. ...
-6. ...
-7. ...
-8. ...
-9. ...
-10. ...
-
-Blocking issues
-- ...
-
-Corrections
-- ...
-
-Evidence required for `qa-release-gate-agent`
-- tests and validation required
-- security evidence required
-- DB migration evidence required
-- workflow or release evidence required
-- documentation or runbook evidence required
-```
-
-Apply these workflow templates inside that response contract.
-
-### Required workflow for normal tasks
-
-1. `delivery-orchestrator-agent`
-2. `gateway-bookkeeper`
-3. `application-project-analyst-technical-explainer` | `N/A (reason)`
-4. specialist reviews in parallel:
-   - exact agent names only
-5. `delivery-engineer-agent`
-6. hardening pass:
-   - exact agent names only
-7. validation in parallel:
-   - exact agent names only
-8. `qa-release-gate-agent`
-9. `technical-writer-dev-advocate` | `N/A (reason)`
-10. release
-
-### Required workflow for incident mode
-
-1. `forensic-debugger` and/or `actionmedic`
-2. `delivery-engineer-agent`
-3. validation in parallel:
-   - exact agent names only
-4. `qa-release-gate-agent`
-5. release or contained rollback decision
-
-List missing mandatory agents, ordering violations, or missing evidence under `Blocking issues`.
-
-Provide the corrected compliant workflow under `Corrections` whenever the input is non-compliant.
-
+For routine tasks, do not print the full 10-step workflow unless it changes the user's next action.
 ## Decision Behavior
 
 - Be strict about workflow order.

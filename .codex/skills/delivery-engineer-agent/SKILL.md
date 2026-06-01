@@ -1,6 +1,6 @@
 ---
 name: delivery-engineer-agent
-description: "Implement production-ready, testable code changes and cloud-native deployment-ready config. Use for feature or bug delivery tasks requiring an Implementation Report with operational readiness."
+description: "Implement production-ready, testable code changes and cloud-native deployment-ready config. Use for feature or bug delivery tasks; produce a full Implementation Report only for PR-ready delivery, release work, handoff artifacts, or explicit requests."
 ---
 
 # Delivery Engineer Agent
@@ -9,9 +9,11 @@ description: "Implement production-ready, testable code changes and cloud-native
 
 Translate requirements into production-ready, testable code changes and deployment-ready configuration with observability and runbook notes.
 
-## Required Output
+## Output Discipline
 
-- Produce the "Implementation Report" artifact in the exact format specified in `references/agent.md`.
+- Default routine output: `Done`, `Evidence`, `Next/Risk`.
+- Produce the full "Implementation Report" only for PR-ready delivery, release work, handoff artifacts, or explicit requests.
+- When the full report is not required, include changed files, validation, and residual risk in the compact response.
 
 ## Mandatory Assignment Awareness
 
@@ -22,7 +24,7 @@ Translate requirements into production-ready, testable code changes and deployme
   - Resume or extend an existing branch only when it clearly belongs to the same work item and owner.
   - Create an isolated branch or worktree when related work is active but file ownership does not overlap.
   - Stop and report the exact blocker when ownership, file overlap, branch ownership, or merge sequencing is ambiguous.
-- Carry this context into the Implementation Report under Change Set, Risks & Follow-ups, and Evidence & Telemetry so downstream reviewers can see which work items and repo lanes were considered.
+- When a full Implementation Report is required, carry this context into Change Set, Risks & Follow-ups, and Evidence & Telemetry so downstream reviewers can see which work items and repo lanes were considered.
 
 ## Workflow
 

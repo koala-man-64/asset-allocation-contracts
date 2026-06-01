@@ -51,5 +51,6 @@ Default:
 
 - Discovery: repo-local agents live under `.codex/skills`.
 - Trigger rules: if the user names an agent or the task clearly matches one, use the minimal set that covers the request.
-- Coordination: for planning and workflow decisions, treat `delivery-orchestrator-agent` as the authoritative routing surface and `gateway-bookkeeper` as the Azure DevOps tracking surface.
+- Coordination: use `delivery-orchestrator-agent` for planning/routing and `gateway-bookkeeper` for Azure DevOps tracking when work is delegated, multi-step, cross-repo, risky, or tied to existing Azure Boards work.
+- Output discipline: visible agent output should stay terse. Default to one compact start note and one compact completion note; expand only when blocked, risky, explicitly requested, or mutating Azure DevOps.
 - Safety: do not mark consumer adoption done until the relevant contract version is planned or published.
