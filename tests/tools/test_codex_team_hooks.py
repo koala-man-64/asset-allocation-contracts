@@ -30,13 +30,26 @@ def _hook_context(output: dict[str, Any]) -> str:
     return output["hookSpecificOutput"]["additionalContext"]
 
 
-def test_session_start_announces_ado_authority_and_prod_boundary() -> None:
+def test_session_start_uses_compact_context_without_full_ado_authority() -> None:
     context = _hook_context(_run_hook("session_start_team_context.py"))
 
-    assert "pre-approved to update and close Azure Boards work items" in context
-    assert "approve Azure Repos PRs" in context
-    assert "must not approve production deployment pipeline" in context
-    assert "Azure permission failures are blockers" in context
+    assert "Codex compact workflow context:" in context
+    assert f"- Repo: {REPO_ROOT.name}" in context
+    assert "- Core repo-local agents missing: none" in context
+    assert "pre-approved to update and close Azure Boards work items" not in context
+    assert "Use gateway-bookkeeper only for auditable" in context
+
+
+def test_prompt_router_plan_prompt_is_compact_and_untracked() -> None:
+    context = _hook_context(
+        _run_hook("user_prompt_submit_router.py", {"prompt": "write an implementation plan"})
+    )
+
+    assert "Codex compact routing:" in context
+    assert "- Work kind: planning" in context
+    assert "- Tracking required: no" in context
+    assert "- Finish workflow required: no" in context
+    assert "pre-approved to update and close Azure Boards work items" not in context
 
 
 def test_prompt_router_routes_pr_and_work_item_completion_to_finish_lane() -> None:
@@ -49,10 +62,87 @@ def test_prompt_router_routes_pr_and_work_item_completion_to_finish_lane() -> No
         )
     )
 
-    assert "- Classified lane: finish" in context
+    assert "- Lane: finish" in context
+    assert "- Work kind: finish" in context
+    assert "- Tracking required: yes" in context
+    assert "- Finish workflow required: yes" in context
+    assert "gateway-bookkeeper" in context
     assert "git-hygiene-orchestrator" in context
     assert "pre-approved to update and close Azure Boards work items" in context
-    assert "Production deploy boundary" in context
+
+
+def test_prompt_router_preserves_specialist_lane_as_optional_context() -> None:
+    context = _hook_context(
+        _run_hook(
+            "user_prompt_submit_router.py",
+            {
+                "prompt": "review this backtest for leakage, walk-forward integrity, and model risk"
+            },
+        )
+    )
+
+    assert "- Lane: trading-strategy-validation" in context
+    assert "strategy-validation-model-risk-reviewer" in context
+    assert "senior-trading-desk-reviewer" not in context
+
+
+def test_stop_hooks_allow_planning_only_final_answers_without_recaps() -> None:
+    payload = {
+        "last_assistant_message": "Recommendation: use compact hooks. proposed_plan"
+    }
+
+    assert _run_hook("stop_team_closeout.py", payload) == {}
+    assert _run_hook("stop_gateway_bookkeeper_recap.py", payload) == {}
+
+
+def test_stop_closeout_blocks_changed_work_missing_validation() -> None:
+    output = _run_hook(
+        "stop_team_closeout.py",
+        {"last_assistant_message": "Implemented compact hook routing."},
+    )
+
+    assert output["decision"] == "block"
+    assert "validation run or explicit not-run reason" in output["reason"]
+    assert "git-hygiene-orchestrator completed or blocker" in output["reason"]
+    assert "gateway-bookkeeper" not in output["reason"]
+
+
+def test_stop_closeout_accepts_changed_work_with_validation_and_git_hygiene() -> None:
+    output = _run_hook(
+        "stop_team_closeout.py",
+        {
+            "last_assistant_message": (
+                "Updated compact hook routing. Validated with pytest. "
+                "git-hygiene-orchestrator completed."
+            )
+        },
+    )
+
+    assert output == {}
+
+
+def test_gateway_recap_blocks_only_auditable_tracking_claims() -> None:
+    output = _run_hook(
+        "stop_gateway_bookkeeper_recap.py",
+        {"last_assistant_message": "Updated Azure Boards work item AB#123."},
+    )
+
+    assert output["decision"] == "block"
+    assert "Bookkeeper Recap section" in output["reason"]
+
+
+def test_gateway_recap_accepts_auditable_work_with_recap() -> None:
+    output = _run_hook(
+        "stop_gateway_bookkeeper_recap.py",
+        {
+            "last_assistant_message": (
+                "Updated Azure Boards work item AB#123. "
+                "Bookkeeper Recap: recorded work item update."
+            )
+        },
+    )
+
+    assert output == {}
 
 
 def test_pre_tool_use_allows_pr_completion_commands() -> None:
@@ -156,6 +246,17 @@ def test_pre_tool_use_still_blocks_direct_protected_branch_push() -> None:
         "Direct pushes to protected branches are blocked"
         in hook_output["permissionDecisionReason"]
     )
+
+
+def test_pre_tool_use_blocks_secret_print_commands() -> None:
+    output = _run_hook(
+        "pre_tool_use_bash_guard.py",
+        {"tool_input": {"command": "Write-Output $env:CLIENT_SECRET"}},
+    )
+
+    hook_output = output["hookSpecificOutput"]
+    assert hook_output["permissionDecision"] == "deny"
+    assert "print secret-bearing values" in hook_output["permissionDecisionReason"]
 
 
 def test_pre_tool_use_does_not_treat_option_type_as_print_command() -> None:

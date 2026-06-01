@@ -1,9 +1,13 @@
 from hook_utils import (
     additional_context,
     azure_devops_agent_authority_lines,
+    classify_work_kind,
+    compact_agent_summary,
     emit_json,
     extract_prompt,
     read_hook_input,
+    requires_finish_workflow,
+    requires_tracking,
 )
 
 
@@ -52,26 +56,6 @@ LANES = (
         "repo-cleanup",
         ("git hygiene", "branch cleanup", "stale branch", "worktree", "repo cleanup", "prune", "conflict"),
         "delivery-orchestrator-agent -> repoops-custodian -> git-hygiene-orchestrator -> gateway-bookkeeper",
-    ),
-    (
-        "review",
-        ("review", "audit", "risks", "findings", "regression"),
-        "delivery-orchestrator-agent -> relevant reviewer -> qa-release-gate-agent as needed -> gateway-bookkeeper when tracked",
-    ),
-    (
-        "frontend",
-        ("ui", "react", "component", "page", "css", "layout", "design", "browser", "playwright"),
-        "delivery-orchestrator-agent -> frontend-design or delivery-engineer-agent -> ui-testing-expert -> git-hygiene-orchestrator",
-    ),
-    (
-        "db-data",
-        ("database", "postgres", "sql", "migration", "schema", "dataframe", "pipeline data", "copy error"),
-        "delivery-orchestrator-agent -> db-steward or data-engineer-data-architect-advisor -> qa-release-gate-agent -> gateway-bookkeeper",
-    ),
-    (
-        "architecture",
-        ("architecture", "design", "approach", "plan", "tradeoff", "proposal"),
-        "delivery-orchestrator-agent -> architecture-review-agent or critical-counterbalance-agent -> gateway-bookkeeper when tracked",
     ),
     (
         "trading-strategy-validation",
@@ -207,7 +191,28 @@ LANES = (
             "source traceability",
         ),
         "delivery-orchestrator-agent -> research-librarian-evidence-packager -> relevant implementation/QA agents",
-    ),    (
+    ),
+    (
+        "review",
+        ("review", "audit", "risks", "findings", "regression"),
+        "delivery-orchestrator-agent -> relevant reviewer -> qa-release-gate-agent as needed -> gateway-bookkeeper when tracked",
+    ),
+    (
+        "frontend",
+        ("ui", "react", "component", "page", "css", "layout", "design", "browser", "playwright"),
+        "delivery-orchestrator-agent -> frontend-design or delivery-engineer-agent -> ui-testing-expert -> git-hygiene-orchestrator",
+    ),
+    (
+        "db-data",
+        ("database", "postgres", "sql", "migration", "schema", "dataframe", "pipeline data", "copy error"),
+        "delivery-orchestrator-agent -> db-steward or data-engineer-data-architect-advisor -> qa-release-gate-agent -> gateway-bookkeeper",
+    ),
+    (
+        "architecture",
+        ("architecture", "design", "approach", "plan", "tradeoff", "proposal"),
+        "delivery-orchestrator-agent -> architecture-review-agent or critical-counterbalance-agent -> gateway-bookkeeper when tracked",
+    ),
+    (
         "docs",
         ("documentation", "docs", "readme", "runbook", "developer guide"),
         "delivery-orchestrator-agent -> technical-writer-dev-advocate -> git-hygiene-orchestrator",
@@ -235,16 +240,29 @@ def main() -> int:
     payload = read_hook_input()
     prompt = extract_prompt(payload)
     lane, sequence = classify(prompt)
+    work_kind = classify_work_kind(prompt)
+    finish_required = lane == "finish" or requires_finish_workflow(prompt)
+    tracking_required = requires_tracking(prompt)
+    required_agents, optional_agents = compact_agent_summary(
+        sequence,
+        tracking_required=tracking_required,
+        finish_required=finish_required,
+    )
     context = "\n".join(
         [
-            "Codex team workflow routing:",
-            f"- Classified lane: {lane}",
-            f"- Recommended agent sequence: {sequence}",
-            "- Start substantive task execution with delivery-orchestrator-agent.",
-            "- Use gateway-bookkeeper before and after auditable, multi-repo, PR, CI/CD, deployment, or Azure DevOps work.",
-            "- If the prompt asks to finish, commit, push, open a PR, merge, or complete workflows, run the git-hygiene-orchestrator finish workflow before closeout.",
+            "Codex compact routing:",
+            f"- Lane: {lane}",
+            f"- Work kind: {work_kind}",
+            f"- Required agents: {required_agents}",
+            f"- Optional agents: {optional_agents}",
+            f"- Tracking required: {'yes' if tracking_required else 'no'}",
+            f"- Finish workflow required: {'yes' if finish_required else 'no'}",
             f"- Contract routing: {contract_hint(prompt)}",
-            *azure_devops_agent_authority_lines(),
+            *(
+                azure_devops_agent_authority_lines()
+                if tracking_required
+                else ()
+            ),
         ]
     )
     return emit_json(additional_context("UserPromptSubmit", context))

@@ -1,4 +1,10 @@
-from hook_utils import block, emit_json, extract_last_message, read_hook_input
+from hook_utils import (
+    block,
+    emit_json,
+    extract_last_message,
+    read_hook_input,
+    requires_bookkeeper_recap,
+)
 
 
 SUBSTANTIVE_MARKERS = (
@@ -93,7 +99,7 @@ def main() -> int:
         has_substantive_work or has_decision
     )
 
-    if planning_only or not (has_substantive_work or has_decision):
+    if planning_only or not requires_bookkeeper_recap(message):
         return 0
 
     missing = []
