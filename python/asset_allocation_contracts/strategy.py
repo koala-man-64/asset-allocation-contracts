@@ -1173,7 +1173,13 @@ class VolatilityTolerance(BaseModel):
 class StrategyPositionPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Local operating constraint for new positions and size increases. "
+            "Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
+        ),
+    )
     targetPositionSize: StrategyPositionSizeLimit | None = None
     maxPositionSize: StrategyPositionSizeLimit | None = None
     maxOpenPositions: int | None = Field(default=None, ge=1)
@@ -1246,7 +1252,13 @@ class StrategyRiskProfileSummary(BaseModel):
     isSystem: bool = False
     usageCount: int = Field(default=0, ge=0)
     updatedAt: datetime | None = None
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Summary of the profile's local position-policy operating constraint. "
+            "This field is not a strategy-routing control."
+        ),
+    )
 
 
 class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
@@ -1256,7 +1268,13 @@ class StrategyRiskProfileDetail(StrategyRiskProfileSummary):
 class RebalancePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Local operating constraint for rebalance execution. "
+            "Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
+        ),
+    )
     frequency: RebalanceFrequency = "every_bar"
     executionTiming: RebalanceExecutionTiming = "next_bar_open"
     cadence: ReusableRebalanceCadence | None = None
@@ -1584,7 +1602,13 @@ class StrategyRiskExposurePolicy(BaseModel):
 class StrategyRiskMarketStressPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Local operating constraint for market-stress controls. "
+            "Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
+        ),
+    )
     overlays: StrategyRiskOverlaySet | None = None
     vixSpikeHalt: StrategyRiskVixSpikeHaltPolicy | None = None
 
@@ -1684,7 +1708,13 @@ class RiskPolicyConfigUpsertRequest(BaseModel):
 class ExitRuleSetConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Local operating constraint for exit-rule activation. "
+            "Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
+        ),
+    )
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 
@@ -1701,7 +1731,13 @@ class ExitRuleSetConfig(BaseModel):
 
 
 class ExitRuleSetSummary(ReusableConfigSummaryBase):
-    regimeGate: RegimeGate | None = None
+    regimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Summary of the exit rule set's local operating constraint. "
+            "This field is not a strategy-routing control."
+        ),
+    )
     ruleCount: int = Field(default=0, ge=0)
 
 
@@ -2166,7 +2202,13 @@ class StrategyConfig(BaseModel):
 
     componentRefs: StrategyComponentRefs | None = None
     regimeSource: RegimeSourceRef | None = None
-    regimeGates: dict[str, StrategyRegimeGatePlan] = Field(default_factory=dict)
+    regimeGates: dict[str, StrategyRegimeGatePlan] = Field(
+        default_factory=dict,
+        description=(
+            "Canonical strategy-level regime playbook. "
+            "Each named gate combines a regime predicate with weighted allocations to saved strategy revisions."
+        ),
+    )
     universeConfigName: str | None = Field(default=None, min_length=1, max_length=128)
     universeConfigVersion: int | None = Field(default=None, ge=1)
     universe: UniverseDefinition | None = None
@@ -2191,7 +2233,13 @@ class StrategyConfig(BaseModel):
     strategyRiskPolicy: StrategyRiskPolicy | None = None
     exitRuleSetName: str | None = Field(default=None, min_length=1, max_length=128)
     exitRuleSetVersion: int | None = Field(default=None, ge=1)
-    exitRegimeGate: RegimeGate | None = None
+    exitRegimeGate: RegimeGate | None = Field(
+        default=None,
+        description=(
+            "Compatibility snapshot of a local exit-policy operating constraint. "
+            "Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
+        ),
+    )
     intrabarConflictPolicy: IntrabarConflictPolicy = "stop_first"
     exits: list[ExitRule] = Field(default_factory=list)
 

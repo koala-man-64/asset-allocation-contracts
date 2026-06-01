@@ -426,7 +426,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Local operating constraint for rebalance execution. Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
         },
         "tradeDelayBars": {
           "default": 0,
@@ -754,7 +755,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Compatibility snapshot of a local exit-policy operating constraint. Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
         },
         "exitRuleSetName": {
           "anyOf": [
@@ -877,6 +879,7 @@
           "additionalProperties": {
             "$ref": "#/$defs/StrategyRegimeGatePlan"
           },
+          "description": "Canonical strategy-level regime playbook. Each named gate combines a regime predicate with weighted allocations to saved strategy revisions.",
           "title": "Regimegates",
           "type": "object"
         },
@@ -1087,7 +1090,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Local operating constraint for new positions and size increases. Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
         },
         "requireOrderConfirmation": {
           "default": false,
@@ -1674,7 +1678,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Local operating constraint for market-stress controls. Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
         },
         "vixSpikeHalt": {
           "anyOf": [

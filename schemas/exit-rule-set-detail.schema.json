@@ -188,7 +188,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Local operating constraint for exit-rule activation. Use StrategyConfig.regimeGates for regime-driven sleeve selection or weighting."
         }
       },
       "title": "ExitRuleSetConfig",
@@ -335,7 +336,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Summary of the exit rule set's local operating constraint. This field is not a strategy-routing control."
         },
         "ruleCount": {
           "default": 0,

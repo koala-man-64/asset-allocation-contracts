@@ -3004,6 +3004,22 @@ def test_auth_session_status_defaults_and_schema() -> None:
     assert "grantedRoles" in schema["properties"]
 
 
+def test_regime_gate_schema_descriptions_preserve_ownership_boundary() -> None:
+    strategy_schema = StrategyConfig.model_json_schema()
+    assert "Canonical strategy-level regime playbook" in strategy_schema["properties"]["regimeGates"]["description"]
+
+    position_schema = StrategyPositionPolicy.model_json_schema()
+    position_description = position_schema["properties"]["regimeGate"]["description"]
+    assert "local operating constraint" in position_description.lower()
+    assert "StrategyConfig.regimeGates" in position_description
+
+    rebalance_schema = RebalancePolicy.model_json_schema()
+    assert "local operating constraint" in rebalance_schema["properties"]["regimeGate"]["description"].lower()
+
+    exits_schema = ExitRuleSetConfig.model_json_schema()
+    assert "local operating constraint" in exits_schema["properties"]["regimeGate"]["description"].lower()
+
+
 def test_runtime_job_metadata_contract_validates_strategy_compute_fields() -> None:
     payload = RuntimeJobMetadata(
         jobCategory="strategy-compute",
