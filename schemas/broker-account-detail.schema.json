@@ -373,7 +373,8 @@
           "enum": [
             "trading_policy",
             "allocation",
-            "onboarding"
+            "onboarding",
+            "operations"
           ],
           "title": "Category",
           "type": "string"

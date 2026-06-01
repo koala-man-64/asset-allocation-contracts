@@ -6,11 +6,6 @@
       "title": "Force",
       "type": "boolean"
     },
-    "reason": {
-      "default": "",
-      "title": "Reason",
-      "type": "string"
-    },
     "scope": {
       "default": "full",
       "enum": [

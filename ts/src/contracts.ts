@@ -113,7 +113,7 @@ export type BrokerPolicySide = 'long' | 'short';
 export type BrokerPolicyAssetClass = 'equity' | 'option';
 export type BrokerPositionSizeMode = 'pct_of_allocatable_capital' | 'notional_base_ccy';
 export type BrokerAllocationMode = 'percent' | 'notional_base_ccy';
-export type BrokerConfigurationAuditCategory = 'trading_policy' | 'allocation' | 'onboarding';
+export type BrokerConfigurationAuditCategory = 'trading_policy' | 'allocation' | 'onboarding' | 'operations';
 export type BrokerConfigurationAuditOutcome = 'saved' | 'denied' | 'warning';
 export type BrokerAccountExecutionPosture = 'monitor_only' | 'paper' | 'sandbox' | 'live';
 export type BrokerAccountOnboardingCandidateState = 'available' | 'already_configured' | 'disabled' | 'blocked' | 'unavailable';
@@ -2933,7 +2933,6 @@ export interface PauseBrokerSyncRequest {
 export interface RefreshBrokerAccountRequest {
   scope: BrokerSyncScope;
   force: boolean;
-  reason: string;
 }
 
 export interface AcknowledgeBrokerAlertRequest {

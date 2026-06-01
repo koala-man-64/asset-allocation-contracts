@@ -21,7 +21,7 @@ BrokerPolicySide = Literal["long", "short"]
 BrokerPolicyAssetClass = Literal["equity", "option"]
 BrokerPositionSizeMode = Literal["pct_of_allocatable_capital", "notional_base_ccy"]
 BrokerAllocationMode = Literal["percent", "notional_base_ccy"]
-BrokerConfigurationAuditCategory = Literal["trading_policy", "allocation", "onboarding"]
+BrokerConfigurationAuditCategory = Literal["trading_policy", "allocation", "onboarding", "operations"]
 BrokerConfigurationAuditOutcome = Literal["saved", "denied", "warning"]
 BrokerAccountExecutionPosture = Literal["monitor_only", "paper", "sandbox", "live"]
 BrokerAccountOnboardingCandidateState = Literal[
@@ -675,12 +675,6 @@ class RefreshBrokerAccountRequest(BaseModel):
 
     scope: BrokerSyncScope = "full"
     force: bool = False
-    reason: str = ""
-
-    @field_validator("reason", mode="before")
-    @classmethod
-    def normalize_reason(cls, value: object) -> str:
-        return str(value or "").strip()
 
 
 class AcknowledgeBrokerAlertRequest(BaseModel):

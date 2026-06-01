@@ -1566,7 +1566,6 @@ const pauseRequest: PauseBrokerSyncRequest = {
 const refreshRequest: RefreshBrokerAccountRequest = {
   scope: "full",
   force: true,
-  reason: "Operator refresh.",
 };
 
 const acknowledgeRequest: AcknowledgeBrokerAlertRequest = {
