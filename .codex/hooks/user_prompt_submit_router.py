@@ -35,37 +35,16 @@ LANES = (
             "complete workitem",
             "transition-work-items",
         ),
-        "delivery-orchestrator-agent -> gateway-bookkeeper -> code-drift-sentinel -> software-testing-validation-architect -> qa-release-gate-agent -> git-hygiene-orchestrator",
+        "delivery-orchestrator-agent -> gateway-bookkeeper -> git-hygiene-orchestrator -> qa-release-gate-agent as needed",
     ),
     (
         "ci-pipeline",
-        (
-            "pipeline",
-            "build failed",
-            "failed build",
-            "failing check",
-            "failed check",
-            "ci",
-            "validation failed",
-            "re-queue",
-            "rerun",
-        ),
-        "delivery-orchestrator-agent -> actionmedic -> azure-devops-cicd-expert -> software-testing-validation-architect -> qa-release-gate-agent -> gateway-bookkeeper",
+        ("pipeline", "build failed", "failed build", "failing check", "failed check", "ci", "validation failed", "re-queue", "rerun"),
+        "delivery-orchestrator-agent -> actionmedic -> azure-devops-cicd-expert -> qa-release-gate-agent -> gateway-bookkeeper",
     ),
     (
         "production-incident",
-        (
-            "production",
-            "prod",
-            "live",
-            "incident",
-            "500",
-            "traceback",
-            "exception",
-            "relation ",
-            "does not exist",
-            "unavailable",
-        ),
+        ("production", "prod", "live", "incident", "500", "traceback", "exception", "relation ", "does not exist", "unavailable"),
         "delivery-orchestrator-agent -> forensic-debugger -> relevant specialist -> qa-release-gate-agent -> gateway-bookkeeper",
     ),
     (
@@ -76,27 +55,7 @@ LANES = (
     (
         "repo-cleanup",
         ("git hygiene", "branch cleanup", "stale branch", "worktree", "repo cleanup", "prune", "conflict"),
-        "delivery-orchestrator-agent -> repoops-custodian -> code-drift-sentinel as needed -> git-hygiene-orchestrator -> gateway-bookkeeper",
-    ),
-    (
-        "review",
-        ("review", "audit", "risks", "findings", "regression"),
-        "delivery-orchestrator-agent -> relevant reviewer -> code-drift-sentinel as needed -> software-testing-validation-architect as needed -> qa-release-gate-agent as needed -> gateway-bookkeeper when tracked",
-    ),
-    (
-        "frontend",
-        ("ui", "react", "component", "page", "css", "layout", "design", "browser", "playwright"),
-        "delivery-orchestrator-agent -> frontend-design or delivery-engineer-agent -> ui-testing-expert -> git-hygiene-orchestrator",
-    ),
-    (
-        "db-data",
-        ("database", "postgres", "sql", "migration", "schema", "dataframe", "pipeline data", "copy error"),
-        "delivery-orchestrator-agent -> db-steward or data-engineer-data-architect-advisor -> qa-release-gate-agent -> gateway-bookkeeper",
-    ),
-    (
-        "architecture",
-        ("architecture", "design", "approach", "plan", "tradeoff", "proposal"),
-        "delivery-orchestrator-agent -> architecture-review-agent or critical-counterbalance-agent -> gateway-bookkeeper when tracked",
+        "delivery-orchestrator-agent -> repoops-custodian -> git-hygiene-orchestrator -> gateway-bookkeeper",
     ),
     (
         "trading-strategy-validation",
@@ -232,7 +191,28 @@ LANES = (
             "source traceability",
         ),
         "delivery-orchestrator-agent -> research-librarian-evidence-packager -> relevant implementation/QA agents",
-    ),    (
+    ),
+    (
+        "review",
+        ("review", "audit", "risks", "findings", "regression"),
+        "delivery-orchestrator-agent -> relevant reviewer -> qa-release-gate-agent as needed -> gateway-bookkeeper when tracked",
+    ),
+    (
+        "frontend",
+        ("ui", "react", "component", "page", "css", "layout", "design", "browser", "playwright"),
+        "delivery-orchestrator-agent -> frontend-design or delivery-engineer-agent -> ui-testing-expert -> git-hygiene-orchestrator",
+    ),
+    (
+        "db-data",
+        ("database", "postgres", "sql", "migration", "schema", "dataframe", "pipeline data", "copy error"),
+        "delivery-orchestrator-agent -> db-steward or data-engineer-data-architect-advisor -> qa-release-gate-agent -> gateway-bookkeeper",
+    ),
+    (
+        "architecture",
+        ("architecture", "design", "approach", "plan", "tradeoff", "proposal"),
+        "delivery-orchestrator-agent -> architecture-review-agent or critical-counterbalance-agent -> gateway-bookkeeper when tracked",
+    ),
+    (
         "docs",
         ("documentation", "docs", "readme", "runbook", "developer guide"),
         "delivery-orchestrator-agent -> technical-writer-dev-advocate -> git-hygiene-orchestrator",
@@ -245,24 +225,12 @@ def classify(prompt: str) -> tuple[str, str]:
     for lane, needles, sequence in LANES:
         if any(needle in normalized for needle in needles):
             return lane, sequence
-    return (
-        "implementation",
-        "delivery-orchestrator-agent -> gateway-bookkeeper when tracked -> delivery-engineer-agent -> code-drift-sentinel -> software-testing-validation-architect -> qa-release-gate-agent -> git-hygiene-orchestrator",
-    )
+    return "implementation", "delivery-orchestrator-agent -> gateway-bookkeeper when tracked -> delivery-engineer-agent -> qa-release-gate-agent -> git-hygiene-orchestrator"
 
 
 def contract_hint(prompt: str) -> str:
     normalized = prompt.lower()
-    shared_terms = (
-        "api response",
-        "api request",
-        "payload",
-        "schema",
-        "serialization",
-        "contract",
-        "@asset-allocation/contracts",
-        "asset-allocation-contracts",
-    )
+    shared_terms = ("api response", "api request", "payload", "schema", "serialization", "contract", "@asset-allocation/contracts", "asset-allocation-contracts")
     if any(term in normalized for term in shared_terms):
         return "Potential shared contract surface detected. Route authoring through asset-allocation-contracts first unless local evidence proves this is repo-private."
     return "Before editing, classify the work as local-only or contracts-repo-first if shared shapes are involved."
@@ -274,7 +242,7 @@ def main() -> int:
     lane, sequence = classify(prompt)
     work_kind = classify_work_kind(prompt)
     finish_required = lane == "finish" or requires_finish_workflow(prompt)
-    tracking_required = requires_tracking(prompt)
+    tracking_required = finish_required or requires_tracking(prompt)
     required_agents, optional_agents = compact_agent_summary(
         sequence,
         tracking_required=tracking_required,
@@ -292,7 +260,7 @@ def main() -> int:
             f"- Contract routing: {contract_hint(prompt)}",
             *(
                 azure_devops_agent_authority_lines()
-                if tracking_required
+                if (tracking_required or finish_required)
                 else ()
             ),
         ]

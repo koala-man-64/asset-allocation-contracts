@@ -116,6 +116,45 @@ IMPLEMENTATION_MARKERS = (
     "install",
 )
 
+EXPLICIT_IMPLEMENTATION_MARKERS = (
+    "apply this change",
+    "make the change",
+    "get rid of",
+    "ship it",
+    "please fix",
+    "please update",
+    "please remove",
+    "please add",
+)
+
+QUESTION_ANALYSIS_MARKERS = (
+    "what updates need to be made",
+    "what changes need to be made",
+    "what needs to change",
+    "need to be made",
+    "should be changed",
+)
+
+NO_REMOTE_FINISH_MARKERS = (
+    "local only",
+    "local-only",
+    "read-only",
+    "question only",
+    "analysis only",
+    "planning only",
+    "no push",
+    "don't push",
+    "dont push",
+    "no pr",
+    "no pull request",
+    "no merge",
+    "no azure devops",
+    "skip push",
+    "skip pr",
+    "skip merge",
+    "do not mutate azure devops",
+)
+
 CHANGE_MARKERS = (
     "added",
     "updated",
@@ -170,6 +209,30 @@ def contains_any_text(text: str, markers: tuple[str, ...]) -> bool:
     return any(marker in normalized for marker in markers)
 
 
+def looks_like_question_only(text: str) -> bool:
+    raw = text.lower().strip()
+    if not raw:
+        return False
+
+    starts_with_question = raw.startswith(
+        ("what ", "why ", "how ", "which ", "who ", "when ", "where ")
+    )
+    ends_with_question = raw.endswith("?")
+    if not (
+        starts_with_question
+        or ends_with_question
+        or contains_any_text(text, QUESTION_ANALYSIS_MARKERS)
+    ):
+        return False
+
+    return not contains_any_text(
+        text,
+        FINISH_WORKFLOW_MARKERS
+        + EXPLICIT_IMPLEMENTATION_MARKERS
+        + ("implement", "fix it", "please apply"),
+    )
+
+
 def classify_work_kind(text: str) -> str:
     if contains_any_text(text, FINISH_WORKFLOW_MARKERS):
         return "finish"
@@ -179,22 +242,28 @@ def classify_work_kind(text: str) -> str:
         return "deployment"
     if contains_any_text(text, AZURE_DEVOPS_MARKERS):
         return "ado"
+    if looks_like_question_only(text):
+        return "analysis"
     if contains_any_text(text, PLANNING_MARKERS):
         return "planning"
     if contains_any_text(text, ANALYSIS_MARKERS):
         return "analysis"
-    if contains_any_text(text, IMPLEMENTATION_MARKERS):
+    if contains_any_text(text, IMPLEMENTATION_MARKERS + EXPLICIT_IMPLEMENTATION_MARKERS):
         return "implementation"
     return "implementation"
 
 
 def requires_finish_workflow(text: str) -> bool:
-    return classify_work_kind(text) == "finish"
+    if contains_any_text(text, NO_REMOTE_FINISH_MARKERS):
+        return False
+    return classify_work_kind(text) in {"finish", "implementation"}
 
 
 def requires_tracking(text: str) -> bool:
+    if contains_any_text(text, NO_REMOTE_FINISH_MARKERS):
+        return False
     kind = classify_work_kind(text)
-    return kind in {"finish", "ado", "ci", "deployment"} or contains_any_text(
+    return kind in {"finish", "implementation", "ado", "ci", "deployment"} or contains_any_text(
         text, MULTI_REPO_MARKERS + TRACKING_CLAIM_MARKERS
     )
 
@@ -216,6 +285,10 @@ def requires_git_hygiene(text: str) -> bool:
 
 def requires_bookkeeper_recap(text: str) -> bool:
     if contains_any_text(text, TRACKING_CLAIM_MARKERS):
+        return True
+    if requires_tracking(text) and contains_any_text(
+        text, CHANGE_MARKERS + ("committed", "pushed", "opened pr", "created pr")
+    ):
         return True
     auditable_markers = (
         AZURE_DEVOPS_MARKERS
@@ -285,7 +358,6 @@ def repo_root() -> Path:
     except Exception:
         pass
 
-    # hook_utils.py lives in <repo>/.codex/hooks.
     try:
         return Path(__file__).resolve().parents[2]
     except Exception:

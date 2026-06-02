@@ -1,7 +1,9 @@
 from hook_utils import (
     block,
+    branch_header,
     emit_json,
     extract_last_message,
+    git_status_lines,
     is_planning_or_analysis_only,
     read_hook_input,
     requires_git_hygiene,
@@ -102,6 +104,15 @@ def contains_any(text: str, markers: tuple[str, ...]) -> bool:
     return any(marker in text for marker in markers)
 
 
+def repo_has_unfinished_git_state() -> bool:
+    header = branch_header()
+    has_ahead_commits = "[ahead" in header
+    has_pending_paths = any(
+        not line.startswith("##") for line in git_status_lines()
+    )
+    return has_ahead_commits or has_pending_paths
+
+
 def main() -> int:
     payload = read_hook_input()
     if payload.get("stop_hook_active"):
@@ -112,18 +123,20 @@ def main() -> int:
     if not message:
         return 0
 
+    repo_needs_finish = repo_has_unfinished_git_state()
     if is_planning_or_analysis_only(message) or (
         contains_any(normalized, PLANNING_ONLY_MARKERS)
         and not contains_any(normalized, SUBSTANTIVE_MARKERS)
+        and not repo_needs_finish
     ):
         return 0
 
-    if not contains_any(normalized, SUBSTANTIVE_MARKERS):
+    if not contains_any(normalized, SUBSTANTIVE_MARKERS) and not repo_needs_finish:
         return 0
 
     missing = []
-    has_change = contains_any(normalized, CHANGE_MARKERS)
-    needs_git_hygiene = requires_git_hygiene(message)
+    has_change = contains_any(normalized, CHANGE_MARKERS) or repo_needs_finish
+    needs_git_hygiene = requires_git_hygiene(message) or repo_needs_finish
     has_blocker = contains_any(normalized, BLOCKER_MARKERS)
     if needs_git_hygiene and not has_change:
         missing.append("what changed")
@@ -140,11 +153,6 @@ def main() -> int:
             "git-hygiene-orchestrator finish workflow details "
             "(commit, push, pull request, merge/completion) or exact blocker"
         )
-    if has_change:
-        if "code-drift-sentinel" not in normalized:
-            missing.append("code-drift-sentinel completed, not applicable, or blocker")
-        if "software-testing-validation-architect" not in normalized:
-            missing.append("software-testing-validation-architect completed, not applicable, or blocker")
 
     if has_blocker and not ("next action" in normalized or "remaining" in normalized or "left" in normalized):
         missing.append("exact next action for incomplete work")
