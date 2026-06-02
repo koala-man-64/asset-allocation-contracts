@@ -7,7 +7,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 
 CurrencyIntradayBarInterval = Literal["1m", "5m", "15m"]
+StockAggregateInterval = Literal[
+    "1s", "1m", "5m", "15m", "daily", "weekly", "monthly"
+]
 LiveMarketPriceStatus = Literal["connecting", "healthy", "degraded", "unavailable"]
+StockAggregateStreamEventType = Literal[
+    "market_price.stock_aggregate",
+    "market_price.stock_status",
+]
 IntradayRefreshDomain = Literal["market", "currency"]
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
@@ -34,6 +41,49 @@ def _normalize_symbol(value: object) -> str:
     if len(symbol) > 32:
         raise ValueError("Symbol values must be 32 characters or fewer.")
     return symbol
+
+
+_STOCK_SYMBOL_ALLOWED_CHARS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-")
+
+
+def _strip_provider_stock_channel(symbol: str) -> str:
+    if symbol.startswith("AM."):
+        return symbol[3:]
+    if symbol.startswith("A."):
+        return symbol[2:]
+    return symbol
+
+
+def _normalize_stock_symbol(value: object) -> str:
+    symbol = _strip_provider_stock_channel(str(value or "").strip().upper())
+    if not symbol:
+        raise ValueError("Stock symbols must be non-empty.")
+    if len(symbol) > 32:
+        raise ValueError("Stock symbols must be 32 characters or fewer.")
+    if "*" in symbol:
+        raise ValueError("Wildcard stock symbols are not supported.")
+    if any(char not in _STOCK_SYMBOL_ALLOWED_CHARS for char in symbol):
+        raise ValueError("Stock symbols may only contain letters, numbers, dots, or hyphens.")
+    return symbol
+
+
+def _normalize_stock_aggregate_interval(value: object) -> StockAggregateInterval:
+    interval = str(value or "").strip().lower()
+    if interval == "1s":
+        return "1s"
+    if interval == "1m":
+        return "1m"
+    if interval == "5m":
+        return "5m"
+    if interval == "15m":
+        return "15m"
+    if interval == "daily":
+        return "daily"
+    if interval == "weekly":
+        return "weekly"
+    if interval == "monthly":
+        return "monthly"
+    raise ValueError("Stock aggregate interval is not supported.")
 
 
 _COMMON_QUOTE_CURRENCIES = (
@@ -284,6 +334,179 @@ class CurrencyIntradayBarsResponse(BaseModel):
             raise ValueError("providerSymbol must resolve to the canonical pair.")
         if self.rowCount != len(self.rows):
             raise ValueError("rowCount must match the number of rows.")
+        return self
+
+
+class StockAggregateBar(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["stocks"] = "stocks"
+    symbol: str = Field(min_length=1, max_length=32)
+    providerSymbol: str = Field(min_length=1, max_length=32)
+    interval: StockAggregateInterval
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float = Field(ge=0)
+    vwap: float | None = None
+    transactions: int | None = Field(default=None, ge=0)
+    providerStartTimestampMs: int = Field(ge=0)
+    providerEndTimestampMs: int | None = Field(default=None, ge=0)
+    providerDelaySeconds: float | None = Field(default=None, ge=0)
+    observedAt: datetime | None = None
+    sequence: int | None = Field(default=None, ge=1)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_interval = field_validator("interval", mode="before")(
+        _normalize_stock_aggregate_interval
+    )
+    _normalize_timestamp = field_validator("timestamp", mode="after")(
+        _normalize_utc_datetime
+    )
+    _normalize_observed_at = field_validator("observedAt", mode="after")(
+        _normalize_optional_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_provider_symbol(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+        data = dict(raw)
+        data["providerSymbol"] = data.get("providerSymbol") or data.get("symbol")
+        return data
+
+    @model_validator(mode="after")
+    def _validate_bar(self) -> "StockAggregateBar":
+        if self.providerSymbol != self.symbol:
+            raise ValueError("providerSymbol must match the canonical stock symbol.")
+        if (
+            self.providerEndTimestampMs is not None
+            and self.providerEndTimestampMs < self.providerStartTimestampMs
+        ):
+            raise ValueError("providerEndTimestampMs cannot precede providerStartTimestampMs.")
+        return self
+
+
+class StockAggregateBarsResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["stocks"] = "stocks"
+    symbol: str = Field(min_length=1, max_length=32)
+    providerSymbol: str = Field(min_length=1, max_length=32)
+    interval: StockAggregateInterval
+    from_: datetime = Field(alias="from")
+    to: datetime
+    rowCount: int = Field(ge=0)
+    rows: list[StockAggregateBar] = Field(default_factory=list)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_interval = field_validator("interval", mode="before")(
+        _normalize_stock_aggregate_interval
+    )
+    _normalize_from = field_validator("from_", mode="after")(_normalize_utc_datetime)
+    _normalize_to = field_validator("to", mode="after")(_normalize_utc_datetime)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_provider_symbol(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+        data = dict(raw)
+        data["providerSymbol"] = data.get("providerSymbol") or data.get("symbol")
+        return data
+
+    @model_validator(mode="after")
+    def _validate_response(self) -> "StockAggregateBarsResponse":
+        if self.providerSymbol != self.symbol:
+            raise ValueError("providerSymbol must match the canonical stock symbol.")
+        if self.from_ > self.to:
+            raise ValueError("from must be earlier than or equal to to.")
+        if self.rowCount != len(self.rows):
+            raise ValueError("rowCount must match the number of rows.")
+        for row in self.rows:
+            if row.symbol != self.symbol:
+                raise ValueError("row symbol must match response symbol.")
+            if row.interval != self.interval:
+                raise ValueError("row interval must match response interval.")
+        return self
+
+
+class LiveStockAggregateSnapshot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["stocks"] = "stocks"
+    symbol: str = Field(min_length=1, max_length=32)
+    providerSymbol: str = Field(min_length=1, max_length=32)
+    interval: StockAggregateInterval
+    topic: str = Field(min_length=1, max_length=200)
+    status: LiveMarketPriceStatus
+    lastBar: StockAggregateBar | None = None
+    lastBarAgeSeconds: float | None = Field(default=None, ge=0)
+    providerDelaySeconds: float | None = Field(default=None, ge=0)
+    connectedAt: datetime | None = None
+    lastProviderMessageAt: datetime | None = None
+    lastStatusAt: datetime
+    lastError: str | None = Field(default=None, max_length=2_000)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_interval = field_validator("interval", mode="before")(
+        _normalize_stock_aggregate_interval
+    )
+    _normalize_connected_at = field_validator("connectedAt", mode="after")(
+        _normalize_optional_utc_datetime
+    )
+    _normalize_last_provider_message_at = field_validator(
+        "lastProviderMessageAt",
+        mode="after",
+    )(_normalize_optional_utc_datetime)
+    _normalize_last_status_at = field_validator("lastStatusAt", mode="after")(
+        _normalize_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_provider_symbol(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+        data = dict(raw)
+        data["providerSymbol"] = data.get("providerSymbol") or data.get("symbol")
+        return data
+
+    @model_validator(mode="after")
+    def _validate_snapshot(self) -> "LiveStockAggregateSnapshot":
+        if self.providerSymbol != self.symbol:
+            raise ValueError("providerSymbol must match the canonical stock symbol.")
+        expected_topic = (
+            f"market-prices:massive:stocks:{self.symbol}:{self.interval}"
+        )
+        if self.topic != expected_topic:
+            raise ValueError("topic must match the stock aggregate symbol and interval.")
+        if self.lastBar is not None:
+            if self.lastBar.symbol != self.symbol:
+                raise ValueError("lastBar symbol must match snapshot symbol.")
+            if self.lastBar.interval != self.interval:
+                raise ValueError("lastBar interval must match snapshot interval.")
         return self
 
 

@@ -94,6 +94,7 @@ from asset_allocation_contracts.intraday import (
     LiveCurrencyPriceSnapshot,
     LiveCurrencyPriceTick,
     LiveMarketPriceStatus,
+    LiveStockAggregateSnapshot,
     IntradayMonitorClaimResponse,
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
@@ -109,6 +110,10 @@ from asset_allocation_contracts.intraday import (
     IntradayWatchlistSymbolAppendRequest,
     IntradayWatchlistSymbolAppendResponse,
     IntradayWatchlistUpsertRequest,
+    StockAggregateBar,
+    StockAggregateBarsResponse,
+    StockAggregateInterval,
+    StockAggregateStreamEventType,
 )
 from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
 from asset_allocation_contracts.notifications import (
@@ -3416,6 +3421,249 @@ def test_currency_intraday_artifacts_include_schema_and_typescript_exports() -> 
     assert "export interface CurrencyIntradayBarsResponse" in generated_types
     assert "interval: CurrencyIntradayBarInterval;" in generated_types
     assert "from: string;" in generated_types
+
+
+def test_stock_aggregate_bars_contract_normalizes_provider_fields() -> None:
+    payload = StockAggregateBarsResponse(
+        symbol=" aapl ",
+        interval="5M",
+        from_="2026-05-20T14:30:00Z",
+        to="2026-05-20T14:45:00-05:00",
+        rowCount=2,
+        rows=[
+            StockAggregateBar(
+                symbol="AAPL",
+                interval="5m",
+                timestamp="2026-05-20T14:30:00Z",
+                open=191.25,
+                high=191.9,
+                low=191.1,
+                close=191.7,
+                volume=1250,
+                vwap=191.52,
+                transactions=42,
+                providerStartTimestampMs=1779287400000,
+                providerEndTimestampMs=1779287699999,
+                providerDelaySeconds=1.25,
+                observedAt="2026-05-20T14:30:02",
+                sequence=7,
+            ),
+            {
+                "symbol": "am.aapl",
+                "interval": "5m",
+                "timestamp": "2026-05-20T14:35:00Z",
+                "open": 191.7,
+                "high": 192.1,
+                "low": 191.45,
+                "close": 192.0,
+                "volume": 925,
+                "providerStartTimestampMs": 1779287700000,
+            },
+        ],
+    )
+
+    assert payload.symbol == "AAPL"
+    assert payload.providerSymbol == "AAPL"
+    assert payload.interval == "5m"
+    assert payload.from_.isoformat() == "2026-05-20T14:30:00+00:00"
+    assert payload.to.isoformat() == "2026-05-20T19:45:00+00:00"
+    assert payload.rows[0].observedAt is not None
+    assert payload.rows[0].observedAt.isoformat() == "2026-05-20T14:30:02+00:00"
+    assert payload.rows[1].symbol == "AAPL"
+    assert payload.rows[1].vwap is None
+
+    dumped = payload.model_dump(mode="json", by_alias=True)
+    assert dumped["from"] == "2026-05-20T14:30:00Z"
+    assert "from_" not in dumped
+
+
+def test_stock_aggregate_bars_contract_rejects_unsupported_shapes() -> None:
+    interval_adapter = TypeAdapter(StockAggregateInterval)
+    event_adapter = TypeAdapter(StockAggregateStreamEventType)
+
+    assert interval_adapter.validate_python("1s") == "1s"
+    assert interval_adapter.validate_python("1m") == "1m"
+    assert interval_adapter.validate_python("15m") == "15m"
+    assert interval_adapter.validate_python("daily") == "daily"
+    assert interval_adapter.validate_python("weekly") == "weekly"
+    assert interval_adapter.validate_python("monthly") == "monthly"
+    assert event_adapter.validate_python("market_price.stock_aggregate") == (
+        "market_price.stock_aggregate"
+    )
+    assert event_adapter.validate_python("market_price.stock_status") == (
+        "market_price.stock_status"
+    )
+
+    for invalid_interval in ("30m", "1h", "day"):
+        try:
+            interval_adapter.validate_python(invalid_interval)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected interval validation to reject {invalid_interval!r}."
+        )
+
+    invalid_payloads = (
+        {
+            "symbol": "*",
+            "interval": "1m",
+            "from": "2026-05-20T14:30:00Z",
+            "to": "2026-05-20T14:31:00Z",
+            "rowCount": 0,
+            "rows": [],
+        },
+        {
+            "symbol": "AAPL",
+            "providerSymbol": "MSFT",
+            "interval": "1m",
+            "from": "2026-05-20T14:30:00Z",
+            "to": "2026-05-20T14:31:00Z",
+            "rowCount": 0,
+            "rows": [],
+        },
+        {
+            "symbol": "AAPL",
+            "interval": "1m",
+            "from": "2026-05-20T14:31:00Z",
+            "to": "2026-05-20T14:30:00Z",
+            "rowCount": 0,
+            "rows": [],
+        },
+        {
+            "symbol": "AAPL",
+            "interval": "1m",
+            "from": "2026-05-20T14:30:00Z",
+            "to": "2026-05-20T14:31:00Z",
+            "rowCount": 1,
+            "rows": [],
+        },
+        {
+            "symbol": "AAPL",
+            "interval": "1m",
+            "from": "2026-05-20T14:30:00Z",
+            "to": "2026-05-20T14:31:00Z",
+            "rowCount": 1,
+            "rows": [
+                {
+                    "symbol": "MSFT",
+                    "interval": "1m",
+                    "timestamp": "2026-05-20T14:30:00Z",
+                    "open": 1,
+                    "high": 1,
+                    "low": 1,
+                    "close": 1,
+                    "volume": 1,
+                    "providerStartTimestampMs": 1779287400000,
+                }
+            ],
+        },
+    )
+    for payload in invalid_payloads:
+        try:
+            StockAggregateBarsResponse.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected stock aggregate response validation to reject {payload!r}."
+        )
+
+
+def test_live_stock_aggregate_snapshot_validates_topic_and_last_bar() -> None:
+    bar = StockAggregateBar(
+        symbol="aapl",
+        interval="1m",
+        timestamp="2026-05-20T14:30:00Z",
+        open=191.25,
+        high=191.9,
+        low=191.1,
+        close=191.7,
+        volume=1250,
+        providerStartTimestampMs=1779287400000,
+        providerEndTimestampMs=1779287459999,
+        providerDelaySeconds=1.25,
+        observedAt="2026-05-20T14:30:02Z",
+        sequence=7,
+    )
+    snapshot = LiveStockAggregateSnapshot(
+        symbol="aapl",
+        interval="1m",
+        topic="market-prices:massive:stocks:AAPL:1m",
+        status="healthy",
+        lastBar=bar,
+        lastBarAgeSeconds=1.5,
+        providerDelaySeconds=1.25,
+        connectedAt="2026-05-20T14:00:00Z",
+        lastProviderMessageAt="2026-05-20T14:30:02Z",
+        lastStatusAt="2026-05-20T14:30:03Z",
+        lastError=None,
+    )
+
+    assert snapshot.symbol == "AAPL"
+    assert snapshot.providerSymbol == "AAPL"
+    assert snapshot.lastBar == bar
+    assert snapshot.status == "healthy"
+
+    invalid_payloads = (
+        {
+            "symbol": "AAPL",
+            "interval": "1m",
+            "topic": "market-prices:massive:stocks:MSFT:1m",
+            "status": "healthy",
+            "lastStatusAt": "2026-05-20T14:30:03Z",
+        },
+        {
+            "symbol": "AAPL",
+            "interval": "5m",
+            "topic": "market-prices:massive:stocks:AAPL:5m",
+            "status": "healthy",
+            "lastBar": bar,
+            "lastStatusAt": "2026-05-20T14:30:03Z",
+        },
+    )
+    for payload in invalid_payloads:
+        try:
+            LiveStockAggregateSnapshot.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected live stock aggregate snapshot to reject {payload!r}."
+        )
+
+
+def test_stock_aggregate_artifacts_include_schema_and_typescript_exports() -> None:
+    root = Path(__file__).resolve().parents[2]
+    response_schema_path = root / "schemas" / "stock-aggregate-bars-response.schema.json"
+    snapshot_schema_path = root / "schemas" / "live-stock-aggregate-snapshot.schema.json"
+    event_schema_path = root / "schemas" / "stock-aggregate-stream-event-type.schema.json"
+    type_path = root / "ts" / "src" / "contracts.ts"
+
+    response_schema = json.loads(response_schema_path.read_text(encoding="utf-8"))
+    snapshot_schema = json.loads(snapshot_schema_path.read_text(encoding="utf-8"))
+    event_schema = json.loads(event_schema_path.read_text(encoding="utf-8"))
+
+    assert "StockAggregateBar" in response_schema["$defs"]
+    assert response_schema["properties"]["interval"]["enum"] == [
+        "1s",
+        "1m",
+        "5m",
+        "15m",
+        "daily",
+        "weekly",
+        "monthly",
+    ]
+    assert "StockAggregateBar" in snapshot_schema["$defs"]
+    assert event_schema["enum"] == [
+        "market_price.stock_aggregate",
+        "market_price.stock_status",
+    ]
+
+    generated_types = type_path.read_text(encoding="utf-8")
+    assert "export type StockAggregateInterval" in generated_types
+    assert "export type StockAggregateStreamEventType" in generated_types
+    assert "export interface StockAggregateBar" in generated_types
+    assert "export interface StockAggregateBarsResponse" in generated_types
+    assert "export interface LiveStockAggregateSnapshot" in generated_types
+    assert "lastBar?: StockAggregateBar | null;" in generated_types
 
 
 def test_live_currency_price_contract_normalizes_massive_trade_shape() -> None:

@@ -36,6 +36,7 @@ import type {
   LiveCurrencyPriceSnapshot,
   LiveCurrencyPriceTick,
   LiveMarketPriceStatus,
+  LiveStockAggregateSnapshot,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   IntradayMonitorCompleteRequest,
@@ -69,6 +70,10 @@ import type {
   SymbolEnrichmentSymbolDetailResponse,
   SymbolResolutionResult,
   StockScreenerRequest,
+  StockAggregateBar,
+  StockAggregateBarsResponse,
+  StockAggregateInterval,
+  StockAggregateStreamEventType,
   StockScreenerPresetListResponse,
   StockScreenerPresetSummary,
   StockScreenerPresetUpsertRequest,
@@ -368,6 +373,63 @@ const liveCurrencySnapshot: LiveCurrencyPriceSnapshot = {
   lastStatusAt: "2026-05-20T00:05:01Z",
   lastError: null,
 };
+
+const stockAggregateInterval: StockAggregateInterval = "1m";
+const stockAggregateEventType: StockAggregateStreamEventType =
+  "market_price.stock_aggregate";
+const stockAggregateBar: StockAggregateBar = {
+  provider: "massive",
+  assetClass: "stocks",
+  symbol: "AAPL",
+  providerSymbol: "AAPL",
+  interval: stockAggregateInterval,
+  timestamp: "2026-05-20T14:30:00Z",
+  open: 191.25,
+  high: 191.9,
+  low: 191.1,
+  close: 191.7,
+  volume: 1250,
+  vwap: 191.52,
+  transactions: 42,
+  providerStartTimestampMs: 1779287400000,
+  providerEndTimestampMs: 1779287459999,
+  providerDelaySeconds: 1.25,
+  observedAt: "2026-05-20T14:30:02Z",
+  sequence: 7,
+};
+
+const stockAggregateBars: StockAggregateBarsResponse = {
+  provider: "massive",
+  assetClass: "stocks",
+  symbol: "AAPL",
+  providerSymbol: "AAPL",
+  interval: stockAggregateInterval,
+  from: "2026-05-20T14:30:00Z",
+  to: "2026-05-20T14:31:00Z",
+  rowCount: 1,
+  rows: [stockAggregateBar],
+};
+
+const liveStockAggregateSnapshot: LiveStockAggregateSnapshot = {
+  provider: "massive",
+  assetClass: "stocks",
+  symbol: stockAggregateBars.symbol,
+  providerSymbol: "AAPL",
+  interval: stockAggregateInterval,
+  topic: "market-prices:massive:stocks:AAPL:1m",
+  status: liveMarketPriceStatus,
+  lastBar: stockAggregateBar,
+  lastBarAgeSeconds: 1.25,
+  providerDelaySeconds: 1.25,
+  connectedAt: "2026-05-20T14:00:00Z",
+  lastProviderMessageAt: "2026-05-20T14:30:02Z",
+  lastStatusAt: "2026-05-20T14:30:03Z",
+  lastError: null,
+};
+const liveStockAggregateEventType: StockAggregateStreamEventType =
+  stockAggregateEventType === "market_price.stock_aggregate"
+    ? "market_price.stock_status"
+    : stockAggregateEventType;
 
 const intradayRefreshDomain: IntradayRefreshDomain = "currency";
 const intradayWatchlist: IntradayWatchlistUpsertRequest = {

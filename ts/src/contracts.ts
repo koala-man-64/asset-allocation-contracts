@@ -36,7 +36,9 @@ export type PipelineApprovalStatus = 'pending' | 'approved' | 'rejected' | 'skip
 export type PipelineSyncActionKind = 'queue' | 'cancel' | 'retry-run' | 'retry-stage' | 'approve-check' | 'open';
 export type PipelineActionResponseStatus = 'accepted' | 'completed';
 export type CurrencyIntradayBarInterval = '1m' | '5m' | '15m';
+export type StockAggregateInterval = '1s' | '1m' | '5m' | '15m' | 'daily' | 'weekly' | 'monthly';
 export type LiveMarketPriceStatus = 'connecting' | 'healthy' | 'degraded' | 'unavailable';
+export type StockAggregateStreamEventType = 'market_price.stock_aggregate' | 'market_price.stock_status';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -4709,6 +4711,39 @@ export interface CurrencyIntradayBarsResponse {
   rows: CurrencyIntradayBar[];
 }
 
+export interface StockAggregateBar {
+  provider: 'massive';
+  assetClass: 'stocks';
+  symbol: string;
+  providerSymbol: string;
+  interval: StockAggregateInterval;
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  vwap?: number | null;
+  transactions?: number | null;
+  providerStartTimestampMs: number;
+  providerEndTimestampMs?: number | null;
+  providerDelaySeconds?: number | null;
+  observedAt?: string | null;
+  sequence?: number | null;
+}
+
+export interface StockAggregateBarsResponse {
+  provider: 'massive';
+  assetClass: 'stocks';
+  symbol: string;
+  providerSymbol: string;
+  interval: StockAggregateInterval;
+  from: string;
+  to: string;
+  rowCount: number;
+  rows: StockAggregateBar[];
+}
+
 export interface LiveCurrencyPriceTick {
   provider: 'massive';
   assetClass: 'crypto';
@@ -4740,6 +4775,23 @@ export interface LiveCurrencyPriceSnapshot {
   status: LiveMarketPriceStatus;
   lastTick?: LiveCurrencyPriceTick | null;
   lastTickAgeSeconds?: number | null;
+  connectedAt?: string | null;
+  lastProviderMessageAt?: string | null;
+  lastStatusAt: string;
+  lastError?: string | null;
+}
+
+export interface LiveStockAggregateSnapshot {
+  provider: 'massive';
+  assetClass: 'stocks';
+  symbol: string;
+  providerSymbol: string;
+  interval: StockAggregateInterval;
+  topic: string;
+  status: LiveMarketPriceStatus;
+  lastBar?: StockAggregateBar | null;
+  lastBarAgeSeconds?: number | null;
+  providerDelaySeconds?: number | null;
   connectedAt?: string | null;
   lastProviderMessageAt?: string | null;
   lastStatusAt: string;

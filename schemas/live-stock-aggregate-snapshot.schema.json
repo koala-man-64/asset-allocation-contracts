@@ -1,0 +1,315 @@
+{
+  "$defs": {
+    "StockAggregateBar": {
+      "additionalProperties": false,
+      "properties": {
+        "assetClass": {
+          "const": "stocks",
+          "default": "stocks",
+          "title": "Assetclass",
+          "type": "string"
+        },
+        "close": {
+          "title": "Close",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        },
+        "interval": {
+          "enum": [
+            "1s",
+            "1m",
+            "5m",
+            "15m",
+            "daily",
+            "weekly",
+            "monthly"
+          ],
+          "title": "Interval",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "observedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observedat"
+        },
+        "open": {
+          "title": "Open",
+          "type": "number"
+        },
+        "provider": {
+          "const": "massive",
+          "default": "massive",
+          "title": "Provider",
+          "type": "string"
+        },
+        "providerDelaySeconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerdelayseconds"
+        },
+        "providerEndTimestampMs": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providerendtimestampms"
+        },
+        "providerStartTimestampMs": {
+          "minimum": 0,
+          "title": "Providerstarttimestampms",
+          "type": "integer"
+        },
+        "providerSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Providersymbol",
+          "type": "string"
+        },
+        "sequence": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sequence"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        },
+        "transactions": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transactions"
+        },
+        "volume": {
+          "minimum": 0,
+          "title": "Volume",
+          "type": "number"
+        },
+        "vwap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vwap"
+        }
+      },
+      "required": [
+        "symbol",
+        "providerSymbol",
+        "interval",
+        "timestamp",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "providerStartTimestampMs"
+      ],
+      "title": "StockAggregateBar",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assetClass": {
+      "const": "stocks",
+      "default": "stocks",
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "connectedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Connectedat"
+    },
+    "interval": {
+      "enum": [
+        "1s",
+        "1m",
+        "5m",
+        "15m",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "title": "Interval",
+      "type": "string"
+    },
+    "lastBar": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StockAggregateBar"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "lastBarAgeSeconds": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastbarageseconds"
+    },
+    "lastError": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasterror"
+    },
+    "lastProviderMessageAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastprovidermessageat"
+    },
+    "lastStatusAt": {
+      "format": "date-time",
+      "title": "Laststatusat",
+      "type": "string"
+    },
+    "provider": {
+      "const": "massive",
+      "default": "massive",
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerDelaySeconds": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providerdelayseconds"
+    },
+    "providerSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Providersymbol",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "connecting",
+        "healthy",
+        "degraded",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "topic": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Topic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "symbol",
+    "providerSymbol",
+    "interval",
+    "topic",
+    "status",
+    "lastStatusAt"
+  ],
+  "title": "LiveStockAggregateSnapshot",
+  "type": "object"
+}

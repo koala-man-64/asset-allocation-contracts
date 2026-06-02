@@ -549,10 +549,23 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "currency-intraday-bars-response.schema.json",
         intraday.CurrencyIntradayBarsResponse,
     ),
+    ("stock-aggregate-bar.schema.json", intraday.StockAggregateBar),
+    (
+        "stock-aggregate-bars-response.schema.json",
+        intraday.StockAggregateBarsResponse,
+    ),
     ("live-currency-price-tick.schema.json", intraday.LiveCurrencyPriceTick),
     (
         "live-currency-price-snapshot.schema.json",
         intraday.LiveCurrencyPriceSnapshot,
+    ),
+    (
+        "live-stock-aggregate-snapshot.schema.json",
+        intraday.LiveStockAggregateSnapshot,
+    ),
+    (
+        "stock-aggregate-stream-event-type.schema.json",
+        TypeAdapter(intraday.StockAggregateStreamEventType),
     ),
     ("intraday-watchlist-summary.schema.json", intraday.IntradayWatchlistSummary),
     ("intraday-watchlist-detail.schema.json", intraday.IntradayWatchlistDetail),
@@ -665,7 +678,9 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("PipelineSyncActionKind", pipeline_sync.PipelineSyncActionKind),
     ("PipelineActionResponseStatus", pipeline_sync.PipelineActionResponseStatus),
     ("CurrencyIntradayBarInterval", intraday.CurrencyIntradayBarInterval),
+    ("StockAggregateInterval", intraday.StockAggregateInterval),
     ("LiveMarketPriceStatus", intraday.LiveMarketPriceStatus),
+    ("StockAggregateStreamEventType", intraday.StockAggregateStreamEventType),
     ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleVisualKey", strategy.ExitRuleVisualKey),

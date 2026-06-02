@@ -1,0 +1,7 @@
+{
+  "enum": [
+    "market_price.stock_aggregate",
+    "market_price.stock_status"
+  ],
+  "type": "string"
+}
