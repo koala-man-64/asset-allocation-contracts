@@ -103,8 +103,25 @@ def test_stop_closeout_blocks_changed_work_missing_validation() -> None:
 
     assert output["decision"] == "block"
     assert "validation run or explicit not-run reason" in output["reason"]
-    assert "git-hygiene-orchestrator completed or blocker" in output["reason"]
+    assert "commit, push, pull request, merge/completion" in output["reason"]
     assert "gateway-bookkeeper" not in output["reason"]
+
+
+def test_stop_closeout_blocks_bare_git_hygiene_completion_without_finish_evidence() -> None:
+    output = _run_hook(
+        "stop_team_closeout.py",
+        {
+            "last_assistant_message": (
+                "Updated compact hook routing. Validated with pytest. "
+                "code-drift-sentinel completed. "
+                "software-testing-validation-architect completed. "
+                "git-hygiene-orchestrator completed."
+            )
+        },
+    )
+
+    assert output["decision"] == "block"
+    assert "commit, push, pull request, merge/completion" in output["reason"]
 
 
 def test_stop_closeout_accepts_changed_work_with_validation_and_git_hygiene() -> None:
@@ -115,7 +132,7 @@ def test_stop_closeout_accepts_changed_work_with_validation_and_git_hygiene() ->
                 "Updated compact hook routing. Validated with pytest. "
                 "code-drift-sentinel completed. "
                 "software-testing-validation-architect completed. "
-                "git-hygiene-orchestrator completed."
+                "git-hygiene-orchestrator completed. Committed. Pushed. Created PR. Merged."
             )
         },
     )

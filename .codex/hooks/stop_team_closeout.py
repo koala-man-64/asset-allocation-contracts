@@ -79,6 +79,24 @@ BLOCKER_MARKERS = (
     "not finished",
 )
 
+GIT_HYGIENE_FINISH_MARKERS = (
+    "committed",
+    "pushed",
+    "opened pr",
+    "created pr",
+    "pull request",
+    "merged",
+    "merge",
+    "auto-complete",
+    "completed pr",
+    "completed pull request",
+)
+
+GIT_HYGIENE_FINISH_REQUIREMENT = (
+    "git-hygiene-orchestrator completed the allowed finish workflow "
+    "(commit, push, pull request, merge/completion) or reported the exact blocker"
+)
+
 
 def contains_any(text: str, markers: tuple[str, ...]) -> bool:
     return any(marker in text for marker in markers)
@@ -106,20 +124,29 @@ def main() -> int:
     missing = []
     has_change = contains_any(normalized, CHANGE_MARKERS)
     needs_git_hygiene = requires_git_hygiene(message)
+    has_blocker = contains_any(normalized, BLOCKER_MARKERS)
     if needs_git_hygiene and not has_change:
         missing.append("what changed")
     if (has_change or needs_git_hygiene) and not contains_any(normalized, VALIDATION_MARKERS):
         missing.append("validation run or explicit not-run reason")
     if needs_git_hygiene and "git-hygiene-orchestrator" not in normalized:
-        missing.append("git-hygiene-orchestrator completed or blocker")
+        missing.append(GIT_HYGIENE_FINISH_REQUIREMENT)
+    elif (
+        needs_git_hygiene
+        and not contains_any(normalized, GIT_HYGIENE_FINISH_MARKERS)
+        and not has_blocker
+    ):
+        missing.append(
+            "git-hygiene-orchestrator finish workflow details "
+            "(commit, push, pull request, merge/completion) or exact blocker"
+        )
     if has_change:
         if "code-drift-sentinel" not in normalized:
             missing.append("code-drift-sentinel completed, not applicable, or blocker")
         if "software-testing-validation-architect" not in normalized:
             missing.append("software-testing-validation-architect completed, not applicable, or blocker")
 
-    incomplete = contains_any(normalized, BLOCKER_MARKERS)
-    if incomplete and not ("next action" in normalized or "remaining" in normalized or "left" in normalized):
+    if has_blocker and not ("next action" in normalized or "remaining" in normalized or "left" in normalized):
         missing.append("exact next action for incomplete work")
 
     if missing:
