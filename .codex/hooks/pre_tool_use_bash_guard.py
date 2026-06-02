@@ -28,9 +28,7 @@ SECRET_VALUE_PATTERN = re.compile(
 )
 
 
-PROD_DEPLOY_APPROVAL_PATTERN = re.compile(
-    r"\b(?:prod|production|deploy-prod|prod-[a-z0-9-]*)\b"
-)
+PROD_DEPLOY_APPROVAL_PATTERN = re.compile(r"\b(?:prod|production|deploy-prod|prod-[a-z0-9-]*)\b")
 AZURE_PIPELINE_APPROVAL_COMMAND_PATTERN = re.compile(
     r"\baz\s+pipelines\b.*\bapprov|\baz\s+devops\s+invoke\b.*\bapprov|\b(?:curl|invoke-restmethod|irm|iwr|invoke-webrequest)\b.*\bapprove-check\b"
 )
@@ -167,17 +165,12 @@ def finish_workflow_permission_reason(command: str, root: Path) -> str | None:
     ]
     status = dirty_summary(root)
     if status.startswith("dirty"):
-        notes.append(
-            f"Working tree is {status}; confirm task-owned scope before committing or pushing."
-        )
+        notes.append(f"Working tree is {status}; confirm task-owned scope before committing or pushing.")
     if upstream_gone(root):
-        notes.append(
-            "Current branch upstream is gone; confirm branch ownership before pushing."
-        )
+        notes.append("Current branch upstream is gone; confirm branch ownership before pushing.")
     if contains_azure_devops_completion_command(command):
         notes.append(
-            "Azure DevOps PR/work-item completion authority applies only after branch "
-            "policies and review rules pass."
+            "Azure DevOps PR/work-item completion authority applies only after branch policies and review rules pass."
         )
     return " ".join(notes)
 
@@ -213,9 +206,7 @@ def risky_context(command: str, root: Path) -> str | None:
     if ado_completion_command:
         context_lines.append("Azure DevOps authority reminder:")
         context_lines.extend(azure_devops_agent_authority_lines())
-        context_lines.append(
-            "Proceed only when branch policies, required checks, and review rules allow it."
-        )
+        context_lines.append("Proceed only when branch policies, required checks, and review rules allow it.")
     return "\n".join(context_lines)
 
 

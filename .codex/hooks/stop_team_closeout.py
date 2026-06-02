@@ -112,6 +112,11 @@ def main() -> int:
         missing.append("validation run or explicit not-run reason")
     if needs_git_hygiene and "git-hygiene-orchestrator" not in normalized:
         missing.append("git-hygiene-orchestrator completed or blocker")
+    if has_change:
+        if "code-drift-sentinel" not in normalized:
+            missing.append("code-drift-sentinel completed, not applicable, or blocker")
+        if "software-testing-validation-architect" not in normalized:
+            missing.append("software-testing-validation-architect completed, not applicable, or blocker")
 
     incomplete = contains_any(normalized, BLOCKER_MARKERS)
     if incomplete and not ("next action" in normalized or "remaining" in normalized or "left" in normalized):

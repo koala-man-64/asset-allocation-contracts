@@ -76,7 +76,7 @@ def test_prompt_router_preserves_specialist_lane_as_optional_context() -> None:
         _run_hook(
             "user_prompt_submit_router.py",
             {
-                "prompt": "review this backtest for leakage, walk-forward integrity, and model risk"
+                "prompt": "backtest leakage, walk-forward integrity, and model risk"
             },
         )
     )
@@ -113,6 +113,8 @@ def test_stop_closeout_accepts_changed_work_with_validation_and_git_hygiene() ->
         {
             "last_assistant_message": (
                 "Updated compact hook routing. Validated with pytest. "
+                "code-drift-sentinel completed. "
+                "software-testing-validation-architect completed. "
                 "git-hygiene-orchestrator completed."
             )
         },
