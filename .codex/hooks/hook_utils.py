@@ -15,6 +15,7 @@ CORE_AGENTS = (
 )
 
 AZURE_DEVOPS_AGENT_AUTHORITY_LINES = (
+    "- Finish workflow authority: for task-owned changes on a task-owned branch, agents are pre-approved to stage, commit, push, open or update PRs, set auto-complete, approve PRs, complete PRs, delete source branches, and transition linked work items when needed to complete the request, unless the user explicitly limits scope or says not to finish.",
     "- Azure DevOps authority: agents are pre-approved to update and close Azure Boards work items, approve Azure Repos PRs, set PR auto-complete, complete PRs, delete source branches, and transition linked work items when repo gates and policies pass.",
     "- Production deploy boundary: agents must not approve production deployment pipeline, environment, or check gates; leave prod deploy approval to the user and record it as the remaining blocker.",
     "- Azure permission failures are blockers to report with exact command and error; do not bypass policies, force permissions, or substitute direct protected-branch pushes.",
@@ -134,7 +135,6 @@ QUESTION_ANALYSIS_MARKERS = (
     "need to be made",
     "should be changed",
 )
-
 NO_REMOTE_FINISH_MARKERS = (
     "local only",
     "local-only",

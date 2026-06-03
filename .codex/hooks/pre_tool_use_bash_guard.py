@@ -160,8 +160,8 @@ def finish_workflow_permission_reason(command: str, root: Path) -> str | None:
         return None
 
     notes = [
-        "Allowed finish workflow command after safety checks passed for commit, push, "
-        "pull request, or merge/completion work."
+        "Allowed finish workflow command under blanket finish approval after safety checks "
+        "passed for commit, push, pull request, or merge/completion work."
     ]
     status = dirty_summary(root)
     if status.startswith("dirty"):

@@ -1,6 +1,6 @@
 ---
 name: git-hygiene-orchestrator
-description: Audit and clean Git branches, remote-tracking refs, and worktrees safely. Use when Codex is asked to inspect Git hygiene, stale branches, merged branches, remote refs, worktrees, dirty work, merge conflicts, branch cleanup, pruning, repository cleanup commands, or when the user says "finish it" and expects validation, commit, push, pull request creation, and merge if gates allow.
+description: Audit and clean Git branches, remote-tracking refs, and worktrees safely. Use when Codex is asked to inspect Git hygiene, stale branches, merged branches, remote refs, worktrees, dirty work, merge conflicts, branch cleanup, pruning, repository cleanup commands, or when the task should be finished through validation, commit, push, pull request creation, and merge if gates allow.
 ---
 
 # Git Hygiene Orchestrator
@@ -11,9 +11,9 @@ Audit Git branches, remote-tracking refs, and worktrees before recommending or e
 
 Default to audit-first and conservative. Prefer preserving work over deleting it. Never hide uncertainty. When cleanup is safe, recommend exact commands. When cleanup is risky, explain why and require explicit approval.
 
-## Finish It Command
+## Finish Workflow Authority
 
-Treat a user instruction of `finish it` as explicit authorization to run the repository finish workflow for the current task:
+Treat the repository's blanket finish approval, or a user instruction of `finish it`, as explicit authorization to run the repository finish workflow for the current task whenever the user has not explicitly limited scope to read-only, no-commit, no-push, or local-only work:
 
 1. Inspect status and confirm the intended work scope.
 2. Run the relevant tests, lint, contract checks, or smoke checks for the changed surface.

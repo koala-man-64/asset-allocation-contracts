@@ -257,6 +257,7 @@ def main() -> int:
             f"- Optional agents: {optional_agents}",
             f"- Tracking required: {'yes' if tracking_required else 'no'}",
             f"- Finish workflow required: {'yes' if finish_required else 'no'}",
+            "- Blanket finish approval: when task-owned files change and the user does not explicitly limit scope, complete the git-hygiene-orchestrator finish workflow before closeout instead of waiting for a separate 'finish it' prompt.",
             f"- Contract routing: {contract_hint(prompt)}",
             *(
                 azure_devops_agent_authority_lines()
