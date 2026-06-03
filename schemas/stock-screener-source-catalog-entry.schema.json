@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "StockScreenerSourceColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "data_type": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Data Type",
+          "type": "string"
+        },
+        "default_visible": {
+          "default": false,
+          "title": "Default Visible",
+          "type": "boolean"
+        },
+        "filterable": {
+          "default": true,
+          "title": "Filterable",
+          "type": "boolean"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "operators": {
+          "items": {
+            "enum": [
+              "eq",
+              "neq",
+              "contains",
+              "starts_with",
+              "ends_with",
+              "gt",
+              "gte",
+              "lt",
+              "lte",
+              "is_null",
+              "is_not_null"
+            ],
+            "type": "string"
+          },
+          "title": "Operators",
+          "type": "array"
+        },
+        "sortable": {
+          "default": true,
+          "title": "Sortable",
+          "type": "boolean"
+        },
+        "value_kind": {
+          "default": "unknown",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "date",
+            "datetime",
+            "unknown"
+          ],
+          "title": "Value Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "data_type"
+      ],
+      "title": "StockScreenerSourceColumn",
+      "type": "object"
+    },
+    "StockScreenerSourceDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_column": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of Column"
+        },
+        "kind": {
+          "default": "layer",
+          "enum": [
+            "layer",
+            "table"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "schema_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Name"
+        },
+        "selected_columns": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 128,
+          "title": "Selected Columns",
+          "type": "array"
+        },
+        "source_layer": {
+          "anyOf": [
+            {
+              "enum": [
+                "gold",
+                "platinum"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Layer"
+        },
+        "symbol_column": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol Column"
+        },
+        "table_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Name"
+        }
+      },
+      "title": "StockScreenerSourceDescriptor",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capabilities": {
+      "items": {
+        "enum": [
+          "stock_identity",
+          "as_of_date",
+          "ranking",
+          "screening"
+        ],
+        "type": "string"
+      },
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "columns": {
+      "items": {
+        "$ref": "#/$defs/StockScreenerSourceColumn"
+      },
+      "title": "Columns",
+      "type": "array"
+    },
+    "default_column_names": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 128,
+      "title": "Default Column Names",
+      "type": "array"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "label": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/StockScreenerSourceDescriptor"
+    },
+    "unsupported_reason": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unsupported Reason"
+    }
+  },
+  "required": [
+    "source",
+    "label"
+  ],
+  "title": "StockScreenerSourceCatalogEntry",
+  "type": "object"
+}

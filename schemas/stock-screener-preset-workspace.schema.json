@@ -1,5 +1,93 @@
 {
   "$defs": {
+    "StockScreenerDynamicFilterClause": {
+      "additionalProperties": false,
+      "properties": {
+        "column_name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Column Name",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "contains",
+            "starts_with",
+            "ends_with",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "is_null",
+            "is_not_null"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "column_name",
+        "operator"
+      ],
+      "title": "StockScreenerDynamicFilterClause",
+      "type": "object"
+    },
+    "StockScreenerDynamicSortClause": {
+      "additionalProperties": false,
+      "properties": {
+        "column_name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Column Name",
+          "type": "string"
+        },
+        "direction": {
+          "default": "desc",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "title": "Direction",
+          "type": "string"
+        }
+      },
+      "required": [
+        "column_name"
+      ],
+      "title": "StockScreenerDynamicSortClause",
+      "type": "object"
+    },
     "StockScreenerSortClause": {
       "additionalProperties": false,
       "properties": {
@@ -42,6 +130,98 @@
         "key"
       ],
       "title": "StockScreenerSortClause",
+      "type": "object"
+    },
+    "StockScreenerSourceDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_column": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "As Of Column"
+        },
+        "kind": {
+          "default": "layer",
+          "enum": [
+            "layer",
+            "table"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "schema_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Name"
+        },
+        "selected_columns": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 128,
+          "title": "Selected Columns",
+          "type": "array"
+        },
+        "source_layer": {
+          "anyOf": [
+            {
+              "enum": [
+                "gold",
+                "platinum"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Layer"
+        },
+        "symbol_column": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol Column"
+        },
+        "table_name": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Name"
+        }
+      },
+      "title": "StockScreenerSourceDescriptor",
       "type": "object"
     }
   },
@@ -95,6 +275,38 @@
       ],
       "title": "Direction",
       "type": "string"
+    },
+    "dynamic_filters": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/StockScreenerDynamicFilterClause"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dynamic Filters"
+    },
+    "dynamic_sorts": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/StockScreenerDynamicSortClause"
+          },
+          "maxItems": 5,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dynamic Sorts"
     },
     "has_gold": {
       "anyOf": [
@@ -561,6 +773,14 @@
       "default": null,
       "title": "Sectors"
     },
+    "selected_columns": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 128,
+      "title": "Selected Columns",
+      "type": "array"
+    },
     "sort": {
       "default": "volume",
       "enum": [
@@ -602,6 +822,17 @@
       ],
       "default": null,
       "title": "Sorts"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StockScreenerSourceDescriptor"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "source_layer": {
       "default": "gold",

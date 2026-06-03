@@ -245,6 +245,30 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     ("backtest-complete-request.schema.json", backtest.BacktestCompleteRequest),
     ("backtest-fail-request.schema.json", backtest.BacktestFailRequest),
     ("backtest-reconcile-response.schema.json", backtest.BacktestReconcileResponse),
+    (
+        "stock-screener-source-descriptor.schema.json",
+        stock_screener.StockScreenerSourceDescriptor,
+    ),
+    (
+        "stock-screener-source-column.schema.json",
+        stock_screener.StockScreenerSourceColumn,
+    ),
+    (
+        "stock-screener-dynamic-filter-clause.schema.json",
+        stock_screener.StockScreenerDynamicFilterClause,
+    ),
+    (
+        "stock-screener-dynamic-sort-clause.schema.json",
+        stock_screener.StockScreenerDynamicSortClause,
+    ),
+    (
+        "stock-screener-source-catalog-entry.schema.json",
+        stock_screener.StockScreenerSourceCatalogEntry,
+    ),
+    (
+        "stock-screener-source-catalog-response.schema.json",
+        stock_screener.StockScreenerSourceCatalogResponse,
+    ),
     ("stock-screener-sort-clause.schema.json", stock_screener.StockScreenerSortClause),
     ("stock-screener-request.schema.json", stock_screener.StockScreenerRequest),
     (
@@ -754,6 +778,15 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("RunStatus", backtest.RunStatus),
     ("StockScreenerSortKey", stock_screener.StockScreenerSortKey),
     ("StockScreenerSortDirection", stock_screener.StockScreenerSortDirection),
+    ("StockScreenerSourceLayer", stock_screener.StockScreenerSourceLayer),
+    ("StockScreenerSourceKind", stock_screener.StockScreenerSourceKind),
+    ("StockScreenerSourceCapability", stock_screener.StockScreenerSourceCapability),
+    ("StockScreenerSourceValueKind", stock_screener.StockScreenerSourceValueKind),
+    (
+        "StockScreenerDynamicFilterOperator",
+        stock_screener.StockScreenerDynamicFilterOperator,
+    ),
+    ("StockScreenerDynamicValue", stock_screener.StockScreenerDynamicValue),
     ("BrokerVendor", broker_accounts.BrokerVendor),
     ("BrokerHealthTone", broker_accounts.BrokerHealthTone),
     ("BrokerConnectionState", broker_accounts.BrokerConnectionState),
@@ -878,6 +911,11 @@ FORCE_OPTIONAL_FIELDS: set[tuple[str, str]] = {
     ("RateLimitRule", "quotaUnit"),
     ("RateLimitUsageBucket", "quotaUnit"),
     ("RateLimitThrottleSample", "quotaUnit"),
+    ("StockScreenerSourceDescriptor", "selected_columns"),
+    ("StockScreenerRequest", "selected_columns"),
+    ("StockScreenerPresetWorkspace", "selected_columns"),
+    ("StockScreenerRow", "values"),
+    ("StockScreenerResponse", "sourceColumns"),
 }
 
 FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
@@ -949,9 +987,33 @@ FIELD_TYPE_OVERRIDES: dict[tuple[str, str], str] = {
     ("BacktestPolicyEvent", "scope"): "BacktestPolicyEventScope",
     ("BacktestPolicyEvent", "policy_type"): "BacktestPolicyEventType",
     ("BacktestPolicyEvent", "decision"): "BacktestPolicyDecision",
+    ("StockScreenerSourceDescriptor", "kind"): "StockScreenerSourceKind",
+    ("StockScreenerSourceDescriptor", "source_layer"): "StockScreenerSourceLayer | null",
+    ("StockScreenerSourceColumn", "value_kind"): "StockScreenerSourceValueKind",
+    (
+        "StockScreenerSourceColumn",
+        "operators",
+    ): "StockScreenerDynamicFilterOperator[]",
+    (
+        "StockScreenerDynamicFilterClause",
+        "operator",
+    ): "StockScreenerDynamicFilterOperator",
+    (
+        "StockScreenerDynamicFilterClause",
+        "value",
+    ): "StockScreenerDynamicValue",
+    ("StockScreenerDynamicSortClause", "direction"): "StockScreenerSortDirection",
+    (
+        "StockScreenerSourceCatalogEntry",
+        "capabilities",
+    ): "StockScreenerSourceCapability[]",
     ("StockScreenerSortClause", "key"): "StockScreenerSortKey",
     ("StockScreenerSortClause", "direction"): "StockScreenerSortDirection",
+    ("StockScreenerRequest", "source_layer"): "StockScreenerSourceLayer | null",
     ("StockScreenerRequest", "direction"): "StockScreenerSortDirection",
+    ("StockScreenerPresetWorkspace", "source_layer"): "StockScreenerSourceLayer",
+    ("StockScreenerPresetWorkspace", "direction"): "StockScreenerSortDirection",
+    ("StockScreenerRow", "values"): "Record<string, StockScreenerDynamicValue>",
     ("OptionContractIdentity", "right"): "OptionRight",
     ("OptionContractIdentity", "exerciseStyle"): "OptionExerciseStyle",
     ("OptionContractIdentity", "settlementStyle"): "OptionSettlementStyle",

@@ -1,0 +1,63 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "column_name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Column Name",
+      "type": "string"
+    },
+    "operator": {
+      "enum": [
+        "eq",
+        "neq",
+        "contains",
+        "starts_with",
+        "ends_with",
+        "gt",
+        "gte",
+        "lt",
+        "lte",
+        "is_null",
+        "is_not_null"
+      ],
+      "title": "Operator",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value"
+    }
+  },
+  "required": [
+    "column_name",
+    "operator"
+  ],
+  "title": "StockScreenerDynamicFilterClause",
+  "type": "object"
+}

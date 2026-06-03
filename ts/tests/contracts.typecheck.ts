@@ -82,6 +82,8 @@ import type {
   StockScreenerPresetUpsertRequest,
   StockScreenerPresetWorkspace,
   StockScreenerResponse,
+  StockScreenerSourceCatalogResponse,
+  StockScreenerSourceDescriptor,
   StockScreenerSortClause,
   ReconnectBrokerAccountRequest,
   RefreshBrokerAccountRequest,
@@ -883,10 +885,65 @@ const stockScreenerSortClause: StockScreenerSortClause = {
   direction: "desc",
 };
 
+const stockScreenerTableSource: StockScreenerSourceDescriptor = {
+  kind: "table",
+  schema_name: "gold",
+  table_name: "finance_data",
+  symbol_column: "symbol",
+  as_of_column: "date",
+  selected_columns: ["market_cap", "pe_ratio"],
+};
+
+const stockScreenerSourceCatalog: StockScreenerSourceCatalogResponse = {
+  warnings: [],
+  sources: [
+    {
+      source: {
+        kind: "layer",
+        source_layer: "gold",
+        selected_columns: [],
+      },
+      label: "Gold factors",
+      capabilities: ["stock_identity", "as_of_date", "screening"],
+      columns: [],
+      default_column_names: ["symbol", "return_5d"],
+    },
+    {
+      source: stockScreenerTableSource,
+      label: "Finance Data",
+      description: "Gold finance factors.",
+      capabilities: ["stock_identity", "as_of_date", "screening"],
+      columns: [
+        {
+          name: "market_cap",
+          label: "Market Cap",
+          data_type: "numeric",
+          value_kind: "number",
+          operators: ["eq", "gte", "lte"],
+          sortable: true,
+          filterable: true,
+          default_visible: true,
+        },
+      ],
+      default_column_names: ["market_cap"],
+    },
+  ],
+};
+
 const stockScreenerPresetWorkspace: StockScreenerPresetWorkspace = {
   q: "MS",
   as_of: "2026-05-04",
   source_layer: "platinum",
+  source: {
+    kind: "layer",
+    source_layer: "platinum",
+    selected_columns: [],
+  },
+  selected_columns: ["ranking_score", "return_5d"],
+  dynamic_filters: [
+    { column_name: "volume_pct_rank_252d", operator: "gte", value: 0.6 },
+  ],
+  dynamic_sorts: [{ column_name: "volume_pct_rank_252d", direction: "desc" }],
   sort: "ranking_score",
   direction: "desc",
   sorts: [
@@ -925,6 +982,8 @@ const stockScreenerResponse: StockScreenerResponse = {
   total: 1,
   limit: 250,
   offset: 0,
+  source: stockScreenerTableSource,
+  sourceColumns: stockScreenerSourceCatalog.sources[1].columns,
   filters: stockScreenerRequest,
   summary: {
     universeCount: 2,
@@ -963,6 +1022,11 @@ const stockScreenerResponse: StockScreenerResponse = {
         { name: "Momentum", score: 0.87 },
         { name: "Quality", score: null },
       ],
+      values: {
+        market_cap: 3100000000000,
+        pe_ratio: 34.2,
+        date: "2026-05-04",
+      },
     },
   ],
 };

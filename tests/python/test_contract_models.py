@@ -189,6 +189,8 @@ from asset_allocation_contracts.stock_screener import (
     StockScreenerRequest,
     StockScreenerResponse,
     StockScreenerRow,
+    StockScreenerSourceCatalogResponse,
+    StockScreenerSourceDescriptor,
     StockScreenerSortClause,
 )
 from asset_allocation_contracts.strategy import (
@@ -804,6 +806,110 @@ def test_stock_screener_contracts_normalize_filters_and_capture_facets() -> None
     assert response.facets.sectors[0].value == "Technology"
 
 
+def test_stock_screener_source_descriptor_migrates_legacy_layer_and_dynamic_fields() -> None:
+    request = StockScreenerRequest(
+        source_layer="gold",
+        selected_columns=["symbol", "return_5d", "symbol", "  volume  ", ""],
+        dynamic_filters=[
+            {"column_name": "volume_pct_rank_252d", "operator": "gte", "value": 0.8},
+            {"column_name": "sector", "operator": "contains", "value": "Tech"},
+        ],
+        dynamic_sorts=[{"column_name": "volume_pct_rank_252d", "direction": "desc"}],
+    )
+
+    assert request.source is not None
+    assert request.source.kind == "layer"
+    assert request.source.source_layer == "gold"
+    assert request.selected_columns == ["symbol", "return_5d", "volume"]
+    assert request.dynamic_filters is not None
+    assert request.dynamic_filters[0].column_name == "volume_pct_rank_252d"
+    assert request.dynamic_sorts is not None
+    assert request.dynamic_sorts[0].column_name == "volume_pct_rank_252d"
+
+    workspace = StockScreenerPresetWorkspace.model_validate(
+        {
+            "source_layer": "platinum",
+            "sort": "volume",
+            "direction": "desc",
+            "visible_column_ids": ["symbol"],
+        }
+    )
+    assert workspace.source is not None
+    assert workspace.source.kind == "layer"
+    assert workspace.source.source_layer == "platinum"
+
+
+def test_stock_screener_table_source_catalog_and_response_dynamic_columns() -> None:
+    source = StockScreenerSourceDescriptor(
+        kind="table",
+        schema_name="gold",
+        table_name="finance_data",
+        symbol_column="symbol",
+        as_of_column="date",
+        selected_columns=["market_cap", "pe_ratio", "market_cap"],
+    )
+    catalog = StockScreenerSourceCatalogResponse(
+        sources=[
+            {
+                "source": source,
+                "label": "Finance Data",
+                "description": "Gold finance factors.",
+                "capabilities": ["stock_identity", "as_of_date", "screening"],
+                "default_column_names": ["market_cap", "pe_ratio"],
+                "columns": [
+                    {
+                        "name": "market_cap",
+                        "label": "Market Cap",
+                        "data_type": "numeric",
+                        "value_kind": "number",
+                        "operators": ["eq", "gte", "lte"],
+                        "default_visible": True,
+                    }
+                ],
+            }
+        ]
+    )
+    response = StockScreenerResponse(
+        asOf="2026-05-04",
+        total=1,
+        limit=250,
+        offset=0,
+        source=source,
+        sourceColumns=catalog.sources[0].columns,
+        rows=[
+            {
+                "symbol": "MSFT",
+                "values": {
+                    "market_cap": 3_100_000_000_000,
+                    "pe_ratio": 34.2,
+                    "as_of": "2026-05-04",
+                },
+            }
+        ],
+    )
+
+    assert source.selected_columns == ["market_cap", "pe_ratio"]
+    assert catalog.sources[0].capabilities == ["stock_identity", "as_of_date", "screening"]
+    assert response.source is not None
+    assert response.source.table_name == "finance_data"
+    assert response.sourceColumns[0].name == "market_cap"
+    assert response.rows[0].values["market_cap"] == 3_100_000_000_000
+
+
+def test_stock_screener_source_descriptor_rejects_invalid_sources() -> None:
+    invalid_payloads = (
+        {"kind": "table", "schema_name": "gold"},
+        {"kind": "table", "schema_name": "gold", "table_name": "market_data", "source_layer": "gold"},
+        {"kind": "layer", "source_layer": "gold", "schema_name": "gold", "table_name": "market_data"},
+    )
+    for payload in invalid_payloads:
+        try:
+            StockScreenerSourceDescriptor.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(f"Expected source descriptor validation to reject {payload!r}.")
+
+
 def test_stock_screener_sort_stack_deduplicates_first_clause() -> None:
     request = StockScreenerRequest(
         sort="return_5d",
@@ -923,6 +1029,8 @@ def test_stock_screener_preset_workspace_normalizes_saved_state() -> None:
 
     assert workspace.q == "ms"
     assert workspace.source_layer == "platinum"
+    assert workspace.source is not None
+    assert workspace.source.source_layer == "platinum"
     assert workspace.strategy_name == "quality-trend"
     assert workspace.ranking_schema_name == "quality-momentum"
     assert workspace.sectors == ["Technology", "Healthcare"]

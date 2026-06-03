@@ -100,6 +100,12 @@ export type CurveState = 'contango' | 'flat' | 'inverted';
 export type RunStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type StockScreenerSortKey = 'symbol' | 'close' | 'volume' | 'return_1d' | 'return_5d' | 'vol_20d' | 'drawdown_1y' | 'atr_14d' | 'gap_atr' | 'sma_50d' | 'sma_200d' | 'trend_50_200' | 'above_sma_50' | 'bb_width_20d' | 'compression_score' | 'volume_z_20d' | 'volume_pct_rank_252d' | 'ranking_rank' | 'ranking_score';
 export type StockScreenerSortDirection = 'asc' | 'desc';
+export type StockScreenerSourceLayer = 'gold' | 'platinum';
+export type StockScreenerSourceKind = 'layer' | 'table';
+export type StockScreenerSourceCapability = 'stock_identity' | 'as_of_date' | 'ranking' | 'screening';
+export type StockScreenerSourceValueKind = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'unknown';
+export type StockScreenerDynamicFilterOperator = 'eq' | 'neq' | 'contains' | 'starts_with' | 'ends_with' | 'gt' | 'gte' | 'lt' | 'lte' | 'is_null' | 'is_not_null';
+export type StockScreenerDynamicValue = string | number | boolean | null;
 export type BrokerVendor = 'alpaca' | 'schwab' | 'etrade' | 'kalshi';
 export type BrokerHealthTone = 'healthy' | 'warning' | 'critical';
 export type BrokerConnectionState = 'connected' | 'degraded' | 'disconnected' | 'reconnect_required';
@@ -2427,6 +2433,53 @@ export interface BacktestReconcileResponse {
   failedRunIds: string[];
 }
 
+export interface StockScreenerSourceDescriptor {
+  kind: StockScreenerSourceKind;
+  source_layer?: StockScreenerSourceLayer | null;
+  schema_name?: string | null;
+  table_name?: string | null;
+  symbol_column?: string | null;
+  as_of_column?: string | null;
+  selected_columns?: string[];
+}
+
+export interface StockScreenerSourceColumn {
+  name: string;
+  label?: string | null;
+  data_type: string;
+  value_kind: StockScreenerSourceValueKind;
+  operators: StockScreenerDynamicFilterOperator[];
+  sortable: boolean;
+  filterable: boolean;
+  default_visible: boolean;
+}
+
+export interface StockScreenerDynamicFilterClause {
+  column_name: string;
+  operator: StockScreenerDynamicFilterOperator;
+  value?: StockScreenerDynamicValue;
+}
+
+export interface StockScreenerDynamicSortClause {
+  column_name: string;
+  direction: StockScreenerSortDirection;
+}
+
+export interface StockScreenerSourceCatalogEntry {
+  source: StockScreenerSourceDescriptor;
+  label: string;
+  description?: string | null;
+  capabilities: StockScreenerSourceCapability[];
+  columns: StockScreenerSourceColumn[];
+  default_column_names: string[];
+  unsupported_reason?: string | null;
+}
+
+export interface StockScreenerSourceCatalogResponse {
+  sources: StockScreenerSourceCatalogEntry[];
+  warnings: string[];
+}
+
 export interface StockScreenerSortClause {
   key: StockScreenerSortKey;
   direction: StockScreenerSortDirection;
@@ -2435,6 +2488,11 @@ export interface StockScreenerSortClause {
 export interface StockScreenerRequest {
   q?: string | null;
   as_of?: string | null;
+  source_layer?: StockScreenerSourceLayer | null;
+  source?: StockScreenerSourceDescriptor | null;
+  selected_columns?: string[];
+  dynamic_filters?: StockScreenerDynamicFilterClause[] | null;
+  dynamic_sorts?: StockScreenerDynamicSortClause[] | null;
   limit: number;
   offset: number;
   sort: StockScreenerSortKey;
@@ -2485,9 +2543,13 @@ export interface StockScreenerRequest {
 export interface StockScreenerPresetWorkspace {
   q?: string | null;
   as_of?: string | null;
-  source_layer: 'gold' | 'platinum';
+  source_layer: StockScreenerSourceLayer;
+  source?: StockScreenerSourceDescriptor | null;
+  selected_columns?: string[];
+  dynamic_filters?: StockScreenerDynamicFilterClause[] | null;
+  dynamic_sorts?: StockScreenerDynamicSortClause[] | null;
   sort: StockScreenerSortKey;
-  direction: RankingDirection;
+  direction: StockScreenerSortDirection;
   sorts?: StockScreenerSortClause[] | null;
   strategy_name?: string | null;
   ranking_schema_name?: string | null;
@@ -2588,6 +2650,7 @@ export interface StockScreenerRow {
   rankingRank?: number | null;
   rankingOverallScore?: number | null;
   rankingComponents?: StockScreenerRankingComponent[] | null;
+  values?: Record<string, StockScreenerDynamicValue>;
 }
 
 export interface StockScreenerRankingComponent {
@@ -2600,6 +2663,8 @@ export interface StockScreenerResponse {
   total: number;
   limit: number;
   offset: number;
+  source?: StockScreenerSourceDescriptor | null;
+  sourceColumns?: StockScreenerSourceColumn[];
   rows: StockScreenerRow[];
   summary?: StockScreenerSummary | null;
   facets?: StockScreenerFacets | null;

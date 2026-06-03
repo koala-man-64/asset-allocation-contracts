@@ -350,6 +350,37 @@
       "default": null,
       "title": "Trend50 200"
     },
+    "values": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "format": "date",
+            "type": "string"
+          },
+          {
+            "format": "date-time",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Values",
+      "type": "object"
+    },
     "vol20d": {
       "anyOf": [
         {

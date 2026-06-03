@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "column_name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Column Name",
+      "type": "string"
+    },
+    "direction": {
+      "default": "desc",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "title": "Direction",
+      "type": "string"
+    }
+  },
+  "required": [
+    "column_name"
+  ],
+  "title": "StockScreenerDynamicSortClause",
+  "type": "object"
+}

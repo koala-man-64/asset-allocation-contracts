@@ -29,6 +29,23 @@ StockScreenerSortKey = Literal[
 ]
 StockScreenerSortDirection = Literal["asc", "desc"]
 StockScreenerSourceLayer = Literal["gold", "platinum"]
+StockScreenerSourceKind = Literal["layer", "table"]
+StockScreenerSourceCapability = Literal["stock_identity", "as_of_date", "ranking", "screening"]
+StockScreenerSourceValueKind = Literal["string", "number", "boolean", "date", "datetime", "unknown"]
+StockScreenerDynamicFilterOperator = Literal[
+    "eq",
+    "neq",
+    "contains",
+    "starts_with",
+    "ends_with",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "is_null",
+    "is_not_null",
+]
+StockScreenerDynamicValue = str | int | float | bool | date | datetime | None
 _RANKING_SORT_KEYS = {"ranking_rank", "ranking_score"}
 _NUMERIC_RANGE_FIELDS = (
     ("min_close", "max_close"),
@@ -102,6 +119,19 @@ def _normalize_visible_column_ids(value: object) -> list[str]:
     return normalized
 
 
+def _normalize_column_ids(value: object) -> list[str]:
+    return _normalize_visible_column_ids(value)
+
+
+def _normalize_identifier(value: object) -> str | None:
+    text = _normalize_optional_text(value)
+    if text is None:
+        return None
+    if len(text) > 128:
+        raise ValueError("Identifier fields must be 128 characters or fewer.")
+    return text
+
+
 def _validate_filter_workspace_ranges_and_ranking(
     payload: object,
     *,
@@ -127,6 +157,105 @@ def _validate_filter_workspace_ranges_and_ranking(
             raise ValueError(f"{minimum_name} must be less than or equal to {maximum_name}.")
 
 
+class StockScreenerSourceDescriptor(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: StockScreenerSourceKind = "layer"
+    source_layer: StockScreenerSourceLayer | None = None
+    schema_name: str | None = Field(default=None, max_length=128)
+    table_name: str | None = Field(default=None, max_length=128)
+    symbol_column: str | None = Field(default=None, max_length=128)
+    as_of_column: str | None = Field(default=None, max_length=128)
+    selected_columns: list[str] = Field(default_factory=list, max_length=128)
+
+    _normalize_schema_name = field_validator("schema_name", mode="before")(_normalize_identifier)
+    _normalize_table_name = field_validator("table_name", mode="before")(_normalize_identifier)
+    _normalize_symbol_column = field_validator("symbol_column", mode="before")(_normalize_identifier)
+    _normalize_as_of_column = field_validator("as_of_column", mode="before")(_normalize_identifier)
+    _normalize_selected_columns = field_validator("selected_columns", mode="before")(
+        _normalize_column_ids
+    )
+
+    @model_validator(mode="after")
+    def _validate_source_shape(self) -> "StockScreenerSourceDescriptor":
+        if self.kind == "layer":
+            if self.source_layer is None:
+                self.source_layer = "gold"
+            if self.schema_name or self.table_name:
+                raise ValueError("Layer sources cannot include schema_name or table_name.")
+            return self
+
+        if self.source_layer is not None:
+            raise ValueError("Table sources cannot include source_layer.")
+        if not self.schema_name or not self.table_name:
+            raise ValueError("Table sources require schema_name and table_name.")
+        return self
+
+
+class StockScreenerSourceColumn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=128)
+    label: str | None = Field(default=None, max_length=128)
+    data_type: str = Field(min_length=1, max_length=128)
+    value_kind: StockScreenerSourceValueKind = "unknown"
+    operators: list[StockScreenerDynamicFilterOperator] = Field(default_factory=list)
+    sortable: bool = True
+    filterable: bool = True
+    default_visible: bool = False
+
+    _normalize_name = field_validator("name", mode="before")(_normalize_identifier)
+    _normalize_label = field_validator("label", mode="before")(_normalize_optional_text)
+    _normalize_data_type = field_validator("data_type", mode="before")(_normalize_optional_text)
+
+
+class StockScreenerDynamicFilterClause(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    column_name: str = Field(min_length=1, max_length=128)
+    operator: StockScreenerDynamicFilterOperator
+    value: StockScreenerDynamicValue = None
+
+    _normalize_column_name = field_validator("column_name", mode="before")(_normalize_identifier)
+
+
+class StockScreenerDynamicSortClause(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    column_name: str = Field(min_length=1, max_length=128)
+    direction: StockScreenerSortDirection = "desc"
+
+    _normalize_column_name = field_validator("column_name", mode="before")(_normalize_identifier)
+
+
+class StockScreenerSourceCatalogEntry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: StockScreenerSourceDescriptor
+    label: str = Field(min_length=1, max_length=128)
+    description: str | None = Field(default=None, max_length=512)
+    capabilities: list[StockScreenerSourceCapability] = Field(default_factory=list)
+    columns: list[StockScreenerSourceColumn] = Field(default_factory=list)
+    default_column_names: list[str] = Field(default_factory=list, max_length=128)
+    unsupported_reason: str | None = Field(default=None, max_length=512)
+
+    _normalize_label = field_validator("label", mode="before")(_normalize_optional_text)
+    _normalize_description = field_validator("description", mode="before")(_normalize_optional_text)
+    _normalize_default_column_names = field_validator("default_column_names", mode="before")(
+        _normalize_column_ids
+    )
+    _normalize_unsupported_reason = field_validator("unsupported_reason", mode="before")(
+        _normalize_optional_text
+    )
+
+
+class StockScreenerSourceCatalogResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sources: list[StockScreenerSourceCatalogEntry] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class StockScreenerSortClause(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -139,6 +268,11 @@ class StockScreenerRequest(BaseModel):
 
     q: str | None = Field(default=None, max_length=255)
     as_of: date | None = None
+    source_layer: StockScreenerSourceLayer | None = None
+    source: StockScreenerSourceDescriptor | None = None
+    selected_columns: list[str] = Field(default_factory=list, max_length=128)
+    dynamic_filters: list[StockScreenerDynamicFilterClause] | None = Field(default=None, max_length=20)
+    dynamic_sorts: list[StockScreenerDynamicSortClause] | None = Field(default=None, max_length=5)
     limit: int = Field(default=250, ge=1, le=2_000)
     offset: int = Field(default=0, ge=0)
     sort: StockScreenerSortKey = "volume"
@@ -186,6 +320,9 @@ class StockScreenerRequest(BaseModel):
     max_volume_pct_rank_252d: float | None = None
 
     _normalize_query = field_validator("q", mode="before")(_normalize_optional_text)
+    _normalize_selected_columns = field_validator("selected_columns", mode="before")(
+        _normalize_column_ids
+    )
     _normalize_strategy_name = field_validator("strategy_name", mode="before")(_normalize_optional_text)
     _normalize_ranking_schema_name = field_validator("ranking_schema_name", mode="before")(_normalize_optional_text)
     _normalize_sectors = field_validator("sectors", mode="before")(_normalize_filter_values)
@@ -211,6 +348,10 @@ class StockScreenerRequest(BaseModel):
 
     @model_validator(mode="after")
     def _validate_numeric_ranges(self) -> StockScreenerRequest:
+        if self.source is None and self.source_layer is not None:
+            self.source = StockScreenerSourceDescriptor(kind="layer", source_layer=self.source_layer)
+        if self.source is not None and self.source.kind == "layer":
+            self.source_layer = self.source.source_layer
         _validate_filter_workspace_ranges_and_ranking(
             self,
             sort=self.sort,
@@ -228,6 +369,10 @@ class StockScreenerPresetWorkspace(BaseModel):
     q: str | None = Field(default=None, max_length=255)
     as_of: date | None = None
     source_layer: StockScreenerSourceLayer = "gold"
+    source: StockScreenerSourceDescriptor | None = None
+    selected_columns: list[str] = Field(default_factory=list, max_length=128)
+    dynamic_filters: list[StockScreenerDynamicFilterClause] | None = Field(default=None, max_length=20)
+    dynamic_sorts: list[StockScreenerDynamicSortClause] | None = Field(default=None, max_length=5)
     sort: StockScreenerSortKey = "volume"
     direction: StockScreenerSortDirection = "desc"
     sorts: list[StockScreenerSortClause] | None = Field(default=None, max_length=5)
@@ -274,6 +419,9 @@ class StockScreenerPresetWorkspace(BaseModel):
     visible_column_ids: list[str] = Field(default_factory=list, max_length=64)
 
     _normalize_query = field_validator("q", mode="before")(_normalize_optional_text)
+    _normalize_selected_columns = field_validator("selected_columns", mode="before")(
+        _normalize_column_ids
+    )
     _normalize_strategy_name = field_validator("strategy_name", mode="before")(_normalize_optional_text)
     _normalize_ranking_schema_name = field_validator("ranking_schema_name", mode="before")(_normalize_optional_text)
     _normalize_sectors = field_validator("sectors", mode="before")(_normalize_filter_values)
@@ -292,6 +440,10 @@ class StockScreenerPresetWorkspace(BaseModel):
 
     @model_validator(mode="after")
     def _validate_numeric_ranges(self) -> StockScreenerPresetWorkspace:
+        if self.source is None:
+            self.source = StockScreenerSourceDescriptor(kind="layer", source_layer=self.source_layer)
+        elif self.source.kind == "layer":
+            self.source_layer = self.source.source_layer or "gold"
         _validate_filter_workspace_ranges_and_ranking(
             self,
             sort=self.sort,
@@ -382,6 +534,7 @@ class StockScreenerRow(BaseModel):
     rankingRank: int | None = None
     rankingOverallScore: float | None = None
     rankingComponents: list[StockScreenerRankingComponent] | None = None
+    values: dict[str, StockScreenerDynamicValue] = Field(default_factory=dict)
 
     @field_validator("symbol", mode="before")
     @classmethod
@@ -442,6 +595,8 @@ class StockScreenerResponse(BaseModel):
     total: int = Field(ge=0)
     limit: int = Field(ge=1, le=2_000)
     offset: int = Field(ge=0)
+    source: StockScreenerSourceDescriptor | None = None
+    sourceColumns: list[StockScreenerSourceColumn] = Field(default_factory=list)
     rows: list[StockScreenerRow] = Field(default_factory=list)
     summary: StockScreenerSummary | None = None
     facets: StockScreenerFacets | None = None

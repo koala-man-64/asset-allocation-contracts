@@ -1,0 +1,92 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "as_of_column": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "As Of Column"
+    },
+    "kind": {
+      "default": "layer",
+      "enum": [
+        "layer",
+        "table"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "schema_name": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Schema Name"
+    },
+    "selected_columns": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 128,
+      "title": "Selected Columns",
+      "type": "array"
+    },
+    "source_layer": {
+      "anyOf": [
+        {
+          "enum": [
+            "gold",
+            "platinum"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Layer"
+    },
+    "symbol_column": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Symbol Column"
+    },
+    "table_name": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Table Name"
+    }
+  },
+  "title": "StockScreenerSourceDescriptor",
+  "type": "object"
+}

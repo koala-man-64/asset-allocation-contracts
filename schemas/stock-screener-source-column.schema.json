@@ -1,0 +1,84 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "data_type": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Data Type",
+      "type": "string"
+    },
+    "default_visible": {
+      "default": false,
+      "title": "Default Visible",
+      "type": "boolean"
+    },
+    "filterable": {
+      "default": true,
+      "title": "Filterable",
+      "type": "boolean"
+    },
+    "label": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Label"
+    },
+    "name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "operators": {
+      "items": {
+        "enum": [
+          "eq",
+          "neq",
+          "contains",
+          "starts_with",
+          "ends_with",
+          "gt",
+          "gte",
+          "lt",
+          "lte",
+          "is_null",
+          "is_not_null"
+        ],
+        "type": "string"
+      },
+      "title": "Operators",
+      "type": "array"
+    },
+    "sortable": {
+      "default": true,
+      "title": "Sortable",
+      "type": "boolean"
+    },
+    "value_kind": {
+      "default": "unknown",
+      "enum": [
+        "string",
+        "number",
+        "boolean",
+        "date",
+        "datetime",
+        "unknown"
+      ],
+      "title": "Value Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "data_type"
+  ],
+  "title": "StockScreenerSourceColumn",
+  "type": "object"
+}
