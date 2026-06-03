@@ -1,0 +1,7 @@
+{
+  "enum": [
+    "market_price.stock_trade",
+    "market_price.stock_trade_status"
+  ],
+  "type": "string"
+}

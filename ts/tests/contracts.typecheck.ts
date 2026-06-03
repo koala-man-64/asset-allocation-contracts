@@ -37,6 +37,8 @@ import type {
   LiveCurrencyPriceTick,
   LiveMarketPriceStatus,
   LiveStockAggregateSnapshot,
+  LiveStockTradeSnapshot,
+  LiveStockTradeTick,
   GovernmentSignalMappingOverrideRequest,
   GovernmentSignalPortfolioExposureRequest,
   IntradayMonitorCompleteRequest,
@@ -74,6 +76,7 @@ import type {
   StockAggregateBarsResponse,
   StockAggregateInterval,
   StockAggregateStreamEventType,
+  StockTradeStreamEventType,
   StockScreenerPresetListResponse,
   StockScreenerPresetSummary,
   StockScreenerPresetUpsertRequest,
@@ -430,6 +433,45 @@ const liveStockAggregateEventType: StockAggregateStreamEventType =
   stockAggregateEventType === "market_price.stock_aggregate"
     ? "market_price.stock_status"
     : stockAggregateEventType;
+const stockTradeEventType: StockTradeStreamEventType = "market_price.stock_trade";
+const liveStockTradeTick: LiveStockTradeTick = {
+  provider: "massive",
+  assetClass: "stocks",
+  symbol: "AAPL",
+  providerSymbol: "AAPL",
+  providerChannel: "T.AAPL",
+  price: 191.72,
+  size: 100,
+  exchangeId: 12,
+  conditions: [1, 37],
+  tradeId: "trade-123",
+  tape: 3,
+  providerSequenceNumber: 875,
+  providerTimestampMs: 1779287400123,
+  tradeReportingFacilityId: 201,
+  tradeReportingFacilityTimestampMs: 1779287400124,
+  observedAt: "2026-05-20T14:30:02Z",
+  sequence: 7,
+};
+const liveStockTradeSnapshot: LiveStockTradeSnapshot = {
+  provider: "massive",
+  assetClass: "stocks",
+  symbol: "AAPL",
+  providerSymbol: "AAPL",
+  providerChannel: "T.AAPL",
+  topic: "market-prices:massive:stocks:AAPL:trades",
+  status: liveMarketPriceStatus,
+  lastTrade: liveStockTradeTick,
+  lastTradeAgeSeconds: 1.25,
+  connectedAt: "2026-05-20T14:00:00Z",
+  lastProviderMessageAt: "2026-05-20T14:30:02Z",
+  lastStatusAt: "2026-05-20T14:30:03Z",
+  lastError: null,
+};
+const liveStockTradeStatusEventType: StockTradeStreamEventType =
+  stockTradeEventType === "market_price.stock_trade"
+    ? "market_price.stock_trade_status"
+    : stockTradeEventType;
 
 const intradayRefreshDomain: IntradayRefreshDomain = "currency";
 const intradayWatchlist: IntradayWatchlistUpsertRequest = {
@@ -2065,6 +2107,16 @@ void authProvider;
 void currencyInterval;
 void currencyBar;
 void currencyBars;
+void stockAggregateInterval;
+void stockAggregateEventType;
+void stockAggregateBar;
+void stockAggregateBars;
+void liveStockAggregateSnapshot;
+void liveStockAggregateEventType;
+void stockTradeEventType;
+void liveStockTradeTick;
+void liveStockTradeSnapshot;
+void liveStockTradeStatusEventType;
 void authSession;
 void brokerSummary;
 void brokerList;

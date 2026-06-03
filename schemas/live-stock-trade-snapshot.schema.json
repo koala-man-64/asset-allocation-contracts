@@ -1,0 +1,296 @@
+{
+  "$defs": {
+    "LiveStockTradeTick": {
+      "additionalProperties": false,
+      "properties": {
+        "assetClass": {
+          "const": "stocks",
+          "default": "stocks",
+          "title": "Assetclass",
+          "type": "string"
+        },
+        "conditions": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Conditions",
+          "type": "array"
+        },
+        "exchangeId": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exchangeid"
+        },
+        "observedAt": {
+          "format": "date-time",
+          "title": "Observedat",
+          "type": "string"
+        },
+        "price": {
+          "exclusiveMinimum": 0,
+          "title": "Price",
+          "type": "number"
+        },
+        "provider": {
+          "const": "massive",
+          "default": "massive",
+          "title": "Provider",
+          "type": "string"
+        },
+        "providerChannel": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Providerchannel",
+          "type": "string"
+        },
+        "providerSequenceNumber": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Providersequencenumber"
+        },
+        "providerSymbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Providersymbol",
+          "type": "string"
+        },
+        "providerTimestampMs": {
+          "minimum": 0,
+          "title": "Providertimestampms",
+          "type": "integer"
+        },
+        "sequence": {
+          "minimum": 1,
+          "title": "Sequence",
+          "type": "integer"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Size"
+        },
+        "symbol": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Symbol",
+          "type": "string"
+        },
+        "tape": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tape"
+        },
+        "tradeId": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradeid"
+        },
+        "tradeReportingFacilityId": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradereportingfacilityid"
+        },
+        "tradeReportingFacilityTimestampMs": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradereportingfacilitytimestampms"
+        }
+      },
+      "required": [
+        "symbol",
+        "providerSymbol",
+        "providerChannel",
+        "price",
+        "providerTimestampMs",
+        "observedAt",
+        "sequence"
+      ],
+      "title": "LiveStockTradeTick",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assetClass": {
+      "const": "stocks",
+      "default": "stocks",
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "connectedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Connectedat"
+    },
+    "lastError": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasterror"
+    },
+    "lastProviderMessageAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lastprovidermessageat"
+    },
+    "lastStatusAt": {
+      "format": "date-time",
+      "title": "Laststatusat",
+      "type": "string"
+    },
+    "lastTrade": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LiveStockTradeTick"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "lastTradeAgeSeconds": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lasttradeageseconds"
+    },
+    "provider": {
+      "const": "massive",
+      "default": "massive",
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerChannel": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Providerchannel",
+      "type": "string"
+    },
+    "providerSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Providersymbol",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "connecting",
+        "healthy",
+        "degraded",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "topic": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Topic",
+      "type": "string"
+    }
+  },
+  "required": [
+    "symbol",
+    "providerSymbol",
+    "providerChannel",
+    "topic",
+    "status",
+    "lastStatusAt"
+  ],
+  "title": "LiveStockTradeSnapshot",
+  "type": "object"
+}

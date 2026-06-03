@@ -15,6 +15,10 @@ StockAggregateStreamEventType = Literal[
     "market_price.stock_aggregate",
     "market_price.stock_status",
 ]
+StockTradeStreamEventType = Literal[
+    "market_price.stock_trade",
+    "market_price.stock_trade_status",
+]
 IntradayRefreshDomain = Literal["market", "currency"]
 IntradayMarketSession = Literal["us_equities_regular"]
 IntradayMonitorRunStatus = Literal["queued", "claimed", "completed", "failed"]
@@ -50,6 +54,8 @@ def _strip_provider_stock_channel(symbol: str) -> str:
     if symbol.startswith("AM."):
         return symbol[3:]
     if symbol.startswith("A."):
+        return symbol[2:]
+    if symbol.startswith("T."):
         return symbol[2:]
     return symbol
 
@@ -507,6 +513,142 @@ class LiveStockAggregateSnapshot(BaseModel):
                 raise ValueError("lastBar symbol must match snapshot symbol.")
             if self.lastBar.interval != self.interval:
                 raise ValueError("lastBar interval must match snapshot interval.")
+        return self
+
+
+class LiveStockTradeTick(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["stocks"] = "stocks"
+    symbol: str = Field(min_length=1, max_length=32)
+    providerSymbol: str = Field(min_length=1, max_length=32)
+    providerChannel: str = Field(min_length=1, max_length=80)
+    price: float = Field(gt=0)
+    size: float | None = Field(default=None, ge=0)
+    exchangeId: int | None = Field(default=None, ge=0)
+    conditions: list[int] = Field(default_factory=list)
+    tradeId: str | None = Field(default=None, min_length=1, max_length=128)
+    tape: int | None = Field(default=None, ge=0)
+    providerSequenceNumber: int | None = Field(default=None, ge=0)
+    providerTimestampMs: int = Field(ge=0)
+    tradeReportingFacilityId: int | None = Field(default=None, ge=0)
+    tradeReportingFacilityTimestampMs: int | None = Field(default=None, ge=0)
+    observedAt: datetime
+    sequence: int = Field(ge=1)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_channel = field_validator("providerChannel", mode="before")(
+        _normalize_provider_channel
+    )
+    _normalize_observed_at = field_validator("observedAt", mode="after")(
+        _normalize_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_provider_fields(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+        data = dict(raw)
+        symbol = data.get("symbol")
+        data["providerSymbol"] = data.get("providerSymbol") or symbol
+        if data.get("providerChannel") is None and symbol is not None:
+            data["providerChannel"] = f"T.{_normalize_stock_symbol(symbol)}"
+        return data
+
+    @field_validator("conditions", mode="before")
+    @classmethod
+    def _normalize_conditions(cls, value: object) -> list[int]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            raise TypeError("conditions must be a list.")
+        normalized: list[int] = []
+        for condition in value:
+            normalized.append(int(condition))
+        return normalized
+
+    @model_validator(mode="after")
+    def _validate_tick(self) -> "LiveStockTradeTick":
+        if self.providerSymbol != self.symbol:
+            raise ValueError("providerSymbol must match the canonical stock symbol.")
+        if not self.providerChannel.startswith("T."):
+            raise ValueError("providerChannel must use the Massive T trade channel.")
+        channel_symbol = self.providerChannel.removeprefix("T.")
+        if _normalize_stock_symbol(channel_symbol) != self.symbol:
+            raise ValueError("providerChannel must resolve to the canonical stock symbol.")
+        return self
+
+
+class LiveStockTradeSnapshot(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["massive"] = "massive"
+    assetClass: Literal["stocks"] = "stocks"
+    symbol: str = Field(min_length=1, max_length=32)
+    providerSymbol: str = Field(min_length=1, max_length=32)
+    providerChannel: str = Field(min_length=1, max_length=80)
+    topic: str = Field(min_length=1, max_length=200)
+    status: LiveMarketPriceStatus
+    lastTrade: LiveStockTradeTick | None = None
+    lastTradeAgeSeconds: float | None = Field(default=None, ge=0)
+    connectedAt: datetime | None = None
+    lastProviderMessageAt: datetime | None = None
+    lastStatusAt: datetime
+    lastError: str | None = Field(default=None, max_length=2_000)
+
+    _normalize_symbol_field = field_validator("symbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_symbol = field_validator("providerSymbol", mode="before")(
+        _normalize_stock_symbol
+    )
+    _normalize_provider_channel = field_validator("providerChannel", mode="before")(
+        _normalize_provider_channel
+    )
+    _normalize_connected_at = field_validator("connectedAt", mode="after")(
+        _normalize_optional_utc_datetime
+    )
+    _normalize_last_provider_message_at = field_validator(
+        "lastProviderMessageAt",
+        mode="after",
+    )(_normalize_optional_utc_datetime)
+    _normalize_last_status_at = field_validator("lastStatusAt", mode="after")(
+        _normalize_utc_datetime
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_provider_fields(cls, raw: object) -> object:
+        if not isinstance(raw, dict):
+            return raw
+        data = dict(raw)
+        symbol = data.get("symbol")
+        data["providerSymbol"] = data.get("providerSymbol") or symbol
+        if data.get("providerChannel") is None and symbol is not None:
+            data["providerChannel"] = f"T.{_normalize_stock_symbol(symbol)}"
+        return data
+
+    @model_validator(mode="after")
+    def _validate_snapshot(self) -> "LiveStockTradeSnapshot":
+        if self.providerSymbol != self.symbol:
+            raise ValueError("providerSymbol must match the canonical stock symbol.")
+        if not self.providerChannel.startswith("T."):
+            raise ValueError("providerChannel must use the Massive T trade channel.")
+        channel_symbol = self.providerChannel.removeprefix("T.")
+        if _normalize_stock_symbol(channel_symbol) != self.symbol:
+            raise ValueError("providerChannel must resolve to the canonical stock symbol.")
+        expected_topic = f"market-prices:massive:stocks:{self.symbol}:trades"
+        if self.topic != expected_topic:
+            raise ValueError("topic must match the stock trade symbol.")
+        if self.lastTrade is not None and self.lastTrade.symbol != self.symbol:
+            raise ValueError("lastTrade symbol must match snapshot symbol.")
         return self
 
 

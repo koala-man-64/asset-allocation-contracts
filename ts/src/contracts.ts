@@ -39,6 +39,7 @@ export type CurrencyIntradayBarInterval = '1m' | '5m' | '15m';
 export type StockAggregateInterval = '1s' | '1m' | '5m' | '15m' | 'daily' | 'weekly' | 'monthly';
 export type LiveMarketPriceStatus = 'connecting' | 'healthy' | 'degraded' | 'unavailable';
 export type StockAggregateStreamEventType = 'market_price.stock_aggregate' | 'market_price.stock_status';
+export type StockTradeStreamEventType = 'market_price.stock_trade' | 'market_price.stock_trade_status';
 export type PublicationReconcileStatus = 'pending' | 'processed' | 'error';
 export type ExitRuleType = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
 export type ExitRuleVisualKey = 'stop_loss_fixed' | 'take_profit_fixed' | 'trailing_stop_pct' | 'trailing_stop_atr' | 'time_stop' | 'rank_decay';
@@ -4742,6 +4743,42 @@ export interface StockAggregateBarsResponse {
   to: string;
   rowCount: number;
   rows: StockAggregateBar[];
+}
+
+export interface LiveStockTradeTick {
+  provider: 'massive';
+  assetClass: 'stocks';
+  symbol: string;
+  providerSymbol: string;
+  providerChannel: string;
+  price: number;
+  size?: number | null;
+  exchangeId?: number | null;
+  conditions: number[];
+  tradeId?: string | null;
+  tape?: number | null;
+  providerSequenceNumber?: number | null;
+  providerTimestampMs: number;
+  tradeReportingFacilityId?: number | null;
+  tradeReportingFacilityTimestampMs?: number | null;
+  observedAt: string;
+  sequence: number;
+}
+
+export interface LiveStockTradeSnapshot {
+  provider: 'massive';
+  assetClass: 'stocks';
+  symbol: string;
+  providerSymbol: string;
+  providerChannel: string;
+  topic: string;
+  status: LiveMarketPriceStatus;
+  lastTrade?: LiveStockTradeTick | null;
+  lastTradeAgeSeconds?: number | null;
+  connectedAt?: string | null;
+  lastProviderMessageAt?: string | null;
+  lastStatusAt: string;
+  lastError?: string | null;
 }
 
 export interface LiveCurrencyPriceTick {

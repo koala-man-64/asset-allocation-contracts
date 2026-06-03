@@ -1,0 +1,165 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assetClass": {
+      "const": "stocks",
+      "default": "stocks",
+      "title": "Assetclass",
+      "type": "string"
+    },
+    "conditions": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Conditions",
+      "type": "array"
+    },
+    "exchangeId": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exchangeid"
+    },
+    "observedAt": {
+      "format": "date-time",
+      "title": "Observedat",
+      "type": "string"
+    },
+    "price": {
+      "exclusiveMinimum": 0,
+      "title": "Price",
+      "type": "number"
+    },
+    "provider": {
+      "const": "massive",
+      "default": "massive",
+      "title": "Provider",
+      "type": "string"
+    },
+    "providerChannel": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Providerchannel",
+      "type": "string"
+    },
+    "providerSequenceNumber": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Providersequencenumber"
+    },
+    "providerSymbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Providersymbol",
+      "type": "string"
+    },
+    "providerTimestampMs": {
+      "minimum": 0,
+      "title": "Providertimestampms",
+      "type": "integer"
+    },
+    "sequence": {
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "size": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Size"
+    },
+    "symbol": {
+      "maxLength": 32,
+      "minLength": 1,
+      "title": "Symbol",
+      "type": "string"
+    },
+    "tape": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tape"
+    },
+    "tradeId": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tradeid"
+    },
+    "tradeReportingFacilityId": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tradereportingfacilityid"
+    },
+    "tradeReportingFacilityTimestampMs": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tradereportingfacilitytimestampms"
+    }
+  },
+  "required": [
+    "symbol",
+    "providerSymbol",
+    "providerChannel",
+    "price",
+    "providerTimestampMs",
+    "observedAt",
+    "sequence"
+  ],
+  "title": "LiveStockTradeTick",
+  "type": "object"
+}

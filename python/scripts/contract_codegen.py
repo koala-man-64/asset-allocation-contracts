@@ -554,6 +554,11 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
         "stock-aggregate-bars-response.schema.json",
         intraday.StockAggregateBarsResponse,
     ),
+    ("live-stock-trade-tick.schema.json", intraday.LiveStockTradeTick),
+    (
+        "live-stock-trade-snapshot.schema.json",
+        intraday.LiveStockTradeSnapshot,
+    ),
     ("live-currency-price-tick.schema.json", intraday.LiveCurrencyPriceTick),
     (
         "live-currency-price-snapshot.schema.json",
@@ -566,6 +571,10 @@ SCHEMA_EXPORTS: list[tuple[str, Any]] = [
     (
         "stock-aggregate-stream-event-type.schema.json",
         TypeAdapter(intraday.StockAggregateStreamEventType),
+    ),
+    (
+        "stock-trade-stream-event-type.schema.json",
+        TypeAdapter(intraday.StockTradeStreamEventType),
     ),
     ("intraday-watchlist-summary.schema.json", intraday.IntradayWatchlistSummary),
     ("intraday-watchlist-detail.schema.json", intraday.IntradayWatchlistDetail),
@@ -681,6 +690,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("StockAggregateInterval", intraday.StockAggregateInterval),
     ("LiveMarketPriceStatus", intraday.LiveMarketPriceStatus),
     ("StockAggregateStreamEventType", intraday.StockAggregateStreamEventType),
+    ("StockTradeStreamEventType", intraday.StockTradeStreamEventType),
     ("PublicationReconcileStatus", strategy_publication.PublicationReconcileStatus),
     ("ExitRuleType", strategy.ExitRuleType),
     ("ExitRuleVisualKey", strategy.ExitRuleVisualKey),

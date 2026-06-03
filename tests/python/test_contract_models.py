@@ -95,6 +95,8 @@ from asset_allocation_contracts.intraday import (
     LiveCurrencyPriceTick,
     LiveMarketPriceStatus,
     LiveStockAggregateSnapshot,
+    LiveStockTradeSnapshot,
+    LiveStockTradeTick,
     IntradayMonitorClaimResponse,
     IntradayMonitorCompleteRequest,
     IntradayMonitorEvent,
@@ -114,6 +116,7 @@ from asset_allocation_contracts.intraday import (
     StockAggregateBarsResponse,
     StockAggregateInterval,
     StockAggregateStreamEventType,
+    StockTradeStreamEventType,
 )
 from asset_allocation_contracts.job_metadata import RuntimeJobMetadata
 from asset_allocation_contracts.notifications import (
@@ -3664,6 +3667,157 @@ def test_stock_aggregate_artifacts_include_schema_and_typescript_exports() -> No
     assert "export interface StockAggregateBarsResponse" in generated_types
     assert "export interface LiveStockAggregateSnapshot" in generated_types
     assert "lastBar?: StockAggregateBar | null;" in generated_types
+
+
+def test_live_stock_trade_contract_normalizes_massive_trade_shape() -> None:
+    event_adapter = TypeAdapter(StockTradeStreamEventType)
+
+    assert event_adapter.validate_python("market_price.stock_trade") == (
+        "market_price.stock_trade"
+    )
+    assert event_adapter.validate_python("market_price.stock_trade_status") == (
+        "market_price.stock_trade_status"
+    )
+
+    tick = LiveStockTradeTick(
+        symbol=" t.aapl ",
+        providerChannel="t.aapl",
+        price=191.72,
+        size=100,
+        exchangeId=12,
+        conditions=["1", 37],
+        tradeId="trade-123",
+        tape=3,
+        providerSequenceNumber=875,
+        providerTimestampMs=1779287400123,
+        tradeReportingFacilityId=201,
+        tradeReportingFacilityTimestampMs=1779287400124,
+        observedAt="2026-05-20T14:30:02",
+        sequence=7,
+    )
+
+    assert tick.symbol == "AAPL"
+    assert tick.providerSymbol == "AAPL"
+    assert tick.providerChannel == "T.AAPL"
+    assert tick.conditions == [1, 37]
+    assert tick.observedAt.isoformat() == "2026-05-20T14:30:02+00:00"
+
+    snapshot = LiveStockTradeSnapshot(
+        symbol="aapl",
+        providerChannel="T.AAPL",
+        topic="market-prices:massive:stocks:AAPL:trades",
+        status="healthy",
+        lastTrade=tick,
+        lastTradeAgeSeconds=1.5,
+        connectedAt="2026-05-20T14:00:00Z",
+        lastProviderMessageAt="2026-05-20T14:30:02Z",
+        lastStatusAt="2026-05-20T14:30:03Z",
+        lastError=None,
+    )
+
+    assert snapshot.symbol == "AAPL"
+    assert snapshot.providerSymbol == "AAPL"
+    assert snapshot.lastTrade == tick
+    assert snapshot.status == "healthy"
+
+
+def test_live_stock_trade_contract_rejects_cross_symbol_payloads() -> None:
+    matching_tick = LiveStockTradeTick(
+        symbol="AAPL",
+        providerChannel="T.AAPL",
+        price=191.72,
+        providerTimestampMs=1779287400123,
+        observedAt="2026-05-20T14:30:02Z",
+        sequence=1,
+    )
+
+    invalid_payloads = (
+        {
+            "symbol": "AAPL",
+            "providerSymbol": "MSFT",
+            "providerChannel": "T.AAPL",
+            "price": 191.72,
+            "providerTimestampMs": 1779287400123,
+            "observedAt": "2026-05-20T14:30:02Z",
+            "sequence": 1,
+        },
+        {
+            "symbol": "AAPL",
+            "providerChannel": "Q.AAPL",
+            "price": 191.72,
+            "providerTimestampMs": 1779287400123,
+            "observedAt": "2026-05-20T14:30:02Z",
+            "sequence": 1,
+        },
+        {
+            "symbol": "AAPL",
+            "providerChannel": "T.AAPL",
+            "price": 0,
+            "providerTimestampMs": 1779287400123,
+            "observedAt": "2026-05-20T14:30:02Z",
+            "sequence": 1,
+        },
+    )
+    for payload in invalid_payloads:
+        try:
+            LiveStockTradeTick.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected live stock trade tick validation to reject {payload!r}."
+        )
+
+    invalid_snapshots = (
+        {
+            "symbol": "AAPL",
+            "providerChannel": "T.AAPL",
+            "topic": "market-prices:massive:stocks:MSFT:trades",
+            "status": "healthy",
+            "lastStatusAt": "2026-05-20T14:30:03Z",
+        },
+        {
+            "symbol": "MSFT",
+            "providerChannel": "T.MSFT",
+            "topic": "market-prices:massive:stocks:MSFT:trades",
+            "status": "healthy",
+            "lastTrade": matching_tick,
+            "lastStatusAt": "2026-05-20T14:30:03Z",
+        },
+    )
+    for payload in invalid_snapshots:
+        try:
+            LiveStockTradeSnapshot.model_validate(payload)
+        except Exception:
+            continue
+        raise AssertionError(
+            f"Expected live stock trade snapshot validation to reject {payload!r}."
+        )
+
+
+def test_live_stock_trade_artifacts_include_schema_and_typescript_exports() -> None:
+    root = Path(__file__).resolve().parents[2]
+    tick_schema_path = root / "schemas" / "live-stock-trade-tick.schema.json"
+    snapshot_schema_path = root / "schemas" / "live-stock-trade-snapshot.schema.json"
+    event_schema_path = root / "schemas" / "stock-trade-stream-event-type.schema.json"
+    type_path = root / "ts" / "src" / "contracts.ts"
+
+    tick_schema = json.loads(tick_schema_path.read_text(encoding="utf-8"))
+    snapshot_schema = json.loads(snapshot_schema_path.read_text(encoding="utf-8"))
+    event_schema = json.loads(event_schema_path.read_text(encoding="utf-8"))
+
+    assert tick_schema["properties"]["providerChannel"]["maxLength"] == 80
+    assert tick_schema["properties"]["price"]["exclusiveMinimum"] == 0
+    assert "LiveStockTradeTick" in snapshot_schema["$defs"]
+    assert event_schema["enum"] == [
+        "market_price.stock_trade",
+        "market_price.stock_trade_status",
+    ]
+
+    generated_types = type_path.read_text(encoding="utf-8")
+    assert "export type StockTradeStreamEventType" in generated_types
+    assert "export interface LiveStockTradeTick" in generated_types
+    assert "export interface LiveStockTradeSnapshot" in generated_types
+    assert "lastTrade?: LiveStockTradeTick | null;" in generated_types
 
 
 def test_live_currency_price_contract_normalizes_massive_trade_shape() -> None:
