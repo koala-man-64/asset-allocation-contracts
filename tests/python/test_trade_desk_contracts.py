@@ -467,6 +467,8 @@ def test_trade_order_preview_and_place_support_policy_confirmation_payloads() ->
         },
         generatedAt=now,
         expiresAt=now + timedelta(minutes=5),
+        estimatedPriceSource="massive_live",
+        estimatedPriceObservedAt=now,
         projectedPolicy={
             "maxOpenPositions": 12,
             "maxSinglePositionExposure": {"mode": "pct_of_allocatable_capital", "value": 8.0},
@@ -496,6 +498,8 @@ def test_trade_order_preview_and_place_support_policy_confirmation_payloads() ->
     )
 
     assert preview.confirmationRequired is True
+    assert preview.estimatedPriceSource == "massive_live"
+    assert preview.estimatedPriceObservedAt == now
     assert preview.projectedPolicy is not None
     assert preview.projectedPolicy.requireOrderConfirmation is True
     assert place.policyVersion == 7

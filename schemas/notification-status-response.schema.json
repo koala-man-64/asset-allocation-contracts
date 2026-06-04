@@ -354,6 +354,48 @@
           "default": null,
           "title": "Estimatedfees"
         },
+        "estimatedPrice": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedprice"
+        },
+        "estimatedPriceObservedAt": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedpriceobservedat"
+        },
+        "estimatedPriceSource": {
+          "anyOf": [
+            {
+              "enum": [
+                "broker_live",
+                "massive_live",
+                "gold_market_postgres"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimatedpricesource"
+        },
         "policyVersion": {
           "anyOf": [
             {

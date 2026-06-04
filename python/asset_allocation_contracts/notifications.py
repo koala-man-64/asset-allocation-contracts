@@ -110,6 +110,9 @@ class TradeApprovalReviewContext(BaseModel):
     strategyRef: StrategyReferenceInput | None = None
     policyVersion: int | None = Field(default=None, ge=1)
     estimatedCost: float | None = None
+    estimatedPrice: float | None = None
+    estimatedPriceSource: Literal["broker_live", "massive_live", "gold_market_postgres"] | None = None
+    estimatedPriceObservedAt: datetime | None = None
     estimatedFees: float | None = None
     cashAfter: float | None = None
     buyingPowerAfter: float | None = None

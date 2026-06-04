@@ -827,6 +827,8 @@ class TradeOrderPreviewResponse(BaseModel):
     generatedAt: datetime
     expiresAt: datetime
     estimatedCost: float | None = None
+    estimatedPriceSource: Literal["broker_live", "massive_live", "gold_market_postgres"] | None = None
+    estimatedPriceObservedAt: datetime | None = None
     estimatedFees: float = Field(default=0.0, ge=0)
     cashAfter: float | None = None
     buyingPowerAfter: float | None = None

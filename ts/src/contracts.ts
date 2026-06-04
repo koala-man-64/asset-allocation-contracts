@@ -3428,6 +3428,8 @@ export interface TradeOrderPreviewResponse {
   generatedAt: string;
   expiresAt: string;
   estimatedCost?: number | null;
+  estimatedPriceSource?: 'broker_live' | 'massive_live' | 'gold_market_postgres' | null;
+  estimatedPriceObservedAt?: string | null;
   estimatedFees: number;
   cashAfter?: number | null;
   buyingPowerAfter?: number | null;
@@ -3759,6 +3761,9 @@ export interface TradeApprovalReviewContext {
   strategyRef?: StrategyReferenceInput | null;
   policyVersion?: number | null;
   estimatedCost?: number | null;
+  estimatedPrice?: number | null;
+  estimatedPriceSource?: 'broker_live' | 'massive_live' | 'gold_market_postgres' | null;
+  estimatedPriceObservedAt?: string | null;
   estimatedFees?: number | null;
   cashAfter?: number | null;
   buyingPowerAfter?: number | null;

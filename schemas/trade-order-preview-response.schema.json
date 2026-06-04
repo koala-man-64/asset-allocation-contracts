@@ -1303,6 +1303,36 @@
       "title": "Estimatedfees",
       "type": "number"
     },
+    "estimatedPriceObservedAt": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimatedpriceobservedat"
+    },
+    "estimatedPriceSource": {
+      "anyOf": [
+        {
+          "enum": [
+            "broker_live",
+            "massive_live",
+            "gold_market_postgres"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Estimatedpricesource"
+    },
     "expiresAt": {
       "format": "date-time",
       "title": "Expiresat",

@@ -9,6 +9,7 @@ from asset_allocation_contracts.notifications import (
     NotificationDecisionRequest,
     NotificationRecipient,
     NotificationStatusResponse,
+    TradeApprovalReviewContext,
     TradeApprovalPayload,
 )
 from asset_allocation_contracts.trade_desk import TradeOrderPreviewRequest
@@ -54,6 +55,7 @@ def test_message_notification_contract_requires_matching_recipient_addresses() -
 
 
 def test_trade_approval_payload_reuses_trade_order_intent_contract() -> None:
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     request = CreateNotificationRequest(
         sourceRepo="asset-allocation-control-plane",
         clientRequestId="approval-1",
@@ -74,12 +76,24 @@ def test_trade_approval_payload_reuses_trade_order_intent_contract() -> None:
             orderHash="hash-1",
             placeIdempotencyKey="place-idem-000001",
             order=_trade_order(),
+            reviewContext=TradeApprovalReviewContext(
+                source="manual_preview",
+                estimatedPrice=101.25,
+                estimatedPriceSource="gold_market_postgres",
+                estimatedPriceObservedAt=now,
+                confirmationRequired=False,
+                releaseMode="decision_only",
+            ),
         ),
     )
 
     assert request.tradeApproval is not None
     assert request.tradeApproval.order.symbol == "MSFT"
     assert request.tradeApproval.order.accountId == "acct-paper"
+    assert request.tradeApproval.reviewContext is not None
+    assert request.tradeApproval.reviewContext.estimatedPrice == 101.25
+    assert request.tradeApproval.reviewContext.estimatedPriceSource == "gold_market_postgres"
+    assert request.tradeApproval.reviewContext.estimatedPriceObservedAt == now
 
     with pytest.raises(ValueError, match="tradeApproval is required"):
         CreateNotificationRequest(
