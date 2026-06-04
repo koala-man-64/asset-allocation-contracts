@@ -347,6 +347,8 @@ def test_trade_desk_contracts_represent_option_capabilities_and_block_invalid_op
         quantity=1,
         limitPrice=5.25,
         optionStrategyId="long_call",
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
     order = TradeOrder(
         orderId="order-1",
@@ -384,6 +386,8 @@ def test_trade_desk_contracts_represent_option_capabilities_and_block_invalid_op
             "quantity": 1,
             "notional": None,
             "limitPrice": 5.25,
+            "exitPolicyName": "desk-exit",
+            "exitPolicyVersion": 2,
             **overrides,
         }
         try:

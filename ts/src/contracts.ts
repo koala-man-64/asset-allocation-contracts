@@ -3296,6 +3296,8 @@ export interface TradeOrder {
   providerInstrumentId?: string | null;
   instrumentName?: string | null;
   outcomeSide?: 'yes' | 'no' | 'unknown' | null;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
   rawProviderStatus?: string | null;
   quantity?: number | null;
   notional?: number | null;
@@ -3417,6 +3419,8 @@ export interface TradeOrderPreviewRequest {
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
   strategyRef?: StrategyReferenceInput | null;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
 }
 
 export interface TradeOrderPreviewResponse {
@@ -3466,6 +3470,8 @@ export interface TradeOrderPlaceRequest {
   allowExtendedHours: boolean;
   source: 'manual' | 'rebalance_preview' | 'system';
   strategyRef?: StrategyReferenceInput | null;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
   idempotencyKey: string;
   previewId: string;
   confirmedAt: string;
@@ -3746,6 +3752,8 @@ export interface TradeApprovalPayload {
   previewId: string;
   orderHash: string;
   placeIdempotencyKey: string;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
   order: TradeOrderPreviewRequest;
   reviewContext?: TradeApprovalReviewContext | null;
 }
@@ -3783,6 +3791,8 @@ export interface TradeApprovalCreateRequest {
   proposalTradeIndexes: number[];
   targetUrl?: string | null;
   reason: string;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
   releaseMode?: 'decision_only' | 'paper_sandbox_bearer' | 'live_bearer' | null;
   expiresAt?: string | null;
 }
@@ -3840,6 +3850,8 @@ export interface TradeApprovalDisplay {
   notional?: number | null;
   limitPrice?: number | null;
   stopPrice?: number | null;
+  exitPolicyName?: string | null;
+  exitPolicyVersion?: number | null;
   reviewContext?: TradeApprovalReviewContext | null;
 }
 

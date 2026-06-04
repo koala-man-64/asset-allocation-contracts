@@ -58,6 +58,20 @@ def _normalize_url(value: object, field_name: str) -> str | None:
     return normalized
 
 
+def _validate_named_revision_pair(
+    name_field: str,
+    version_field: str,
+    name: str | None,
+    version: int | None,
+) -> None:
+    if name is None and version is None:
+        return
+    if name is None:
+        raise ValueError(f"{name_field} is required when {version_field} is provided.")
+    if version is None:
+        raise ValueError(f"{version_field} is required when {name_field} is provided.")
+
+
 class NotificationRecipient(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -151,18 +165,47 @@ class TradeApprovalPayload(BaseModel):
     previewId: str = Field(..., min_length=1, max_length=128)
     orderHash: str = Field(..., min_length=1, max_length=128)
     placeIdempotencyKey: str = Field(..., min_length=16, max_length=160)
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
     order: TradeOrderPreviewRequest
     reviewContext: TradeApprovalReviewContext | None = None
 
-    @field_validator("accountId", "previewId", "orderHash", "placeIdempotencyKey", mode="before")
+    @field_validator(
+        "accountId",
+        "previewId",
+        "orderHash",
+        "placeIdempotencyKey",
+        mode="before",
+    )
     @classmethod
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
+
+    @field_validator("exitPolicyName", mode="before")
+    @classmethod
+    def normalize_optional_policy_name(cls, value: object) -> str | None:
+        return _normalize_optional_text(value)
 
     @model_validator(mode="after")
     def validate_order_alignment(self) -> "TradeApprovalPayload":
         if self.accountId != self.order.accountId:
             raise ValueError("accountId must match order.accountId.")
+        _validate_named_revision_pair(
+            "exitPolicyName",
+            "exitPolicyVersion",
+            self.exitPolicyName,
+            self.exitPolicyVersion,
+        )
+        if self.exitPolicyName is None and self.exitPolicyVersion is None:
+            self.exitPolicyName = self.order.exitPolicyName
+            self.exitPolicyVersion = self.order.exitPolicyVersion
+        if (
+            self.exitPolicyName != self.order.exitPolicyName
+            or self.exitPolicyVersion != self.order.exitPolicyVersion
+        ):
+            raise ValueError(
+                "exitPolicyName and exitPolicyVersion must match order exit policy."
+            )
         return self
 
 
@@ -177,6 +220,8 @@ class TradeApprovalCreateRequest(BaseModel):
     proposalTradeIndexes: list[int] = Field(default_factory=list)
     targetUrl: str | None = Field(default=None, min_length=1, max_length=2048)
     reason: str = Field(default="", max_length=1000)
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
     releaseMode: TradeApprovalReleaseMode | None = None
     expiresAt: datetime | None = None
 
@@ -185,7 +230,7 @@ class TradeApprovalCreateRequest(BaseModel):
     def normalize_required_text_fields(cls, value: object, info) -> str:
         return _normalize_required_text(value, info.field_name)
 
-    @field_validator("previewId", "proposalId", mode="before")
+    @field_validator("previewId", "proposalId", "exitPolicyName", mode="before")
     @classmethod
     def normalize_optional_text_fields(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
@@ -211,6 +256,16 @@ class TradeApprovalCreateRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_source_shape(self) -> "TradeApprovalCreateRequest":
+        _validate_named_revision_pair(
+            "exitPolicyName",
+            "exitPolicyVersion",
+            self.exitPolicyName,
+            self.exitPolicyVersion,
+        )
+        if self.exitPolicyName is None or self.exitPolicyVersion is None:
+            raise ValueError(
+                "exitPolicyName and exitPolicyVersion are required for trade approval requests."
+            )
         if self.source == "manual_preview":
             if not self.previewId:
                 raise ValueError("previewId is required for manual_preview approval requests.")
@@ -241,12 +296,33 @@ class TradeApprovalDisplay(BaseModel):
     notional: float | None = Field(default=None, gt=0)
     limitPrice: float | None = Field(default=None, gt=0)
     stopPrice: float | None = Field(default=None, gt=0)
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
     reviewContext: TradeApprovalReviewContext | None = None
 
-    @field_validator("accountId", "previewId", "orderHash", "symbol", mode="before")
+    @field_validator(
+        "accountId",
+        "previewId",
+        "orderHash",
+        "symbol",
+        "exitPolicyName",
+        mode="before",
+    )
     @classmethod
     def normalize_required_text_fields(cls, value: object, info) -> str:
+        if info.field_name == "exitPolicyName":
+            return _normalize_optional_text(value)
         return _normalize_required_text(value, info.field_name)
+
+    @model_validator(mode="after")
+    def validate_exit_policy_pin(self) -> "TradeApprovalDisplay":
+        _validate_named_revision_pair(
+            "exitPolicyName",
+            "exitPolicyVersion",
+            self.exitPolicyName,
+            self.exitPolicyVersion,
+        )
+        return self
 
 
 class TradeApprovalCreateResponse(BaseModel):

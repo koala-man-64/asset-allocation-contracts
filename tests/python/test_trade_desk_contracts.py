@@ -295,32 +295,45 @@ def test_trade_order_preview_request_validates_manual_intent() -> None:
         orderType="limit",
         quantity=10,
         limitPrice=100.50,
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
 
     assert request.symbol == "MSFT"
     assert request.quantity == 10
     assert request.notional is None
+    assert request.exitPolicyName == "desk-exit"
+    assert request.exitPolicyVersion == 2
 
     invalid_payloads = (
         {"quantity": 10, "notional": 500},
         {},
         {"quantity": 10, "orderType": "limit"},
         {"quantity": 10, "orderType": "stop"},
+        {"quantity": 10, "exitPolicyVersion": None},
     )
     for overrides in invalid_payloads:
         payload = {
-            "accountId": "acct-001",
-            "environment": "paper",
-            "clientRequestId": "client-001",
-            "symbol": "MSFT",
-            "side": "buy",
-            "orderType": "market",
-            **overrides,
-        }
+                "accountId": "acct-001",
+                "environment": "paper",
+                "clientRequestId": "client-001",
+                "symbol": "MSFT",
+                "side": "buy",
+                "orderType": "market",
+                "exitPolicyName": "desk-exit",
+                "exitPolicyVersion": 2,
+                **overrides,
+            }
         try:
             TradeOrderPreviewRequest.model_validate(payload)
         except Exception as exc:
-            assert "quantity" in str(exc) or "limitPrice" in str(exc) or "stopPrice" in str(exc)
+            assert (
+                "quantity" in str(exc)
+                or "limitPrice" in str(exc)
+                or "stopPrice" in str(exc)
+                or "exitPolicyVersion" in str(exc)
+                or "manual trade previews" in str(exc)
+            )
         else:
             raise AssertionError("Expected invalid order preview request to fail validation.")
 
@@ -338,6 +351,8 @@ def test_trade_order_place_and_cancel_require_idempotency() -> None:
         side="buy",
         orderType="market",
         quantity=5,
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
     cancel = TradeOrderCancelRequest(
         accountId="acct-001",
@@ -364,6 +379,8 @@ def test_trade_order_place_and_cancel_require_idempotency() -> None:
                 "side": "buy",
                 "orderType": "market",
                 "quantity": 5,
+                "exitPolicyName": "desk-exit",
+                "exitPolicyVersion": 2,
             },
         ),
         (
@@ -406,6 +423,8 @@ def test_trade_order_and_audit_contracts_capture_reconciliation_state() -> None:
         orderType="market",
         quantity=3,
         idempotencyKey="idem-000000000001",
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
         riskChecks=[risk],
         reconciliationRequired=True,
         createdAt=now,
@@ -495,6 +514,8 @@ def test_trade_order_preview_and_place_support_policy_confirmation_payloads() ->
         side="buy",
         orderType="market",
         quantity=5,
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
 
     assert preview.confirmationRequired is True
@@ -504,6 +525,8 @@ def test_trade_order_preview_and_place_support_policy_confirmation_payloads() ->
     assert preview.projectedPolicy.requireOrderConfirmation is True
     assert place.policyVersion == 7
     assert place.confirmationToken == "token-123"
+    assert place.exitPolicyName == "desk-exit"
+    assert place.exitPolicyVersion == 2
 
 
 def test_trade_blotter_contracts_capture_realized_pnl_and_cash_impact() -> None:

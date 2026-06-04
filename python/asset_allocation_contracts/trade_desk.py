@@ -92,6 +92,20 @@ def _normalize_currency(value: object) -> str:
     return normalized
 
 
+def _validate_named_revision_pair(
+    name_field: str,
+    version_field: str,
+    name: str | None,
+    version: int | None,
+) -> None:
+    if name is None and version is None:
+        return
+    if name is None:
+        raise ValueError(f"{name_field} is required when {version_field} is provided.")
+    if version is None:
+        raise ValueError(f"{version_field} is required when {name_field} is provided.")
+
+
 class TradeCapabilityFlags(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -571,6 +585,8 @@ class TradeOrder(BaseModel):
     providerInstrumentId: str | None = Field(default=None, min_length=1, max_length=160)
     instrumentName: str | None = Field(default=None, min_length=1, max_length=240)
     outcomeSide: TradeOutcomeSide | None = None
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
     rawProviderStatus: str | None = Field(default=None, min_length=1, max_length=160)
     quantity: float | None = Field(default=None, gt=0)
     notional: float | None = Field(default=None, gt=0)
@@ -611,6 +627,7 @@ class TradeOrder(BaseModel):
         "providerCorrelationId",
         "providerInstrumentId",
         "instrumentName",
+        "exitPolicyName",
         "rawProviderStatus",
         "syncRunId",
         "sourcePayloadHash",
@@ -628,6 +645,12 @@ class TradeOrder(BaseModel):
 
     @model_validator(mode="after")
     def validate_option_order_shape(self) -> "TradeOrder":
+        _validate_named_revision_pair(
+            "exitPolicyName",
+            "exitPolicyVersion",
+            self.exitPolicyName,
+            self.exitPolicyVersion,
+        )
         if self.assetClass != "option" and (self.optionStrategyId is not None or self.optionLegs):
             raise ValueError("optionStrategyId and optionLegs require assetClass='option'.")
         if self.assetClass == "option":
@@ -780,6 +803,8 @@ class TradeOrderPreviewRequest(BaseModel):
     allowExtendedHours: bool = False
     source: Literal["manual", "rebalance_preview", "system"] = "manual"
     strategyRef: StrategyReferenceInput | None = None
+    exitPolicyName: str | None = Field(default=None, min_length=1, max_length=128)
+    exitPolicyVersion: int | None = Field(default=None, ge=1)
 
     @field_validator("accountId", "clientRequestId", mode="before")
     @classmethod
@@ -791,15 +816,27 @@ class TradeOrderPreviewRequest(BaseModel):
     def normalize_order_symbol(cls, value: object) -> str:
         return _normalize_symbol(value)
 
-    @field_validator("providerInstrumentId", "instrumentName", mode="before")
+    @field_validator("providerInstrumentId", "instrumentName", "exitPolicyName", mode="before")
     @classmethod
     def normalize_optional_text_fields(cls, value: object) -> str | None:
         return _normalize_optional_text(value)
 
     @model_validator(mode="after")
     def validate_intent(self) -> "TradeOrderPreviewRequest":
+        _validate_named_revision_pair(
+            "exitPolicyName",
+            "exitPolicyVersion",
+            self.exitPolicyName,
+            self.exitPolicyVersion,
+        )
         if (self.quantity is None) == (self.notional is None):
             raise ValueError("Exactly one of quantity or notional must be provided.")
+        if self.source == "manual" and (
+            self.exitPolicyName is None or self.exitPolicyVersion is None
+        ):
+            raise ValueError(
+                "exitPolicyName and exitPolicyVersion are required for manual trade previews."
+            )
         if self.assetClass != "option" and (self.optionStrategyId is not None or self.optionLegs):
             raise ValueError("optionStrategyId and optionLegs require assetClass='option'.")
         if self.assetClass == "option":

@@ -2213,12 +2213,16 @@ def test_trade_order_preview_accepts_optional_strategy_reference() -> None:
         orderType="market",
         quantity=1,
         strategyRef={"strategyName": "quality-trend", "strategyVersion": 3},
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
 
     assert request.symbol == "AAPL"
     assert request.strategyRef is not None
     assert request.strategyRef.strategyName == "quality-trend"
     assert request.strategyRef.strategyVersion == 3
+    assert request.exitPolicyName == "desk-exit"
+    assert request.exitPolicyVersion == 2
 
 
 def test_ranking_schema_requires_groups() -> None:
@@ -6129,6 +6133,8 @@ def test_trade_approval_review_context_contracts_are_structured_and_optional() -
         "allowExtendedHours": False,
         "source": "rebalance_preview",
         "strategyRef": {"strategyName": "quality-trend", "strategyVersion": 4},
+        "exitPolicyName": "desk-exit",
+        "exitPolicyVersion": 4,
     }
     review_context = {
         "source": "rebalance_proposal",
@@ -6165,6 +6171,8 @@ def test_trade_approval_review_context_contracts_are_structured_and_optional() -
         previewId="preview-1",
         orderHash="hash-1",
         placeIdempotencyKey="place-idempotency-1",
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=4,
         order=order,
         reviewContext=review_context,
     )
@@ -6190,6 +6198,8 @@ def test_trade_approval_review_context_contracts_are_structured_and_optional() -
             "orderType": "market",
             "timeInForce": "day",
             "quantity": 1.0,
+            "exitPolicyName": "desk-exit",
+            "exitPolicyVersion": 4,
             "reviewContext": review_context,
         },
     )
@@ -6215,9 +6225,15 @@ def test_trade_approval_review_context_contracts_are_structured_and_optional() -
     assert payload.reviewContext is not None
     assert payload.reviewContext.source == "rebalance_proposal"
     assert payload.reviewContext.riskChecks[0].code == "max_live_bearer_notional"
+    assert payload.exitPolicyName == "desk-exit"
+    assert payload.exitPolicyVersion == 4
     assert action.tradeApproval is not None
+    assert action.tradeApproval.exitPolicyName == "desk-exit"
+    assert action.tradeApproval.exitPolicyVersion == 4
     assert action.tradeApproval.reviewContext is not None
     assert action.tradeApproval.reviewContext.releaseMode == "live_bearer"
+    assert legacy_payload.exitPolicyName == "desk-exit"
+    assert legacy_payload.exitPolicyVersion == 4
     assert legacy_payload.reviewContext is None
 
 
@@ -6229,6 +6245,8 @@ def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> 
         previewId="preview-1",
         targetUrl="https://example.com/trade-desk",
         reason="Desk review requested.",
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=4,
     )
     rebalance_request = TradeApprovalCreateRequest(
         source="rebalance_proposal",
@@ -6236,6 +6254,8 @@ def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> 
         idempotencyKey="approval-idempotency-2",
         proposalId="proposal-1",
         proposalTradeIndexes=[2, 0, 2],
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=4,
         releaseMode="paper_sandbox_bearer",
     )
     response = TradeApprovalCreateResponse(
@@ -6246,6 +6266,8 @@ def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> 
     assert manual_request.previewId == "preview-1"
     assert rebalance_request.proposalTradeIndexes == [0, 2]
     assert response.accountId == "acct-live"
+    assert rebalance_request.exitPolicyName == "desk-exit"
+    assert rebalance_request.exitPolicyVersion == 4
 
     for invalid_request, expected in (
         (
@@ -6253,6 +6275,8 @@ def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> 
                 "source": "manual_preview",
                 "clientRequestId": "client",
                 "idempotencyKey": "approval-idempotency-3",
+                "exitPolicyName": "desk-exit",
+                "exitPolicyVersion": 4,
             },
             "previewId",
         ),
@@ -6262,8 +6286,20 @@ def test_trade_approval_create_request_routes_manual_and_rebalance_sources() -> 
                 "clientRequestId": "client",
                 "idempotencyKey": "approval-idempotency-4",
                 "proposalId": "proposal-1",
+                "exitPolicyName": "desk-exit",
+                "exitPolicyVersion": 4,
             },
             "proposalTradeIndexes",
+        ),
+        (
+            {
+                "source": "manual_preview",
+                "clientRequestId": "client",
+                "idempotencyKey": "approval-idempotency-5",
+                "previewId": "preview-1",
+                "exitPolicyName": "desk-exit",
+            },
+            "exitPolicyVersion",
         ),
     ):
         try:

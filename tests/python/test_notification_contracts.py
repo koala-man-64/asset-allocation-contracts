@@ -26,6 +26,8 @@ def _trade_order() -> TradeOrderPreviewRequest:
         timeInForce="day",
         quantity=10,
         limitPrice=100,
+        exitPolicyName="desk-exit",
+        exitPolicyVersion=2,
     )
 
 
@@ -75,6 +77,8 @@ def test_trade_approval_payload_reuses_trade_order_intent_contract() -> None:
             previewId="preview-1",
             orderHash="hash-1",
             placeIdempotencyKey="place-idem-000001",
+            exitPolicyName="desk-exit",
+            exitPolicyVersion=2,
             order=_trade_order(),
             reviewContext=TradeApprovalReviewContext(
                 source="manual_preview",
@@ -94,6 +98,8 @@ def test_trade_approval_payload_reuses_trade_order_intent_contract() -> None:
     assert request.tradeApproval.reviewContext.estimatedPrice == 101.25
     assert request.tradeApproval.reviewContext.estimatedPriceSource == "gold_market_postgres"
     assert request.tradeApproval.reviewContext.estimatedPriceObservedAt == now
+    assert request.tradeApproval.exitPolicyName == "desk-exit"
+    assert request.tradeApproval.exitPolicyVersion == 2
 
     with pytest.raises(ValueError, match="tradeApproval is required"):
         CreateNotificationRequest(
