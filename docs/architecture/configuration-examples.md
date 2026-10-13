@@ -204,6 +204,8 @@ This example shows the three supported `UniverseCondition` patterns:
 - `security.primary_listing`
 - `security.country`
 - `security.is_price_liquidity_eligible`
+- `credit.distance_to_default`
+- `credit.merton_pd`
 
 ```json
 {

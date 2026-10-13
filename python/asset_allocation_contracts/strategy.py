@@ -172,6 +172,8 @@ UniverseFieldId = Literal[
     "security.primary_listing",
     "security.country",
     "security.is_price_liquidity_eligible",
+    "credit.distance_to_default",
+    "credit.merton_pd",
 ]
 UniverseValueKind = Literal["string", "number", "boolean", "date", "datetime"]
 UniverseValue: TypeAlias = str | int | float | bool
@@ -868,6 +870,40 @@ UNIVERSE_FIELD_DEFINITIONS: tuple[UniverseFieldDefinition, ...] = (
         label="Price And Liquidity Eligibility Flag",
         valueKind="boolean",
         operators=["eq", "ne", "in", "not_in", "is_null", "is_not_null"],
+    ),
+    UniverseFieldDefinition(
+        id="credit.distance_to_default",
+        label="Merton Distance To Default",
+        valueKind="number",
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
+    ),
+    UniverseFieldDefinition(
+        id="credit.merton_pd",
+        label="Merton Probability Of Default",
+        valueKind="number",
+        operators=[
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "not_in",
+            "is_null",
+            "is_not_null",
+        ],
     ),
 )
 UNIVERSE_FIELD_DEFINITION_BY_ID: dict[UniverseFieldId, UniverseFieldDefinition] = {
@@ -1581,11 +1617,38 @@ class StrategyRiskDrawdownPolicy(BaseModel):
         return enabled_stop or enabled_take or reentry_control
 
 
+class StrategyRiskKellySizingPolicy(BaseModel):
+    """Scale target exposure by a Kelly fraction published on a prior backtest run.
+
+    The applied scalar is clamp(fractionMultiplier * kelly_fraction, floorScalar, capScalar).
+    fallbackScalar applies when the reference run is missing, unpublished, has fewer than
+    minClosedPositions closed positions, or has no kelly_fraction.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    referenceBacktestRunId: str = Field(..., min_length=1, max_length=128)
+    minClosedPositions: int = Field(default=30, ge=1)
+    fractionMultiplier: float = Field(default=0.25, gt=0.0, le=1.0)
+    floorScalar: float = Field(default=0.25, gt=0.0, le=1.0)
+    capScalar: float = Field(default=1.0, gt=0.0, le=1.0)
+    fallbackScalar: float = Field(default=1.0, gt=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def validate_scalars(self) -> "StrategyRiskKellySizingPolicy":
+        if self.floorScalar > self.capScalar:
+            raise ValueError("floorScalar must be less than or equal to capScalar.")
+        if not self.floorScalar <= self.fallbackScalar <= self.capScalar:
+            raise ValueError("fallbackScalar must be between floorScalar and capScalar.")
+        return self
+
+
 class StrategyRiskExposurePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     limits: StrategyRiskExposureLimits | None = None
     volatilityTolerance: VolatilityTolerance | None = None
+    kellySizing: StrategyRiskKellySizingPolicy | None = None
 
     @model_validator(mode="after")
     def validate_policy(self) -> "StrategyRiskExposurePolicy":

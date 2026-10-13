@@ -15,6 +15,11 @@ BacktestPolicyEventScope = Literal["strategy", "sleeve", "position", "symbol", "
 BacktestPolicyEventType = Literal["rebalance", "strategy_risk", "position_exit", "reentry", "regime"]
 BacktestPolicyDecision = Literal["applied", "skipped", "blocked"]
 BacktestResearchIntegrityStatus = Literal["strict_passed", "strict_failed", "legacy_uncontrolled"]
+CornishFisherFallbackReason = Literal[
+    "non_monotonic_tail",
+    "insufficient_observations",
+    "undefined_moments",
+]
 BacktestExecutionModel = Literal["simple_bps"]
 BacktestExecutionModelQuality = Literal["not_tca_grade"]
 BacktestApprovalReadiness = Literal["research_only"]
@@ -273,6 +278,14 @@ class BacktestSummary(BaseModel):
     profit_factor: float | None = None
     expectancy_pnl: float | None = None
     expectancy_return: float | None = None
+    return_skewness: float | None = None
+    return_excess_kurtosis: float | None = None
+    var_95: float | None = Field(default=None, ge=0)
+    es_97_5: float | None = Field(default=None, ge=0)
+    var_95_cornish_fisher: float | None = Field(default=None, ge=0)
+    es_97_5_cornish_fisher: float | None = Field(default=None, ge=0)
+    cornish_fisher_fallback_reason: CornishFisherFallbackReason | None = None
+    kelly_fraction: float | None = None
     research_integrity_status: BacktestResearchIntegrityStatus | None = None
     execution_model: BacktestExecutionModel | None = None
     execution_model_quality: BacktestExecutionModelQuality | None = None

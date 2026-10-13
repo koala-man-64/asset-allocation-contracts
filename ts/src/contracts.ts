@@ -82,7 +82,7 @@ export type RegimeCode = 'trending_up' | 'trending_down' | 'mean_reverting' | 'l
 export type UniverseSource = 'postgres_gold';
 export type UniverseGroupOperator = 'and' | 'or';
 export type UniverseConditionOperator = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'not_in' | 'is_null' | 'is_not_null';
-export type UniverseFieldId = 'market.close' | 'security.symbol' | 'security.is_active' | 'security.sector' | 'security.delisted_at' | 'market.trade_date' | 'market.timestamp' | 'returns.return_20d' | 'returns.return_60d' | 'returns.return_126d' | 'technical.rsi_14d' | 'technical.bb_width_20d' | 'technical.compression_score' | 'technical.position_in_20d_range' | 'alternative.wall_street_bets_observed_date' | 'alternative.insider_trading_observed_date' | 'alternative.congressional_trading_observed_date' | 'alternative.government_contract_observed_date' | 'alternative.institutional_holding_observed_date' | 'alternative.patent_observed_date' | 'alternative.congress_holding_observed_date' | 'qmom.adr_pct_20d' | 'qmom.volume_ratio_1d_50d' | 'qmom.range_contraction_5d_20d' | 'qmom.breakout_close_above_20d_high' | 'qmom.breakout_distance_20d_pct' | 'qmom.trend_filter' | 'qmom.daily_research_score' | 'runner.distance_to_20d_high_pct' | 'runner.distance_to_55d_high_pct' | 'runner.base_age_days' | 'runner.volume_dryup_10d_50d' | 'runner.close_location_value' | 'runner.range_expansion_atr' | 'runner.days_since_breakout' | 'runner.breakout_hold_1d' | 'runner.failed_breakout_1d' | 'quality.piotroski_f_score' | 'earnings.surprise_pct' | 'security.market_cap' | 'market.dollar_volume_20d' | 'security.primary_listing' | 'security.country' | 'security.is_price_liquidity_eligible';
+export type UniverseFieldId = 'market.close' | 'security.symbol' | 'security.is_active' | 'security.sector' | 'security.delisted_at' | 'market.trade_date' | 'market.timestamp' | 'returns.return_20d' | 'returns.return_60d' | 'returns.return_126d' | 'technical.rsi_14d' | 'technical.bb_width_20d' | 'technical.compression_score' | 'technical.position_in_20d_range' | 'alternative.wall_street_bets_observed_date' | 'alternative.insider_trading_observed_date' | 'alternative.congressional_trading_observed_date' | 'alternative.government_contract_observed_date' | 'alternative.institutional_holding_observed_date' | 'alternative.patent_observed_date' | 'alternative.congress_holding_observed_date' | 'qmom.adr_pct_20d' | 'qmom.volume_ratio_1d_50d' | 'qmom.range_contraction_5d_20d' | 'qmom.breakout_close_above_20d_high' | 'qmom.breakout_distance_20d_pct' | 'qmom.trend_filter' | 'qmom.daily_research_score' | 'runner.distance_to_20d_high_pct' | 'runner.distance_to_55d_high_pct' | 'runner.base_age_days' | 'runner.volume_dryup_10d_50d' | 'runner.close_location_value' | 'runner.range_expansion_atr' | 'runner.days_since_breakout' | 'runner.breakout_hold_1d' | 'runner.failed_breakout_1d' | 'quality.piotroski_f_score' | 'earnings.surprise_pct' | 'security.market_cap' | 'market.dollar_volume_20d' | 'security.primary_listing' | 'security.country' | 'security.is_price_liquidity_eligible' | 'credit.distance_to_default' | 'credit.merton_pd';
 export type UniverseValue = string | number | boolean;
 export type UniverseValueKind = 'string' | 'number' | 'boolean' | 'date' | 'datetime';
 export type RankingTransformType = 'percentile_rank' | 'zscore' | 'minmax' | 'clip' | 'winsorize' | 'coalesce' | 'log1p' | 'negate' | 'abs';
@@ -171,6 +171,7 @@ export type BacktestPolicyEventScope = 'strategy' | 'sleeve' | 'position' | 'sym
 export type BacktestPolicyEventType = 'rebalance' | 'strategy_risk' | 'position_exit' | 'reentry' | 'regime';
 export type BacktestPolicyDecision = 'applied' | 'skipped' | 'blocked';
 export type BacktestResearchIntegrityStatus = 'strict_passed' | 'strict_failed' | 'legacy_uncontrolled';
+export type CornishFisherFallbackReason = 'non_monotonic_tail' | 'insufficient_observations' | 'undefined_moments';
 export type BacktestExecutionModel = 'simple_bps';
 export type BacktestExecutionModelQuality = 'not_tca_grade';
 export type BacktestApprovalReadiness = 'research_only';
@@ -495,6 +496,7 @@ export interface StrategyRiskReentryPolicy {
 export interface StrategyRiskExposurePolicy {
   limits?: StrategyRiskExposureLimits | null;
   volatilityTolerance?: VolatilityTolerance | null;
+  kellySizing?: StrategyRiskKellySizingPolicy | null;
 }
 
 export interface StrategyRiskExposureLimits {
@@ -512,6 +514,15 @@ export interface StrategyRiskExposureLimits {
   weeklyLossLimitPct?: number | null;
   drawdownReducePct?: number | null;
   drawdownBlockPct?: number | null;
+}
+
+export interface StrategyRiskKellySizingPolicy {
+  referenceBacktestRunId: string;
+  minClosedPositions: number;
+  fractionMultiplier: number;
+  floorScalar: number;
+  capScalar: number;
+  fallbackScalar: number;
 }
 
 export interface StrategyRiskTradingPermissions {
@@ -1890,6 +1901,14 @@ export interface BacktestSummary {
   profit_factor?: number | null;
   expectancy_pnl?: number | null;
   expectancy_return?: number | null;
+  return_skewness?: number | null;
+  return_excess_kurtosis?: number | null;
+  var_95?: number | null;
+  es_97_5?: number | null;
+  var_95_cornish_fisher?: number | null;
+  es_97_5_cornish_fisher?: number | null;
+  cornish_fisher_fallback_reason?: CornishFisherFallbackReason | null;
+  kelly_fraction?: number | null;
   research_integrity_status?: BacktestResearchIntegrityStatus | null;
   execution_model?: BacktestExecutionModel | null;
   execution_model_quality?: BacktestExecutionModelQuality | null;

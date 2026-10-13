@@ -407,6 +407,23 @@
           "default": null,
           "title": "Closed Positions"
         },
+        "cornish_fisher_fallback_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "non_monotonic_tail",
+                "insufficient_observations",
+                "undefined_moments"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cornish Fisher Fallback Reason"
+        },
         "cost_drag_bps": {
           "anyOf": [
             {
@@ -443,6 +460,32 @@
           ],
           "default": null,
           "title": "End Date"
+        },
+        "es_97_5": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Es 97 5"
+        },
+        "es_97_5_cornish_fisher": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Es 97 5 Cornish Fisher"
         },
         "executed_residual_cash_weight": {
           "anyOf": [
@@ -606,6 +649,18 @@
           ],
           "default": null,
           "title": "Initial Cash"
+        },
+        "kelly_fraction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kelly Fraction"
         },
         "losing_positions": {
           "anyOf": [
@@ -791,6 +846,30 @@
           "default": null,
           "title": "Research Only Block Count"
         },
+        "return_excess_kurtosis": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Return Excess Kurtosis"
+        },
+        "return_skewness": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Return Skewness"
+        },
         "run_id": {
           "anyOf": [
             {
@@ -910,6 +989,32 @@
           ],
           "default": null,
           "title": "Trades"
+        },
+        "var_95": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Var 95"
+        },
+        "var_95_cornish_fisher": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Var 95 Cornish Fisher"
         },
         "wide_spread_reject_count": {
           "anyOf": [

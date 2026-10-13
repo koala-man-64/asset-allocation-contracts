@@ -434,6 +434,17 @@
     "StrategyRiskExposurePolicy": {
       "additionalProperties": false,
       "properties": {
+        "kellySizing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrategyRiskKellySizingPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "limits": {
           "anyOf": [
             {
@@ -458,6 +469,57 @@
         }
       },
       "title": "StrategyRiskExposurePolicy",
+      "type": "object"
+    },
+    "StrategyRiskKellySizingPolicy": {
+      "additionalProperties": false,
+      "description": "Scale target exposure by a Kelly fraction published on a prior backtest run.\n\nThe applied scalar is clamp(fractionMultiplier * kelly_fraction, floorScalar, capScalar).\nfallbackScalar applies when the reference run is missing, unpublished, has fewer than\nminClosedPositions closed positions, or has no kelly_fraction.",
+      "properties": {
+        "capScalar": {
+          "default": 1.0,
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Capscalar",
+          "type": "number"
+        },
+        "fallbackScalar": {
+          "default": 1.0,
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Fallbackscalar",
+          "type": "number"
+        },
+        "floorScalar": {
+          "default": 0.25,
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Floorscalar",
+          "type": "number"
+        },
+        "fractionMultiplier": {
+          "default": 0.25,
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Fractionmultiplier",
+          "type": "number"
+        },
+        "minClosedPositions": {
+          "default": 30,
+          "minimum": 1,
+          "title": "Minclosedpositions",
+          "type": "integer"
+        },
+        "referenceBacktestRunId": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Referencebacktestrunid",
+          "type": "string"
+        }
+      },
+      "required": [
+        "referenceBacktestRunId"
+      ],
+      "title": "StrategyRiskKellySizingPolicy",
       "type": "object"
     },
     "StrategyRiskLiquidityLimits": {

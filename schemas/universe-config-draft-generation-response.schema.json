@@ -109,7 +109,9 @@
             "market.dollar_volume_20d",
             "security.primary_listing",
             "security.country",
-            "security.is_price_liquidity_eligible"
+            "security.is_price_liquidity_eligible",
+            "credit.distance_to_default",
+            "credit.merton_pd"
           ],
           "title": "Field",
           "type": "string"
@@ -330,7 +332,9 @@
               "market.dollar_volume_20d",
               "security.primary_listing",
               "security.country",
-              "security.is_price_liquidity_eligible"
+              "security.is_price_liquidity_eligible",
+              "credit.distance_to_default",
+              "credit.merton_pd"
             ],
             "type": "string"
           },
@@ -547,7 +551,9 @@
           "market.dollar_volume_20d",
           "security.primary_listing",
           "security.country",
-          "security.is_price_liquidity_eligible"
+          "security.is_price_liquidity_eligible",
+          "credit.distance_to_default",
+          "credit.merton_pd"
         ],
         "type": "string"
       },

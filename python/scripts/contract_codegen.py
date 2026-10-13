@@ -867,6 +867,7 @@ TS_ALIAS_EXPORTS: list[tuple[str, Any]] = [
     ("BacktestPolicyEventType", backtest.BacktestPolicyEventType),
     ("BacktestPolicyDecision", backtest.BacktestPolicyDecision),
     ("BacktestResearchIntegrityStatus", backtest.BacktestResearchIntegrityStatus),
+    ("CornishFisherFallbackReason", backtest.CornishFisherFallbackReason),
     ("BacktestExecutionModel", backtest.BacktestExecutionModel),
     ("BacktestExecutionModelQuality", backtest.BacktestExecutionModelQuality),
     ("BacktestApprovalReadiness", backtest.BacktestApprovalReadiness),
